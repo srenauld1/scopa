@@ -109,7 +109,7 @@ if doplt
     title(['daqinds.vol for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(daqinds.vol) max(daqinds.vol)]) ])
     figsuffix = 'daqinds_.png';
     if isempty(pthfigpre)
-        pthfig = pthauto(suffix=figsuffix, usetime=0);
+        pthfig = pathauto(suffix=figsuffix, usetime=0);
     else
         pthfig = [pthfigpre figsuffix];
     end

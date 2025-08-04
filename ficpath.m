@@ -56,14 +56,14 @@ end
 %%%% plot %%%% 
 
 if doplt
-    pthfig = pthauto(suffix='.gif');
+    pthfig = pathauto(suffix='.gif');
     h = figure; 
     subplot(311); plot(t, vf); title('forward velocity')
     subplot(312); plot(t, vs); title('side velocity')
     subplot(313); plot(t, hd); title('heading')
     fig2gif(h,1,pthfig); close(h)
 
-    pthfig = pthauto(suffix='.gif');
+    pthfig = pathauto(suffix='.gif');
     h = figure;
     plot(posx, posy); title('path')
     fig2gif(h,1,pthfig); close(h)

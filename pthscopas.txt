@@ -1,4 +1,0 @@
-{
-  "b": "/home/caw846/scopa/",
-  "k": "/Users/wienecke/scopa/"
-}

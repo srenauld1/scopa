@@ -10,6 +10,7 @@ end
 
 %%
 
+
 clear glb tsget %clear global/persistent vars
 
 oa = oset(specin); % set options; oa stands for "o all" (ie options for all recordings)
@@ -79,7 +80,7 @@ for k = 1:numel(oa) % loop over recordings
     %% plots
 
     if o.mn.dopltx
-        pltx(stack, o.pltx, t=glb('t'), stimvid=fmfvid)
+        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
 
 

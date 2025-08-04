@@ -64,7 +64,7 @@ main processing functions:
 utility functions (and visualization functions):
     stackplt: plot stack(s) 
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
-    pthauto: create path (e.g. for saving figures)
+    pathauto: create path (e.g. for saving figures)
     oset: set options
     odf: invoke default options, overwriting defaults with input
     tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)

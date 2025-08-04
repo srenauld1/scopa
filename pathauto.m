@@ -1,4 +1,4 @@
-function pthsv = pthauto(opt)
+function pthsv = pathauto(opt)
 
 arguments
     opt.pthstackdir = []

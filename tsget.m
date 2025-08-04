@@ -52,7 +52,7 @@ if isstring(ided_vbin)
     ided_vbin = convertStringsToChars(ided_vbin);
 end
 
-pthscopa = pathscopafind();
+pthscopa = pathscopaget();
 pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed

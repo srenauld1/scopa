@@ -162,13 +162,6 @@ try
             pth_daq = pth_daq.name;
         end
 
-        if isempty(pth_ftvid)
-            pth_ftvid = [id.pthrec '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
-        end
-        if isempty(pth_ftvidrs)
-            pth_ftvidrs = [id.pthrec '_FTV_DS_RS_.mat']; %downsampled ft video (downsampled in register.py)
-        end
-
         daqvars.normal = vnormal;
         daqvars.radians = vradians;
         daqvars.degrees = vdegrees;
@@ -432,9 +425,9 @@ try
 
             try
                 volrate = 1/sper;
-                daq(m).ftv = ftvpr(daq(m).ftcam, pth_ftvid, pth_ftvidrs, ...
-                    numvol, volrate, opt.ftv.numpkthr, ...
-                    opt.ftv.smlenpx, opt.ftv.numpx, opt.ftv.smlensec);
+                daq(m).ftv = ftvalign(daq(m).ftcam, numvol, volrate, ...
+                    opt.ftv.numpkthr, opt.ftv.smlenpx, opt.ftv.numpx, opt.ftv.smlensec, ...
+                    pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs);
             catch ME
                 fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
                 daq(m).ftv = [];

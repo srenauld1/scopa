@@ -3,12 +3,15 @@ function md = mdsild(pthstack, opt)
 arguments
     pthstack
     opt.pthpy = []
+    opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
 opt = glboropt(opt);
 pthpy = opt.pthpy;
+doflyg = opt.doflyg;
 
 id = idmake(pthstack); %just in case id info gets used below
 pthmd = [id.pthrec '_mdsi_.txt'];
+
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
@@ -30,7 +33,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     
     catch
 
-        pthscopa = pathscopafind();
+        pthscopa = pathscopaget();
 
         try %run python directly from matlab (ie not using system command to control a shell)
             petmp = pyenv;
@@ -101,6 +104,19 @@ end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
 md.sper = 1/md.volrate;
+
+
+if doflyg
+    pthmd_flyg_pat = [pthstackdir id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+    pthmd_flyg = rdir(pthmd_flyg_pat);
+    if isempty(pthmd_flyg)
+        pthmd_flyg = [];
+    else
+        pthmd_flyg = pthmd_flyg.name;
+    end
+    [md.expMetadata, md.trialMetadata, md.patternMetadata, md.fictracMetadata, md.fmd] = mdflygld(pthmd_flyg, pthstack);
+end
+
 
 md = structsort(md, vectype='row');
 

@@ -32,7 +32,7 @@ else: #in interactive mode, read options set in oset, and also set a few options
   do_autoallocate = 0 #autoallocate resources or not; only used in noninteractive mode
 
 from parse_args import parse_command_line
-from pthmakepy import pthmake
+from pthmake import pthmake
 from filefind import filefind
 from filecp import filecp
 from autoallocate import autoallocate

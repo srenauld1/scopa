@@ -66,7 +66,7 @@ dmstackdf = opt.dmstackdf;
 clear roiolmake %to clear the persistent variable within
 
 if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
+    pthgif = pathauto(suffix='.gif', usetime=1);
 end
 if isempty(dmstackdf)
     fprintf("using dmstackdf yxztck" + newline)

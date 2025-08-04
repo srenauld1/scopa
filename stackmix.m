@@ -46,7 +46,7 @@ end
 % end
 % rgnames = rgnames_all;
 
-pthscopa = pathscopafind();
+pthscopa = pathscopaget();
 scopausername = userdatfile('scopausername');
 
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];

@@ -44,7 +44,7 @@ end
 
 dttm = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 pthgif = [supp.pthspre '_' dttm '_testpred.gif'];
-pthgif = pthauto(suffix='.gif', usetime=1);
+pthgif = pathauto(suffix='.gif', usetime=1);
 
 nrows = supp.num_total_model_functions + 3;
 ncols = 1;

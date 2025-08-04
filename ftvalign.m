@@ -1,6 +1,4 @@
-function ftvdsrs = ftvpr(rsinds, pth_vid, pth_vidrs, numvol, imrate, numpkthr, smlenpx, ...
-    numpx, smlensec, pth_dat, ftrate, pth_vidlog, pth_log, doplt)
-
+function ftvdsrs = ftvalign(rsinds, numvol, imrate, numpkthr, smlenpx, numpx, smlensec, ftrate, doplt, opt)
 
 % NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
@@ -32,20 +30,27 @@ function ftvdsrs = ftvpr(rsinds, pth_vid, pth_vidrs, numvol, imrate, numpkthr, s
 
 arguments
     rsinds %resampling indices (e.g. if they were on the daq)
-    pth_vid char %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
-    pth_vidrs char %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     numvol = [] %number of imaging volumes
     imrate = [] %imaging rate (average,approximate)
     numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
     smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
     smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    pth_dat char = '' %fictrac .dat file; used to derive ftrate; can pass in ftrate instead 
     ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
-    pth_vidlog char = '' %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
-    pth_log char = '' %path to fictrac .log file; file not used in this function, but may be useful sometime
     doplt = [] %0 skips plots, 1 plots and saves, 2 saves but does not display
+    opt.pthstack = [] %can pass in path to stack and derive defaults for all the other paths
+    opt.pth_vid char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
+    opt.pth_vidrs char = [] %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
+    opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead 
+    opt.pth_vidlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
+    opt.pth_log char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
 end
+pthstack = opt.pthstack;
+pth_vid = opt.pth_vid;
+pth_vidrs = opt.pth_vidrs;
+pth_dat = opt.pth_dat;
+pth_vidlog = opt.pth_vidlog;
+pth_log = opt.pth_log;
 
 if isempty(doplt)
     doplt = any(strcmp('ftv', glb('plt')));
@@ -57,14 +62,80 @@ elseif doplt==2
     gifvis = 'off';
 end
 
+if isempty(pthstack)
+    if isempty(pth_vid) 
+        error("if pth_vid is empty, pthstack must be nonempty")
+    end
+    id = idmake(pthstack);
+end
+
+
+
+%%%% GET PATHS, IN CASE THEY WEREN'T PASSED IN %%%%
+
+if isempty(pth_dat)
+    pth_ftdat_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.dat'];
+    pth_dat = rdir(pth_ftdat_pat);
+    if isempty(pth_dat)
+        pth_dat = [];
+    else
+        pth_dat = pth_dat.name;
+    end
+end
+
+if isempty(pth_log)
+    pth_ftlog_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.log']; %
+    pth_log = rdir(pth_ftlog_pat);
+    if isempty(pth_log)
+        pth_log = [];
+    else
+        pth_log = pth_log.name;
+    end
+end
+
+if isempty(pth_vidlog)
+    pth_ftvidlog_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.txt']; %
+    pth_vidlog = rdir(pth_ftvidlog_pat);
+    if isempty(pth_vidlog)
+        pth_vidlog = [];
+    else
+        pth_vidlog = pth_vidlog.name;
+    end
+end
+
+if isempty(pth_vid)
+    pth_ftvid_pat = [id.pthstackdir id.recid '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
+    pth_vid = rdir(pth_ftvid_pat);
+    if isempty(pth_vid)
+        error("cannot find fictrac video (pth_vid) using default pattern derived from pthstack")
+    else
+        pth_vid = pth_vid.name;
+    end
+end
+
+
+if isempty(pth_vidrs)
+    pth_vidrs = [pth_vid(1:end-4) 'RS_.mat'];
+end
+
+
+
+%%%% CHECK IF RESAMPLED VIDEO ALREADY EXISTS %%%%
 
 try
+
     load(pth_vidrs, 'ftvdsrs')
+
 catch
+
+
+
+    %%%% LOAD SUPPLEMENTAL FILES, WHICH MAY OR MAY NOT GET USED %%%%
 
     if pth_vidlog
         ftvl = parse_fictrac_vidlog(pth_vidlog);
     end
+
     if pth_log
         try
             [pthtmp, ~, ~] = fileparts(pth_log);
@@ -77,7 +148,7 @@ catch
 
 
 
-    %% load video, extract laser timeseries
+    %%%% LOAD VIDEO, EXTRACT LASER TIMESERIES %%%%
 
     ftvds = struct2cell(load(pth_vid)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     ftvds = ftvds{1};
@@ -88,7 +159,7 @@ catch
 
         if isempty(ftrate)
             if isempty(pth_dat)
-                error("must pass in ftrate or pth_dat")
+                error("must pass in ftrate or pth_dat or pthstacks to derive ftrate")
             end
             ftdat = read_fictrac_dat(pth_dat);
             ftrate = 1e9/median(ftdat.deltaTimestamp);
@@ -99,7 +170,6 @@ catch
         if imrate > ftrate / 2
             error(sprintf("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate"))
         end
-
 
         szvd = size(ftvds);
         ftvds = reshape(ftvds, [], size(ftvds, 3));
@@ -132,7 +202,8 @@ catch
         end
 
 
-        %% find peaks in the laser timeseries
+
+        %%%% FIND PEAKS IN THE LASER TIMESERIES %%%%
 
         laser_ts_smoothed = laser_ts;
         if smlensec
@@ -149,14 +220,15 @@ catch
         pkdistdiff = [pkdist(1)-1 diff(pkdist)];
 
 
-        %% find laser oscillation period by finding delay between signal and its inverse
+
+        %%%% FIND LASER OSCILLATION PERIOD BY FINDING DELAY BETWEEN SIGNAL AND ITS INVERSE %%%%
 
         pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
         pkhalfper = ceil(mean(goodpers));
 
-        %% crop before/after trial period by finding/cropping aperiodic peaks in the laser timeseries
 
-        %this worked better than running rmoutliers on peak prominences
+
+        %%%% CROP BEFORE/AFTER TRIAL PERIOD BY FINDING/CROPPING APERIODIC PEAKS IN THE LASER TIMESERIES (THIS WORKED BETTER THAN RUNNING RMOUTLIERS ON PEAK PROMINENCES) %%%%
 
         [badpeaks_front] = crop_wrong_periods(pkdist, goodpers, numpkthr);
         if badpeaks_front==0
@@ -191,11 +263,15 @@ catch
         % peakinds_to_plot = 185:badpeaks_front+numgoodpeaks_to_plot; figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
         % peakinds_to_plot = numel(lk)-badpeaks_back-(numgoodpeaks_to_plot-1):numel(lk); figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
 
-        %% find slope (over peak half period) of laser timeseries (currently not used, but previously considered using slopes to define the oscillations against the non-oscillations, since laser oscillations have much bigger slopes)
+
+
+        %%%% FIND SLOPE (OVER PEAK HALF PERIOD) OF LASER TIMESERIES (CURRENTLY NOT USED, BUT PREVIOUSLY CONSIDERED USING SLOPES TO DEFINE THE OSCILLATIONS AGAINST THE NON-OSCILLATIONS, SINCE LASER OSCILLATIONS HAVE MUCH BIGGER SLOPES) %%%%
 
         dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
 
-        %% plot laser intensity timeseries with peaks marked
+
+
+        %%%% PLOT LASER INTENSITY TIMESERIES WITH PEAKS MARKED %%%%
 
         if doplt
             peaks_timeseries = nan(size(laser_ts_smoothed));
@@ -209,8 +285,9 @@ catch
             tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
         end
 
-        %% find downsampling indices
 
+
+        %%%% FIND DOWNSAMPLING INDICES %%%%
 
         numpk = numel(pkg);
         fprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol) + newline)
@@ -229,13 +306,17 @@ catch
         rsinds(rsinds==0) = nan;
         rsinds = fillmissing(rsinds, 'nearest');
 
-        %% remove frames before and after imaging
+
+
+        %%%% REMOVE FRAMES BEFORE AND AFTER IMAGING %%%%
 
         ftvds = ftvds(:,:,keepinds_vid);
 
+
     end
 
-    %% downsample video
+
+    %%%% DOWNSAMPLE VIDEO %%%%
 
     rsu = unique(rsinds(rsinds~=0),'stable'); %index of each volume, according to light flashes
     ftvdsrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
@@ -245,7 +326,9 @@ catch
 
     fprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)) + newline)
 
-    %% plot video before and after resampling
+
+
+    %%%% PLOT VIDEO BEFORE AND AFTER RESAMPLING %%%%
 
     if doplt
         title_prefix = 'pre resample';

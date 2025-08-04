@@ -1,4 +1,4 @@
-function pltx(stack, opt, opt2)
+function pltx(opt, opt2)
 
 
 % "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
@@ -22,8 +22,13 @@ function pltx(stack, opt, opt2)
 
 
 arguments
-    stack = []
     opt = []
+    opt2.stack = []
+    opt2.daq = []
+    opt2.roi = []
+    opt2.bmp = []
+    opt2.mdl = []
+    opt2.fmf = []
     opt2.vars = []
     opt2.labs = []
     opt2.roidat = []
@@ -42,6 +47,12 @@ arguments
     opt2.doplt = []
 end
 opt2 = glboropt(opt2);
+stack = opt2.stack;
+daq = opt2.daq;
+roi = opt2.roi;
+bmp = opt2.bmp;
+mdl = opt2.mdl;
+fmf = opt2.fmf;
 vars = opt2.vars;
 labs = opt2.labs;
 roidat = opt2.roidat;
@@ -139,7 +150,8 @@ marginfg = [0.07,0.05];
 splitfrac = 0.55;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='minimize');
 
-cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
+maxnumvars = 8;%numel(fieldnames(vars));
+cols = brewermap(maxnumvars,'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
 
 if any(ismember(cols, [0 0 0], 'rows'))
@@ -156,11 +168,6 @@ end
 kpepidx = setdiff(1:numel(epochts), it);
 epochts(kpepidx) = 0;
 
-
-if ~isempty(ftvid) && ~isempty(stimvid)
-    error("ftvid and stimvid cannot both be nonempty")
-end
-
 vid = [];
 vidrot = 0;
 if ~isempty(stimvid)
@@ -174,14 +181,22 @@ end
 
 if ~isempty(vid)
     if ndims(vid)==2
-        % vid = vid(:,it);
+        vid = reshape(vid, size(vid,1), 1, 1, size(vid,2)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     elseif ndims(vid)==3
-        % vid = vid(:,:,it);
         vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    % vid = rand(10,10,numel(it));
     vid = rand(10,10,size(stack, 4));
+end
+
+if size(vid, ndims(vid))~=size(stack, ndims(stack))
+    error("stack and vid do not have the same number of frames")
+end
+
+fn = fieldnames(roi);
+for k = 1:numel(fn)
+    var{k} = roi.(fn{k}).dat.ts;
+
 end
 
 vars = struct2cell(vars);

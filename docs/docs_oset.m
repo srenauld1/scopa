@@ -62,7 +62,7 @@ here is a complete list of vbins and functions they hold options for (see also s
     daq, daqld   (called from a2p)
     spr, stackseries   (called from a2p)
     sld, stackld   (called from stackseries)
-    ftv, ftvpr   (called from a2p)
+    ftv, ftvalign   (called from a2p)
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
     roif, roifauto   (called from a2p)

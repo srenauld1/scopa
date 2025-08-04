@@ -6,7 +6,7 @@ if isempty(glb('pthstackdir'))
 else
     glb(1, pthstackdir = '/Users/wienecke/stacks/');
 end
-pthsv = pthauto(suffix='.gif', usetime=1);
+pthsv = pathauto(suffix='.gif', usetime=1);
 
 fun = 'vonmises';
 

@@ -7,10 +7,10 @@ arguments
     specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
-
-%%
-
 clear glb tsget %clear global/persistent vars
+
+
+%% options
 
 oa = oset(specin); % set options; oa stands for "o all" (ie options for all recordings)
 
@@ -18,6 +18,7 @@ for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
 
+    
     %% stack
 
     for m = transpose(fieldnames(o.sld))
@@ -26,14 +27,12 @@ for k = 1:numel(oa) % loop over recordings
     o.id.pthstack = pthstack_mat; oa(k).id.pthstack = pthstack_mat; %update with .mat extension, in case it was tif going in to stackld
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals for this element of o
 
-    %% paths
-
-    pth = pthmake(o.id.pthstack);
 
     %% metadata
 
-    md = mdsild(pth.stack);
+    md = mdsild(o.id.pthstack);
     glb(1, md=md, srate=md.volrate, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
+
 
     %% daq
 
@@ -44,6 +43,7 @@ for k = 1:numel(oa) % loop over recordings
         glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
     end
 
+
     %% rois
 
     if o.mn.doroi
@@ -51,6 +51,7 @@ for k = 1:numel(oa) % loop over recordings
             roi.(m{1}) = roimake(stack, o.roi.(m{1})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
+
 
     %% bump
 
@@ -60,13 +61,15 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
+
     %% flymax
 
     if o.mn.dofmf
         for m = transpose(fieldnames(o.fmf))
-            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(pth.stack, o.fmf.(m{1})); %extract flymax visual features
+            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
         end
     end
+
 
     %% models
 
@@ -76,10 +79,11 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
+
     %% plots
 
     if o.mn.dopltx
-        pltx(stack, o.pltx, t=glb('t'), stimvid=fmfvid)
+        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
 
 
@@ -168,7 +172,7 @@ for k = 1:numel(oa) % loop over recordings
    
     %%
 
-    ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, pth.pre, ...
+    ebnotmp(stack, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
         glddv, glvdv, grddv, grvdv, ...
         plt=[1 0 0 0], ...
         facealpha=1, ...

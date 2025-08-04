@@ -6,7 +6,7 @@ for k = 1:size(inp,1)
     maxcnt(k) = max(vals(k,:));
 end
 
-pthgif = pthauto(suffix='.gif', usetime=1);
+pthgif = pathauto(suffix='.gif', usetime=1);
 hfg = figure;
 hax = axes(Parent=hfg);
 hpl = histogram(hax, inp(1,:), nbin);

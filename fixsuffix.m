@@ -17,7 +17,7 @@ renm = { ... %do it in this order, staerting with longest suffixes (most compoun
     '_nosn_: _os_', ...
     };
 
-pthparent = pathparentfind;
+pthparent = pathparentget;
 
 for q = 1:numel(renm)
     nmtmp = strsplit(renm{q}, ':');

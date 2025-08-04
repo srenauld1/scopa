@@ -54,7 +54,7 @@ if isempty(ir)
 end
 
 if isempty(pthgifpre)
-    pthgifpre = pthauto(suffix='', usetime=1, usefun=1);
+    pthgifpre = pathauto(suffix='', usetime=1, usefun=1);
 end
 
 %% mostly default right now

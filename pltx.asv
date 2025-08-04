@@ -1,4 +1,4 @@
-function pltx(stack, opt, opt2)
+function pltx(opt, opt2)
 
 
 % "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
@@ -22,8 +22,13 @@ function pltx(stack, opt, opt2)
 
 
 arguments
-    stack = []
     opt = []
+    opt2.stack = []
+    opt2.daq = []
+    opt2.roi = []
+    opt2.bmp = []
+    opt2.mdl = []
+    opt2.fmf = []
     opt2.vars = []
     opt2.labs = []
     opt2.roidat = []
@@ -37,11 +42,17 @@ arguments
     opt2.pthpre = []
     opt2.pth_roim_interactive = []
     opt2.normopt = []
-    opt2.vid = []
+    opt2.ftvid = []
     opt2.stimvid = []
     opt2.doplt = []
 end
 opt2 = glboropt(opt2);
+stack = opt2.stack;
+daq = opt2.daq;
+roi = opt2.roi;
+bmp = opt2.bmp;
+mdl = opt2.mdl;
+fmf = opt2.fmf;
 vars = opt2.vars;
 labs = opt2.labs;
 roidat = opt2.roidat;
@@ -55,8 +66,8 @@ epochts = opt2.epochts;
 pthpre = opt2.pthpre;
 pth_roim_interactive = opt2.pth_roim_interactive;
 normopt = opt2.normopt;
-vid = opt2.vid;
 stimvid = opt2.stimvid;
+ftvid = opt2.ftvid;
 doplt = opt2.doplt;
 
 [opt, pthstack, doplt] = fset('pltx', opt, pthstack, doplt);
@@ -98,9 +109,7 @@ end
 
 
 drvid = dr;
-
 dool = 1; %do overlay hard coded for now
-
 gif_scope = 'allv_eache'; %'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
@@ -141,7 +150,8 @@ marginfg = [0.07,0.05];
 splitfrac = 0.55;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='minimize');
 
-cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
+maxnumvars = 8;%numel(fieldnames(vars));
+cols = brewermap(maxnumvars,'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
 
 if any(ismember(cols, [0 0 0], 'rows'))
@@ -158,24 +168,35 @@ end
 kpepidx = setdiff(1:numel(epochts), it);
 epochts(kpepidx) = 0;
 
+vid = [];
+vidrot = 0;
 if ~isempty(stimvid)
     vid = stimvid;
     vidrot = -90;
-    clear stimvid
-else
-    vidrot = 0;
+    stimvid = [];
+elseif ~isempty(ftvid)
+    vid = ftvid;
+    ftvid = [];
 end
 
 if ~isempty(vid)
     if ndims(vid)==2
-        % vid = vid(:,it);
+        vid = reshape(vid, size(vid,1), 1, 1, size(vid,2)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     elseif ndims(vid)==3
-        % vid = vid(:,:,it);
         vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    % vid = rand(10,10,numel(it));
     vid = rand(10,10,size(stack, 4));
+end
+
+if size(vid, ndims(vid))~=size(stack, ndims(stack))
+    error("stack and vid do not have the same number of frames")
+end
+
+fn = fieldnames(roi);
+for k = 1:numel(fn)
+    var{k} = roi.(fn{k}).dat.ts;
+
 end
 
 vars = struct2cell(vars);

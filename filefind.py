@@ -9,7 +9,7 @@ from itertools import product
 import collections
 from pathlib import Path
 import ast
-from pthmakepy import pathscopafind
+from pthmake import pathscopaget
 
 
 def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
@@ -195,7 +195,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             if pth_daq:
                 pth_daq = pth_daq[0]
 
-            pthscopa = pathscopafind()
+            pthscopa = pathscopaget()
             pth_opt_pattern = pthscopa + 'opt_*_*_*_.txt' # copy all opt files from server to O2 
             pth_opt = glob.glob(pth_opt_pattern)
                 

@@ -21,7 +21,7 @@ if isempty(optcm)
     optcm = tmp.cm;
 end
 
-pthscopa = pathscopafind();
+pthscopa = pathscopaget();
 
 try %run python directly from matlab (ie not using system command to control a shell)
     petmp = pyenv;

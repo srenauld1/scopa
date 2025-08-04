@@ -100,7 +100,7 @@ if isempty(style)
     style = "GradientOpacity";
 end
 if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
+    pthgif = pathauto(suffix='.gif', usetime=1);
 end
 
 

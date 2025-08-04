@@ -54,7 +54,7 @@ end
 
 %%%% load defaults %%%%
 
-pthscopa = pathscopafind();
+pthscopa = pathscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
@@ -456,7 +456,7 @@ if fill
     %%%% this global may or may not be automatically derived (from vbin 'spec'), depending on where this is being run %%%%
     if isempty(glb('pthparent'))
         if ( isfield(o, 'spec') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^spec$|\.spec$|^spec(\.){1}\w+$)'))) )
-            pthparent = pathparentfind(o.spec.pthparent_local, o.spec.pthparent_o2);
+            pthparent = pathparentget(o.spec.pthparent_local, o.spec.pthparent_o2);
             glb(pthparent=pthparent)
         end
     end

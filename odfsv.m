@@ -7,7 +7,7 @@ arguments
     pthopt = []
 end
 
-pthscopa = pathscopafind();
+pthscopa = pathscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
@@ -121,7 +121,7 @@ d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default
 d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
 d.sld.savemem = 0; %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
 
-%% ftv (ftvpr: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
+%% ftv (ftvalign: load, align, resample fictrac video, hack that is only useful if video framees are not on daq)
 
 d.ftv.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
 d.ftv.smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)

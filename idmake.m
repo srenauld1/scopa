@@ -39,16 +39,17 @@ for k = 1:numel(pthstacks)
 
 
 
-    datefly_hyphen = [recdate '-' fly];
     recid = [recdate '_' fly '_' trial];
     if isempty(suffix)
         stackid = '';
         pthstacktmp = ''; %since we don't know suffix, you must haver passed in pthrec, so make pthstack empty
+        pthpre = '';
     else
         if strcmp(suffix(end), '_')
             suffix = suffix(1:end-1);
         end
         stackid = [recdate '_' fly '_' trial '_' suffix];
+        pthpre = [pthstackdir stackid '_'];
     end
 
     id(k).recdate = recdate;
@@ -64,6 +65,8 @@ for k = 1:numel(pthstacks)
 
     id(k).pthstackdir = pthstackdir;
     id(k).pthstack = pthstacktmp;
+    id(k).pthpre = pthpre;
     id(k).pthrec = [pthstackdir recid];
+
 
 end

@@ -1,4 +1,4 @@
-function pthparent = pathparentfind(pthparent_local, pthparent_o2)
+function pthparent = pathparentget(pthparent_local, pthparent_o2)
 
 arguments
     pthparent_local = []
@@ -8,7 +8,7 @@ if isempty(pthparent_local)
     if isempty(pthparent_o2)
         fprintf("YOU HAVE NOT SET pthparent_local, OR pthparent_o2, SO YOU WILL NOW BE PROMPTED TO CHOOSE DIRECTORY" + newline + "THE DIRECTORY YOU CHOOSE WILL BE THE ROOT DIRECTORY FOR STACK SEARCH" + newline)
         pause(2)
-        pthparent_local = uigetdir(pathscopafind, 'choose directory to search for stacks');
+        pthparent_local = uigetdir(pathscopaget, 'choose directory to search for stacks');
     else
         fprintf("you have set pthparent_o2 but not pthparent_local, assuming it is intentional and treating pthparent_o2 as your 'local'" + newline)
         pthparent_local = pthparent_o2;
@@ -25,7 +25,7 @@ envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
     if isempty(pthparent_o2)
         fprintf("O2 parent path not specified, using default path based on parent folder name" + newline)
-        pthscopa = pathscopafind();
+        pthscopa = pathscopaget();
         spl = strsplit(pthscopa, filesep);
         username = cell2mat(spl(find(contains(spl, 'home'))+1));
         if isempty(username)

@@ -26,7 +26,7 @@ end
 if isfield(opt, 'optid') && ~isempty(opt.optid)
     optidtmp = opt.optid; %set it aside in case it's the only field, and you have to load opt (which will remove optid)
     if all(strcmp(fieldnames(opt), 'optid')) %if optid is the only option, create the corresponding options
-        pthscopa = pathscopafind();
+        pthscopa = pathscopaget();
         scopausername = glb('scopausername');
         if isempty(scopausername)
             scopausername = userdatfile('scopausername');

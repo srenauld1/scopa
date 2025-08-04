@@ -1,4 +1,4 @@
-function [expMetadata, trialMetadata, patternMetadata, fictracMetadata, md] = mdflygld(pthmd, pthstack)
+function [expMetadata, trialMetadata, patternMetadata, fictracMetadata, mD] = mdflygld(pthmd, pthstack)
 
 % output the original flyg metadata division into expMetadata, trialMetadata, patternMetadata, fictracMetadata, and also struct md with a few fields used in scopa pipeline
 
@@ -119,8 +119,8 @@ end
 
 %% assign some metadata to scopa metadata struct 'md'
 
-md.rateft = fictracMetadata.fictracRate;
-md.ratedaq = mD.sampRate;
-md.balldia = patternMetadata.balldia;
+% md.rateft = fictracMetadata.fictracRate;
+% md.ratedaq = mD.sampRate;
+% md.balldia = patternMetadata.balldia;
 
 

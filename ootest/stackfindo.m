@@ -88,7 +88,7 @@ classdef stackfindo
             if isempty(pth)
 
                 if isempty(pthsib)
-                    pthparent = pathparentfind(pthparent_local, pthparent_o2);
+                    pthparent = pathparentget(pthparent_local, pthparent_o2);
                 else
                     if isfile(pthsib)
                         pthparent = fileparts(pthsib);

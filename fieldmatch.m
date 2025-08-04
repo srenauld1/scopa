@@ -10,7 +10,7 @@ example:
 %}
 
 arguments (Input)
-    s
+    s %struct, or path to struct saved with structfile
 end
 arguments (Input,Repeating)
     varargin %cell arrays {field name, value}
@@ -41,6 +41,14 @@ end
 multi = logical(multi);
 if isempty(delim)
     delim = '__';
+end
+
+if ~isstruct(s)
+    if isfile(s)
+        [~, ~, s] = structfile(s, s=[], nm=[], usegit=0, dosort=0);
+    else
+        error("s must be struct, or path to struct written to .txt file with 'structfile'")
+    end
 end
 
 sf = structflat(s, delim=delim);

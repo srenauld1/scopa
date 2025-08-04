@@ -69,7 +69,7 @@ end
 matlab_dimorder_char = 'yxz';
 
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
-pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
+pthdat = pathauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
 if size(stack,5)~=1 %don't index if channel dimension is singleton, it will create a (potentially large) temporary variable within this function pointlessly
     stack = stack(:,:,:,:,chanuse);
@@ -176,7 +176,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%
 
     if isempty(pthgif)
-        pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
+        pthgif = pathauto(suffix='.gif', usetime=1, usefun=1);
     end
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');

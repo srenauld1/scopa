@@ -181,7 +181,7 @@ if ~isempty(plt) && plt(1)
     end
     % eb2 = imgaussfilt(eb2, [0.1 0.1]);
 
-    % pthgif = pthauto(suffix='.gif', usetime=1);
+    % pthgif = pathauto(suffix='.gif', usetime=1);
     % hfg = figure;
     % hax = axes(Parent=hfg);
     % for k = 1:size(eb2,1)
