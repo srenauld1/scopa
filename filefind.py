@@ -9,7 +9,7 @@ from itertools import product
 import collections
 from pathlib import Path
 import ast
-from pthmake import pathscopaget
+from pathmake import pathscopaget
 
 
 def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 

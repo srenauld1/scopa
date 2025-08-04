@@ -7,7 +7,7 @@ from im_montage import im_montage
 import matplotlib.pyplot as plt
 from matplotlib.widgets  import RectangleSelector
 from ast import literal_eval
-from pthmake import pathscopaget
+from pathmake import pathscopaget
 
 
 def stackcrop(stack, rgname, pth_prefix, dims):
