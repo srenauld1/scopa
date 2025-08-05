@@ -1,11 +1,11 @@
-function [stack, rg] = stackcrop(stack, pthstack, rgname, opt)
+function [stack, rg] = stackcrop(stack, rgname, opt)
 
 % crop stack using user-defined cuboid (struct rg, abbreviation for region); rg saved to txt file
 
 arguments (Input)
     stack %stack, dim order yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid));
-    pthstack %path to stack
     rgname = [] %short name for region (rg, the stack after cropping)
+    opt.pthstack = [] %path to stack
     opt.scopausername = []
     opt.rgnamedf = []
     opt.usegit = []
@@ -17,10 +17,14 @@ arguments (Output)
 end
 
 opt = glboropt(opt);
+pthstack = opt.pthstack;
 scopausername = opt.scopausername;
 rgnamedf = opt.rgnamedf;
 usegit = opt.usegit;
 
+if isempty(pthstack)
+    error("name-value argument pthstack or glb('pthstack') must be nonempty")
+end
 if isempty(rgnamedf)
     rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
 end

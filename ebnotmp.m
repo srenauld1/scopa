@@ -375,7 +375,7 @@ if ~isempty(plt) && plt(1)
     end
 
     sznew = 40; %max(size(stackmnt));
-    stackeb = stackcrop(stack, glb('pthstack'), 'eb');
+    stackeb = stackcrop(stack, 'eb');
 
     stackeb = stackeb(:,:,:,tsubsamp);
 

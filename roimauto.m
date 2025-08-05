@@ -53,7 +53,7 @@ if isempty(maskname)
    maskname = 'none';
 end
 if isempty(rg)
-    [~, rg] = stackcrop(stack, pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
+    [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
 end
 rgname = rg.rgname;
 

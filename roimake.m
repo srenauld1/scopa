@@ -81,7 +81,7 @@ try
     if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
-    [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
+    [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack); %don't input or output stack here, just loading rg
     [~, mm] = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
@@ -106,7 +106,7 @@ catch ME
     %%%% CROP stack TO rg CUBOID %%%%
 
     if ~maskin
-        [stack, rg] = stackcrop(stack, pthstack, opt.rgname);
+        [stack, rg] = stackcrop(stack, opt.rgname, pthstack=pthstack);
     end
 
     stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (don't use glb('stackmnt') because that is the whole fov)

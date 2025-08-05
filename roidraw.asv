@@ -220,7 +220,8 @@ if draw_manual
         while szi <= numfig_per_loop
 
             [roimask_tmp, flag_quit_one_roi, flag_quit_all_rois, ir] = ...
-                roidraw_onefig(stackdraw, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, ir, szi, title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
+                roidraw_onefig(stack, stackmnt, it, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, ir, szi, ...
+                title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
 
             if flag_oneim || flag_allz
                 roimask_tmp2 = roimask_tmp;

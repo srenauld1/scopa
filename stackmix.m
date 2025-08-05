@@ -68,7 +68,7 @@ for k = 1:numpths
         if isempty(rgnames{k})
             error("rgnames is empty for this stack and no rg have been defined")
         end
-        stacktmp = stackcrop(stack, pthstacks{k}, rgnames{k});
+        stacktmp = stackcrop(stack, rgnames{k}, pthstack=pthstacks{k});
     end
     for q = 1:numel(fld)
         numrg = numrg+1;
@@ -101,7 +101,7 @@ sdf.z = sdf.z+1;
 stacknew = [];
 for k = 1:numpths
     for q = 1:3%numel(pthstacks{k})
-        stacktmp = stackcrop(stack, '/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_.mat', rgnames{q});
+        stacktmp = stackcrop(stack, rgnames{q}, '/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_.mat');
         stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
         % stacktmp = stackrs(stacktmp, like=stackebrot);
         stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);

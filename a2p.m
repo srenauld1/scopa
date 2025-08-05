@@ -18,7 +18,7 @@ for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
 
-    
+
     %% stack
 
     for m = transpose(fieldnames(o.sld))
@@ -80,7 +80,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% plots
+    %% interactive plots
 
     if o.mn.dopltx
         pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)

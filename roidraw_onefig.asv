@@ -142,9 +142,8 @@ idxf = 0;
 while true
     while true
         idxf = idxf+1;
-        idxf = mod(idxf-1, numel(it))+1;
         for k = 1:numel(h.st.hpl)
-            h.st.hpl{k}.CData = stack(:,:,k,it(idxf));
+            h.st.hpl{k}.CData = stack(:,:,k,it(idxf);
         end
 
         tmp = [];
