@@ -1,5 +1,5 @@
 
-function pltexp_dlgcb_fcn(hfg, event, varargin)
+function cb_dlg(hfg, event, varargin)
 
 ui.v = event.Source.String{event.Source.Value};
 hfg.UserData = ui;

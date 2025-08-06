@@ -8,9 +8,9 @@ function [h, framecount, cb] = axplt(h, stack, stackp, vid, framecount, varsp, .
 cdfool = repmat(reshape([1 0 0], 1, 1, 3), [128 256 1]);
 afool = repmat(0.4, [128 256 1]);
 vidcenflag = 0;
-clear roiolmake pltexp_process_callbacks
+clear roiolmake uicb
 
-cb = default_cbflags([], 'all'); %set all flags to default
+cb = cb_flagdf([], 'all'); %set all flags to default
 
 numvar = size(varsz, 1);
 numchan = size(varsp, 3);
@@ -43,13 +43,13 @@ vpmap_nonempty = find(varaxside);
 roiplotinds = find(~cellfun(@isempty, roipixindp));
 roipixindp_plane = {};
 for k = 1:numel(roiplotinds)
-    [inds2d,planeind]=ind2sub([size(stack_oneframe,1)*size(stack_oneframe,2, size(stack_oneframe,3))], roipixindp{roiplotinds(k)});
+    [inds2d, planeind] = ind2sub([size(stack_oneframe,1)*size(stack_oneframe,2, size(stack_oneframe,3))], roipixindp{roiplotinds(k)});
     for j = 1:numplane
         roipixindp_plane{k}{j} = inds2d(planeind==j);
     end
 end
 
-h.httl.String{1} = figure_title;
+h.ttl.String{1} = figure_title;
 
 while tloop
 
@@ -232,14 +232,14 @@ while tloop
         framecount = framecount + 1;
         drawnow
         if do_write_gif
-            fig2gif(h.hfg, framecount, pthgif) %write to gif
+            fig2gif(h.fg, framecount, pthgif) %write to gif
         end
 
 
         %%%% PROCESS USER INPUT CALLBACKS %%%%
         if doui
-            % cb = default_cbflags(cb, 'quick'); %set all 'quick' flags to default
-            [cb, h.httl.String{2}] = pltexp_process_callbacks(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
+            % cb = cb_flagdf(cb, 'quick'); %set all 'quick' flags to default
+            [cb, h.ttl.String{2}] = uicb(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
             tloop = 1;
         else
             tloop = 0;
@@ -265,7 +265,7 @@ while tloop
             pthgif = insertBefore(pthgif, '.gif', timestr_ui);
             force_do_write_gif = 1; %when restarting with new tinds, write to gif the first time through
             pause(0.2)
-            clear pltexp_process_callbacks
+            clear uicb
             break; %exit the t for loop and restart with different t, but same variables
         end
 

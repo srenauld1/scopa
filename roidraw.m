@@ -158,9 +158,9 @@ szo = size(stackmnt, [1 2 3]);
 %% show mean zt and decide if you still want to draw rois
 
 h = stackplt(stackmnzt, dmplt='yx', stackjust='center', szf=1, dosave=0);
-h.hfg.WindowStyle = 'Docked';
-h.httl.String = ['rgname "' rgname '", mean z, mean t'];
-figure(h.hfg)
+h.fg.WindowStyle = 'Docked';
+h.ttl.String = ['rgname "' rgname '", mean z, mean t'];
+figure(h.fg)
 
 if flag_oneroi
     prompt = sprintf("\n\n\nBecause you requested more than one automated roi, you will be limited to drawing a single roi " + newline + ...
@@ -178,6 +178,7 @@ draw_manual = input(prompt);
 if draw_manual
 
     prompt = sprintf("PRESS 1 TO DRAW ON EACH SLICE, PRESS 0 TO DRAW ON THE MEAN Z PROJECTION (SHOWN): ");
+    it = indsmake(-20, indsall=size(stack,4));
     draw_on_meanzt = ~input(prompt);
 
     if draw_on_meanzt
@@ -220,7 +221,8 @@ if draw_manual
         while szi <= numfig_per_loop
 
             [roimask_tmp, flag_quit_one_roi, flag_quit_all_rois, ir] = ...
-                roidraw_onefig(stackdraw, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, ir, szi, title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
+                roidraw_onefig(stack, stackmnt, it, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, ir, szi, ...
+                title_prefix=title_prefix, roialpha=roialpha, cmap=cmap, fontsize=fontsize, remove_overlap=remove_overlap);
 
             if flag_oneim || flag_allz
                 roimask_tmp2 = roimask_tmp;

@@ -59,12 +59,12 @@ else
     end
 end
 
-h.httl.String = {ttltmp};
-h.httl.FontSize = fontsize;
+h.ttl.String = {ttltmp};
+h.ttl.FontSize = fontsize;
 
 if flag_oneim && ~flag_rg
     ttltmp = {'THIS IS THE ONLY Z (OR Z MEAN)'};
-    h.httl.String = cat(1, h.httl.String, ttltmp);
+    h.ttl.String = cat(1, h.ttl.String, ttltmp);
 end
 
 if flag_rg || (flag_oneim && flag_single_roi_per_stack)
@@ -78,20 +78,20 @@ else
         %'backspoace: UNDO LAST POLYGON  ', ...
         ]};
 end
-h.httl.String = cat(1, h.httl.String, ttltmp);
+h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
 ttltmp = {'up/down: RESCALE CONTRAST,   '};
-h.httl.String = cat(1, h.httl.String, ttltmp);
+h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
 if ~flag_allz && ~(flag_oneim && flag_single_roi_per_stack) %discontiguous is default if allz displayed
     ttltmp = { [...
         '   s: NEXT SLICE,   ', ...
         'd/e: ENTER/EXIT XY DISCONTIGUOUS MODE', ...
         ]};
-    h.httl.String(end) = strcat(h.httl.String{end}, ttltmp);
+    h.ttl.String(end) = strcat(h.ttl.String{end}, ttltmp);
 end
 
-ndt = numel(h.httl.String); %number of lines in title initially
+ndt = numel(h.ttl.String); %number of lines in title initially
 
 numrows = size(stack,1);
 numcols = size(stack,2);
@@ -100,7 +100,7 @@ numrois_est = 200; % preallocate this many ROIs
 if numdimstack==2
     maskroi = zeros( numrows, numcols, numrois_est, 'single');
     maskroi_tmp = zeros( numrows, numcols, numrois_est, 'single');
-elseif numdimstack==3
+elseif numdimstack==3 || numdimstack==4
     numslice = size(stack,3);
     maskroi = zeros( numrows, numcols, numslice, numrois_est, 'single');
     maskroi_tmp = zeros( numrows, numcols, numslice, numrois_est, 'single');
@@ -131,26 +131,33 @@ flag_quit_all_rois = 0;
 flag_roi_drawn = 0;
 tmpFrame = [];
 scalefac = 1;
-flag_allow_rescale = 1;
 flag_base_message = 1;
 flag_xy_discontiguous = 0;
 flag_prequit = 0;
+flag_t = 0;
 tmp_ind = 1;
 imfocus = [];
+
+clear roiolmake uicb
+cb = cb_flagdf([], 'all'); %set all flags to default
+
 
 idxf = 0;
 while true
     while true
+
+        % [cb, h.ttl.String{2}] = uicb(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_use, sampinc);
+
+        tmp = [];
+        if ~isempty(h.fg.UserData) %capture key press on figure callback
+            tmp = h.fg.UserData;
+            h.fg.UserData = [];
+        end
+
         idxf = idxf+1;
         idxf = mod(idxf-1, numel(it))+1;
         for k = 1:numel(h.st.hpl)
             h.st.hpl{k}.CData = stack(:,:,k,it(idxf));
-        end
-
-        tmp = [];
-        if ~isempty(h.hfg.UserData) %capture key press on figure callback
-            tmp = h.hfg.UserData;
-            h.hfg.UserData = [];
         end
 
         if isempty(imfocus) %capture axis click to start roi draw
@@ -159,7 +166,6 @@ while true
                     imfocus = [imfocus k];
                     flag_do = 1;
                 end
-                % h.st.hpl{k}.UserData = [];
             end
         end
 
@@ -173,74 +179,55 @@ while true
         end
 
 
-        if flag_allow_rescale
-            if strcmpi(tmp, 'uparrow') || strcmpi(tmp, 'downarrow')
-                if strcmpi(tmp, 'uparrow')
-                    tmpd = -0.1;
-                else
-                    tmpd = 0.1;
-                end
-                scalefac = scalefac + tmpd;
-                for k = 1:numel(h.st.hpl)
-                    clim = h.st.hax{k}.CLim(2) + h.st.hax{k}.CLim(2)*tmpd;
-                    if clim<h.st.hax{k}.CLim(1)
-                        clim = h.st.hax{k}.CLim(1);
-                    end
-                    h.st.hax{k}.CLim(2) = clim;
-                end
-                h.httl.String{ndt+1} = ['RESCALED CONTRAST ' num2str(-1*round((scalefac - 1)*100)) ' %'];
-            end
-        end
-
         if flag_do
-            h.httl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
+            h.ttl.String{ndt+1} = ['DRAW NOW ON IMAGE ' num2str(imfocus) ' (CLICK=PLACE VERTEX, DRAG=ADJUST, DOUBLE-CLICK=FINISH)'];
             if flag_allz && ~(flag_oneim && flag_single_roi_per_stack)
-                h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
+                h.ttl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
             elseif flag_rg
-                h.httl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR ' title_prefix];
+                h.ttl.String{ndt+3} = ['BOUNDING BOX OF THE POLYGON YOU DRAW DEFINES XY LIMITS FOR ' title_prefix];
             else
                 if flag_oneim
                     if flag_single_roi_per_stack
                         if flag_allz
-                            h.httl.String{ndt+3} = ['THE ONE POLYGON YOU DRAW ON THIS IMAGE DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
+                            h.ttl.String{ndt+3} = ['THE ONE POLYGON YOU DRAW ON THIS IMAGE DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
                         else
-                            h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
+                            h.ttl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW DEFINES THE ONE AND ONLY ROI FOR ' title_prefix];
                         end
                     else
-                        h.httl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR ' title_prefix];
+                        h.ttl.String{ndt+3} = ['EACH POLYGON, AND EACH UNION OF XY DISCONTIGUOUS SUBROIS, WILL BE A DIFFERENT ROI, AND WILL COMPRISE ALL THE ROIS FOR FOR ' title_prefix];
                     end
                 else
                     if flag_single_roi_per_stack
-                        h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR ' title_prefix];
+                        h.ttl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS ONE CYCLE THROUGH THE STACK WILL COMPRISE THE ONE AND ONLY ROI FOR ' title_prefix];
                     else
-                        h.httl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS CYCLE THROUGH THE STACK WILL COMPRISE ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
+                        h.ttl.String{ndt+3} = ['UNION OF ALL POLYGONS YOU DRAW IN THIS CYCLE THROUGH THE STACK WILL COMPRISE ROI # ' num2str(ircumcurr) ' FOR ' title_prefix];
                     end
                 end
             end
-            % h.httl.String{ndt} = [];
+            % h.ttl.String{ndt} = [];
             flag_do = 0;
-            flag_allow_rescale = 0;
             flag_base_message = 1;
             h.st.hax{imfocus};
             tmpFrame = roipoly;
+            % tmpFrame = drawpolygon;
         end
 
 
         if strcmpi(tmp, 's') && ~flag_rg && ~flag_allz %&& ~flag_oneim
             flag_exit_this_figure = 1;
             tmpone = 'PRESSED "s", QUITTING THIS IMAGE';
-            h.httl.String{ndt+1} = tmpone;
+            h.ttl.String{ndt+1} = tmpone;
 
         elseif strcmpi(tmp, 'r') && ~flag_rg
             flag_do = 0;
             flag_quit_one_roi = 1;
             tmpone = 'PRESSED "r", QUITTING THIS ROI';
-            h.httl.String{ndt+1} = tmpone;
+            h.ttl.String{ndt+1} = tmpone;
             if 1 % tmp_ind>1
                 flag_roi_drawn = 1;
                 if numdimstack==2
                     maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
-                elseif numdimstack==3
+                elseif numdimstack==3 || numdimstack==4
                     maskroi(:, :, :, irtmp) = logical(sum(maskroi_tmp, 4));
                 end
                 irtmp = irtmp + 1;
@@ -251,12 +238,12 @@ while true
         elseif  strcmpi(tmp, 'q') %&& ~flag_rg
             flag_quit_all_rois = 1;
             tmpone = 'PRESSED "q", QUITTING ALL ROIS';
-            h.httl.String{ndt+1} = tmpone;
+            h.ttl.String{ndt+1} = tmpone;
             if 1 % tmp_ind>1
                 flag_roi_drawn = 1;
                 if numdimstack==2
                     maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
-                elseif numdimstack==3
+                elseif numdimstack==3 || numdimstack==4
                     maskroi(:, :, :, irtmp) = logical(sum(maskroi_tmp, 4));
                 end
                 irtmp = irtmp + 1;
@@ -266,12 +253,12 @@ while true
 
         elseif strcmpi(tmp, 'backspace') && irtmp>1
             % flag_undo = 1;
-            % h.httl.String{ndt+2} = 'PRESSED "backspace", REMOVED LAST ROI';
+            % h.ttl.String{ndt+2} = 'PRESSED "backspace", REMOVED LAST ROI';
 
         elseif strcmpi(tmp, 'd')
             if flag_xy_discontiguous==0 && ~flag_rg && ~flag_allz
                 flag_xy_discontiguous = 1;
-                h.httl.String{ndt+2} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
+                h.ttl.String{ndt+2} = 'ALLOWING DISCONTIGUOUS ROI, PRESS "e" TO EXIT DISCONTIGUOUS MODE';
             end
 
         elseif strcmpi(tmp, 'e') && ~flag_rg && ~flag_allz % pressed e
@@ -281,16 +268,15 @@ while true
                     flag_roi_drawn = 1;
                     if numdimstack==2
                         maskroi(:, :, irtmp) = logical(sum(maskroi_tmp, 3));
-                    elseif numdimstack==3
+                    elseif numdimstack==3 || numdimstack==4
                         maskroi(:, :, :, irtmp) = logical(sum(maskroi_tmp, 4));
                     end
                     irtmp = irtmp + 1;
                     maskroi_tmp(:) = 0;
                     tmp_ind = 1;
                 end
-                h.httl.String{ndt+2} = 'EXITED DISCONTIGUOUS MODE, RETURN WITH "d"';
+                h.ttl.String{ndt+2} = 'EXITED DISCONTIGUOUS MODE, RETURN WITH "d"';
             end
-
 
             % elseif strcmpi(tmp, 'o') && irtmp>20000 %remove pixels in current roi that belong to any other rois
             %     maskroi_cum = logical(sum(maskroi(:, :, 1:irtmp-2), 3));
@@ -304,30 +290,52 @@ while true
             %         maskroi(rw(cli), cl(cli), :) = 0; %do it this way
             %     end
 
+        elseif strcmpi(tmp, 't')
+            flag_t = 1;
+
+        elseif strcmpi(tmp, 't')
+            flag_t = 1;
+
+        elseif strcmpi(tmp, 'uparrow') || strcmpi(tmp, 'downarrow')
+            if strcmpi(tmp, 'uparrow')
+                tmpd = -0.1;
+            else
+                tmpd = 0.1;
+            end
+            scalefac = scalefac + tmpd;
+            for k = 1:numel(h.st.hpl)
+                clim = h.st.hax{k}.CLim(2) + h.st.hax{k}.CLim(2)*tmpd;
+                if clim<h.st.hax{k}.CLim(1)
+                    clim = h.st.hax{k}.CLim(1);
+                end
+                h.st.hax{k}.CLim(2) = clim;
+            end
+            h.ttl.String{ndt+1} = ['RESCALED CONTRAST ' num2str(-1*round((scalefac - 1)*100)) ' %'];
+
         end
 
 
         if flag_roi_drawn
             if flag_single_roi_per_figure
-                if strcmp(h.httl.String{ndt+1}, 'SELECT IMAGE WITH CLICK')
+                if strcmp(h.ttl.String{ndt+1}, 'SELECT IMAGE WITH CLICK')
                     xtmp{1} = 'SELECT IMAGE WITH CLICK';
-                    % h.httl.String{ndt+1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';
+                    % h.ttl.String{ndt+1} = 'YOU ARE LIMITED TO ONE POLYGON ON THIS IMAGE, PRESS "backspace" TO REDO IT, OR NAVIGATE WITH "q", "r" or "s"';
                     tmpone = 'YOU HAVE DRAWN THE ONLY ROI OR SUBROI ALLOWED ON THIS IMAGE';
-                    h.httl.String{ndt+1} = tmpone;
+                    h.ttl.String{ndt+1} = tmpone;
                 end
-                xtmp{2} = h.httl.String{ndt+2};
-                xtmp{3} = h.httl.String{ndt+2};
-                h.httl.String{ndt+2} = '';
-                h.httl.String{ndt+3} = '';
+                xtmp{2} = h.ttl.String{ndt+2};
+                xtmp{3} = h.ttl.String{ndt+2};
+                h.ttl.String{ndt+2} = '';
+                h.ttl.String{ndt+3} = '';
                 flag_do = 0;
                 % flag_prequit = 1;
                 % flag_quit_all_rois = 1;
                 flag_exit_this_figure = 1;
             else
-                h.httl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
-                h.httl.String{1} = regexprep(h.httl.String{1}, 'ROI #\d+', ['ROI #' num2str(irtmp)]);
-                h.httl.String{ndt+2} = '';
-                h.httl.String{ndt+3} = '';
+                h.ttl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
+                h.ttl.String{1} = regexprep(h.ttl.String{1}, 'ROI #\d+', ['ROI #' num2str(irtmp)]);
+                h.ttl.String{ndt+2} = '';
+                h.ttl.String{ndt+3} = '';
             end
         end
 
@@ -335,10 +343,10 @@ while true
         if flag_exit_this_figure || ...
                 flag_quit_all_rois || ...
                 (flag_quit_one_roi && ~flag_allz)
-            h.httl.String{1} = "CLOSING THIS FIGURE IN 1 SEC";
-            h.httl.String{ndt+1} = tmpone;
-            h.httl.String{ndt+2} = '';
-            h.httl.String{ndt+3} = '';
+            h.ttl.String{1} = "CLOSING THIS FIGURE IN 1 SEC";
+            h.ttl.String{ndt+1} = tmpone;
+            h.ttl.String{ndt+2} = '';
+            h.ttl.String{ndt+3} = '';
             pause(1)
             break;
         end
@@ -346,7 +354,7 @@ while true
         if ~isempty(tmpFrame)
             if numdimstack==2
                 maskroi_tmp(:,:,tmp_ind) = tmpFrame;
-            elseif numdimstack==3
+            elseif numdimstack==3 || numdimstack==4
                 maskroi_tmp(:,:,imfocus,tmp_ind) = tmpFrame;
             end
             tmpFrame = [];
@@ -354,7 +362,7 @@ while true
                 if ~isempty(h.st.hpl{k}.UserData)
                     if numdimstack==2
                         h.st.hol{k} = alphamask( maskroi_tmp(:, :, tmp_ind ), cmap(irtmp, :), roialpha, h.st.hax{k}, pickable=0); %this displays the roi/background overlay, outputs overlay object hol; pickable=0 to keep image pickable (not overlay)
-                    elseif numdimstack==3
+                    elseif numdimstack==3 || numdimstack==4
                         h.st.hol{k} = alphamask( maskroi_tmp(:, :, imfocus, tmp_ind ), cmap(irtmp, :), roialpha, h.st.hax{k}, pickable=0); %this displays the roi/background overlay, outputs overlay object hol; pickable=0 to keep image pickable (not overlay)
                     end
                     h.st.hpl{k}.UserData = [];
@@ -368,7 +376,7 @@ while true
                 flag_roi_drawn = 1;
                 if numdimstack==2
                     maskroi(:, :, irtmp) = maskroi_tmp(:,:,tmp_ind);
-                elseif numdimstack==3
+                elseif numdimstack==3 || numdimstack==4
                     maskroi(:, :, :, irtmp) = maskroi_tmp(:,:,:,tmp_ind);
                 end
                 irtmp = irtmp + 1;
@@ -379,9 +387,9 @@ while true
         % if flag_undo
         %     flag_undo = 0;
         %     if flag_prequit
-        %         h.httl.String{ndt+1} = xtmp{1};
-        %         h.httl.String{ndt+2} = xtmp{2};
-        %         h.httl.String{ndt+3} = xtmp{3};
+        %         h.ttl.String{ndt+1} = xtmp{1};
+        %         h.ttl.String{ndt+2} = xtmp{2};
+        %         h.ttl.String{ndt+3} = xtmp{3};
         %         flag_prequit = 0;
         %     end
         %     irtmp = irtmp - 1;
@@ -392,7 +400,7 @@ while true
 
         if flag_base_message
             if flag_undo==0
-                h.httl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
+                h.ttl.String{ndt+1} = 'SELECT IMAGE WITH CLICK';
             end
         end
 
@@ -422,7 +430,7 @@ if any(maskroi(:))
             ma(bi)=sum(vec(maskroi(:,:,bi)));
         end
         maskroi(:,:,[find(~ma)]) = [];
-    elseif numdimstack==3
+    elseif numdimstack==3 || numdimstack==4
         maskroi = maskroi(:, :, :, 1:irtmp);
         if remove_overlap %remove overlapping pixels
             [rw,cl,zs]=ind2sub([size(maskroi, 1) size(maskroi, 2) size(maskroi, 3)], find(sum(maskroi, 4)>1));
@@ -444,13 +452,13 @@ else
 
     if numdimstack==2
         maskroi = zeros( numrows, numcols);
-    elseif numdimstack==3
+    elseif numdimstack==3 || numdimstack==4
         maskroi = zeros( numrows, numcols, numslice);
     end
 
 end
 
-close(h.hfg);
+close(h.fg);
 
 
 end

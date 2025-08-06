@@ -1,39 +1,56 @@
-function [cb, ttl] = pltexp_process_callbacks(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_in, sampinc_in)
+function [cb, ttl] = uicb(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_in, sampinc_in)
 
 
-% valid sequences:
-%   pltexp_sequence_v (change plotted variable with index or stack image click):
-%       [ v, digits, [ i, [ digits, save ] ] ] enter
-%           OR
-%       [ v, digits, [ click, save ] ] enter
-%   pltexp_sequence_i (change stack image):
-%       [ i, c, digits, arrows ]
-%           OR
-%       [ i, [ click, save ] ] enter
-%   pltexp_sequence_t (change plotted t with digits or x-axis click):
-%       [ t [ digits, hyphen, digits, save ] ] enter
-%           OR
-%       [ t [ click, click, save ] ] enter
+%{
 
-% where brackets denote sub-sequences; sub-sequences can be repeated within their enclosing sequence sequence, but can equivalently be called but repeating the enclosing sequence; different sub-sequences, when multiple, can be mixed within a single enclosing sequence
-% where 'save' denotes any save-change button (n,a,c,d)
-% where 'digits' refer to the completed number, not each digit comprising it (which are registered one-at-a-time)
+user input callback processing 
 
-% init buttons are: v (modify current plot variable), t (modify plotted t)
-% pressing an init button erases any unsaved changes (changes that have not been finilized with a save button)
+valid sequences:
+  pltexp_sequence_v (change plotted variable with index or stack image click):
+      [ v, digits, [ i, [ digits, save ] ] ] enter
+          OR
+      [ v, digits, [ click, save ] ] enter
+  pltexp_sequence_i (change stack image):
+      [ i, c, digits, arrows ]
+          OR
+      [ i, [ click, save ] ] enter
+  pltexp_sequence_t (change plotted t with digits or x-axis click):
+      [ t [ digits, hyphen, digits, save ] ] enter
+          OR
+      [ t [ click, click, save ] ] enter
 
-% context buttons are: hyphen (sequence_t), r (sequence_v)
-% context buttons have only meaning after init and before save
+where brackets denote sub-sequences; sub-sequences can be repeated within their enclosing sequence sequence, but can equivalently be called but repeating the enclosing sequence; different sub-sequences, when multiple, can be mixed within a single enclosing sequence
+where 'save' denotes any save-change button (n,a,c,d)
+where 'digits' refer to the completed number, not each digit comprising it (which are registered one-at-a-time)
 
-% save buttons are: n (new), a (add), d (delete), c (concatenate)
-% save buttons save changes made in the current sequence
+init buttons are: v (modify current plot variable), t (modify plotted t)
+pressing an init button erases any unsaved changes (changes that have not been finilized with a save button)
 
-% stack image clicks select spherical roi centroids, with optional specification of radius using button r with digit; only relevant in sequence_v
+context buttons are: hyphen (sequence_t), r (sequence_v)
+context buttons have only meaning after init button and before save button
 
-% timeseries clicks (on x axis) select t plot range; after t or save, 1st click is tstart, 2nd is tstop; only relevant in sequence_t
+save buttons are: n (new), a (add), d (delete), c (concatenate)
+save buttons save changes made in the current sequence
 
-% todo: elaborate context buttons after roi click (like radius digit, etc)
+stack image clicks select spherical roi centroids, with optional specification of radius using button r with digit; only relevant in sequence_v
 
+timeseries clicks (on x axis) select t plot range; after t or save, 1st click is tstart, 2nd is tstop; only relevant in sequence_t
+
+TODO: elaborate context buttons after roi click (like radius digit, etc)
+
+%}
+
+arguments
+    cb
+    h
+    varsz
+    varsp
+    roiplotinds
+    roipixindp_plane
+    ti
+    tinds_in
+    sampinc_in
+end
 
 persistent sequence_init
 persistent changed_v
@@ -54,7 +71,7 @@ plot_buttons = {'return'};
 init_buttons = {'v', 'm',  't'};
 save_buttons = {'n', 'a', 'c', 'd'};
 
-if ~isempty( h.hfg.UserData) && ~isempty(h.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), h.st.hol))
+if ~isempty( h.fg.UserData) && ~isempty(h.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), h.st.hol))
     error("multiple callback buttons recorded; should only be one at a time")
 end
 
@@ -63,8 +80,8 @@ if numel(find(~cellfun(@(x) isempty(x.UserData), h.st.hol)))>1
 end
 
 
-user_input = h.hfg.UserData;
-h.hfg.UserData = [];
+user_input = h.fg.UserData;
+h.fg.UserData = [];
 
 if isempty(user_input)
     user_input = h.ts.hax{1}.UserData;
@@ -173,7 +190,7 @@ imalpha_affects_varalpha = 1;
 if imalpha_affects_varalpha && ~isempty(cb.val.imchan)
     cb.quick.varalpha(roiplotinds, cb.val.imchan) = val_varalpha(roiplotinds, cb.val.imchan)*max(val_imalpha(:,cb.val.imchan)); %by default, imalpha change (max across all planes) has proportional effect on varalpha (for roi variables)
     not_roiplotinds = setxor(1:size(cb.quick.varalpha,1), roiplotinds);
-    cb.quick.varalpha(not_roiplotinds, :) = val_varalpha(not_roiplotinds, :); %non-roi variables, if anything changed, apply to both columns if there's two 
+    cb.quick.varalpha(not_roiplotinds, :) = val_varalpha(not_roiplotinds, :); %non-roi variables, if anything changed, apply to both columns if there's two
 else
     cb.quick.varalpha = val_varalpha; %by default imalpha change has proportional effect on varalpha
 end

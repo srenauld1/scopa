@@ -55,8 +55,8 @@ ax = axarr(layout, marginax=marginax, marginfg=marginfg);
 
 widfac = 1;
 htfac = 1;
-h = initfig(szf=2);
-hfg = h.hfg;
+h = fg(szf=2);
+hfg = h.fg;
 
 sgtitle({ ...
     '1: measured (black), predicted (red), independent variable(s) (blue & green), train set'; ...

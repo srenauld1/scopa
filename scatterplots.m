@@ -98,12 +98,12 @@ for ei = 1:numel(epochinds_all)
                 if ~skipplot
 
                     if isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
-                        scatter_type = 'cartesian';
-                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        sctype = 'cartesian';
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     if ~isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
-                        scatter_type = 'polar';
-                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        sctype = 'polar';
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     indpolar_prev = polar_index;
 
@@ -524,17 +524,17 @@ end
 
 end
 
-function h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
+function h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
 dummyvec_lag = nan(numlags, 1);
 
 
-if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
+if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes that won't change
 
 
-    [dms,arat] = pxscreenget();
+    [dms,arat] = screenpx();
     szf = 0.75; 
 
     szftmp = figsz(szf);
@@ -658,7 +658,7 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     %%%%%%%%%%%% ASSIGN HANDLES TO OUTPUT STRUCT %%%%%%%%%%%%
 
-    h.hfg = hfg;
+    h.fg = hfg;
     h.htx = htx;
     h.haxbr = haxbr;
     h.haxts = haxts;
@@ -686,7 +686,7 @@ tmp_x_extent = ax(sector_ind).w(width_multiplier);
 tmp_y_extent = ax(sector_ind).h(height_multiplier);
 minextent = min(tmp_x_extent, tmp_y_extent); %force this axis to be square, without
 
-switch scatter_type
+switch sctype
 
     case 'cartesian'
 
@@ -697,7 +697,7 @@ switch scatter_type
             delete(h.hpllnp)
         end
 
-        haxscc = axes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscc = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
         haxscc.InnerPosition(1) = ax(sector_ind).x(spind);
         haxscc.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscc.InnerPosition(3) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
@@ -731,7 +731,7 @@ switch scatter_type
             delete(h.hplscc)
         end
 
-        haxscp = polaraxes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscp = polaraxes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
         haxscp.InnerPosition(1) = ax(sector_ind).x(spind);
         haxscp.InnerPosition(2) = ax(sector_ind).y(spind);
         haxscp.InnerPosition(3) = minextent;
@@ -1003,7 +1003,7 @@ for lagind = laginds_to_plot
 
     end
 
-    fig2gif(h.hfg, framecount, pthgif)
+    fig2gif(h.fg, framecount, pthgif)
 
 end
 

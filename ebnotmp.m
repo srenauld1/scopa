@@ -274,11 +274,11 @@ if ~isempty(plt) && plt(1)
 
 
     ax = axarr([1,1]);
-    h = initfig(szf=2);
+    h = fg(szf=2);
 
     subplot_ind = 1;
     htfac = 1;
-    h.st = initaxim(h.hfg, eb, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    h.st = axim(h.fg, eb, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
     hold(h.st.hax{1}, "on")
     h.st.hpl{1}.XData = t;
     % plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
@@ -300,7 +300,7 @@ if ~isempty(plt) && plt(1)
 
     % subplot_ind = 2;
     % htfac = 2;
-    % h.st = initaxim(h.hfg, eb2, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    % h.st = axim(h.fg, eb2, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
     % 
     % hold(h.st.hax{1}, "on")
     % h.st.hpl{1}.XData = t;
@@ -317,7 +317,7 @@ if ~isempty(plt) && plt(1)
 
 
     % subplot_ind = 1;
-    % h.ts = initaxts(h.hfg, no, ax=ax, t=t, subplot_ind=subplot_ind);
+    % h.ts = axts(h.fg, no, ax=ax, t=t, subplot_ind=subplot_ind);
 
     % title("eb pva blue, eb max(dv) red, cue yellow", Position=[0 1])
 
@@ -678,8 +678,8 @@ if ~isempty(plt) && plt(3)
 
     %%%%% PLOT %%%%%
 
-    h = initfig();
-    hax = axes(Parent=h.hfg);
+    h = fg();
+    hax = axes(Parent=h.fg);
     hold(hax, 'on')
     plot(hax, xrng, ftline, color=[0 0 0 fitlinealpha])
     scatter(hax, ballinvdvrs, bumpdvrs, sztmp, cmap, 'filled', MarkerFaceAlpha=facealpha);
@@ -695,7 +695,7 @@ if ~isempty(plt) && plt(3)
     title({[side ' glno derivative red neg blue pos black zero']; ['lagx: ' num2str(lagsampxy) ', lagz: ' num2str(lagsampz) ', epoch: ' epochstr]})
 
     % saveas(gcf, pthsv)
-    fig2gif(h.hfg, 1, [pthsv(1:end-4) '.gif']) %save as gif
+    fig2gif(h.fg, 1, [pthsv(1:end-4) '.gif']) %save as gif
 
 
 end

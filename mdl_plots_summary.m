@@ -44,7 +44,7 @@ supp_line_width = 2;
 num_grayscales_bg = 256; %arbitrary
 
 
-[dms,arat] = pxscreenget();
+[dms,arat] = screenpx();
 
 
 %% positions/sizes for detail plots on bottom (one row per epoch)

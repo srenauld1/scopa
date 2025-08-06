@@ -221,7 +221,7 @@ marginfg = 0.05;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg);
 
 
-[dms,arat] = pxscreenget();
+[dms,arat] = screenpx();
 
 szftmp = figsz(szf);
 hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');

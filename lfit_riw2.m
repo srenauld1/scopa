@@ -272,7 +272,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     splitfrac = 1;
     ax = axarr(layout=layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
 
-    [dms,arat] = pxscreenget();
+    [dms,arat] = screenpx();
 
     szf = 0.75;
     szftmp = figsz(szf);

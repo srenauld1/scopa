@@ -244,8 +244,8 @@ for k = 1:numel(oa) % loop over recordings
     cmap = cat(1, cmap, [0 0 0]); %add black
 
     % 
-    % h = initfig();
-    % h.ts = initaxts(h.hfg, glddvtmp, t=t, subplot_ind=1);
+    % h = fg();
+    % h.ts = axts(h.fg, glddvtmp, t=t, subplot_ind=1);
 
     figure;
     hold on;

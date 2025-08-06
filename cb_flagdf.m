@@ -1,4 +1,4 @@
-function cb = default_cbflags(cb, varargin)
+function cb = cb_flagdf(cb, varargin)
 
 if isempty(cb)
     if ~all(strcmp('all', varargin))

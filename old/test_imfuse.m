@@ -30,11 +30,11 @@ stack2 = stacksub(:,:,15,8,2);
 
 
 
-clear roiolmake pltexp_process_callbacks %clear persistent variables
+clear roiolmake uicb %clear persistent variables
 [imroi, imalpha] = roiolmake(stack1, roipixindp, col=roicol, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi = squeeze(imroi);
 
-clear roiolmake pltexp_process_callbacks %clear persistent variables
+clear roiolmake uicb %clear persistent variables
 [imroi2, imalpha2] = roiolmake(stack1, roipixindp2, col=roicol2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi2 = squeeze(imroi2);
 

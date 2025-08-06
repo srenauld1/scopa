@@ -1,10 +1,10 @@
-function hgroup = initaxts(hfg, ts, opt)
+function h = axts(ts, opt)
 
-%init axis for timeseries plotting; can have multiple timeseries and right and left axes
+%initialize axis for timeseries plotting; can have multiple timeseries and right and left axes
 
 arguments
-    hfg
     ts
+    opt.h = []
     opt.ax = []
     opt.labs = []
     opt.cols = []
@@ -18,10 +18,11 @@ arguments
     opt.ticklab = [];
     opt.lim = []
     opt.t = []
-    opt.doui = []
+    opt.doui = 0
     opt.varaxside = [] %length n vector of axis side indices for n timeseries; n=size(ts,1); axis side index is 1 for left, 2 for right, and 0 to skip plotting
     opt.notb = 0
 end
+h = opt.h;
 ax = opt.ax;
 labs = opt.labs;
 cols = opt.cols;
@@ -40,6 +41,9 @@ varaxside = opt.varaxside;
 notb = opt.notb;
 
 
+if isempty(h)
+    h = fg();
+end
 if isempty(ax)
     ax = axarr(1);
 end
@@ -87,29 +91,29 @@ dummyvec = nan(nsamp, 1);
 [ts_per_side, side_index] = hist(varaxside(varaxside~=0),unique(varaxside(varaxside~=0)));
 numaxids = numel(ts_per_side);
 
-hax = [];
-hpl = [];
-hlnx = [];
+h.ax = [];
+h.pl = [];
+h.lnx = [];
 
 for j = 1:numsubplot
 
-    hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    h.ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
     if colmaj
-        hax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-        hax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+        h.ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+        h.ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
     else
-        hax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-        hax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+        h.ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+        h.ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
     end
-    hax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
-    hax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
+    h.ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
+    h.ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
 
     if notb
-        hax{j}.Toolbar.Visible = 'off';
+        h.ax{j}.Toolbar.Visible = 'off';
     end
 
-    hold(hax{j}, 'on')
+    hold(h.ax{j}, 'on')
 
     ticktmp = cell(numaxids,1);
     formspec = cell(numaxids,1);
@@ -127,17 +131,17 @@ for j = 1:numsubplot
             cnt(fi) = cnt(fi)+1; %count of nonempty variables for each axis side index
 
             for c = 1:numchan
-                hpl{j}{fi}{cnt(fi)}{c} = plot(hax{j}, t, ts(k,:,c));
-                hpl{j}{fi}{cnt(fi)}{c}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
+                h.pl{j}{fi}{cnt(fi)}{c} = plot(h.ax{j}, t, ts(k,:,c));
+                h.pl{j}{fi}{cnt(fi)}{c}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
                 if c==1
-                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
+                    h.pl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
                 else
-                    hpl{j}{fi}{cnt(fi)}{c}.LineStyle = ':';
+                    h.pl{j}{fi}{cnt(fi)}{c}.LineStyle = ':';
                 end
             end
 
             if j==1
-                hax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
+                h.ax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
             end
 
             if cnt(fi)<ts_per_side(side_index==fi)
@@ -155,59 +159,55 @@ for j = 1:numsubplot
 
     for fi = 1:numaxids
 
-        hax{j}.YAxis(fi).Color = [0 0 0];
-        hax{j}.YAxis(fi).FontSize = fontsmall;
-        hax{j}.YAxis(fi).FontWeight = 'bold';
+        h.ax{j}.YAxis(fi).Color = [0 0 0];
+        h.ax{j}.YAxis(fi).FontSize = fontsmall;
+        h.ax{j}.YAxis(fi).FontWeight = 'bold';
 
         if dors
-            hax{j}.YAxis(fi).Limits = lim{k}.rspad(:,:,1);
-            hax{j}.YAxis(fi).TickValues = lim{k}.rs(:,:,1);
+            h.ax{j}.YAxis(fi).Limits = lim{k}.rspad(:,:,1);
+            h.ax{j}.YAxis(fi).TickValues = lim{k}.rs(:,:,1);
         else
             error("dors is currently required")
         end
 
         if j==1
-            hax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
+            h.ax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
         end
 
         if j==1
 
             if doui
-                hax{j}.ButtonDownFcn = @(src,evnt)ui_t_click_fcn(src,evnt);
-                hax{j}.PickableParts = 'visible';
-                hax{j}.HitTest = 'on';
+                h.ax{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
+                h.ax{j}.PickableParts = 'visible';
+                h.ax{j}.HitTest = 'on';
             end
 
-            hax{j}.XTick = round(linspace(0, max(t), numxtick));
-            for tlx = 1:numel(hax{j}.XTick)
-                if tlx==numel(hax{j}.XTick)
-                    hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx)) ' sec'];
+            h.ax{j}.XTick = round(linspace(0, max(t), numxtick));
+            for tlx = 1:numel(h.ax{j}.XTick)
+                if tlx==numel(h.ax{j}.XTick)
+                    h.ax{j}.XTickLabel{tlx} = [num2str(h.ax{j}.XTick(tlx)) ' sec'];
                 else
-                    hax{j}.XTickLabel{tlx} = [num2str(hax{j}.XTick(tlx))];
+                    h.ax{j}.XTickLabel{tlx} = [num2str(h.ax{j}.XTick(tlx))];
                 end
             end
         
         end
 
-        hax{j}.XAxis.FontSize = fontmedium;
-        hax{j}.XAxis.TickLength(1) = 0.005;
+        h.ax{j}.XAxis.FontSize = fontmedium;
+        h.ax{j}.XAxis.TickLength(1) = 0.005;
 
-        hax{j}.Box = 'off';
-        % hax{j}.Color = 'k'; %axis background color
-        % hax{j}.XLabel.String = '';
+        h.ax{j}.Box = 'off';
+        % h.ax{j}.Color = 'k'; %axis background color
+        % h.ax{j}.XLabel.String = '';
 
-        hlnx{j} = line(hax{j}, [nan nan], hax{j}.YAxis(1).Limits, 'color', 'k', 'LineStyle','-');
+        h.lnx{j} = line(h.ax{j}, [nan nan], h.ax{j}.YAxis(1).Limits, 'color', 'k', 'LineStyle','-');
 
-        hold(hax{j}, 'off')
+        hold(h.ax{j}, 'off')
     
     end
 
 end
 
-
-hgroup.hax = hax;
-hgroup.hpl = hpl;
-hgroup.hlnx = hlnx;
 
 
 end

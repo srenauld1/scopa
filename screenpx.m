@@ -1,4 +1,4 @@
-function [xypx, xyrat] = pxscreenget()
+function [xypx, xyrat] = screenpx()
 
 % get current screen xy number pixels, also output w/h aspect ratio 
 

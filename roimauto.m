@@ -558,8 +558,8 @@ function [roicen_nonuniform, midx, midy] = drawcent(stack, drawslice, numroi)
 if isempty(drawslice)
 
     ax = axarr(stack);
-    h = initfig();
-    h.st = initaxim(h.hfg, stack, ax=ax, doui=1);
+    h = fg();
+    h.st = axim(h.fg, stack, ax=ax, doui=1);
 
     user_input = [];
     roicen_nonuniform = {};

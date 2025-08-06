@@ -175,7 +175,7 @@ else
     end
 end
 
-if isequal(dm_eachframe(1), 'x')% || isequal(dm_eachframe(1), 'z') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim
+if isequal(dm_eachframe(1), 'x')% || isequal(dm_eachframe(1), 'z') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in axim
     ydir = 'normal';
 else
     ydir = 'reverse';
@@ -396,8 +396,8 @@ end
 %% init subplots
 
 ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
-h = initfig(fontsz=fontsz, szf=szf);
-h.st = initaxim(h.hfg, stack, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
+h = fg(fontsz=fontsz, szf=szf);
+h.st = axim(h.fg, stack, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 
 %% plot
 
@@ -441,10 +441,10 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
 
         end
 
-        h.httl.String = titlenew{cnt};
+        h.ttl.String = titlenew{cnt};
 
         if dosave
-            fig2gif(h.hfg, cnt, pthgif, numcolorsgif) %save each frame to gif
+            fig2gif(h.fg, cnt, pthgif, numcolorsgif) %save each frame to gif
         end
 
     end

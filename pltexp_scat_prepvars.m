@@ -1,4 +1,4 @@
-function [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc_sc, ccr, pval_norm, laginds_to_plot] = ...
+function [init_scatter, sctype, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc_sc, ccr, pval_norm, laginds_to_plot] = ...
     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, vars, labs, cols, threshold_data, ...
     varaxside_use, plot_z_as_color, polarinds, numsamp_max, zero_lag_index, ...
     lags_to_plot, pval_siglev, bar_contrast)
@@ -26,7 +26,7 @@ if numel(nonempty_plotinds)<2
     ccr = [];
     pval_norm = [];
     laginds_to_plot = [];
-    scatter_type = [];
+    sctype = [];
     sprintf("SKIPPING BAR PLOT BECAUSE X AND/OR Y IS EMPTY")
     return;
 elseif numel(nonempty_plotinds)==2 %update some vars if z turns out to be empty, or if reqauested 2d scatterplot
@@ -42,9 +42,9 @@ end
 polarinds = polarinds(scinds);
 
 if any(polarinds)
-    scatter_type = 'polar';
+    sctype = 'polar';
 else
-    scatter_type = 'cartesian';
+    sctype = 'cartesian';
 end
 
 if ~isequal(polarinds, polarinds_prev)

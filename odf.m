@@ -442,7 +442,7 @@ if fill
 
     %%%% these globals should not be edited by the user in general, so they take values from d (output from odfsv) %%%%
     if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
-        xyscreen = pxscreenget;
+        xyscreen = screenpx;
         glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
     end
 

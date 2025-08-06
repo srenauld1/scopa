@@ -7,7 +7,7 @@ arguments
 end
 
 
-[dms,arat] = pxscreenget();
+[dms,arat] = screenpx();
 
 szf = dms;
 if sz<=1

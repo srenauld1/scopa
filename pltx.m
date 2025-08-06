@@ -291,7 +291,7 @@ while plotloop %loop is turned off if no user input
                 varaxside_use = flag_empty_timeseries(varsp, varaxside, timedim);
 
                 "WARNING HARD CODING CHANNEL 1 FOR PREPVARS SCAT"
-                [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
+                [init_scatter, sctype, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
                     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp(:,:,1), labsp, cols, threshold_data, varaxside_use, ...
                     plot_z_as_color, polarinds, numsamp_tslong_this_gif, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
 
@@ -312,19 +312,19 @@ while plotloop %loop is turned off if no user input
                     framecount = 0;
 
 
-                    h = initfig(h=h, doui=doui, gifvis=gifvis, szf=1);
+                    h = fg(h=h, doui=doui, gifvis=gifvis, szf=1);
 
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    h.st = initaxim(h.hfg, stack, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
+                    h.st = axim(h.fg, stack, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
 
 
                     sector_ind = 1;
                     subplot_ind = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    h.ts = initaxts(h.hfg, ax, doui, numsamp_tslong_this_gif, varaxside_use, t, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, dors);
+                    h.ts = axts(h.fg, ax, doui, numsamp_tslong_this_gif, varaxside_use, t, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, dors);
 
 
                     sector_ind = 1;
@@ -335,17 +335,17 @@ while plotloop %loop is turned off if no user input
                     drvid = [0 1];
                     douivid = 1;
                     doolvid = 1;
-                    h.vid = initaxim(h.hfg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
+                    h.vid = axim(h.fg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
 
 
                 end
 
-                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed scatter_type (other plots aren't like this)
+                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed sctype (other plots aren't like this)
                     sector_ind = 1;
                     subplot_ind = 14;
                     widfac = 1;
                     htfac = 1;
-                    h.sc = initaxsc(h.hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
+                    h.sc = axsc(h.fg, ax, doui, sctype, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
                 end
 
 
