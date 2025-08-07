@@ -2852,6 +2852,44 @@
       "tg": []
     }
   },
+  "a90": {
+    "cm": {},
+    "docm": 0,
+    "doma": 1,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 1.5
+    },
+    "mm": {
+      "maskname": "eb4545",
+      "methodmm": "all"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "eb",
+    "sp": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044540",
