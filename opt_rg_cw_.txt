@@ -887,6 +887,18 @@
     "t": [1,44283],
     "c": [1,1]
   },
+  "a75": {
+    "id": "20250809_1_1_gar",
+    "recdatenum": 2.0250809E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "gar",
+    "y": [20,28],
+    "x": [5,17],
+    "z": [15,23],
+    "t": [1,44283],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
