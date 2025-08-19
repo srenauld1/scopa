@@ -21,6 +21,7 @@ arguments
     opt.doui = 0
     opt.varaxside = [] %length n vector of axis side indices for n timeseries; n=size(ts,1); axis side index is 1 for left, 2 for right, and 0 to skip plotting
     opt.notb = 0
+    opt.nm = 'ts'
 end
 h = opt.h;
 ax = opt.ax;
@@ -39,16 +40,29 @@ t = opt.t;
 doui = opt.doui;
 varaxside = opt.varaxside;
 notb = opt.notb;
-
+nm = opt.nm;
 
 if isempty(h)
     h = fg();
 end
+if isfield(h, 'fg') && ~isscalar(h.fg)
+    error("h.fg input to axim must be scalar (choose one figure to initialize the axis)")
+end
+if isfield(h, nm)
+    q = numel(h.(nm));
+else
+    q = 0;
+end
+q = q+1;
+
 if isempty(ax)
     ax = axarr(1);
 end
 if isempty(labs)
     labs = repelem({''}, size(ts,1));
+end
+if isvector(ts) && iscolumn(ts)
+    ts = ts(:)'; %make sure time is 2nd dim, since time is often what we're plotting and scopa convention makes time 2nd dim
 end
 if isempty(t)
     t = 1:size(ts,2);
@@ -86,34 +100,34 @@ end
 fontsmall = fontsz(1);
 fontmedium = fontsz(2);
 
-dummyvec = nan(nsamp, 1);
+dummyvec = nan(1,nsamp);
 
 [ts_per_side, side_index] = hist(varaxside(varaxside~=0),unique(varaxside(varaxside~=0)));
 numaxids = numel(ts_per_side);
 
-h.ax = [];
-h.pl = [];
-h.lnx = [];
+h.(nm)(q).ax = [];
+h.(nm)(q).pl = [];
+h.(nm)(q).lnx = [];
 
 for j = 1:numsubplot
 
-    h.ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+    h.(nm)(q).ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
     if colmaj
-        h.ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-        h.ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
     else
-        h.ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-        h.ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
     end
-    h.ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
-    h.ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
+    h.(nm)(q).ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
+    h.(nm)(q).ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
 
     if notb
-        h.ax{j}.Toolbar.Visible = 'off';
+        h.(nm)(q).ax{j}.Toolbar.Visible = 'off';
     end
 
-    hold(h.ax{j}, 'on')
+    hold(h.(nm)(q).ax{j}, 'on')
 
     ticktmp = cell(numaxids,1);
     formspec = cell(numaxids,1);
@@ -131,17 +145,17 @@ for j = 1:numsubplot
             cnt(fi) = cnt(fi)+1; %count of nonempty variables for each axis side index
 
             for c = 1:numchan
-                h.pl{j}{fi}{cnt(fi)}{c} = plot(h.ax{j}, t, ts(k,:,c));
-                h.pl{j}{fi}{cnt(fi)}{c}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
+                h.(nm)(q).pl{j}{fi}{cnt(fi)}{c} = plot(h.(nm)(q).ax{j}, t, ts(k,:,c));
+                h.(nm)(q).pl{j}{fi}{cnt(fi)}{c}.Color = [cols(k,:) 1]; %append 4th element for transparency; this works even though it will not appear in the color property when you check it
                 if c==1
-                    h.pl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
+                    h.(nm)(q).pl{j}{fi}{cnt(fi)}{c}.LineStyle = '-';
                 else
-                    h.pl{j}{fi}{cnt(fi)}{c}.LineStyle = ':';
+                    h.(nm)(q).pl{j}{fi}{cnt(fi)}{c}.LineStyle = ':';
                 end
             end
 
             if j==1
-                h.ax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
+                h.(nm)(q).ax{j}.YAxis(fi).Label.String{cnt(fi)} = sprintf('\\color[rgb]{%f, %f, %f}%s', cols(k,:), [num2str(k) '. ' labs{k}]);
             end
 
             if cnt(fi)<ts_per_side(side_index==fi)
@@ -159,50 +173,50 @@ for j = 1:numsubplot
 
     for fi = 1:numaxids
 
-        h.ax{j}.YAxis(fi).Color = [0 0 0];
-        h.ax{j}.YAxis(fi).FontSize = fontsmall;
-        h.ax{j}.YAxis(fi).FontWeight = 'bold';
+        h.(nm)(q).ax{j}.YAxis(fi).Color = [0 0 0];
+        h.(nm)(q).ax{j}.YAxis(fi).FontSize = fontsmall;
+        h.(nm)(q).ax{j}.YAxis(fi).FontWeight = 'bold';
 
         if dors
-            h.ax{j}.YAxis(fi).Limits = lim{k}.rspad(:,:,1);
-            h.ax{j}.YAxis(fi).TickValues = lim{k}.rs(:,:,1);
+            h.(nm)(q).ax{j}.YAxis(fi).Limits = lim{k}.rspad(:,:,1);
+            h.(nm)(q).ax{j}.YAxis(fi).TickValues = lim{k}.rs(:,:,1);
         else
             error("dors is currently required")
         end
 
         if j==1
-            h.ax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
+            h.(nm)(q).ax{j}.YAxis(fi).TickLabels = strtrim(sprintf(formspec{fi}, ticktmp{fi}{:}));
         end
 
         if j==1
 
             if doui
-                h.ax{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
-                h.ax{j}.PickableParts = 'visible';
-                h.ax{j}.HitTest = 'on';
+                h.(nm)(q).ax{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
+                h.(nm)(q).ax{j}.PickableParts = 'visible';
+                h.(nm)(q).ax{j}.HitTest = 'on';
             end
 
-            h.ax{j}.XTick = round(linspace(0, max(t), numxtick));
-            for tlx = 1:numel(h.ax{j}.XTick)
-                if tlx==numel(h.ax{j}.XTick)
-                    h.ax{j}.XTickLabel{tlx} = [num2str(h.ax{j}.XTick(tlx)) ' sec'];
+            h.(nm)(q).ax{j}.XTick = round(linspace(0, max(t), numxtick));
+            for tlx = 1:numel(h.(nm)(q).ax{j}.XTick)
+                if tlx==numel(h.(nm)(q).ax{j}.XTick)
+                    h.(nm)(q).ax{j}.XTickLabel{tlx} = [num2str(h.(nm)(q).ax{j}.XTick(tlx)) ' sec'];
                 else
-                    h.ax{j}.XTickLabel{tlx} = [num2str(h.ax{j}.XTick(tlx))];
+                    h.(nm)(q).ax{j}.XTickLabel{tlx} = [num2str(h.(nm)(q).ax{j}.XTick(tlx))];
                 end
             end
         
         end
 
-        h.ax{j}.XAxis.FontSize = fontmedium;
-        h.ax{j}.XAxis.TickLength(1) = 0.005;
+        h.(nm)(q).ax{j}.XAxis.FontSize = fontmedium;
+        h.(nm)(q).ax{j}.XAxis.TickLength(1) = 0.005;
 
-        h.ax{j}.Box = 'off';
-        % h.ax{j}.Color = 'k'; %axis background color
-        % h.ax{j}.XLabel.String = '';
+        h.(nm)(q).ax{j}.Box = 'off';
+        % h.(nm)(q).ax{j}.Color = 'k'; %axis background color
+        % h.(nm)(q).ax{j}.XLabel.String = '';
 
-        h.lnx{j} = line(h.ax{j}, [nan nan], h.ax{j}.YAxis(1).Limits, 'color', 'k', 'LineStyle','-');
+        h.(nm)(q).lnx{j} = line(h.(nm)(q).ax{j}, [nan nan], h.(nm)(q).ax{j}.YAxis(1).Limits, 'color', 'k', 'LineStyle','-');
 
-        hold(h.ax{j}, 'off')
+        hold(h.(nm)(q).ax{j}, 'off')
     
     end
 

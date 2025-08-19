@@ -21,6 +21,7 @@ if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes
     h.fg.Position = [0 0 szftmp];
 
     if doui
+        
         h.fg.KeyPressFcn = @(src,evnt)cb_key(src,evnt);
 
         % h.fgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
@@ -29,6 +30,7 @@ if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes
         % uib.Position = [0 0 1 1];
         % uib.Callback = @(src,evnt)cb_dlg(src,evnt,fnuic,fnuis); 
         % uib.String = labsp;
+
     end
 
     h.axm = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;

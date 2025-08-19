@@ -25,11 +25,11 @@ note: if you pass in something that isn't an image in place of stack in layout, 
 arguments
     layout %cell array of vectors; cell element n (vector n), if length 2, denotes number of rows and columns, respectively, for sector n; if not length 2, it is considered a stack of images, and by default k images are arranged, where k is size of 3rd dim 
     opt.marginax double = 0.03 %scalar or vector; element n denotes x and y margins between axes in sector n; if scalar, while numrow and numcol are vector, will apply scalar to all sectors; no effect if there is only one plot
-    opt.marginfg double = 0.03 %scalar; margins of entire figure (not sectors)
+    opt.marginfg double = 0.03 %scalar or length 4 vector or cell of scalars or length 4 vectors; margins of entire figure (not sectors); if scalar, applies to all 4 margins, all sectors; if cell, each element for different sector; if vector, its [ybottom, ytop, xleft, xright] if ydir is down (default), [ytop, ybottom, xleft, xright] if ydir is up
     opt.splitdim char = 'x' %'x', or 'y', denoting whether sector(s) created by split along x or y axis; if y, first element of layout refers to the bottom sector (direction is up)
     opt.splitfrac double = []  %scalar or vector denoting each sector's fraction of splitdim extent; if num_sectors==1, default is 1; if num_sectors>1, default if is even split among num_sectors
     opt.ydir char = 'down' %'up' or 'down'; direction of y position indices
-    opt.stackjust = 'none' %'none', 'center', 'minimize'
+    opt.stackjust = 'mid' % horizontal and vertical justification of stack, if any stack input; 'min', 'mid', 'max'; min is left / bottom, max is right / top, mid it middle
 end
 marginax = opt.marginax;
 marginfg = opt.marginfg;
@@ -69,11 +69,20 @@ end
 if isempty(marginfg) %handle empty argument for marginfg (not handled in arguments block above)
     marginfg = 0.03;
 end
-if numel(marginfg)==1
+if ~iscell(marginfg)
+    if isscalar(marginfg)
+        marginfg = repelem(marginfg, 4); %repeat singleton marginfg to match num_sectors
+    end
+    if numel(marginfg)~=4
+        error("marginfg must be scalar or length 4 vector, or cell of length matching number sectors, with each element scalar or length 4 vector")
+    end
+    marginfg = {marginfg};
+end
+if isscalar(marginfg)
     marginfg = repelem(marginfg, num_sectors); %repeat singleton marginfg to match num_sectors
 end
 if num_sectors~=numel(marginfg)
-    error("margins fig length must be 1 or numel(num_sectors)")
+    error("margins fig length must be 1 or num_sectors")
 end
 if isempty(marginax) %handle empty argument for marginax (not handled in arguments block above)
     marginax = repelem(0.03, num_sectors);
@@ -94,15 +103,15 @@ for k = 1:num_sectors
     end
     splitfracfull(k).x = 1;
     splitfracfull(k).y = 1;
-    margins_fig_full(k).x = [marginfg(k) marginfg(k)];
-    margins_fig_full(k).y = [marginfg(k) marginfg(k)];
+    margins_fig_full(k).x = [marginfg{k}(3) marginfg{k}(4)];
+    margins_fig_full(k).y = [marginfg{k}(1) marginfg{k}(2)];
     if num_sectors>1
         if k==1
-            margins_fig_full(k).(splitdim) = [marginfg(k) 0];
+            margins_fig_full(k).(splitdim)(2) = 0;
         elseif k==num_sectors
-            margins_fig_full(k).(splitdim) = [0 marginfg(k)];
+            margins_fig_full(k).(splitdim)(1) = 0;
         else
-            margins_fig_full(k).(splitdim) = [0 0];
+            margins_fig_full(k).(splitdim)(:) = 0;
         end
     end
     if k==num_sectors && num_sectors>1 && numel(splitfrac)==num_sectors-1 %fill in final splitfrav if user omitted it
@@ -118,11 +127,11 @@ for k = 1:num_sectors
 
     [ax(k), maxpos] = arrange_subplots_onesector(subplot_layout_struct(k), margins_fig_full(k), marginax(k), splitfracfull(k), startpos);
 
-    if isfield(subplot_layout_struct(k), 'stack') && ~strcmp(stackjust, 'none') %center 'stack' subplot group
-        if strcmp(stackjust, 'center')
-            justfac = 2;
-        elseif strcmp(stackjust, 'minimize')
+    if isfield(subplot_layout_struct(k), 'stack') && ~strcmp(stackjust, 'min') %justify stack subplot group; min does not require position adjustment, while mid and max do
+        if strcmp(stackjust, 'max')
             justfac = 1;
+        elseif strcmp(stackjust, 'mid')
+            justfac = 2;
         end
         ax(k).x = ax(k).x + (ax(k).x(1)+(maxpos.x-ax(k).x(1))/justfac) - (ax(k).x(1)+ax(k).w(end)/justfac); %actual x center plus goal x center minus actual x center
         ax(k).y = ax(k).y + (ax(k).y(1)+(maxpos.y-ax(k).y(1))/justfac) - (ax(k).y(1)+ax(k).h(end)/justfac); %actual y center plus goal y center minus actual y center
@@ -145,7 +154,7 @@ for k = 1:num_sectors
     ax(k).y = tmp(:,2);
 
     ax(k).marginax = marginax(k);
-    ax(k).marginfg = marginfg(k);
+    ax(k).marginfg = marginfg{k};
     
     ax(k).numsubplot = numel(ax(k).x);
     [~, uu1, uu2] = unique(ax(k).x);

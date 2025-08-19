@@ -1,7 +1,7 @@
 
-function [vars, labs, lims, roipx, varcombos] = pltexp_uiapply(cb, vars, labs, roipx, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
+function [vars, labs, lims, roipx, varcombos] = pltexp_cbapply(cb, vars, labs, roipx, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp)
 
-"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN pltexp_uiapply "
+"WARNING, FIX THE HARD-CODED CHANNEL HANDLING IN pltexp_cbapply "
 
 ywid = widyxz(1);
 xwid = widyxz(2);
@@ -35,18 +35,18 @@ try
             end
         end
 
-    elseif ~isempty(cell2mat(cb.val.i))
+    elseif ~isempty(cell2mat(cb.val.k))
 
         cnt = 0;
-        for j = 1:numel(cb.val.i)
-            if ~isempty(cb.val.i{j})
+        for j = 1:numel(cb.val.k)
+            if ~isempty(cb.val.k{j})
                 cnt = cnt+1;
                 if cb.val.v(cnt)~=j
                     error("v must match cnt")
                 end
 
-                vars{j} = mean(vars{j}(cb.val.i{j},:), 1);
-                labs{j} = labs{vind}(cb.val.i{j});
+                vars{j} = mean(vars{j}(cb.val.k{j},:), 1);
+                labs{j} = labs{vind}(cb.val.k{j});
             end
         end
 

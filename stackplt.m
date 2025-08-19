@@ -26,9 +26,10 @@ arguments
     opt.ic = []; %pmt indices (red or green channel
     opt.ik = []; %rgb color channel indices
     opt.doui = 0;
+    opt.dool = 0;
     opt.stackjust = 'center' %how to justify stack image; center, minimize, none
-    opt.marginfg = 0.05;
-    opt.marginax = 0.01;
+    opt.marginfg = 0.05; %margins for figure (not each axis), see axarr for docs 
+    opt.marginax = 0.01; %margins for axis (not each axis), see axarr for docs 
     opt.fontsz = 10;
     opt.dosave = 1 %whether to write to gif
     opt.dmstackdf = [] 
@@ -56,14 +57,13 @@ it = opt.it;
 ic = opt.ic;
 ik = opt.ik;
 doui = opt.doui;
+dool = opt.dool;
 stackjust = opt.stackjust;
 marginfg = opt.marginfg;
 marginax = opt.marginax;
 fontsz = opt.fontsz;
 dosave = opt.dosave;
 dmstackdf = opt.dmstackdf;
-
-clear roiolmake %to clear the persistent variable within
 
 if isempty(pthgif)
     pthgif = pathauto(suffix='.gif', usetime=1);
@@ -250,7 +250,6 @@ end
 %% roipx (roi pixel indices)
 
 if isempty(roipx)
-    dool = 0;
     roi_loop_size = 1;
     if isempty(ir)
         roi_message = ', roi: NaN';
@@ -258,7 +257,9 @@ if isempty(roipx)
         roi_message = ', roi: not plotting roi without pixinds roi argument';
     end
 else
-    dool = 1;
+    if ~dool
+        error("dool must be true with roipx; fix this hack")
+    end
     hack_allow_default_dmplt_with_roipx = strcmp(dmplt_all(1:3), 'yxc') && size(stack,3)==1;
     if ( numel(dmplt_all)>3 && any(~ismember(dmplt_all(1:3), 'yxz')) ) || ( numel(dmplt_all)<=3 && any(~ismember(dmplt_all, 'yxz')) )
         if hack_allow_default_dmplt_with_roipx % this is hack to allow default dmplt 'yxczk(t)' when there is only one channel (since it is effectively yxz)
@@ -397,7 +398,7 @@ end
 
 ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
 h = fg(fontsz=fontsz, szf=szf);
-h.st = axim(h.fg, stack, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
+h = axim(stack, h=h, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 
 %% plot
 
@@ -428,15 +429,15 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if numdim_eachframe==2)
 
             if k==1
-                h.st.hax{j}.CLim = clim_tmp;
+                h.im.ax{j}.CLim = clim_tmp;
             end
 
-            h.st.hpl{j}.CData = stack(:,:,j,k);
+            h.im.pl{j}.CData = stack(:,:,j,k);
             
             if ~isempty(roipx) %if there are roi variables
                 frameol = mod(k-1, szolz)+1;
-                h.st.hol{j}.CData = squeeze(imroi(:,:,j,frameol,:)); %squeeze to make it 3d (2d plus color channel)
-                h.st.hol{j}.AlphaData = imalpha(:,:,j,frameol);
+                h.im.ol{j}.CData = squeeze(imroi(:,:,j,frameol,:)); %squeeze to make it 3d (2d plus color channel)
+                h.im.ol{j}.AlphaData = imalpha(:,:,j,frameol);
             end
 
         end
@@ -450,8 +451,6 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     end
 
 end
-
-clear roiolmake %to clear the persistent variable within
 
 
 end

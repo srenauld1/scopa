@@ -659,7 +659,7 @@ if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes
     %%%%%%%%%%%% ASSIGN HANDLES TO OUTPUT STRUCT %%%%%%%%%%%%
 
     h.fg = hfg;
-    h.htx = htx;
+    h.tx = htx;
     h.haxbr = haxbr;
     h.haxts = haxts;
     h.hplbr = hplbr;
@@ -894,7 +894,7 @@ end
 function [h, framecount] = plotvars(h, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title)
 
 
-h.htx.String = figure_title;
+h.tx.String = figure_title;
 
 if strcmp(gif_scope, 'eachvar')
     framecount = 0;

@@ -1,5 +1,6 @@
 function todo()
 
+disp("graphics objects are placed in struct, it let's me name them (advantage is mostly just shorter names), but loses some of the heirarchical structure, which can be confusing, and most importantly, deleting the struct does not affect the graphics object, you have to run delete(object) for example, rather than rmfield(s, object), and this is confusing")
 disp("flip (rotate) all stacks for berg1, then make it an option in pl.sh")
 disp("change all dos to char vector, with hyphen separating what has been done and what is requested, like or-d for do denoise after do register has been done - but what about stitch, or a2p?")
 disp("make dnraw use registered")
@@ -48,7 +49,7 @@ disp("TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO
 disp("should ftv downsampling occur in ftvalign in matlab? why do it in pythno during register?? oh it's because matlab on mac can't read it??")
 disp("daq needs toindex, like doballscale etc, to convert binary to index, right now it happens by default in daqpr for any binary variable, but what if you want it to remain binary?? it should also occur outside daqpr, like the other to* variables, but this one before daqpr")
 disp("make substr have convenient start finish markers, rather than having to use ^ and $ where the option is specified")
-disp("make methodmm sum to draw on sum of channels")
+disp("make chan sum to draw on sum of channels")
 disp("make channel consistently 5th dim index or pmt index; right now in python code it's pmt index and in matlab it's mostly stack 5th dim index")
 disp("make sure fictrac has not flatlined, epoch might be as expected despite fictrac flatline")
 disp("write function to delete a variable in txt (not allow manual) that will also delete all associated files")

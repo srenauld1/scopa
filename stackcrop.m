@@ -22,8 +22,13 @@ scopausername = opt.scopausername;
 rgnamedf = opt.rgnamedf;
 usegit = opt.usegit;
 
+maxnumdims = 5;
+
 if isempty(pthstack)
     error("name-value argument pthstack or glb('pthstack') must be nonempty")
+end
+if ~isempty(stack) && (ndims(stack)<2 || ndims(stack)>maxnumdims)
+    error("stack input to roidraw must be empty, or have 2-" + num2str(maxnumdims) + " dimensions")
 end
 if isempty(rgnamedf)
     rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
@@ -31,6 +36,7 @@ end
 if isempty(rgname)
     rgname = rgnamedf; 
 end
+
 
 try
     isTilde = detectOutputSuppression(nargout);
@@ -78,7 +84,7 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
 
         else
 
-            rg = rgmake(stack, pthrg, rgid, rgname);
+            rg = rgmake(stack, rgid, rgname, pthstack);
 
         end
 
@@ -86,12 +92,11 @@ if ~isempty(stack) %if input stack is empty, user is just checking if rg exists 
 
     end
 
-
-    if ~(isequal(rg.y, [1,size(stack,1)]) && isequal(rg.x, [1,size(stack,2)]) && isequal(rg.z, [1,size(stack,3)]) && isequal(rg.t, [1,size(stack,4)]) && isequal(rg.c, [1,size(stack,5)]))
+    szrg = diff([rg.y', rg.x', rg.z', rg.t', rg.c'])+1;
+    if ~isequal(szrg, size(stack, 1:maxnumdims))
         stack = stack(rg.y(1):rg.y(2), rg.x(1):rg.x(2), rg.z(1):rg.z(2), rg.t(1):rg.t(2), rg.c(1):rg.c(2)); %previously converted to single here, not sure why
     end
 
-
 end
 
 
@@ -99,87 +104,52 @@ end
 
 
 
-function rg = rgmake(stack, pthrg, rgid, rgname)
+function rg = rgmake(stack, rgid, rgname, pthstack)
 
 arguments
     stack
-    pthrg
     rgid
     rgname
+    pthstack
 end
 
 numchan = size(stack,5);
 
 if numchan==2
-    fprintf("averaging both channels to create the images for defining rg" + newline)
-end
-
-stackmnt = single(mean(stack, [4 5])); %option 'native' is slow, uses more memory, and not necessary for mean t anyway
-
-%% first define z limits
-
-prompt = "\n\n\nyou requested rgname '" + rgname + "'" + newline + "but there is no record of rg with rgid '" + rgid + "' in rg file " + pthrg + newline + "You will now be prompted to define z, and then xy indices for this rg" + newline + "Do you want to define a subset of z slices for rgname '" + rgname + "'?" + newline + "Type 1 for yes, or type 0 to use all z slices: ";
-
-commandwindow();
-define_z_lim = input(sprintf(prompt));
-
-if define_z_lim
-    [iz, stackmnt] = cropz(stackmnt, rgname);
-else
-    iz = [1,size(stackmnt, 3)];
-end
-
-stackmntz = mean(stackmnt, 3);
-
-%% then xy limits
-
-prompt = "\n\n\nDo you want to define a subset of xy pixels for rgname '" + rgname + "'?" + newline + "Type 1 for yes, or type 0 to use all xy pixels: ";
-
-commandwindow();
-define_xy_lim = input(sprintf(prompt));
-
-if define_xy_lim
-
-    %then define polygon in mean image across chosen z indices (xy limits is bounding box of polygon)
-    title_prefix = ['THIS IS THE MEAN OF SELECTED Z SLICES . . . NOW DRAW A SINGLE POLYGON AND ITS BOUNDING BOX WILL BE THE XY LIMITS FOR rgname "' rgname '"'];
-
-    flag_rg = 1;
-    flag_oneim = 1;
-    flag_oneroi = 1;
-    flag_allz = 0;
-    draw_on_meanzt = 1;
-    roi_cropxy = roidraw_onefig(stackmntz, flag_oneim, flag_oneroi, flag_allz, flag_rg, draw_on_meanzt, title_prefix=title_prefix);
-    if ~any(roi_cropxy(:))
-        roi_cropxy = ones(size(roi_cropxy));
+    prompt = ['enter channels you want to display for drawing rgname "' rgname '"? press enter only to display the average of all channels, 1 then enter to display only channel 1, or 2 then enter to display only channel 2: '];
+    commandwindow();
+    icshow = input(sprintf(prompt));
+    if icshow
+        stack = stack(:,:,:,:,icshow);
+    else
+        stack = mean(stack, 5);
     end
-    [iy, ix] = ind2sub(size(roi_cropxy), find(roi_cropxy));
-    iy = [min(iy), max(iy)];
-    ix = [min(ix), max(ix)];
-
-else
-
-    iy = [1,size(stack, 1)];
-    ix = [1,size(stack, 2)];
-
 end
 
-%% t (all) and c
+%% define xyz limits (bounding box of what is drawn)
+
+roimask = roidraw(stack=stack, pthstack=pthstack, do_rg=1, maskname=rgname);
+[iy, ix, iz] = ind2sub(size(roimask), find(roimask));
+iy = [min(iy), max(iy)];
+ix = [min(ix), max(ix)];
+iz = [min(iz), max(iz)];
+
+%% then t (default all) and c
 
 it = [1,size(stack,4)];
 
 if numchan==2
-    prompt = ['do you want to keep only one channel for rgname "' rgname '"? type type 0 to use both channels, 1 to keep only channel 1, or 2 to keep only channel 2: '];
+    prompt = ['do you want to keep only one channel for rgname "' rgname '"? press enter only to keep all channels, 1 then enter to keep only channel 1, or 2 then enter to keep only channel 2: '];
     commandwindow();
-    ccrop = input(sprintf(prompt));
-    if ccrop
-        ic = [ccrop,ccrop];
+    ic = input(sprintf(prompt));
+    if ic
+        ic = [ic,ic];
     else
         ic = [1,2];
     end
 else
     ic = [1,1];
 end
-
 
 
 %% put in struct

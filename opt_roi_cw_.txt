@@ -20,7 +20,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -48,7 +48,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -76,7 +76,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -111,7 +111,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -135,7 +135,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -159,7 +159,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -185,7 +185,7 @@
     "ma": {},
     "mm": {
       "maskname": "none",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -213,7 +213,7 @@
     "ma": {},
     "mm": {
       "maskname": "eleven",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -241,7 +241,7 @@
     "ma": {},
     "mm": {
       "maskname": "ld",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -269,7 +269,7 @@
     "ma": {},
     "mm": {
       "maskname": "lv",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -297,7 +297,7 @@
     "ma": {},
     "mm": {
       "maskname": "ord",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -325,7 +325,7 @@
     "ma": {},
     "mm": {
       "maskname": "rv",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -353,7 +353,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -381,7 +381,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -409,7 +409,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -437,7 +437,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -465,7 +465,7 @@
     "ma": {},
     "mm": {
       "maskname": "none",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -502,7 +502,7 @@
     },
     "mm": {
       "maskname": "el",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -539,7 +539,7 @@
     },
     "mm": {
       "maskname": "el",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -592,7 +592,7 @@
     "ma": {},
     "mm": {
       "maskname": "none",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -620,7 +620,7 @@
     "ma": {},
     "mm": {
       "maskname": "eleven",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -657,7 +657,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -694,7 +694,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -731,7 +731,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -759,7 +759,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -787,7 +787,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -815,7 +815,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -843,7 +843,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -871,7 +871,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -899,7 +899,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -936,7 +936,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -964,7 +964,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -992,7 +992,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1020,7 +1020,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1048,7 +1048,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1076,7 +1076,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1104,7 +1104,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1141,7 +1141,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1179,7 +1179,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1217,7 +1217,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1245,7 +1245,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1273,7 +1273,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1311,7 +1311,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1339,7 +1339,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1367,7 +1367,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1405,7 +1405,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1443,7 +1443,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1471,7 +1471,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1499,7 +1499,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1537,7 +1537,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1565,7 +1565,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1593,7 +1593,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1631,7 +1631,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1659,7 +1659,7 @@
     "ma": {},
     "mm": {
       "maskname": "left",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1687,7 +1687,7 @@
     "ma": {},
     "mm": {
       "maskname": "right",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1725,7 +1725,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1763,7 +1763,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1801,7 +1801,7 @@
     },
     "mm": {
       "maskname": "el",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1829,7 +1829,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1857,7 +1857,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1885,7 +1885,7 @@
     "ma": {},
     "mm": {
       "maskname": "dorsal",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1913,7 +1913,7 @@
     "ma": {},
     "mm": {
       "maskname": "ventral",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1951,7 +1951,7 @@
     },
     "mm": {
       "maskname": "el",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -1979,7 +1979,7 @@
     "ma": {},
     "mm": {
       "maskname": "left2",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2007,7 +2007,7 @@
     "ma": {},
     "mm": {
       "maskname": "right2",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2045,7 +2045,7 @@
     },
     "mm": {
       "maskname": "el2",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2083,7 +2083,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2121,7 +2121,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2159,7 +2159,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2197,7 +2197,7 @@
     },
     "mm": {
       "maskname": "el2",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2235,7 +2235,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2273,7 +2273,7 @@
     },
     "mm": {
       "maskname": "el2",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2311,7 +2311,7 @@
     },
     "mm": {
       "maskname": "el",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2349,7 +2349,7 @@
     },
     "mm": {
       "maskname": "el3",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2387,7 +2387,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2415,7 +2415,7 @@
     "ma": {},
     "mm": {
       "maskname": "none",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2453,7 +2453,7 @@
     },
     "mm": {
       "maskname": "eb33",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2491,7 +2491,7 @@
     },
     "mm": {
       "maskname": "eb4",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2694,7 +2694,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2732,7 +2732,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2770,7 +2770,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2808,7 +2808,7 @@
     },
     "mm": {
       "maskname": "eb",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2836,7 +2836,7 @@
     "ma": {},
     "mm": {
       "maskname": "none",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,
@@ -2874,7 +2874,7 @@
     },
     "mm": {
       "maskname": "eb4545",
-      "methodmm": "all"
+      "chanstr": "all"
     },
     "nrm": {
       "channorm": 0,

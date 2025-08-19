@@ -1,5 +1,5 @@
 
-function [ttl, val_imcen_out, val_imchan_out, val_implane_out, val_imalpha] = pltexp_sequence_i(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha)
+function [ttl, val_imcen_out, val_imchan_out, val_implane_out, val_imalpha] = cb_seqi(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha)
 
 persistent get_c
 persistent get_p

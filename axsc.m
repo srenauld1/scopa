@@ -1,13 +1,14 @@
-function h = axsc(x, y, opt)
+function h = axsc(x, y, z, opt)
 
 arguments
     x
     y
+    z = []
     opt.h = []
     opt.ax = []
     opt.doui = 0
     opt.sctype = 'cartesian'
-    opt.mkrsz = 8
+    opt.mkrsz = 20
     opt.blindspot = NaN
     opt.actual_lags_xy_sec = []
     opt.plot_z_as_color = 1
@@ -19,6 +20,7 @@ arguments
     opt.htfac = 1
     opt.fontsz = [6 8 12]
     opt.colmaj = 0
+    opt.nm = 'sc'
 end
 h = opt.h;
 ax = opt.ax;
@@ -36,15 +38,27 @@ widfac = opt.widfac;
 htfac = opt.htfac;
 fontsz = opt.fontsz;
 colmaj = opt.colmaj;
+nm = opt.nm;
 
 do_bar = 0;
 force_square = 0;
 numxtick = 20;
 bar_axisroomfac = 0.1;
 
+
 if isempty(h)
-    h = fg;
+    h = fg();
 end
+if isfield(h, 'fg') && ~isscalar(h.fg)
+    error("h.fg input to axim must be scalar (choose one figure to initialize the axis)")
+end
+if isfield(h, nm)
+    q = numel(h.(nm));
+else
+    q = 0;
+end
+q = q+1;
+
 if isempty(ax)
     ax = axarr(1);
 end
@@ -61,6 +75,8 @@ if isvector(x) && iscolumn(x)
     x = x(:)'; %make it a row vector, since time should be 2nd dim (in case we are plotting time, which we often are)
 end
 numsamp = size(x,2);
+dummyvec = nan(1, numsamp);
+
 if ~isequal(size(y,2), numsamp)
     if isvector(y) && iscolumn(y)
         y = y';
@@ -69,14 +85,24 @@ if ~isequal(size(y,2), numsamp)
         error("x and y must have same size in 2nd dimenson")
     end
 end
+if isempty(z)
+    z = dummyvec;
+end
+if ~isequal(size(z,2), numsamp)
+    if isvector(z) && iscolumn(z)
+        z = z';
+    end
+    if ~isequal(size(z,2), numsamp)
+        error("x and z must have same size in 2nd dimenson")
+    end
+end
 
-dummyvec = nan(numsamp, 1);
 
 
-h.ax = [];
-h.pl = [];
-h.ln = [];
-h.br = [];
+h.(nm)(q).ax = [];
+h.(nm)(q).pl = [];
+h.(nm)(q).ln = [];
+h.(nm)(q).br = [];
 
 for j = 1:numsubplot
 
@@ -88,93 +114,93 @@ for j = 1:numsubplot
 
         case 'cartesian'
 
-            h.ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+            h.(nm)(q).ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
             if colmaj
-                h.ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-                h.ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
             else
-                h.ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-                h.ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
             end
-            h.ax{j}.InnerPosition(3) = newextent;
-            h.ax{j}.InnerPosition(4) = newextent;
+            h.(nm)(q).ax{j}.InnerPosition(3) = newextent;
+            h.(nm)(q).ax{j}.InnerPosition(4) = newextent;
 
-            h.ax{j}.Toolbar.Visible = 'off';
+            h.(nm)(q).ax{j}.Toolbar.Visible = 'off';
 
-            hold(h.ax{j}, 'on')
+            hold(h.(nm)(q).ax{j}, 'on')
             if plot_z_as_color
-                h.pl{j} = scatter(h.ax{j}, dummyvec, dummyvec, mkrsz, dummyvec, 'filled');
+                h.(nm)(q).pl{j} = scatter(h.(nm)(q).ax{j}, x(1,:), y(1,:), mkrsz, z(1,:), 'filled');
             else
-                h.pl{j} = scatter3(h.ax{j}, dummyvec, dummyvec, dummyvec, mkrsz, dummyvec, 'filled');
+                h.(nm)(q).pl{j} = scatter3(h.(nm)(q).ax{j}, x(1,:), y(1,:), x(1,:), mkrsz, z(1,:), 'filled');
             end
 
-            h.ax{j}.XAxis.TickValues = [];
-            h.ax{j}.YAxis.TickValues = [];
-            h.ax{j}.XAxis.TickLabels = {};
-            h.ax{j}.YAxis.TickLabels = {};
+            h.(nm)(q).ax{j}.XAxis.TickValues = [];
+            h.(nm)(q).ax{j}.YAxis.TickValues = [];
+            h.(nm)(q).ax{j}.XAxis.TickLabels = {};
+            h.(nm)(q).ax{j}.YAxis.TickLabels = {};
 
-            h.ax{j}.Box = 'off';
+            h.(nm)(q).ax{j}.Box = 'off';
             % if ylim_constancy
-            %     % h.ax{j}.XLim = [0 1];
-            %     % h.ax{j}.YLim = [0 1];
+            %     % h.(nm)(q).ax{j}.XLim = [0 1];
+            %     % h.(nm)(q).ax{j}.YLim = [0 1];
             % end
-            % h.pl{j}.MarkerFaceColor = 'k';
+            % h.(nm)(q).pl{j}.MarkerFaceColor = 'k';
 
-            h.ln{j} = [];
+            h.(nm)(q).ln{j} = [];
 
-            hold(h.ax{j}, 'off')
+            hold(h.(nm)(q).ax{j}, 'off')
 
 
         case 'polar'
 
 
-            h.ax{j} = polaraxes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+            h.(nm)(q).ax{j} = polaraxes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
 
             if colmaj
-                h.ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-                h.ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
             else
-                h.ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-                h.ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
             end
-            h.ax{j}.InnerPosition(3) = newextent;
-            h.ax{j}.InnerPosition(4) = newextent;
+            h.(nm)(q).ax{j}.InnerPosition(3) = newextent;
+            h.(nm)(q).ax{j}.InnerPosition(4) = newextent;
 
 
-            h.ax{j}.Toolbar.Visible = 'off';
+            h.(nm)(q).ax{j}.Toolbar.Visible = 'off';
 
-            hold(h.ax{j}, 'on')
-            h.pl{j} = polarscatter(h.ax{j}, dummyvec, dummyvec, mkrsz, 'filled');
-            h.ln{j} = polarplot(h.ax{j}, [blindspot blindspot], [0 0], 'r');
+            hold(h.(nm)(q).ax{j}, 'on')
+            h.(nm)(q).pl{j} = polarscatter(h.(nm)(q).ax{j}, dummyvec, dummyvec, mkrsz, 'filled');
+            h.(nm)(q).ln{j} = polarplot(h.(nm)(q).ax{j}, [blindspot blindspot], [0 0], 'r');
 
-            % h.pl{j}.MarkerFaceColor = 'k';
-            h.ln{j}.LineStyle = 'none';
+            % h.(nm)(q).pl{j}.MarkerFaceColor = 'k';
+            h.(nm)(q).ln{j}.LineStyle = 'none';
 
-            h.ax{j}.RTickLabel = [];
+            h.(nm)(q).ax{j}.RTickLabel = [];
 
-            h.ax{j}.ThetaTick = [0 90 180 270];
-            h.ax{j}.ThetaTickLabel = {'0', '90', '180', '270'};
+            h.(nm)(q).ax{j}.ThetaTick = [0 90 180 270];
+            h.(nm)(q).ax{j}.ThetaTickLabel = {'0', '90', '180', '270'};
 
-            h.ax{j}.ThetaAxis.Label.Units = 'normalized';
-            h.ax{j}.ThetaAxis.Label.Position = [0.5, -0.05, 0];
-            h.ax{j}.ThetaAxis.Label.Rotation = 0;
-            h.ax{j}.RAxis.Label.Units = 'normalized';
-            h.ax{j}.RAxis.Label.Position = [-0.13, 0.5, 0];
-            h.ax{j}.RAxis.Label.Rotation = 90;
+            h.(nm)(q).ax{j}.ThetaAxis.Label.Units = 'normalized';
+            h.(nm)(q).ax{j}.ThetaAxis.Label.Position = [0.5, -0.05, 0];
+            h.(nm)(q).ax{j}.ThetaAxis.Label.Rotation = 0;
+            h.(nm)(q).ax{j}.RAxis.Label.Units = 'normalized';
+            h.(nm)(q).ax{j}.RAxis.Label.Position = [-0.13, 0.5, 0];
+            h.(nm)(q).ax{j}.RAxis.Label.Rotation = 90;
 
             % if ylim_constancy
-            %     h.ax{j}.RLim = [0 1];
+            %     h.(nm)(q).ax{j}.RLim = [0 1];
             % end
 
-            hold(h.ax{j}, 'off')
+            hold(h.(nm)(q).ax{j}, 'off')
 
 
 
     end
 
-    h.pl{j}.CData = repmat([0 0 0], numsamp, 1);
-    h.pl{j}.MarkerFaceAlpha = 0.3;
+    h.(nm)(q).pl{j}.CData = repmat([0 0 0], numsamp, 1);
+    h.(nm)(q).pl{j}.MarkerFaceAlpha = 0.3;
 
 
 
@@ -190,27 +216,27 @@ for j = 1:numsubplot
         inset_widfac = 0.1;
         inset_htfac = 0.1;
 
-        h.br{j}.h.ax = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-        h.br{j}.h.ax.InnerPosition(1) = h.ax{j}.InnerPosition(1)+0.05;
-        h.br{j}.h.ax.InnerPosition(2) = h.ax{j}.InnerPosition(2)+0.05;
-        h.br{j}.h.ax.InnerPosition(3) = h.ax{j}.InnerPosition(3)-h.ax{j}.InnerPosition(3)*inset_widfac;
-        h.br{j}.h.ax.InnerPosition(4) = h.ax{j}.InnerPosition(4)-h.ax{j}.InnerPosition(4)*inset_htfac;
+        h.(nm)(q).br{j}.ax = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
+        h.(nm)(q).br{j}.ax.InnerPosition(1) = h.(nm)(q).ax{j}.InnerPosition(1)+0.05;
+        h.(nm)(q).br{j}.ax.InnerPosition(2) = h.(nm)(q).ax{j}.InnerPosition(2)+0.05;
+        h.(nm)(q).br{j}.ax.InnerPosition(3) = h.(nm)(q).ax{j}.InnerPosition(3)-h.(nm)(q).ax{j}.InnerPosition(3)*inset_widfac;
+        h.(nm)(q).br{j}.ax.InnerPosition(4) = h.(nm)(q).ax{j}.InnerPosition(4)-h.(nm)(q).ax{j}.InnerPosition(4)*inset_htfac;
 
-        hold(h.br{j}.h.ax, 'on')
+        hold(h.(nm)(q).br{j}.ax, 'on')
 
-        h.br{j}.h.pl = bar(h.br{j}.h.ax, dummyvec_lag, dummyvec_lag);
-        h.br{j}.h.ln = xline(h.br{j}.h.ax, nan, 'k');
+        h.(nm)(q).br{j}.h.(nm)(q).pl = bar(h.(nm)(q).br{j}.ax, dummyvec_lag, dummyvec_lag);
+        h.(nm)(q).br{j}.h.(nm)(q).ln = xline(h.(nm)(q).br{j}.ax, nan, 'k');
 
-        h.br{j}.h.ax.YLim = [-1 1];
-        h.br{j}.h.ax.Box = 'off';
-        h.br{j}.h.ax.Title.String = 'LAG';
-        h.br{j}.h.ax.XLim = [min(actual_lags_xy_sec) - range(actual_lags_xy_sec)*bar_axisroomfac, max(actual_lags_xy_sec) + range(actual_lags_xy_sec)*bar_axisroomfac];
-        h.br{j}.h.ax.XTick = [min(actual_lags_xy_sec), 0, max(actual_lags_xy_sec)];
-        h.br{j}.h.ax.XTickLabels = {sprintf('%.2g', min(actual_lags_xy_sec)), 0, sprintf('%.2g', max(actual_lags_xy_sec))};
-        h.br{j}.h.ax.Title.String = 'LAGS';
-        h.br{j}.h.ax.YLabel.String = 'CORR COEFF';
+        h.(nm)(q).br{j}.ax.YLim = [-1 1];
+        h.(nm)(q).br{j}.ax.Box = 'off';
+        h.(nm)(q).br{j}.ax.Title.String = 'LAG';
+        h.(nm)(q).br{j}.ax.XLim = [min(actual_lags_xy_sec) - range(actual_lags_xy_sec)*bar_axisroomfac, max(actual_lags_xy_sec) + range(actual_lags_xy_sec)*bar_axisroomfac];
+        h.(nm)(q).br{j}.ax.XTick = [min(actual_lags_xy_sec), 0, max(actual_lags_xy_sec)];
+        h.(nm)(q).br{j}.ax.XTickLabels = {sprintf('%.2g', min(actual_lags_xy_sec)), 0, sprintf('%.2g', max(actual_lags_xy_sec))};
+        h.(nm)(q).br{j}.ax.Title.String = 'LAGS';
+        h.(nm)(q).br{j}.ax.YLabel.String = 'CORR COEFF';
 
-        hold(h.br{j}.h.ax, 'off')
+        hold(h.(nm)(q).br{j}.ax, 'off')
 
     end
 

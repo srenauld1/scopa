@@ -559,18 +559,18 @@ if isempty(drawslice)
 
     ax = axarr(stack);
     h = fg();
-    h.st = axim(h.fg, stack, ax=ax, doui=1);
+    h.im = axim(h.fg, stack, ax=ax, doui=1);
 
     user_input = [];
     roicen_nonuniform = {};
-    numslice = numel(h.st.hpl);
+    numslice = numel(h.im.pl);
     cnt = 0;
     while true
         pause(0.05)
         if isempty(user_input)
             for j = 1:numslice
-                user_input = h.st.hpl{j}.UserData;
-                h.st.hpl{j}.UserData = [];
+                user_input = h.im.pl{j}.UserData;
+                h.im.pl{j}.UserData = [];
                 if ~isempty(user_input)
                     cnt = cnt + 1;
                     user_input = [user_input j];

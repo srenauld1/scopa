@@ -1,5 +1,5 @@
 
-function [ttl, val_tinds, val_sampinc] = pltexp_sequence_t(user_input, save_buttons, sampinc_in, ti, tinds_in)
+function [ttl, val_tinds, val_sampinc] = cb_seqt(user_input, save_buttons, sampinc_in, it, tinds_in)
 
 persistent get_tend
 persistent get_sampinc
@@ -46,11 +46,11 @@ elseif any(strcmpi(user_input, context_buttons))
 
     if strcmpi(user_input, 'hyphen') && strcmp(subsequence_type, 'keyboard')
         if ~isempty(tmp_tstart)
-            if tmp_tstart<min(ti)
-                ttl = ['CHOSEN t START ' num2str(tmp_tstart) ' IS LESS THAN AVAILABLE MIN t ' num2str(min(ti)) '; MAKING THIS t start EMPTY'];
+            if tmp_tstart<min(it)
+                ttl = ['CHOSEN t START ' num2str(tmp_tstart) ' IS LESS THAN AVAILABLE MIN t ' num2str(min(it)) '; MAKING THIS t start EMPTY'];
                 tmp_tstart = [];
-            elseif tmp_tstart>max(ti)
-                ttl = ['CHOSEN t START ' num2str(tmp_tstart) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(ti)) '; MAKING THIS t start EMPTY'];
+            elseif tmp_tstart>max(it)
+                ttl = ['CHOSEN t START ' num2str(tmp_tstart) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(it)) '; MAKING THIS t start EMPTY'];
                 tmp_tstart = [];
             else
                 ttl = 'PRESSED "hyphen", NOW USE DIGITS TO CHOOSE t END (SECONDS)';
@@ -82,8 +82,8 @@ elseif any(strcmpi(user_input, save_buttons))
 
     elseif ~isempty(tmp_tend) && ( strcmp(subsequence_type, 'keyboard') || strcmp(subsequence_type, 'click') )
 
-        if tmp_tend>max(ti)
-            ttl = ['CHOSEN t END ' num2str(tmp_tend) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(ti))];
+        if tmp_tend>max(it)
+            ttl = ['CHOSEN t END ' num2str(tmp_tend) ' IS GREATER THAN AVAILABLE MAX t ' num2str(max(it))];
             tmp_tend = [];
         elseif tmp_tend<=tmp_tstart
             ttl = ['CHOSEN t END ' num2str(tmp_tend) ' IS LESS THAN OR EQUAL TO CHOSEN t START ' num2str(tmp_tstart)];
@@ -95,7 +95,7 @@ elseif any(strcmpi(user_input, save_buttons))
             end
 
             t_tmp = [tmp_tstart; tmp_tend];
-            tinds_tmp = find(ti>=t_tmp(1) & ti<=t_tmp(2));
+            tinds_tmp = find(it>=t_tmp(1) & it<=t_tmp(2));
             tinds_tmp = tinds_tmp(1):val_sampinc_tmp:tinds_tmp(end);
             if strcmpi(user_input, 'n')
                 ttl = 'PRESSED "n", OVERWRITING EXISTING t, MAKE MORE CHANGES OR PRESS ENTER TO PLOT CHANGES';

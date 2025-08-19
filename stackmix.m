@@ -63,17 +63,23 @@ for k = 1:numpths
     end
     id = idmake(pthstacks{k});
     fld = fieldmatch(tmprg, {'recdatenum', id.recdatenum}, {'flynum', id.flynum}, {'trialnum', id.trialnum}, lev=1, multi=1);
-    rg{k} = {};
-    if isempty(rg{k})
-        if isempty(rgnames{k})
-            error("rgnames is empty for this stack and no rg have been defined")
-        end
-        stacktmp = stackcrop(stack, rgnames{k}, pthstack=pthstacks{k});
+    if ~iscell(fld)
+       fld = {fld};
     end
+    rg{k} = {};
     for q = 1:numel(fld)
-        numrg = numrg+1;
-        if any(strcmp(tmprg.(fld{1}).rgname, rgnames)) || isempty(rgnames)
-            rg{k}{q} = tmprg.(fld{1});
+        kp = strcmp(tmprg.(fld{q}).rgname, rgnames);
+        if any(kp) || isempty(rgnames)
+            numrg = numrg+1;
+            kpi = find(kp);
+            rg{k}{kpi} = tmprg.(fld{q});
+        else
+            % if isempty(rg{k})
+            %     if isempty(rgnames{k})
+            %         error("rgnames is empty for this stack and no rg have been defined")
+            %     end
+            %     stacktmp = stackcrop(stack, rgnames{k}, pthstack=pthstacks{k});
+            % end
         end
     end
 end
@@ -92,16 +98,12 @@ if size(rot,1)~=numrg
     error("rot must be empty or (numrg,3)")
 end
 
-sdf = structfun(@diff, rg{1}{1}, 'UniformOutput', false);
-sdf.y = sdf.y+1;
-sdf.x = sdf.x+1;
-sdf.z = sdf.z+1;
-
+sdf = structfun(@(x) diff(x)+1, rg{1}{2}, 'UniformOutput', false);
 
 stacknew = [];
 for k = 1:numpths
     for q = 1:3%numel(pthstacks{k})
-        stacktmp = stackcrop(stack, rgnames{q}, '/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_.mat');
+        stacktmp = stackcrop(stack, rgnames{q}, pthstack='/Users/wienecke/stacks/ganoeb/20250803-2_d05_s8m_018_s8m/20250803_2_1_ord_.mat');
         stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
         % stacktmp = stackrs(stacktmp, like=stackebrot);
         stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);

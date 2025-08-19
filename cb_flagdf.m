@@ -13,7 +13,7 @@ end
 
 if any(strcmp('val', varargin)) || any(strcmp('all', varargin))
     cb.val.v = [];
-    cb.val.i = [];
+    cb.val.k = [];
     cb.val.roicen = [];
     cb.val.vdel = [];
     cb.val.tinds = [];

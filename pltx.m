@@ -148,7 +148,7 @@ layout = {[4,4], stack(:,:,:,:,1)};
 marginax = [0.05,0.005];
 marginfg = [0.07,0.05];
 splitfrac = 0.55;
-ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='minimize');
+ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='min');
 
 maxnumvars = 8;%numel(fieldnames(vars));
 cols = brewermap(maxnumvars,'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
@@ -239,7 +239,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = pltexp_uiapply(cb, vars_use, labs_use, roipixind_use, stack, t, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = pltexp_cbapply(cb, vars_use, labs_use, roipixind_use, stack, t, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -317,7 +317,7 @@ while plotloop %loop is turned off if no user input
 
                     sector_ind = 2;
                     cmap = gray(256);
-                    h.st = axim(h.fg, stack, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
+                    h = axim(stack, h=h, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
 
 
                     sector_ind = 1;

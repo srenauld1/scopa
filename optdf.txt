@@ -198,8 +198,8 @@
     "valsplit": "boutsamples"
   },
   "mm": {
-    "maskname": "none",
-    "methodmm": "all"
+    "chanstr": "all",
+    "maskname": "none"
   },
   "mn": {
     "copybindf": "none",
@@ -231,7 +231,7 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025080610553500",
+    "timestr": "2025081916185967",
     "usegit": 0
   },
   "nestvalid": [

@@ -2,7 +2,7 @@ function [zinds, stackmnt] = cropz(stackmnt, rgname)
 
 numslice = size(stackmnt, 3);
 
-h = stackplt(stackmnt, doui=1, dmplt='yxz', stackjust='center', szf=2);
+h = stackplt(stackmnt, doui=1, dmplt='yxz', stackjust='min', szf=2);
 
 h.ttl.String = {
     ['choose z range (lower, upper) for rgname "' rgname '"'];
@@ -38,12 +38,12 @@ while true
             tmpd = 0.1;
         end
         scalefac = scalefac + tmpd;
-        for k = 1:numel(h.st.hpl)
-            clim = h.st.hax{k}.CLim(2) + h.st.hax{k}.CLim(2)*tmpd;
-            if clim<h.st.hax{k}.CLim(1)
-                clim = h.st.hax{k}.CLim(1);
+        for k = 1:numel(h.im.pl)
+            clim = h.im.ax{k}.CLim(2) + h.im.ax{k}.CLim(2)*tmpd;
+            if clim<h.im.ax{k}.CLim(1)
+                clim = h.im.ax{k}.CLim(1);
             end
-            h.st.hax{k}.CLim(2) = clim;
+            h.im.ax{k}.CLim(2) = clim;
         end
         h.ttl.String{ndt+1} = ['RESCALED ORIGINAL CONTRAST BY ' num2str(-1*round((scalefac - 1)*100)) ' PERCENT'];
     end

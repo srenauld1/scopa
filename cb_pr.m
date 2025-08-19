@@ -1,4 +1,4 @@
-function [cb, ttl] = uicb(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti, tinds_in, sampinc_in)
+function [cb, ttl] = cb_pr(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, it, tinds_in, sampinc_in)
 
 
 %{
@@ -6,15 +6,15 @@ function [cb, ttl] = uicb(cb, h, varsz, varsp, roiplotinds, roipixindp_plane, ti
 user input callback processing 
 
 valid sequences:
-  pltexp_sequence_v (change plotted variable with index or stack image click):
+  cb_seqv (change plotted variable with index or stack image click):
       [ v, digits, [ i, [ digits, save ] ] ] enter
           OR
       [ v, digits, [ click, save ] ] enter
-  pltexp_sequence_i (change stack image):
+  cb_seqi (change stack image):
       [ i, c, digits, arrows ]
           OR
       [ i, [ click, save ] ] enter
-  pltexp_sequence_t (change plotted t with digits or x-axis click):
+  cb_seqt (change plotted t with digits or x-axis click):
       [ t [ digits, hyphen, digits, save ] ] enter
           OR
       [ t [ click, click, save ] ] enter
@@ -43,13 +43,13 @@ TODO: elaborate context buttons after roi click (like radius digit, etc)
 arguments
     cb
     h
-    varsz
-    varsp
-    roiplotinds
-    roipixindp_plane
-    ti
-    tinds_in
-    sampinc_in
+    varsz = []
+    varsp = []
+    roiplotinds = []
+    roipixindp_plane = []
+    it = []
+    tinds_in = []
+    sampinc_in = []
 end
 
 persistent sequence_init
@@ -68,14 +68,14 @@ if isempty(vidflag)
 end
 
 plot_buttons = {'return'};
-init_buttons = {'v', 'm',  't'};
+init_buttons = {'v', 'i', 't'};
 save_buttons = {'n', 'a', 'c', 'd'};
 
-if ~isempty( h.fg.UserData) && ~isempty(h.ts.hax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), h.st.hol))
+if ~isempty( h.fg.UserData) && ~isempty(h.ts.ax{1}.UserData) && any(~cellfun(@(x) isempty(x.UserData), h.im.ol))
     error("multiple callback buttons recorded; should only be one at a time")
 end
 
-if numel(find(~cellfun(@(x) isempty(x.UserData), h.st.hol)))>1
+if numel(find(~cellfun(@(x) isempty(x.UserData), h.im.ol)))>1
     error("multiple images have callback data; should only be one at a time")
 end
 
@@ -84,14 +84,14 @@ user_input = h.fg.UserData;
 h.fg.UserData = [];
 
 if isempty(user_input)
-    user_input = h.ts.hax{1}.UserData;
-    h.ts.hax{1}.UserData = [];
+    user_input = h.ts.ax{1}.UserData;
+    h.ts.ax{1}.UserData = [];
 end
 
 if isempty(user_input)
-    for j = 1:numel(h.st.hol)
-        user_input = h.st.hol{j}.UserData;
-        h.st.hol{j}.UserData = [];
+    for j = 1:numel(h.im.ol)
+        user_input = h.im.ol{j}.UserData;
+        h.im.ol{j}.UserData = [];
         if ~isempty(user_input)
             user_input = [user_input j];
             vidflag = 0;
@@ -100,18 +100,16 @@ if isempty(user_input)
     end
 end
 
-
-
 if isempty(user_input)
-    user_input = h.vid.hol{1}.UserData;
-    h.vid.hol{1}.UserData = [];
+    user_input = h.vid.ol{1}.UserData;
+    h.vid.ol{1}.UserData = [];
     if ~isempty(user_input)
         vidflag = 1;
     end
 end
 
 numvar = size(varsz,1);
-numplane = numel(h.st.hol);
+numplane = numel(h.im.ol);
 numchan = max(varsz(:, 3));
 
 if isempty(val_varalpha)
@@ -149,7 +147,7 @@ if ~isempty(user_input)
             ttl_tmp = 'PRESSED "enter", CHANGING t or vidcen';
         end
 
-        if ~isempty(cell2mat(cb.val.roicen)) || ~isempty(cell2mat(cb.val.i)) || ~isempty(cell2mat(cb.val.vdel)) %don't use elseif since there can be v and t changes
+        if ~isempty(cell2mat(cb.val.roicen)) || ~isempty(cell2mat(cb.val.k)) || ~isempty(cell2mat(cb.val.vdel)) %don't use elseif since there can be v and t changes
             cb.restart.v = 1;
             ttl_tmp = 'PRESSED "enter", CHANGING plot variables';
         end
@@ -158,14 +156,14 @@ if ~isempty(user_input)
 
         sequence_init = user_input;
         ttl_tmp = ['PRESSED "' sequence_init '", INITIATING SEQUENCE "' sequence_init '", USE DIGITS, CONTEXT BUTTONS, SAVE BUTTONS, OR PLOT CLICKS TO MAKE CHANGES TO "' sequence_init '"'];
-        clear pltexp_sequence_v pltexp_sequence_i pltexp_sequence_t %clear all sequences' persistent variables after any init button
+        clear cb_seqv cb_seqi cb_seqt %clear all sequences' persistent variables after any init button
 
     elseif strcmp(sequence_init, 'v')
 
-        [ttl_tmp, val_v, val_i, val_roicen, val_vdel, val_varalpha] = pltexp_sequence_v(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha);
+        [ttl_tmp, val_v, val_i, val_roicen, val_vdel, val_varalpha] = cb_seqv(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha);
         if ~isempty(val_v)
             cb.val.v = unique([cb.val.v val_v], 'stable');
-            cb.val.i{cb.val.v(end)} = val_i;
+            cb.val.k{cb.val.v(end)} = val_i;
             if vidflag
                 cb.val.vidcen{cb.val.v(end)} = val_roicen;
             else
@@ -174,13 +172,13 @@ if ~isempty(user_input)
             cb.val.vdel{cb.val.v(end)} = val_vdel;
         end
 
-    elseif strcmp(sequence_init, 'm')
+    elseif strcmp(sequence_init, 'i')
 
-        [ttl_tmp, cb.val.imcen, cb.val.imchan, cb.val.implane, val_imalpha] = pltexp_sequence_i(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha);
+        [ttl_tmp, cb.val.imcen, cb.val.imchan, cb.val.implane, val_imalpha] = cb_seqi(user_input, save_buttons, roipixindp_plane, numchan, numplane, val_imalpha);
 
     elseif strcmp(sequence_init, 't')
 
-        [ttl_tmp, cb.val.tinds, cb.val.sampinc] = pltexp_sequence_t(user_input, save_buttons, sampinc_in, ti, tinds_in);
+        [ttl_tmp, cb.val.tinds, cb.val.sampinc] = cb_seqt(user_input, save_buttons, sampinc_in, it, tinds_in);
 
     end
 

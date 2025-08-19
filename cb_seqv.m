@@ -1,5 +1,5 @@
 
-function [ttl, val_v_out, val_i_out, val_roicen_out, val_vdel_out, val_varalpha] = pltexp_sequence_v(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha)
+function [ttl, val_v_out, val_i_out, val_roicen_out, val_vdel_out, val_varalpha] = cb_seqv(user_input, save_buttons, roipixindp_plane, varsz, numvar, val_varalpha)
 
 persistent get_i
 persistent get_c
@@ -19,7 +19,7 @@ persistent val_vdel_out_tmp
 varalpha_inc = 0.05;
 
 
-context_buttons = {'i', 'c'};
+context_buttons = {'k', 'c'};
 quick_buttons = {'uparrow', 'downarrow', 'leftarrow', 'rightarrow'};
 
 ttl = ['PRESSED ' num2str(user_input) ' OUT OF CONTEXT, NOTHING WILL HAPPEN']; %default title, in case not overwritten
@@ -60,7 +60,7 @@ if ~isempty(val_v_out_tmp) %don't do elseif here because val_v_out_tmp gets set 
     elseif any(strcmpi(user_input, context_buttons)) %&& isempty(subsequence_type)
 
         subsequence_type = 'keyboard';
-        if strcmpi(user_input, 'i')
+        if strcmpi(user_input, 'k')
             ttl = ['PRESSED "i", USE DIGITS TO CHOOSE WHICH INPUT VARIABLE TO ASSIGN TO PLOT VARIABLE #' num2str(val_v_out_tmp)];
             get_i = 1;
         elseif strcmpi(user_input, 'c')

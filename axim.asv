@@ -156,6 +156,7 @@ for j = 1:numax
         end
     end
 
+
     h.(nm)(q).lnx{j} = xline(h.(nm)(q).ax{j}, nan, 'w', 'LineStyle', 'none');
     h.(nm)(q).lny{j} = yline(h.(nm)(q).ax{j}, nan, 'w', 'LineStyle', 'none');
     if ~isempty(txtvar)

@@ -527,8 +527,8 @@ end
 
 if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois, subroirgba saves them in correct locations, regardless of which parts of the stack are displayed
     if ismember(3, find(dmslash)) %if z dimension is averaged, we must average rgba (if it exists)
-        h.im.ol{1}.CData = mean(subroirgba(:,:,1:3,iz(:)),4); %mean of rgb image for axes iz,
-        h.im.ol{1}.AlphaData = mean(subroirgba(:,:,4,iz(:)),4); %mean of transparency image for axes iz
+        h.im.ol{1}.CData = sum(subroirgba(:,:,1:3,iz(:)),4) ./ sum(logical(subroirgba(:,:,1:3,iz(:))),4); % mean of (colored parts of) rgb image for axes iz,
+        h.im.ol{1}.AlphaData = sum(subroirgba(:,:,4,iz(:)),4) ./ sum(logical(subroirgba(:,:,4,iz(:))),4); %mean of (colored parts of) transparency image for axes iz
     else
         for k = 1:numel(h.im.ol)
             h.im.ol{k}.CData = squeeze(subroirgba(:,:,1:3,iz(k))); %rgb image for axes iz(k)

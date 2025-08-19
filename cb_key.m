@@ -1,13 +1,13 @@
 
 function cb_key(src, event)
 
-% if ispc && strcmpi(event.Key, '0')
-%     event.Key = 'reutrn';
-% end
-% eventmod = event.Modifier;
-% if ~isempty(eventmod) %right now callback cannot wait until key release, so not using modifier keys yet
-%     src.UserData = [event.Key '_' eventmod];
-% else
-%     src.UserData = [event.Key];
-% end
-src.UserData = event.Key;
+% in case there are modifiers keys pressed (control, alt/option, shift) along with non-modifiers, src.UserData is in reverse order of keys pressed, with double underscore separating 
+
+if ispc && strcmpi(event.Key, '0')
+    event.Key = 'reutrn';
+end
+if ~isempty(event.Modifier) && ~isequal(event.Modifier, event.Key) 
+    src.UserData = [event.Key sprintf('_%s' , event.Modifier{:})]; %expand all modifiers, precede with underscore to concatenate with main key 
+else
+    src.UserData = [event.Key];
+end

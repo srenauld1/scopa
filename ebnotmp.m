@@ -278,41 +278,41 @@ if ~isempty(plt) && plt(1)
 
     subplot_ind = 1;
     htfac = 1;
-    h.st = axim(h.fg, eb, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
-    hold(h.st.hax{1}, "on")
-    h.st.hpl{1}.XData = t;
-    % plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    plot(h.st.hax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(3,:))
-    % plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), color='g')
-    plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(2,:))
+    h = axim(eb, h=h, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    hold(h.im.ax{1}, "on")
+    h.im.pl{1}.XData = t;
+    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
+    plot(h.im.ax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(3,:))
+    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color='g')
+    plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(2,:))
 
-    plot(h.st.hax{1}, t, rescale(gld, 1, size(eb,1)), color=cmap(4,:), linestyle='-', linewidth=2);
-    plot(h.st.hax{1}, t, rescale(glv, 1, size(eb,1)), color=cmap(4,:), linestyle=':', linewidth=2);
-    plot(h.st.hax{1}, t, rescale(grd, 1, size(eb,1)), color=cmap(5,:), linestyle='-', linewidth=2);
-    plot(h.st.hax{1}, t, rescale(grv, 1, size(eb,1)), color=cmap(5,:), linestyle=':', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(gld, 1, size(eb,1)), color=cmap(4,:), linestyle='-', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(glv, 1, size(eb,1)), color=cmap(4,:), linestyle=':', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(grd, 1, size(eb,1)), color=cmap(5,:), linestyle='-', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(grv, 1, size(eb,1)), color=cmap(5,:), linestyle=':', linewidth=2);
 
     xlim(limt)
     title('eb original')
     numxtick = 20;
-    h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
-    h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
-    hold(h.st.hax{1}, "on")
+    h.im.ax{1}.XTick = linspace(limt(1), limt(2), numxtick);
+    h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
+    hold(h.im.ax{1}, "on")
 
     % subplot_ind = 2;
     % htfac = 2;
-    % h.st = axim(h.fg, eb2, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
+    % h = axim(eb2, h=h, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
     % 
-    % hold(h.st.hax{1}, "on")
-    % h.st.hpl{1}.XData = t;
-    % plot(h.st.hax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    % plot(h.st.hax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
-    % plot(h.st.hax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
+    % hold(h.im.ax{1}, "on")
+    % h.im.pl{1}.XData = t;
+    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
+    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
+    % plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
     % xlim(limt)
     % title('eb2')
     % numxtick = 20;
-    % h.st.hax{1}.XTick = linspace(limt(1), limt(2), numxtick);
-    % h.st.hax{1}.XTickLabel = h.st.hax{1}.XTick;
-    % hold(h.st.hax{1}, "on")
+    % h.im.ax{1}.XTick = linspace(limt(1), limt(2), numxtick);
+    % h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
+    % hold(h.im.ax{1}, "on")
 
 
 

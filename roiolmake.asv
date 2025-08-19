@@ -119,7 +119,7 @@ end
 
 %%%% MAKE OVERLAY %%%%
 
-overlaps_sum_plusone = ones(size(imrgb_mask), 'single');
+overlaps_sum = zeros(size(imrgb_mask), 'single');
 idxne = find(any(roimask, [1,2,3])); %nonnempty roi indices
 
 if ~isempty(idxne)
@@ -139,7 +139,7 @@ if ~isempty(idxne)
             roirgb = roimask(:,:,:,k).*col(k,:,:,:); %include 4 colons to multiply the mask into 4th (rgb) dim
 
             overlaps = imrgb_mask & sum(roirgb, numimdim); %sum final dim for overlap in any rgb channel
-            overlaps_sum_plusone = overlaps_sum_plusone + overlaps;
+            overlaps_sum = overlaps_sum + overlaps;
 
             imalpha = imalpha + roialpha;
             imalpha(overlaps) = ( imalpha(overlaps)+roialpha(overlaps) ) / denom; %average alpha where rois overlap (in case you want some rois at different alpha)
