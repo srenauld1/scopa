@@ -119,7 +119,7 @@ end
 
 %%%% MAKE OVERLAY %%%%
 
-overlaps_sum = zeros(size(imrgb_mask), 'single');
+overlaps_sum_plusone = ones(size(imrgb_mask), 'single');
 idxne = find(any(roimask, [1,2,3])); %nonnempty roi indices
 
 if ~isempty(idxne)
@@ -130,7 +130,7 @@ if ~isempty(idxne)
         if ismember(k, idxne)
 
             if k==idxne_last
-                denom = idxne_num+1;  %we do it this way so the averaging only occurs at the end of the loop, dividing by each voxel's number of overlapping rois 
+                denom = idxne_num+1; 
             else
                 denom = 1;
             end
@@ -139,14 +139,14 @@ if ~isempty(idxne)
             roirgb = roimask(:,:,:,k).*col(k,:,:,:); %include 4 colons to multiply the mask into 4th (rgb) dim
 
             overlaps = imrgb_mask & sum(roirgb, numimdim); %sum final dim for overlap in any rgb channel
-            overlaps_sum = overlaps_sum + overlaps;
+            overlaps_sum_plusone = overlaps_sum_plusone + overlaps;
 
             imalpha = imalpha + roialpha;
-            imalpha(overlaps) = ( imalpha(overlaps)+roialpha(overlaps) ) / denom; %average alpha where rois overlap (in case you want some rois at different alpha)
-
-            overlaps = repmat(overlaps, [ones(1, numimdim-1) 3]); %make an "overlap rgb mask"
-            imrgb = imrgb + roirgb; %and where there is no overlap, just sum roi and background input image
-            imrgb(overlaps) = ( imrgb(overlaps)+roirgb(overlaps) ) / denom; %average color where roi overlaps with background input image (in case input has color)
+            imrgb = imrgb + roirgb; 
+            if k==idxne_last  %we do it this way so the averaging only occurs on the last nonempty roi, dividing by each voxel's number of overlapping rois
+                imalpha = imalpha / overlaps_sum_plusone; %average where rois overlap
+                imrgb = imrgb / overlaps_sum_plusone; %average where rois overlap (in case you want some rois at different alpha)
+            end
 
         end
     end
