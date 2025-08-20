@@ -911,6 +911,18 @@
     "t": [1,44283],
     "c": [1,1]
   },
+  "a77": {
+    "id": "20250809_1_2_no",
+    "recdatenum": 2.0250809E+7,
+    "flynum": 1,
+    "trialnum": 2,
+    "rgname": "no",
+    "y": [3,10],
+    "x": [55,74],
+    "z": [9,12],
+    "t": [1,44283],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
