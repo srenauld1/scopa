@@ -46,7 +46,7 @@ try
                 end
 
                 vars{j} = mean(vars{j}(cb.val.k{j},:), 1);
-                labs{j} = labs{vind}(cb.val.k{j});
+                labs{j} = labs{stackind}(cb.val.k{j});
             end
         end
 

@@ -1,13 +1,15 @@
-function [v, lab] = vind(v, dm, inds)
+function [stack, lab] = stackind(stack, dm, inds)
+
+%index into stack using 
 
 arguments (Input)
-    v
-    dm %char array, default dim order for input variable v
-    inds %struct of indices; if dm = 'yxztck' (eg if v is stack), validinds are 'iy', 'ix', 'iz', 'it', 'ic', 'ik'; other fieldnames will error
+    stack
+    dm %char array, default dim order for input variable stack
+    inds %struct of indices; if dm = 'yxztck' validinds are 'iy', 'ix', 'iz', 'it', 'ic', 'ik'; other fieldnames will error
 end
 
 arguments (Output)
-    v % same as input variable v, after indexing with inds
+    stack % same as input variable stack, after indexing with inds
     lab % char representation of inds (for making labels)
 end
 
@@ -29,13 +31,13 @@ for k = 1:numel(fn)
 
         if ~isempty(ind)
 
-            if iscell(v)
-                if ~all(cellfun(@(e) isequal(size(v{1}), size(e)), v(2:end)))
+            if iscell(stack)
+                if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
                     error("all stacks (each cell element) must be the same size")
                 end
-                szintmp = size(v{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
+                szintmp = size(stack{1}); %taking first cell because below code makes sure all stacks are same size, if multiple
             else
-                szintmp = size(v); %taking first cell because below code makes sure all stacks are same size, if multiple
+                szintmp = size(stack); %taking first cell because below code makes sure all stacks are same size, if multiple
             end
             szin(1:numel(szintmp)) = szintmp;
 
@@ -54,10 +56,12 @@ for k = 1:numel(fn)
 
 end
 
-if iscell(v)
-    v = cellfun(@(x) x(dtmp{:}), v, 'UniformOutput', false);
-else
-    v = v(dtmp{:});
+if ~isequal(dtmp, repmat({':'}, 1, maxnumdims))
+    if iscell(stack)
+        stack = cellfun(@(x) x(dtmp{:}), stack, 'UniformOutput', false);
+    else
+        stack = stack(dtmp{:});
+    end
 end
 
 end

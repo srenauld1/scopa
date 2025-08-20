@@ -13,7 +13,7 @@ arguments
     opt.imalpha = [] %background image alpha, rgba, size yxa or yxza, optional; only need this if rois have different alpha and you want them averaged
     opt.roimask = [] % mask for roi(s) (size yxzr), matching imgray yxz or imrgb yxz dimensions (z may be singleton), must pass in this or roipx, but not both
     opt.roipx = [] %length-r cell array of roi's linear indices, or vector of linear indices if one roi, must pass in this or roimask, but not both
-    opt.col = [1 0 0] %color, size (r,3), where r matches roimask r
+    opt.col = [1,0,0] %color, size (r,3), where r matches roimask r
     opt.alp = 0.3 %alpha (transparency)
 end
 imgray = opt.imgray;
@@ -70,7 +70,7 @@ if isempty(roimask)
     else
         error("roimask must be cell, or vector of linear indices, or roi mask")
     end
-    roimask = zeros(size(imrgb), 'logical');
+    roimask = zeros([size(imrgb, [1,2,3]), numel(roipx)], 'logical');
     for k = 1:numel(roipx)
         if ~isempty(roipx{k})
             [i1,i2,i3] = ind2sub(size(imrgb), roipx{k});
@@ -121,7 +121,7 @@ end
 
 overlaps_sum_plusone = ones(size(imrgb_mask), 'single');
 idxne = find(any(roimask, [1,2,3])); %nonnempty roi indices
-
+overlaps = imrgb_mask; %initialize with input image rgb "mask" (anywhere there's a color)
 if ~isempty(idxne)
     idxne_last = idxne(end);
 
@@ -131,11 +131,12 @@ if ~isempty(idxne)
             roialpha = roimask(:,:,:,k).*alp(k);
             roirgb = roimask(:,:,:,k).*col(k,:,:,:); %include 4 colons to multiply the mask into 4th (rgb) dim
 
-            overlaps = imrgb_mask & sum(roirgb, numimdim); %sum final dim for overlap in any rgb channel
-            overlaps_sum_plusone = overlaps_sum_plusone + overlaps;
+            overlaps = overlaps & sum(roirgb, numimdim); %sum final dim for overlap in any rgb channel, then find overlaps (logical array)
+            overlaps_sum_plusone = overlaps_sum_plusone + overlaps; %sum overlaps, plus one, to divide to get mean at end of roi loop
 
             imalpha = imalpha + roialpha;
-            imrgb = imrgb + roirgb; 
+            imrgb = imrgb + roirgb;
+
             if k==idxne_last  %we do it this way so the averaging only occurs on the last nonempty roi, dividing by each voxel's number of overlapping rois
                 imalpha = imalpha ./ overlaps_sum_plusone; %average where rois overlap
                 imrgb = imrgb ./ overlaps_sum_plusone; %average where rois overlap

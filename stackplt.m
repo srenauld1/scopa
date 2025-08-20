@@ -27,7 +27,7 @@ arguments
     opt.ik = []; %rgb color channel indices
     opt.doui = 0;
     opt.dool = 0;
-    opt.stackjust = 'center' %how to justify stack image; center, minimize, none
+    opt.stackjust = 'mid' %how to justify stack image; center, minimize, none
     opt.marginfg = 0.05; %margins for figure (not each axis), see axarr for docs 
     opt.marginax = 0.01; %margins for axis (not each axis), see axarr for docs 
     opt.fontsz = 10;
@@ -122,7 +122,7 @@ inds.iz = iz;
 inds.it = it;
 inds.ic = ic;
 inds.ik = ik;
-[stack, index_labels_opt] = vind(stack, dmstackdf, inds); %stack hasd been put into order dmstackdf by stackperm above, so this 
+[stack, index_labels_opt] = stackind(stack, dmstackdf, inds); %stack hasd been put into order dmstackdf by stackperm above, so this 
 
 
 %% dmplt (put stack into user-input plot order)
@@ -257,9 +257,7 @@ if isempty(roipx)
         roi_message = ', roi: not plotting roi without pixinds roi argument';
     end
 else
-    if ~dool
-        error("dool must be true with roipx; fix this hack")
-    end
+    dool = 1;
     hack_allow_default_dmplt_with_roipx = strcmp(dmplt_all(1:3), 'yxc') && size(stack,3)==1;
     if ( numel(dmplt_all)>3 && any(~ismember(dmplt_all(1:3), 'yxz')) ) || ( numel(dmplt_all)<=3 && any(~ismember(dmplt_all, 'yxz')) )
         if hack_allow_default_dmplt_with_roipx % this is hack to allow default dmplt 'yxczk(t)' when there is only one channel (since it is effectively yxz)
@@ -406,7 +404,7 @@ cnt = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
 
-        [imroi, imalpha] = roiolmake(stack_oneframe, roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
+        [imroi, imalpha] = roiolmake(imgray=stack_oneframe, roipx=roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
 
         sz_framedims_ol = sz_framedims(1:ndims(stack_oneframe));
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];

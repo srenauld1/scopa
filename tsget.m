@@ -459,13 +459,13 @@ for w = 1:numel(varid)
                     end
                     for q = 1:numel(ic)
                         cnt = cnt+1;
-                        tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
+                        tsout{cnt} = stackind(saved_var{ic(q)}, dm, itmp);
                         dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     end
                 else
                     if isempty(ic)
                         cnt = cnt+1;
-                        tsout{cnt} = vind(saved_var, dm, itmp);
+                        tsout{cnt} = stackind(saved_var, dm, itmp);
                         dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     else
                         error("ic is not valid for indexing anything but cell array right now")

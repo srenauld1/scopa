@@ -133,6 +133,9 @@ end
 if isempty(cmap)
     cmap = distinguishable_colors(maxnumroi);
 end
+if roialpha<=0
+    error("roialpha must be positive")
+end
 
 if do_rg
     rgname = maskname; %for making rg when do_rg is true, rgname is the maskname and make maskname empty
@@ -243,10 +246,13 @@ catch ME
                         h.im.ol{k}.UserData = [];
                         axfocus = 1; %this is always 1 now because we "zoom in" to the axes you click on
                         drawflag = drawflag+1;
-                        if drawflag==1 %on first click (drawflag==1), we just zoom into clicked axes; on second click, we begin drawing
-                            showchange = 1;
-                            iz_o = iz;  %save current iz to return to after drawing on the zoomed in axes
-                            iz = k;
+                        if drawflag==1 %if multiple axes on first click (drawflag==1), we just zoom into clicked axes; on second click, we begin drawing
+                            if numel(h.im.ol)==1
+                            else
+                                showchange = 1;
+                                iz_o = iz;  %save current iz to return to after drawing on the zoomed in axes
+                                iz = k;
+                            end
                         end
                     end
                 end
@@ -527,8 +533,10 @@ end
 
 if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois, subroirgba saves them in correct locations, regardless of which parts of the stack are displayed
     if ismember(3, find(dmslash)) %if z dimension is averaged, we must average rgba (if it exists)
-        h.im.ol{1}.CData = sum(subroirgba(:,:,1:3,iz(:)),4) ./ sum(logical(subroirgba(:,:,1:3,iz(:))),4); % mean of (colored parts of) rgb image for axes iz,
-        h.im.ol{1}.AlphaData = sum(subroirgba(:,:,4,iz(:)),4) ./ sum(logical(subroirgba(:,:,4,iz(:))),4); %mean of (colored parts of) transparency image for axes iz
+        denom = sum(logical(subroirgba(:,:,4,iz(:))),4); %we can just use the alpha channel (4th index of 3rd/rgba dimension) to determine how many rois at each voxel (since alpha can't be 0), sum this over all z we want to show for denominator (average)
+        denom(denom==0) = 1; %make zeros = ones, so we don't divide by 0, and because 0 and 1 rois should be divided by 1 (although dividing by 0 also works, since nans just aren't displayed)
+        h.im.ol{1}.CData = sum(subroirgba(:,:,1:3,iz(:)),4) ./ denom; % mean of (colored parts of) rgb image for axes iz,
+        h.im.ol{1}.AlphaData = sum(subroirgba(:,:,4,iz(:)),4) ./ denom; %mean of (colored parts of) transparency image for axes iz
     else
         for k = 1:numel(h.im.ol)
             h.im.ol{k}.CData = squeeze(subroirgba(:,:,1:3,iz(k))); %rgb image for axes iz(k)
@@ -592,16 +600,16 @@ if isequal(dmslash(4),1)
 end
 
 if do_rg
-    ttltmp = ['SHOWING STACK (NO RG),   CHANNEL: ' num2str(ic) title_z title_t ',   DRAWING RGNAME: "' rgname '"'];
+    ttltmp = ['DRAWING RGNAME: "' rgname '",   SHOWING STACK (NO RG),   CHANNEL: ' num2str(ic) title_z title_t];
 else
-    ttltmp = ['SHOWING RGNAME: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t ',   DRAWING ROIS FOR MASKNAME: "' maskname '"'];
+    ttltmp = ['DRAWING ROIS FOR MASKNAME: "' maskname '",   SHOWING STACK RGNAME: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t];
 end
 
 h.ttl.String = {ttltmp};
 
 if do_oneroi
     ttltmp = { [...
-        'q: QUIT DRAWING,   ', ...
+        'q/r: QUIT DRAWING,   ', ...
         ]};
 else
     ttltmp = { [...
@@ -613,8 +621,8 @@ h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
 ttltmp = { [...
     'up/down: RESCALE STACK CONTRAST,   ', ...
-    'o: REMOVE CURRENT SUBROI OVERLAP,   ', ...
-    'backspoace: UNDO LAST SUBROI/ROI  ', ...
+    % 'o: REMOVE CURRENT SUBROI OVERLAP,   ', ...
+    % 'backspoace: UNDO LAST SUBROI/ROI  ', ...
     ]};
 h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
