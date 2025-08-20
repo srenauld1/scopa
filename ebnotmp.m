@@ -216,7 +216,7 @@ if ~isempty(plt) && plt(1)
     slopelensec_alt = sper*3;
     slopeord_alt = 2;
 
-    dodv = 1;
+    dodv = 0;
     if dodv %all derivatives
         ballplot = tsdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
         cueplot = tsdv('radians', cue, slopelensec_alt, slopeord_alt, sper);
@@ -245,7 +245,7 @@ if ~isempty(plt) && plt(1)
     % plot(hax, t, zscore(nol), color=cmap(2,:));
     plot(hax, t, cueplot, color=cmap(3,:));
     plot(hax, t, ballplot, color=cmap(4,:));
-    % plot(hax, t, bumpplot, color=cmap(5,:));
+    plot(hax, t, bumpplot, color=cmap(5,:));
     % plot(hax, t, bump2plot, color=cmap(5,:), linestyle='--');
     xlim(hax, limt)
     ylim(hax, limpad)
@@ -301,7 +301,7 @@ if ~isempty(plt) && plt(1)
     % subplot_ind = 2;
     % htfac = 2;
     % h = axim(eb2, h=h, ax=ax, notim=1, subplot_ind=subplot_ind, htfac=htfac, noax=0);
-    % 
+    %
     % hold(h.im.ax{1}, "on")
     % h.im.pl{1}.XData = t;
     % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
@@ -323,9 +323,9 @@ if ~isempty(plt) && plt(1)
 
     pthsv = [pthpre 'bump_.fig'];
     saveas(gcf, pthsv)
-    % 
+    %
     %%
-    % 
+    %
     % glom = 20;
     % epochx = [2:5];
     % figure
@@ -341,7 +341,7 @@ if ~isempty(plt) && plt(1)
     %     title(k)
     % end
     % sgtitle("down roi")
-    % 
+    %
     % glom = 25;
     % epochx = [2:5];
     % figure;
@@ -358,144 +358,146 @@ if ~isempty(plt) && plt(1)
     % end
     % sgtitle("up roi")
 
-    %% bump as curve over time
+    if 1
+        %% bump as curve over time
 
-    if isempty(dozscore)
-        prompt = sprintf("ENTER 1 TO ZSCORE EB ROIS, 0 TO NOT: ");
-        commandwindow();
-        dozscore = input(prompt);
-    end
-
-    if dozscore
-        for k = 1:size(eb,1)
-            % eb(k,:) = rescale(eb(k,:));
-            % eb(k,:) = tsdv('normal', eb(k,:), slopelensec_eb, slopeord_eb, sper);
-            eb(k,:) = zscore(eb(k,:));
+        if isempty(dozscore)
+            prompt = sprintf("ENTER 1 TO ZSCORE EB ROIS, 0 TO NOT: ");
+            commandwindow();
+            dozscore = input(prompt);
         end
-    end
 
-    sznew = 40; %max(size(stackmnt));
-    stackeb = stackcrop(stack, 'eb');
-
-    stackeb = stackeb(:,:,:,tsubsamp);
-
-    stackeb = stackiso(stackeb, widyxz);
-    
-    stackeb_mnt = mean(stackeb,4);
-
-    if isempty(drawrot)
-
-        rots = -1*[0:10:180];
-        stackmnzrot = {};
-        for k = 1:numel(rots)
-            tform = rigidtform3d([rots(k),0,0], [0,0,0]);
-            tmp = imwarp(stackeb_mnt, imref3d(size(stackeb_mnt)), tform); %default output view is centeroutput
-            stackmnzrot{k} = mean(tmp, 3);
-        end
-        szmx = max(cell2mat(cellfun(@size, stackmnzrot, 'UniformOutput', false)'));
-        tmp = zeros([szmx, numel(stackmnzrot)]);
-        for k = 1:numel(stackmnzrot)
-            tmp(1:size(stackmnzrot{k},1), 1:size(stackmnzrot{k},2), k) = stackmnzrot{k};
-        end
-        stackplt(tmp, dmplt='yx(z)', title_prefix=['rotations: ' num2str(rots)]);
-        stackplt(tmp, title_prefix=['rotations: ' num2str(rots)]);
-
-
-        prompt = sprintf("ENTER DEGREES TO ROTATE STACK FORWARD (ALONG X AXIS), OR EMPTY TO NOT ROTATE: ");
-        commandwindow();
-        drawrot = input(prompt);
-
-    end
-
-    if drawrot
-        drawrot = drawrot * -1;
-        tform = rigidtform3d([drawrot,0,0], [0,0,0]);
-        rf = imref3d(size(stackeb_mnt));
-        for k = 1:size(stackeb,4)
-            tmp = imwarp(stackeb(:,:,:,k), rf, tform); %default output view is centeroutput
-            if k==1
-                stackebrt = zeros([size(tmp) size(stackeb,4)], class(stackeb));
+        if dozscore
+            for k = 1:size(eb,1)
+                % eb(k,:) = rescale(eb(k,:));
+                % eb(k,:) = tsdv('normal', eb(k,:), slopelensec_eb, slopeord_eb, sper);
+                eb(k,:) = zscore(eb(k,:));
             end
-            stackebrt(:,:,:,k) = tmp;
         end
+
+        sznew = 40; %max(size(stackmnt));
+        % stackeb = stackcrop(stack, 'eb');
+
+        stack = stack(:,:,:,tsubsamp);
+        stackeb = stack;
+        % stackeb = stackiso(stackeb, widyxz);
+
+        stackeb_mnt = mean(stackeb,4);
+
+        if isempty(drawrot)
+
+            rots = -1*[0:10:180];
+            stackmnzrot = {};
+            for k = 1:numel(rots)
+                tform = rigidtform3d([rots(k),0,0], [0,0,0]);
+                tmp = imwarp(stackeb_mnt, imref3d(size(stackeb_mnt)), tform); %default output view is centeroutput
+                stackmnzrot{k} = mean(tmp, 3);
+            end
+            szmx = max(cell2mat(cellfun(@size, stackmnzrot, 'UniformOutput', false)'));
+            tmp = zeros([szmx, numel(stackmnzrot)]);
+            for k = 1:numel(stackmnzrot)
+                tmp(1:size(stackmnzrot{k},1), 1:size(stackmnzrot{k},2), k) = stackmnzrot{k};
+            end
+            stackplt(tmp, dmplt='yx(z)', title_prefix=['rotations: ' num2str(rots)]);
+            stackplt(tmp, title_prefix=['rotations: ' num2str(rots)]);
+
+
+            prompt = sprintf("ENTER DEGREES TO ROTATE STACK FORWARD (ALONG X AXIS), OR EMPTY TO NOT ROTATE: ");
+            commandwindow();
+            drawrot = input(prompt);
+
+        end
+
+        if drawrot
+            drawrot = drawrot * -1;
+            tform = rigidtform3d([drawrot,0,0], [0,0,0]);
+            rf = imref3d(size(stackeb_mnt));
+            for k = 1:size(stackeb,4)
+                tmp = imwarp(stackeb(:,:,:,k), rf, tform); %default output view is centeroutput
+                if k==1
+                    stackebrt = zeros([size(tmp) size(stackeb,4)], class(stackeb));
+                end
+                stackebrt(:,:,:,k) = tmp;
+            end
+            stackeb = stackebrt;
+            stackebrt = [];
+        end
+
+        stackeb_mnt = mean(stackeb,4);
+
+        dr = [0 1];
+
+        stackmin = double(min(stackeb(:)));
+        stackmax = double(max(stackeb(:)));
+        stackrange = stackmax-stackmin;
+        clim_tmp = stackrange*dr+stackmin; %cdata limits set from whole EB region, rather than chosen subset
+
+        if isempty(sliceeb)
+            stackplt(stackeb_mnt, dmplt='yx(z)')
+            prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT EB ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
+            commandwindow();
+            sliceeb = input(prompt);
+        end
+
+        if isempty(sliceeb)
+            sliceeb = 1:size(stackeb_mnt, 3);
+        end
+        stackeb = mean(stackeb(:,:,sliceeb,:),3);
+        % stackeb = median(stackeb(:,:,sliceeb,:),3);
+        stackeb = squeeze(stackeb);
+
+        nolz = zscore(nol);
+        norz = zscore(nor);
+
+        hfg = figure;
+
+        hax = subplot(2,1,1);
+        hpl = plot(hax, bmpdomain, eb(:,1));
+
+        ttl = title(hax, '');
+        yyaxis right
+        hold on
+        hbr1 = bar(3.2, 1, 0.25);
+        hbr2 = bar(3.5, 1, 0.25);
+
+        contrastfac = 1;
+
+        hax2 = subplot(2,1,2);
+        hax2.DataAspectRatio = [1 1 1];
+        hax2.Colormap = gray(256);
+        hax2.CLim = clim_tmp*contrastfac;
+        hax2.Visible = 'off';
+        hax2.YDir = 'reverse';
+        hpl2 = image(hax2, 'CData', stackeb(:,:,1));
+        hpl2.CDataMapping = 'scaled';
+
+        % hln1 = xline(hax, 0, color=cmap(1,:));
+        hln2 = xline(hax, 0, color=cmap(2,:));
+        hln3 = xline(hax, 0, color=cmap(3,:));
+
+        % hln4 = xline(hax, 0, color=cmap(4,:));
+        limy = axlim(eb);
+        hax.YAxis(1).Limits = limy.allpad;
+        hax.YAxis(2).Limits = [min([norz nolz]) max([norz nolz])];
+        % hax.YLim = [-4 4];
+        % hax.YLim = [0 1];
+        hax.XLim = [-pi pi]*1.2;
+        incc = 1;
+        for k = 1:incc:numel(tsubsamp) %for each timepoint, show bump
+            hpl.YData = eb(:,tsubsamp(k));
+            % hpl.YData = eb2(:,limtsamp(k));
+            % hln1.Value = bump(tsubsamp(k));
+            hln2.Value = cue(tsubsamp(k));
+            hln3.Value = ballinv(tsubsamp(k));
+            % hln4.Value = bump2(tsubsamp(k));
+            hpl2.CData = stackeb(:,:,k);
+            hbr1.YData = nolz(k);
+            hbr2.YData = norz(k);
+            ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(tsubsamp(k))) ', epoch: ' num2str(epochts(tsubsamp(k)))]};
+            fig2gif(hfg,k)
+        end
+
     end
-    stackeb = stackebrt;
-    stackebrt = [];
-    stackeb_mnt = mean(stackeb,4);
-
-    dr = [0 1];
-
-    stackmin = double(min(stackeb(:)));
-    stackmax = double(max(stackeb(:)));
-    stackrange = stackmax-stackmin;
-    clim_tmp = stackrange*dr+stackmin; %cdata limits set from whole EB region, rather than chosen subset
-
-    if isempty(sliceeb)
-        stackplt(stackeb_mnt, dmplt='yx(z)')
-        prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT EB ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
-        commandwindow();
-        sliceeb = input(prompt);
-    end
-
-    if isempty(sliceeb)
-        sliceeb = 1:size(stackeb_mnt, 3);
-    end
-    stackeb = mean(stackeb(:,:,sliceeb,:),3);
-    % stackeb = median(stackeb(:,:,sliceeb,:),3);
-    stackeb = squeeze(stackeb);
-
-    nolz = zscore(nol);
-    norz = zscore(nor);
-
-    hfg = figure;
-
-    hax = subplot(2,1,1);
-    hpl = plot(hax, bmpdomain, eb(:,1));
-    
-    ttl = title(hax, '');
-    yyaxis right
-    hold on
-    hbr1 = bar(3.2, 1, 0.25);
-    hbr2 = bar(3.5, 1, 0.25);
-
-    contrastfac = 1;
-
-    hax2 = subplot(2,1,2);
-    hax2.DataAspectRatio = [1 1 1];
-    hax2.Colormap = gray(256);
-    hax2.CLim = clim_tmp*contrastfac;
-    hax2.Visible = 'off';
-    hax2.YDir = 'reverse';
-    hpl2 = image(hax2, 'CData', stackeb(:,:,1));
-    hpl2.CDataMapping = 'scaled';
-
-    % hln1 = xline(hax, 0, color=cmap(1,:));
-    hln2 = xline(hax, 0, color=cmap(2,:));
-    hln3 = xline(hax, 0, color=cmap(3,:));
-
-    % hln4 = xline(hax, 0, color=cmap(4,:));
-    limy = axlim(eb);
-    hax.YAxis(1).Limits = limy.allpad;
-    hax.YAxis(2).Limits = [min([norz nolz]) max([norz nolz])];
-    % hax.YLim = [-4 4];
-    % hax.YLim = [0 1];
-    hax.XLim = [-pi pi]*1.2;
-    incc = 1;
-    for k = 1:incc:numel(tsubsamp) %for each timepoint, show bump
-        hpl.YData = eb(:,tsubsamp(k));
-        % hpl.YData = eb2(:,limtsamp(k));
-        % hln1.Value = bump(tsubsamp(k));
-        hln2.Value = cue(tsubsamp(k));
-        hln3.Value = ballinv(tsubsamp(k));
-        % hln4.Value = bump2(tsubsamp(k));
-        hpl2.CData = stackeb(:,:,k);
-        hbr1.YData = nolz(k);
-        hbr2.YData = norz(k);
-        ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(tsubsamp(k))) ', epoch: ' num2str(epochts(tsubsamp(k)))]};
-        fig2gif(hfg,k)
-    end
-
-
 
 
     %%

@@ -150,5 +150,7 @@ if ndims(imrgb)==3
     imrgb = reshape(imrgb, size(imrgb, 1), size(imrgb, 2), 1, size(imrgb, 3)); %include singleton z
 end
 
+% imrgba = cat(4, imrgb, imalpha);
+
 end
 

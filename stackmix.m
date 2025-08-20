@@ -103,7 +103,7 @@ sdf = structfun(@(x) diff(x)+1, rg{1}{2}, 'UniformOutput', false);
 stacknew = [];
 for k = 1:numpths
     for q = 1:3%numel(pthstacks{k})
-        stacktmp = stackcrop(stack, rgnames{q}, pthstack='/Users/wienecke/stacks/ganoeb/20250803-2_d05_s8m_018_s8m/20250803_2_1_ord_.mat');
+        stacktmp = stackcrop(stack, rgnames{q}, pthstack=pthstacks{k});
         stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
         % stacktmp = stackrs(stacktmp, like=stackebrot);
         stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);

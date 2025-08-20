@@ -27,9 +27,8 @@ persistent prevkeyp
 persistent ttltmp
 persistent nm
 
-if isempty(prevkey)
-    cbflag = cbflagset(currkey);
-end
+if isempty()
+cbflag = cbflagset('p');
 
 
 if strcmp(nm, 'z')
