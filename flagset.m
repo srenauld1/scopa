@@ -1,16 +1,16 @@
-function s = stateset(nm, val, opt)
+function s = flagset(nm, val, opt)
 
 %{
 
 create struct s, fieldnames are "flags", values are states
 initialize set of flags and states when name-value argument init=1, 
-and subsequent calls to stateset use these flags and states (until next initialization)
+and subsequent calls to flagset use these flags and states (until next initialization)
 
-s = stateset(nm,val,init=1)
+s = flagset(nm,val,init=1)
     will initialize all nm with first element of val, use name-value argument me=1 to make nm mutually excclusive (see below) 
-s = stateset(val)
+s = flagset(val)
     will set all nm from initialization to val
-s = stateset()
+s = flagset()
     will remove all nm and val from memory and return empty struct s
 
 name-value arguments are required when initializing, but should be omitted when not initializing 
@@ -19,7 +19,7 @@ name-value arguments are required when initializing, but should be omitted when 
 
 arguments
     nm = [] % flag names (fieldnames) to be set; cell array of char vectors or char vector or string array; if nm and val are both empty, s struct is reset to empty and persistent variables are cleared
-    val = [] % state(s) (value(s) given to fieldnames nm); numeric, char, or string; vector or cell with at least 2 elements when init=1, scalar vector or cell when init=0; val is all permissible states in future stateset calls when not initializing (when init~=1); when init=1, first element of val is the "zero state" to which all nm are initialized; 
+    val = [] % state(s) (value(s) given to fieldnames nm); numeric, char, or string; vector or cell with at least 2 elements when init=1, scalar vector or cell when init=0; val is all permissible states in future flagset calls when not initializing (when init~=1); when init=1, first element of val is the "zero state" to which all nm are initialized; to use empty array as val, must put in cell (e.g., {[]}) 
     opt.init = [] % 1 to initialize struct with flags named in nm, if init=0 (or not specified) nm is name of flag(s) to be set to val, and nm must come from nm set passed in when init=1;
     opt.me = [] % 1 to make flags mutually exclusive, where all nm passed in (when init is not 1) are set to val and all nm not passed in (but "remembered" from when init=1) are set to "zero state" (first element of val passed in when init=1)
 end
@@ -28,7 +28,7 @@ persistent stmp
 persistent valtmp
 persistent me
 
-if isempty(nm) && isempty(val) %reset with stateset() syntax 
+if isempty(nm) && isempty(val) %reset with flagset() syntax 
 
     if any(~structfun(@isempty, opt))
         error("cannot pass in name-value arguments if positional arguments are empty")
@@ -47,16 +47,16 @@ else %otherwise check arguments
         end
     end
     if nargin==2 && isempty(val)
-        error("stateset(nm, []) is not valid syntax")
+        error("flagset(nm, []) is not valid syntax")
     end
     if nargin==1 || ( isempty(nm) && ~isempty(val) )
         if isempty(stmp) || isempty(fieldnames(stmp))
-            error("you can only use stateset(val), or stateset([], val), syntax if you have previously initialized with stateset(state,value,opt) syntax; there are no stored nm or val, so you either didn't initialize or an error cleared the persistent variables, so you must initialize")
+            error("you can only use flagset(val), or flagset([], val), syntax if you have previously initialized with flagset(state,value,opt) syntax; there are no stored nm or val, so you either didn't initialize or an error cleared the persistent variables, so you must initialize")
         end
         if opt.init
-            error("stateset(val,init=1) is not valid syntax, stateset(val) syntax can only be used when not initializing")
+            error("flagset(val,init=1) is not valid syntax, flagset(val) syntax can only be used when not initializing")
         end
-        if nargin==1 %if stateset(val), swap nm and val here 
+        if nargin==1 %if flagset(val), swap nm and val here 
             val = nm;
             nm = [];
         end
@@ -71,8 +71,9 @@ else %otherwise check arguments
         error("val must be vector")
     end
     if ~iscell(val)
-        val = num2cell(val); %this works for numeric, char, and string vectors
+        val = num2cell(val); %put in cell since val can be various classes, this works for numeric, char, and string vectors
     end
+
 
 
     if opt.init %initialize
@@ -83,7 +84,7 @@ else %otherwise check arguments
         me = logical(opt.me);
 
         if numel(val)<2
-            error("val must have at least 2 values when init=1 (purpose of stateset is to set states)")
+            error("val must have at least 2 values when init=1 (purpose of flagset is to set states)")
         end
         valtmp = val;
 
@@ -106,16 +107,29 @@ else %otherwise check arguments
         if ~any(ismember(nmtmp, nm))
             error("nm has elements not from original nm set during initialization (when init=1)")
         end
+
         if all(cellfun(@isstring, valtmp))
-            if all(cellfun(@isstring, val))
-                error("val has elements not from original val set during initialization (when init=1)")
-            end
-            if any(~ismember(val, valtmp))
-                error("val has elements not from original val set during initialization (when init=1)")
+            if ~all(cellfun(@isstring, val))
+                error("val is not string, but was string array during initialization")
+            else
+                if any(~ismember(cellstr(val), cellstr(valtmp)))
+                    error("val has elements not from original val set during initialization (when init=1)")
+                end
             end
         else
-            if any(~ismember(val, valtmp))
-                error("val has elements not from original val set during initialization (when init=1)")
+            if all(cellfun(@isstring, val))
+                error("val is a string, but was not a string array during initialization")
+            else
+                if all(cellfun(@isempty, val))
+                    if ~any(cellfun(@isempty, valtmp)) 
+                        error("val is empty array, but no empty arrays were used in val during initialization")
+                    end
+                else
+                    valtmp_nonempty = valtmp(~cellfun(@isempty,valtmp));
+                    if any(~ismember(cell2mat(val), cell2mat(valtmp_nonempty)))
+                        error("val has elements not from original val set during initialization (when init=1)")
+                    end
+                end
             end
         end
         if numel(val)>1
