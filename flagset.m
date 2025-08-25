@@ -1,8 +1,8 @@
-function s = flagset(nm, val, opt)
+function [s, meout] = flagset(nm, val, opt)
 
 %{
 
-create struct s, fieldnames are "flags", values are states
+flagset creates struct s, fieldnames are "flags", values are "states"
 initialize set of flags and states when name-value argument init=1, 
 and subsequent calls to flagset use these flags and states (until next initialization)
 
@@ -11,14 +11,15 @@ s = flagset(nm,val,init=1)
 s = flagset(val)
     will set all nm from initialization to val
 s = flagset()
-    will remove all nm and val from memory and return empty struct s
+    will return s in current state, and me in current state (as meout)
+'clear flagset' will clear s (and all persistent variables in flagset)
 
 name-value arguments are required when initializing, but should be omitted when not initializing 
 
 %}
 
 arguments
-    nm = [] % flag names (fieldnames) to be set; cell array of char vectors or char vector or string array; if nm and val are both empty, s struct is reset to empty and persistent variables are cleared
+    nm = [] % flag names (fieldnames) to be set; cell array of char vectors or char vector or string array; if nm and val are both empty, s struct is output to report current state
     val = [] % state(s) (value(s) given to fieldnames nm); numeric, char, or string; vector or cell with at least 2 elements when init=1, scalar vector or cell when init=0; val is all permissible states in future flagset calls when not initializing (when init~=1); when init=1, first element of val is the "zero state" to which all nm are initialized; to use empty array as val, must put in cell (e.g., {[]}) 
     opt.init = [] % 1 to initialize struct with flags named in nm, if init=0 (or not specified) nm is name of flag(s) to be set to val, and nm must come from nm set passed in when init=1;
     opt.me = [] % 1 to make flags mutually exclusive, where all nm passed in (when init is not 1) are set to val and all nm not passed in (but "remembered" from when init=1) are set to "zero state" (first element of val passed in when init=1)
@@ -28,14 +29,13 @@ persistent stmp
 persistent valtmp
 persistent me
 
-if isempty(nm) && isempty(val) %reset with flagset() syntax 
+if isempty(nm) && isempty(val) %query current s (flags and their states)
 
     if any(~structfun(@isempty, opt))
         error("cannot pass in name-value arguments if positional arguments are empty")
     end
-    me = [];
-    stmp = struct;
     s = stmp;
+    meout = me;
 
 else %otherwise check arguments
 

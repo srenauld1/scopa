@@ -130,9 +130,9 @@ end
 
 roimask = roidraw(stack=stack, pthstack=pthstack, do_rg=1, maskname=rgname);
 [iy, ix, iz] = ind2sub(size(roimask), find(roimask));
-iy = [min(iy), max(iy)];
-ix = [min(ix), max(ix)];
-iz = [min(iz), max(iz)];
+iy = [min(iy), max(iy)]; %make sure we have bounding box, since rg must be rectangle or cuboid
+ix = [min(ix), max(ix)]; %make sure we have bounding box, since rg must be rectangle or cuboid
+iz = [min(iz), max(iz)]; %make sure we have bounding box, since rg must be rectangle or cuboid
 
 %% then t (default all) and c
 

@@ -8,8 +8,8 @@ using name-value arguments even for background image to make clear distinction b
 %}
 
 arguments
-    opt.imgray = [] %background image, grayscale, size yxz, must pass in this or imrgb, but not both
-    opt.imrgb = [] %background image, rgb, size yx3 or yxz3, must pass in this or imgray, but not both
+    opt.imgray = [] %background image, grayscale, size yxz, can pass in this or imrgb, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
+    opt.imrgb = [] %background image, rgb, size yx3 or yxz3, must pass in this or imgray, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
     opt.imalpha = [] %background image alpha, rgba, size yxa or yxza, optional; only need this if rois have different alpha and you want them averaged
     opt.roimask = [] % mask for roi(s) (size yxzr), matching imgray yxz or imrgb yxz dimensions (z may be singleton), must pass in this or roipx, but not both
     opt.roipx = [] %length-r cell array of roi's linear indices, or vector of linear indices if one roi, must pass in this or roimask, but not both
@@ -27,12 +27,30 @@ alp = opt.alp;
 
 %%%% PREP BACKGROUND IMAGE %%%%
 
+singleton_z = 0;
+
 if isempty(imrgb)
     if isempty(imgray)
-        error("must pass in either imrgb or imgray")
+        if isempty(imalpha) && isempty(roimask)
+            error("if imrgb and imgray are empty, must pass in imalpha or roimask (not roipx) to determine image dimensions")
+        else
+            if ~isempty(imalpha)
+                [ny,nx,nz] = size(imalpha);
+            elseif ~isempty(roimask)
+                if ndims(roimask)==3
+                    [ny,nx,nr] = size(roimask);
+                    nz = 1;
+                    singleton_z = 1;
+                else
+                    [ny,nx,nz,nr] = size(roimask);
+                end
+            end
+            imrgb = zeros( ny, nx, nz, 3, 'single');
+        end
+    else
+        imgray = single(rescale(imgray));
+        imrgb = cat(ndims(imgray)+1,imgray,imgray,imgray);
     end
-    imgray = single(rescale(imgray));
-    imrgb = cat(ndims(imgray)+1,imgray,imgray,imgray);
 else
     if ~isempty(imgray)
         error("cannot pass in both imrgb and imgray")
@@ -42,12 +60,15 @@ else
     end
 end
 
-singleton_z = 0;
 if ndims(imrgb)==3
     singleton_z = 1;
     imrgb = reshape(imrgb, size(imrgb,1), size(imrgb,2), 1, size(imrgb,3));
 end
-numimdim = ndims(imrgb); %should be 4
+
+numimdim = ndims(imrgb); %should always be 4
+if ~isequal(numimdim,4)
+    error("numimdim should alwayds be 4")
+end
 
 imrgb_mask = logical(sum(imrgb, numimdim));
 if isempty(imalpha)
@@ -83,8 +104,15 @@ else
     end
 end
 
+if ndims(roimask)<2 || ndims(roimask)>4
+    error("imrgb and must be 4d at this point and imalpha must be 2d, 3d, or 4d")
+end
 if singleton_z
-    roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
+    if ndims(roimask)==4 && size(roimask,3)>1
+        error("if image has singleton z, so must roimask")
+    else
+        roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
+    end
 end
 if ~isequal(size(imrgb, [1,2,3]), size(imalpha, [1,2,3]), size(roimask, [1,2,3]))
     error("roimask must match imrgb in first 3 dimensions")
@@ -93,7 +121,7 @@ if ~islogical(roimask)
     roimask = logical(roimask);
 end
 
-numroi = size(roimask,4); %do after possible conversion to cell
+numroi = size(roimask,4); 
 
 %%%% PREP OTHER OPTIONAL ARGUMENTS %%%%
 
@@ -110,7 +138,7 @@ end
 if size(col,1)==1
     col = repmat(col, [numroi 1]);
 end
-col = reshape(col, [ones(1, numimdim-1) 3]);
+col = reshape(col, [numroi,1,1,3]);
 col = single(col);
 
 if ~isequal(numroi, size(col,1), numel(alp))

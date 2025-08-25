@@ -3,7 +3,7 @@ function [roimask, mm] = roidraw(opt)
 %{
 
 make sure slash empty return works
-make sure slash is ignored in p sequence 
+make sure slash is ignored in c sequence 
 
 draw rois polygons on interactive stack figure
 stack background can be changed with name-value input arguments, or during roidraw with user keypresses (figure callbacks)
@@ -30,14 +30,14 @@ callbacks
     sequence callbacks
         t for modifying displayed t
         z for modifying displayed z
-        p for projecting most recent drawn polygon to specified z
-        after initializing with t, z, or p, the following keys are valid
+        c for projecting most recent drawn polygon to specified z
+        after initializing with t, z, or c, the following keys are valid
             digits (a sequence of digits without comma or colon are treated as digits of the same number)
             comma (,) to separate indices 
             colon (:) to indicate range 
             hyphen (-) followed by number means that number of equidistant indices
             slash (/) followed by indices will display the mean of those indices
-                slash is not a valid key for p-sequence (doesn't make sense to project onto a mean)
+                slash is not a valid key for c-sequence (doesn't make sense to copy onto a mean)
             return will finalize the sequence, if sequence is invalid, switch remains on but input is erased 
                 return without any digits will operate on all shown indices 
         examples:
@@ -47,10 +47,10 @@ callbacks
                 show mean of stack z 3,5,7
             t/-30return
                 show mean of 30 equidistant stack t
-            p-3return
-                project most recent drawn subroi (polygon) onto 3 "equidistant" z from 1:maxz
+            c-3return
+                copy most recent drawn subroi (polygon) to 3 "equidistant" z from 1:maxz
             preturn
-                project most recent drawn subroi (polygon) onto all shown z
+                copy most recent drawn subroi (polygon) onto all shown z
                 
 
 a roi drawn on mean z will be placed at the z indices that went into the mean 
@@ -99,7 +99,7 @@ fontsz = 12; %in figure title
 maxnumroi = 50; %just for preallocating
 maxnumsubroi = 50; %just for preallocating; max number of discontiguous subrois per roi
 
-clear cb_idx
+clear cb_idx cb_roishape
 
 callstack = dbstack('-completenames');
 fcnm = [];
@@ -124,6 +124,10 @@ end
 
 [ny, nx, nz, nt, nc] = size(stack);
 
+if ~cellout && nc>1
+    error("cellout must be true when there are multiple channels, since there is one cell (roimask) for each channel")
+end
+
 iz = indsmake([], indsall=nz); % z indices displayed in initial roi drawing figure (can be modified with callbacks)
 it = indsmake([], indsall=nt); % t indices displayed in initial roi drawing figure (can be modified with callbacks)
 if numel(it)>maxnt
@@ -131,7 +135,7 @@ if numel(it)>maxnt
 end
 
 if isempty(cmap)
-    cmap = distinguishable_colors(maxnumroi);
+    cmap = brewermap(maxnumroi, 'Dark2');
 end
 if roialpha<=0
     error("roialpha must be positive")
@@ -144,15 +148,12 @@ if do_rg
     roishape = 'rectangle'; %automatically set this to 1 if do_rg
 else
     if isempty(rg)
-        [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
+        [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack, just output the default rg (full stack)
     end
     rgname = rg.rgname;
 end
 
 [chandraw, dochancp] = chanstrparse(chanstr, nc);
-if ~cellout && nc>1
-    error("cellout must be true when there are multiple channels, since there is one cell (roimask) for each channel")
-end
 
 roimask = cell(nc,1); %needs to be cell in case 2-channel with different number rois
 
@@ -196,18 +197,17 @@ catch ME
     clear mm %in case old mm was loaded and errored, remove this eventually once all the old mm have been deleted
 
     if isempty(stack)
-        error("input stack is empty, so if mm file doens't exist, you cannot create one; you got this message when you tried to load mm: " + ME.message + newline)
+        error("input stack is empty, and since mm file doens't exist, or is invalid, you cannot create mm; you got this message when you tried to load mm: " + ME.message + newline)
     end
-    fprintf(newline + "" + ME.message + newline + "YOU WILL NOW BE PROMPTED TO DRAW ROIS" + newline)
+    fprintf(newline + "" + ME.message + newline + "mm FILE WITH ROIS MATCHING INPUT OPTIONS NOT FOUND, OPENING ROI DRAWING FIGURE" + newline)
 
     for ic = chandraw %some fields are redundant across channels (ie rg and maskname are the same for both channels), but for symmetry, and simpler code downstream, they're written to both channels
 
 
         %%%% PLOT STACK WITH DEFAULT z AND t, INITIALIZE PLOTTING VARIABLES %%%%
 
-        roimask{ic} = zeros( ny, nx, nz, maxnumroi, 'logical'); %mask for all rois, 4th dimension holds different rois
-        subroimask = zeros( ny, nx, nz, maxnumsubroi, 'logical'); %temporary mask for each roi, 4th dimension holds subrois
-        subroirgba = zeros( ny, nx, 4, nz, 'single'); %rgba array for all subrois, we make nz 4th dim instead of 3rd so we don't have to squeeze when indexing each z slice
+        roimask{ic} = zeros( ny, nx, nz, maxnumsubroi, maxnumroi, 'logical'); %mask for all rois, 4th dimension holds different rois
+        subroirgba = []; %empty to start, gets populated later
 
         ir = 1; %roi counter
         irsub = 1; %subroi index for current roi
@@ -215,16 +215,21 @@ catch ME
         idxf = 0; % t frame counter, initialize to 0
         idxfprev = -1; %initialize with dummy value
         dmslash = [0,0,0,0,0]; %in stack plot background, whether to average each dimension (1) or not (0)
-        drawflag = 0;
-        showchange = 0;
-        izp = []; %used
-        cbflag = cbflagset(); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
+        drawflag = 0; %1 if draw tool is open (image ready for drawing rois)
+        zoomflag = 0; %1 if "zoomed in" from a view with multiple z to a view with one z
+        alloff = 1; %all callback "switches" are off to begin
+        showchange = 0; %flag to change plotted stack
+        izp = []; %z indices to copy most recent subroi onto
+        imselectkeys = {'shift_shift', 'control_control'}; %hold down control with image click to select entire image as roi, hold down shift with image click to select range (from nearest selected whole image, if any, otherwise same as control_control)
+        cbflag = flagset({'c', 's', 't', 'z'}, [0,1], init=1, me=1); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
 
-        [stacktmp, h, ndt] = stackshow([], [], stack, iz, it, ic, rgname, maskname, nz, nt, nc, do_rg, do_oneroi, fontsz, dmslash);
+        [stacktmp, h, ndt] = stackshow([], [], [], stack, ir, irsub, iz, it, ic, rgname, maskname, nz, nt, nc, roishape, do_rg, do_oneroi, fontsz, dmslash, cmap, roialpha);
         ttli_drawins = ndt+1; %title line showing drawing instructions
         ttli_switches = ndt+2; %title line showing switch state;
         ttli_lastkey = ndt+3; %title line showing last key;
-
+        ttli_remove = 2:ndt; %title line showing last key;
+        ttl_sv = h.ttl.String(ttli_remove);
+        h.ttl.String{ttli_switches} = 'ALL SWITCHES OFF';
 
         %%%% DRAWING LOOP %%%%
 
@@ -241,74 +246,106 @@ catch ME
                     idxfprev = idxf;
                 end
 
-                if isscalar(h.im.ol)
-                    h.ttl.String{ttli_drawins} = 'SINGLE-CLICK IMAGE TO OPEN DRAWING TOOL, PRESS ESCAPE TO RETURN TO PREVIOUS VIEW'; %will be overwritten after click (after drawflag=1)
-                else
-                    h.ttl.String{ttli_drawins} = 'SINGLE-CLICK AN IMAGE TO ZOOM'; %will be overwritten after click (after drawflag=1)
+                if ~drawflag
+                    if isscalar(h.im.ol)
+                        h.ttl.String{ttli_drawins} = 'CLICK IMAGE=OPEN DRAW TOOL';
+                        if zoomflag
+                            h.ttl.String{ttli_drawins} = [h.ttl.String{ttli_drawins} ', ESCAPE=LAST VIEW'];
+                        end
+                    else
+                        h.ttl.String{ttli_drawins} = 'CLICK IMAGE=ZOOM';
+                    end
                 end
+
                 for k = 1:numel(h.im.ol) %capture axis click to start roi draw on that axis (we loop over ol, which is image overlay, rather than image itself, because in stackplt dool is true (to allow roi overlays to be drawn in ol)
                     if ~isempty(h.im.ol{k}.UserData)
+                        roi_on_mean_z = 0;
                         h.im.ol{k}.UserData = [];
-                        axfocus = 1; %this is always 1 now because we "zoom in" to the axes you click on
-                        drawflag = drawflag+1;
-                        if drawflag==1 %on first axes click, do below, on second, don't do below, but do drawing further below (but don't put that clause in here because we don't want to have to click for every subroi on same image)
-                            iz_o = iz;  %save current iz to return to after drawing on the zoomed in axes (or if there's just one axes, this won't hurt either)
-                            roi_on_mean_z = 0;
-                            if isscalar(h.im.ol) %if there's only one axes, no need to zoom in then select to draw, just one click to draw
-                                drawflag = 2;
-                                if numel(iz)>1
-                                    roi_on_mean_z = 1;
+                        if any(strcmp(h.fg.UserData, imselectkeys))
+                            if irsub==1
+                                whole_im_idx = [];
+                            end
+                            if strcmp(h.fg.UserData, 'shift_shift') && numel(whole_im_idx)>1
+                                [~, nearestz] = min(abs(whole_im_idx - k));
+                                if k<whole_im_idx(nearestz)
+                                    tmprng = k:whole_im_idx(nearestz);
+                                else
+                                    tmprng = whole_im_idx(nearestz):k;
                                 end
-                            else %if multiple axes on first click (drawflag==1), we just zoom into clicked axes; on second click, we begin drawing
-                                showchange = 1;
-                                iz = k;
+                                whole_im_idx = [whole_im_idx tmprng]; %append range, then take unique below
+                            else
+                                whole_im_idx = sort([whole_im_idx k]);
+                            end
+                            whole_im_idx = unique(whole_im_idx);
+                            h.fg.UserData = [];
+                            subroinew = ones(ny,nx,'logical');
+                            if isscalar(h.im.ol) && numel(iz)>1
+                                roi_on_mean_z = 1;
+                            end
+                            [h, roimask, subroirgba, irsub, h.ttl.String] = subroiadd(h, subroinew, roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, h.ttl.String, whole_im_idx, []); % add drawn subroi and show as overlay
+                        else
+                            axfocus = 1; %this is always 1 now because we "zoom in" to the axes you click on
+                            if ~drawflag %on first axes click, do below, on second, don't do below, but do drawing further below (but don't put that clause in here because we don't want to have to click for every subroi on same image)
+                                if ~zoomflag
+                                    iz_o = iz;  %save current iz to return to after drawing on the zoomed in axes (or if there's just one axes, this won't hurt either)
+                                end
+                                if isscalar(h.im.ol) %if there's only one axes, no need to zoom in then select to draw, just one click to draw
+                                    drawflag = 1;
+                                    if numel(iz)>1
+                                        roi_on_mean_z = 1;
+                                    end
+                                else %if multiple axes on first click (drawflag==1), we just zoom into clicked axes; on second click, we begin drawing
+                                    zoomflag = 1;
+                                    showchange = 1;
+                                    iz = k;
+                                end
                             end
                         end
                     end
                 end
 
-                if ~isempty(h.fg.UserData) %&& drawflag==0 %capture key press on figure callback;
+                if ~isempty(h.fg.UserData) && ~any(strcmp(h.fg.UserData, imselectkeys)) %capture key press on figure callback;
 
                     currkey = h.fg.UserData;
                     h.fg.UserData = [];
-                    h.ttl.String{ttli_switches} = 'ALL SWITCHES ARE OFF'; %this can be overwritten below with some keypresses
 
-                    if cbflag.p || strcmp(currkey, 'p') %project roi to other z
+                    if cbflag.c || ( alloff && strcmp(currkey, 'c') ) %copy roi to other z (include the alloff to prevent a context key in one sequence from initializing a different sequence)
                         if irsub==1
-                            h.ttl.String{ttli_lastkey} = ['YOU CANNOT USE p SWITCH BECAUSE YOU HAVE NOT DRAWN ANY SUBROIS FOR ROI #' num2str(ir)];
+                            h.ttl.String{ttli_lastkey} = 'CANNOT USE c SWITCH BECAUSE YOU HAVE NOT DRAWN ANYTHING';
                         else
-                            h.ttl.String{ttli_switches} = ['p SWITCH IS ON, NOW ENTER z INDICES TO COPY ROI #' num2str(ir) ' ONTO'];
+                            h.ttl.String{ttli_switches} = 'c SWITCH ON, ENTER z INDICES TO COPY ROI';
+                            [cbflag, izp, h.ttl.String{ttli_lastkey}, showchange, dmslash] = cb_idx(iz, currkey, dmslash, nz, []);
                         end
-                        [cbflag, izp, h.ttl.String{ttli_lastkey}, showchange, dmslash] = cb_idx(iz, currkey, dmslash, nz, []);
 
-                    elseif cbflag.z || strcmp(currkey, 'z')  %z sequence; change shown z
-                        h.ttl.String{ttli_lastkey} = 'z';
-                        h.ttl.String{ttli_switches} = 'z SWITCH IS ON, YOU CAN ENTER STACK z INDICES TO SHOW';
-                        [cbflag, iz, h.ttl.String{ttli_lastkey}, showchange, dmslash] = cb_idx(iz, currkey, dmslash, nz, []);
+                    elseif cbflag.s || ( alloff && strcmp(currkey, 's') )  %s sequence; change roi shape (include the alloff to prevent a context key in one sequence from initializing a different sequence)
+                        h.ttl.String{ttli_switches} = 's SWITCH ON, CHANGE DRAW TOOL: c (circle), e (ellipse), f (freehand), p (polygon), r (rectangle)';
+                        [cbflag, roishape, h.ttl.String{ttli_lastkey}, showchange] = cb_roishape(currkey, roishape);
+                        if showchange
+                            if do_rg
+                                h.ttl.String{ttli_lastkey} = 'NOTE do rg IS TRUE SO rg WILL BE xyz BOUNDING BOX OF DRAWN ROI';
+                            end
+                            for k = 1:numel(h.ttl.String)
+                                h.ttl.String{k} = regexprep(h.ttl.String{k}, 'SHAPE \w+,', ['SHAPE ' roishape ',']);
+                            end
+                        end
 
-                    elseif cbflag.t || strcmp(currkey, 't')  %t sequence; change shown t
-                        h.ttl.String{ttli_lastkey} = 't';
-                        h.ttl.String{ttli_switches} = 't SWITCH IS ON, YOU CAN ENTER STACK t INDICES TO SHOW';
+                    elseif cbflag.t || ( alloff && strcmp(currkey, 't') )  %t sequence; change shown t (include the alloff to prevent a context key in one sequence from initializing a different sequence)
+                        h.ttl.String{ttli_switches} = 't SWITCH ON, ENTER T INDICES';
                         [cbflag, it, h.ttl.String{ttli_lastkey}, showchange, dmslash] = cb_idx(it, currkey, dmslash, nt, maxnt);
 
-                    elseif cbflag.s || strcmp(currkey, 's')  %s sequence; change roi shape
-                        if do_rg
-                            h.ttl.String{ttli_lastkey} = ['YOU CANNOT CHANGE ROISHAPE BECAUSE do rg IS TRUE (MUST DRAW RECTANGLE FOR CUBOIDAL rg)'];
-                        else
-                            h.ttl.String{ttli_lastkey} = 's';
-                            h.ttl.String{ttli_switches} = ['s SWITCH IS ON, CHANGE ROI SHAPE: f (freehand), r (rectangle), c (circle), e (ellipse), p (polygon)'];
-                        end
-                        [cbflag, roishape, h.ttl.String{ttli_lastkey}, showchange] = cb_roishape(currkey);
+                    elseif cbflag.z || ( alloff && strcmp(currkey, 'z') )  %z sequence; change shown z (include the alloff to prevent a context key in one sequence from initializing a different sequence)
+                        h.ttl.String{ttli_switches} = 'z SWITCH ON, ENTER Z INDICES';
+                        [cbflag, iz, h.ttl.String{ttli_lastkey}, showchange, dmslash] = cb_idx(iz, currkey, dmslash, nz, []);
 
                     elseif strcmp(currkey, 'backspace') %remove last roi
 
                         if ir==1 && irsub==1
-                            h.ttl.String{ttli_lastkey} = 'YOU CANNOT DELETE ANYTHING BECAUSE YOU HAVE NOT DRAWN ANY SUBROIS OR ROIS';
+                            h.ttl.String{ttli_lastkey} = 'NOTHING TO DELETE';
                         else
                             if irsub>1 %remove last subroi from current roi
-                                h.ttl.String{ttli_lastkey} = 'PRESSED "backspace", REMOVED LAST SUBROI';
+                                h.ttl.String{ttli_lastkey} = 'backspace, DELETED LAST SUBROI';
                             elseif ir>1 %remove previous roi (subrois are no longer accessible for rois before current)
-                                h.ttl.String{ttli_lastkey} = 'PRESSED "backspace", REMOVED LAST ROI';
+                                h.ttl.String{ttli_lastkey} = 'backspace, DELETED LAST ROI';
                             end
                         end
 
@@ -326,60 +363,74 @@ catch ME
                             end
                             h.im.ax{k}.CLim(2) = clim;
                         end
-                        h.ttl.String{ttli_lastkey} = ['PRESSED ' currkey ', RESCALED CONTRAST ' num2str(-1*round((scalefac - 1)*100)) ' %'];
+                        h.ttl.String{ttli_lastkey} = [currkey ', RESCALED CONTRAST ' num2str(-1*round((scalefac - 1)*100)) ' %'];
 
                     elseif strcmp(currkey, 'escape') %return to previous view
                         drawflag = 0;
-                        showchange = 1;
-                        iz = iz_o;
+                        if zoomflag %~isequal(iz, iz_o)
+                            showchange = 1;
+                            iz = iz_o;
+                        end
 
                     elseif strcmp(currkey, 'o') %remove pixels in current roi that belong to any other rois
-                        h.ttl.String{ttli_lastkey} = 'PRESSED "o", REMOVING ANY VOXELS FROM CURRENT SUBROI THAT OVERLAP WITH PREVIOUS ROIS';
-                        roimask_cum = logical(sum(roimask{ic}(:, :, 1:ir-2), 3));
-                        roimask_curr = logical(roimask{ic}(:, :, ir-1));
-                        roimask_sum = roimask_cum + roimask_curr;
-                        roimask_remove = roimask_sum>1;
-                        roimask_curr(roimask_remove) = 0;
-                        roimask{ic}(:, :, ir-1) = roimask_curr;
-                        [rw,cl]=ind2sub([size(roimask{ic}, 1) size(roimask{ic}, 2)], find(sum(roimask{ic}, 3)>1));
-                        for cli = 1:numel(cl)
-                            roimask{ic}(rw(cli), cl(cli), :) = 0; %do it this way
+                        if ir<2 || ( ir==2 && irsub==1 )
+                            h.ttl.String{ttli_lastkey} = 'NO OVERLAP TO REMOVE';
+                        else
+                            h.ttl.String{ttli_lastkey} = 'o, REMOVING ANY VOXELS FROM CURRENT SUBROI THAT OVERLAP WITH PREVIOUS ROIS';
+                            [i1,i2,i3,i4,i5] = ind2sub(size(roimask{ic}), find(roimask{ic}, 1, 'last'));
+                            overlaps = logical(sum(roimask{ic}(:,:,:,:,1:i5-1), [4,5])) + roimask{ic}(:,:,:,i4,i5) > 1; %mask of all previous rois plus mask of current subroi gives us overlaps (we don't care about other subrois in current roi, they won't affect result since they are grouped anyway)
+                            roimask{ic}(:,:,:,i4,i5) = roimask{ic}(:,:,:,i4,i5).*~overlaps; %zero overlaps
+                            [h, roimask, subroirgba, ~, h.ttl.String] = subroiadd(h, [], roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, h.ttl.String, axfocus, []); % here, we copy drawn subroi to z slices izroi (and axfocus is empty)
                         end
 
                     elseif strcmp(currkey, 'q') %quit
-                        h.ttl.String{ttli_lastkey} = 'q';
-                        [roimask{ic}, ~, ~, ~, h.ttl.String] = roiadd(roimask{ic}, subroimask, ir, h.ttl.String);
+                        h.ttl.String{ttli_lastkey} = 'q, QUIT';
+                        h.ttl.String = roiinc(h.ttl.String, ir);
                         break;
 
                     elseif strcmp(currkey, 'r') %increment roi
-                        h.ttl.String{ttli_lastkey} = 'r';
-                        [roimask{ic}, subroimask, ir, irsub, h.ttl.String] = roiadd(roimask{ic}, subroimask, ir, h.ttl.String);
                         if do_oneroi
-                            break
+                            h.ttl.String{ttli_lastkey} = 'CANNOT ADVANCE TO NEXT ROI BECAUSE YOU ARE LIMITED TO ONE ROI';
+                        else
+                            h.ttl.String{ttli_lastkey} = 'r, ADVANCED TO NEXT ROI';
+                            [h.ttl.String, ir, irsub] = roiinc(h.ttl.String, ir);
                         end
 
+                    else
+                        h.ttl.String{ttli_lastkey} = 'INVALID KEY';
                     end
+
+                    alloff = all(~cellfun(@(x) isequal(x,1), struct2cell(cbflag))); %all switches off
+                    if alloff
+                        h.ttl.String{ttli_switches} = 'ALL SWITCHES OFF';
+                    end
+
                 end
 
                 if showchange %change stack plot
-                    if ~isempty(izp) %izp only used for p-sequence projection
-                        [h, subroimask, subroirgba, irsub] = subroiadd(h, imtmp, subroimask, subroirgba, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, [], izp); % here, we project drawn subroi onto z slices izroi (and axfocus is empty)
+                    if ~isempty(izp) %izp only used for c-sequence (roi projection)
+                        roi_on_mean_z_dummy = 0; %make roi_on_mean_z=0 because it must be false when copying rois (doesn't make sense to copy to a mean)
+                        [h, roimask, subroirgba, irsub, h.ttl.String] = subroiadd(h, subroinew, roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z_dummy, h.ttl.String, [], izp); % here, we copy drawn subroi to z slices izroi (and axfocus is empty)
                         izp = [];
                     else
-                        [stacktmp, h] = stackshow(h, subroirgba, stack, iz, it, ic, rgname, maskname, nz, nt, nc, do_rg, do_oneroi, fontsz, dmslash);
+                        [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, maskname, nz, nt, nc, roishape, do_rg, do_oneroi, fontsz, dmslash, cmap, roialpha);
                     end
                     showchange = 0;
                 end
 
-                if drawflag==2
+                % h.ttl.String{ttli_drawins} = ['CLICK IMAGE TO SELECT ALL PIXELS' ttl_tmp ', ESCAPE=CLOSE DRAW TOOL'];
+
+                if drawflag
+                    h.ttl.String(ttli_remove) = [];
+                    h.ttl.String{2} = 'CALLBACKS DISABLED WHEN DRAW TOOL OPEN';
                     ttl_tmp = '';
                     if roi_on_mean_z
-                        ttl_tmp = ', WILL COPY TO ALL Z COMPRISING THIS IMAGE';
+                        ttl_tmp = ', WILL COPY TO Z COMPRISING MEAN IMAGE';
                     end
                     if do_rg
-                        h.ttl.String{ttli_drawins} = ['NOW DRAW THE XY CROSS-SECTION OF rg "' rgname '"' ttl_tmp ', PRESS ESCAPE TO EXIT DRAW TOOL'];
+                        h.ttl.String{ttli_drawins} = ['DRAW "' roishape '" (XY CROSS-SECTION OF rg "' rgname '")' ttl_tmp ', ESCAPE=CLOSE DRAW TOOL'];
                     else
-                        h.ttl.String{ttli_drawins} = ['NOW DRAW SUBROI #' num2str(irsub) ', ROI #' num2str(ir) ttl_tmp ', PRESS ESCAPE TO EXIT DRAW TOOL'];
+                        h.ttl.String{ttli_drawins} = ['DRAW "' roishape '"' ttl_tmp ', ESCAPE=CLOSE DRAW TOOL'];
                     end
                     switch roishape
                         case 'circle'
@@ -395,7 +446,7 @@ catch ME
                         otherwise
                             error("invalid roishape")
                     end
-                    h.ttl.String{ttli_drawins} = 'ADJUST ROI OR PRESS RETURN TO FINISH SUBROI';
+                    h.ttl.String{ttli_drawins} = 'MOUSE=ADJUST, ESCAPE=DELETE, RETURN=ACCEPT';
                     while true
                         if ~isempty(h.fg.UserData) %capture key press on figure callback
                             currkey2 = h.fg.UserData;
@@ -403,47 +454,62 @@ catch ME
                             if strcmp(currkey2 , 'return')
                                 break
                             elseif  strcmp(currkey2 , 'escape') %hr will be empty if you hit escape
-                                drawflag = 0;
-                                showchange = 1;
-                                iz = iz_o;
+                                if isempty(hr.Position)
+                                    drawflag = 0;
+                                else
+                                    delete(hr)
+                                    hr = [];
+                                    pause(0.1) %without this pause the draw tool disappears after escape
+                                    break
+                                end
                                 break
                             end
                         end
-                        pause(0.02)
+                        pause(0.05)
                     end
-                    hr.InteractionsAllowed = 'none'; %disallow any more changes
-                    hr.Visible = 'off'; %make border and waypoints invisible (face alpha created in subroiadd below)
-                    if ~isempty(hr.Position) %if it's not an empty roi, which can be created by mistake, or by hitting escape to exist drawing
-                        imtmp = createMask(hr, h.im.pl{axfocus});
-                        [h, subroimask, subroirgba, irsub] = subroiadd(h, imtmp, subroimask, subroirgba, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, axfocus, []); % add drawn subroi and show as overlay
+                    if ~isempty(hr) && ~isempty(hr.Position) %if it's not an empty roi, which can be created by mistake, or by pressing escape to close drawing tool
+                        hr.InteractionsAllowed = 'none'; %disallow any more changes
+                        hr.Visible = 'off'; %make border and waypoints invisible (face alpha created in subroiadd below)
+                        subroinew = createMask(hr, h.im.pl{axfocus});
+                        [h, roimask, subroirgba, irsub, h.ttl.String] = subroiadd(h, subroinew, roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, h.ttl.String, axfocus, []); % add drawn subroi and show as overlay
+                    end
+                    if ~drawflag
+                        h.ttl.String{ttli_drawins} = ''; %this is not strictly necessary, just so it's empty during the brief pause when zooming out
+                        h.ttl.String(ttli_remove) = ttl_sv;
                     end
                 end
 
-                pause(0.02); %pause for callbacks and figure updates
+                pause(0.05); %pause for callbacks and figure updates
 
             end
             break;
         end
 
-        h.ttl.String = "PRESSED A QUIT KEY, CLOSING THIS FIGURE IN 1 SEC";
-        pause(1)
+        h.ttl.String = "CLOSING THIS FIGURE IN 2 SEC";
+        pause(2)
         close(h.fg);
 
         %%%% ARRANGE MASK %%%%
 
         if any(roimask{ic}(:))
 
-            kp = any(reshape(roimask{ic}, [], size(roimask{ic}, 4)));%find nonempty rois, this works for 2d, 3d, 4d
-            roimask{ic} = roimask{ic}(:,:,:,kp); %remove empty "rois", this works for 2d, 3d, 4d
+            roimask{ic} = logical(sum(roimask{ic}, 4)); %sum subroi dimension
 
-            if remove_overlap %remove overlapping pixels
-                [rw,cl,zs] = ind2sub([size(roimask{ic}, 1), size(roimask{ic}, 2), size(roimask{ic}, 3)], find(sum(roimask{ic}, 4)>1));
-                for cli = 1:numel(cl)
-                    roimask{ic}(rw(cli), cl(cli), zs(cli), :) = 0; %why do it this way?
+            kp = any(reshape(roimask{ic}, [], size(roimask{ic}, 4))); %find nonempty rois, this works for 2d, 3d, 4d
+            if ~all(kp)
+                roimask{ic} = roimask{ic}(:,:,:,kp); %remove empty "rois", this works for 2d, 3d, 4d
+            end
+
+            if remove_overlap %remove voxels from rois that overlap with rois drawn earlier
+                for k = flip(1:size(roimask{ic},4))  %go backwards through foreground rois to zero voxels that overlap with any rois drawn earlier
+                    overlaps = sum(roimask{ic},4)>1; %compute the sum after each overlap removal, so we don't remove all rois contributing to overlap
+                    roimask{ic}(:,:,:,k) = roimask{ic}(:,:,:,k).*~overlaps; %zero overlap by multiplying by inverse mask
                 end
             end
 
-            roimask{ic} = logical(roimask{ic}); %just to be sure
+            if ~islogical(roimask{ic})
+                roimask{ic} = logical(roimask{ic}); %just to be sure
+            end
 
         else
 
@@ -491,7 +557,7 @@ end
 
 end
 
-function [stacktmp, h, ndt] = stackshow(h, subroirgba, stack, iz, it, ic, rgname, maskname, nz, nt, nc, do_rg, do_oneroi, fontsz, dmslash)
+function [stacktmp, h, ndt] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, maskname, nz, nt, nc, roishape, do_rg, do_oneroi, fontsz, dmslash, cmap, roialpha)
 
 idxstr = repmat({':'}, 1, 5); %do it this way in case we are only modifying one dimension, indexing with all elements of unchanged dimensions is costly
 if ~isequal(iz, 1:nz)
@@ -522,7 +588,7 @@ if ~isempty(h)
 end
 
 if changeaxes
-    ax = axarr(stacktmp, marginax=0.01, marginfg=[0, 0.2, 0.01, 0.01], stackjust='max');
+    ax = axarr(stacktmp, marginax=0.01, marginfg=[0, 0.2, 0.01, 0.01], stackjust='mid');
     if isempty(h)
         h = fg(fontsz=fontsz, szf=1);
     end
@@ -535,19 +601,18 @@ end
 
 if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois, subroirgba saves them in correct locations, regardless of which parts of the stack are displayed
     if ismember(3, find(dmslash)) %if z dimension is averaged, we must average rgba (if it exists)
-        denom = sum(logical(subroirgba(:,:,4,iz(:))),4); %we can just use the alpha channel (4th index of 3rd/rgba dimension) to determine how many rois at each voxel (since alpha can't be 0), sum this over all z we want to show for denominator (average)
-        denom(denom==0) = 1; %make zeros = ones, so we don't divide by 0, and because 0 and 1 rois should be divided by 1 (although dividing by 0 also works, since nans just aren't displayed)
-        h.im.ol{1}.CData = sum(subroirgba(:,:,1:3,iz(:)),4) ./ denom; % mean of (colored parts of) rgb image for axes iz,
-        h.im.ol{1}.AlphaData = sum(subroirgba(:,:,4,iz(:)),4) ./ denom; %mean of (colored parts of) transparency image for axes iz
+        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), col=cmap, alp=roialpha); %
+        h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
+        h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
     else
         for k = 1:numel(h.im.ol)
-            h.im.ol{k}.CData = squeeze(subroirgba(:,:,1:3,iz(k))); %rgb image for axes iz(k)
-            h.im.ol{k}.AlphaData = subroirgba(:,:,4,iz(k)); %transparency image for axes iz(k)
+            h.im.ol{k}.CData = squeeze(subroirgba(:,:,iz(k),1:3)); %rgb image for axes iz(k)
+            h.im.ol{k}.AlphaData = subroirgba(:,:,iz(k),4); %transparency image for axes iz(k)
         end
     end
 end
 
-[h, ndt] = titlemake(h, ic, rgname, maskname, iz, it, nz, nt, do_rg, do_oneroi, fontsz, dmslash);
+[h, ndt] = titlemake(h, ic, rgname, maskname, ir, irsub, iz, it, nz, nt, roishape, do_rg, do_oneroi, fontsz, dmslash);
 
 end
 
@@ -581,7 +646,7 @@ end
 
 end
 
-function [h, ndt] = titlemake(h, ic, rgname, maskname, iz, it, nz, nt, do_rg, do_oneroi, fontsz, dmslash)
+function [h, ndt] = titlemake(h, ic, rgname, maskname, ir, irsub, iz, it, nz, nt, roishape, do_rg, do_oneroi, fontsz, dmslash)
 
 if isequal(iz, 1:nz)
     title_z = ',   Z ALL';
@@ -601,36 +666,37 @@ if isequal(dmslash(4),1)
 end
 
 if do_rg
-    ttltmp = ['DRAWING RG: "' rgname '",   SHOWING STACK (NO RG),   CHANNEL: ' num2str(ic) title_z title_t];
+    ttltmp = {['DRAWING rg: "' rgname '"']; ['SHOWING STACK (NO rg),   CHANNEL: ' num2str(ic) title_z title_t]};
 else
-    ttltmp = ['DRAWING ROIS FOR MASKNAME: "' maskname '",   SHOWING STACK RGNAME: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t];
+    ttltmp = {['DRAWING ROI #' num2str(ir) ', SUBROI #' num2str(irsub) ', FOR MASKNAME: "' maskname '", SHAPE: "' roishape '"']; ['SHOWING STACK rg: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t]};
 end
 
-h.ttl.String = {ttltmp};
+h.ttl.String = ttltmp;
 
 if do_oneroi
     ttltmp = { [...
-        'q/r: QUIT DRAWING,   ', ...
+        'q: QUIT DRAWING,   ', ...
         ]};
 else
     ttltmp = { [...
-        'q: QUIT DRAWING,   ', ...
+        'q: QUIT ROIDRAW,   ', ...
         'r: NEXT ROI,   ', ...
+        's: CHANGE SHAPE,   ', ...
         ]};
 end
 h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
 ttltmp = { [...
-    'up/down: RESCALE STACK CONTRAST,   ', ...
-    % 'o: REMOVE CURRENT SUBROI OVERLAP,   ', ...
-    % 'backspoace: UNDO LAST SUBROI/ROI  ', ...
+    'up/down: CONTRAST,   ', ...
+    'o: REMOVE OVERLAP,   ', ...
+    'backspoace: UNDO LAST   ', ...
     ]};
-h.ttl.String = cat(1, h.ttl.String, ttltmp);
+h.ttl.String{end} = cat(2, h.ttl.String{end}, ttltmp{1}); %cat this one along same line, so we don't have to repeat this in the if else above
 
 ttltmp = { [...
-    'z: ADJUST BACKGROUND z,   ', ...
-    't: ADJUST BACKGROUND t,   ', ...
-    'p: PROJECT CURRENT SUBROI TO OTHER z,   ', ...
+    'z: ADJUST z,   ', ...
+    't: ADJUST t,   ', ...
+    'c: COPY SUBROI TO z,   ', ...
     ]};
 h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
@@ -639,20 +705,19 @@ h.ttl.FontSize = fontsz;
 
 end
 
-function [roimask, subroimask, ir, irsub, ttl] = roiadd(roimask, subroimask, ir, ttl)
+function [ttl, ir, irsub] = roiinc(ttl, ir)
 
-roimask(:, :, :, ir) = logical(sum(subroimask, 4)); %group all subroi as roi index ir
-subroimask(:) = 0;
 ir = ir + 1; %increment roi counter
 irsub = 1; %reset subroi counter to 1
 for k = 1:numel(ttl)
-    ttl{k} = regexprep(ttl{k}, '(?!SUB)ROI #\d+', [' ROI #' num2str(ir)]);
+    ttl{k} = regexprep(ttl{k}, ' ROI #\d+', [' ROI #' num2str(ir)]); %distinguish subroi from roi with space first
+    ttl{k} = regexprep(ttl{k}, 'SUBROI #\d+', ['SUBROI #' num2str(irsub)]);
 end
 
 end
 
 
-function [h, subroimask, subroirgba, irsub] = subroiadd(h, imtmp, subroimask, subroirgba, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, axfocus, izroi)
+function [h, roimask, subroirgba, irsub, ttl] = subroiadd(h, subroinew, roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, ttl, axfocus, izroi)
 
 
 if isempty(axfocus)
@@ -669,71 +734,30 @@ elseif isempty(izroi)
     end
 end
 
-for k = 1:numel(izroi)
-    subroimask(:,:,izroi(k),irsub) = imtmp; %add subroi or roi
-    [imrgb, imalpha] = roiolmake(imrgb=subroirgba(:,:,1:3,izroi(k)), imalpha=subroirgba(:,:,4,izroi(k)), roimask=imtmp, col=cmap(ir,:), alp=roialpha); %this is actually taking sequential mean of all overlapping rgba, whatever
-    subroirgba(:,:,:,izroi(k)) = cat(4, imrgb, imalpha); %add rgba
-    if (roi_on_mean_z && k==1) || ~roi_on_mean_z
-        h.im.ol{axfocus(k)}.CData = squeeze(imrgb); %rgb image
-        h.im.ol{axfocus(k)}.AlphaData = imalpha; %(h.im.ol{axfocus(k)}.AlphaData | imtmp)*roialpha; %transparency image,
+if ~isempty(subroinew)
+    for k = 1:numel(izroi)
+        roimask{ic}(:,:,izroi(k),irsub,ir) = subroinew; %add subroi or roi
+        irsub = irsub+1; %increment subroi counter for current roi
     end
-    irsub = irsub+1; %increment subroi counter for current roi
-end
 
-end
+    [imrgb, imalpha] = roiolmake(roimask=squeeze(any(roimask{ic}, 4)), col=cmap, alp=roialpha); %
+    subroirgba = cat(4, imrgb, imalpha); %add rgba, we use this elsewhere, so compute even if roi_on_mean_z
 
-function [cbflag, roishape, ttl, success] = cb_roishape(currkey)
-
-persistent roishape_tmp
-persistent ttltmp
-
-nm = 's';
-clear_persistent_vars = 0;
-success = 0;
-
-if strcmp(currkey, nm) %reset if you press init key
-    ttltmp = [nm ' (shape): '];
-    clear_persistent_vars = 1;
-elseif strcmp(currkey, 'escape')
-    clear_persistent_vars = 1;
-    cbflag.(nm) = 0; %turn off flag
-elseif strcmp(currkey, 'return')
-    if isempty(roishape_tmp)
-        roishape_tmp = 'freehand'; %default if nothing selected
-        ttltmp = 'f (freehand)';
+    if roi_on_mean_z
+        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), col=cmap, alp=roialpha); %
+        h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
+        h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
+    else
+        for k = 1:numel(axfocus)
+            h.im.ol{axfocus(k)}.CData = squeeze(imrgb(:,:,iz(axfocus(k)),:)); %rgb image
+            h.im.ol{axfocus(k)}.AlphaData = imalpha(:,:,iz(axfocus(k))); %transparency image,
+        end
     end
-    clear_persistent_vars = 1;
-    cbflag.(nm) = 0; %turn off flag
-    success = 1;
-else
-    switch currkey
-        case 'c'
-            roishape_tmp = 'circle';
-            ttltmp = [nm ' (shape): c (circle)'];
-        case 'e'
-            roishape_tmp = 'ellipse';
-            ttltmp = [nm ' (shape): e (ellipse)'];
-        case 'f'
-            roishape_tmp = 'freehand';
-            ttltmp = [nm ' (shape): f (freehand)'];
-        case 'p'
-            roishape_tmp = 'polygon';
-            ttltmp = [nm ' (shape): p (polygon)'];
-        case 'r'
-            roishape_tmp = 'rectangle';
-            ttltmp = [nm ' (shape): r (rectangle)'];
-    end
-end
 
-
-ttl = ttltmp;
-roishape = roishape_tmp;
-
-if clear_persistent_vars
-    roishape_tmp = [];
-    if ~isequal(currkey, nm) %in case currkey is init key (nm), persistent vars just got cleared, but you need to set these to the init key
-        ttltmp = [];
+    for k = 1:numel(ttl)
+        ttl{k} = regexprep(ttl{k}, 'SUBROI #\d+', ['SUBROI #' num2str(irsub)]);
     end
 end
 
 end
+
