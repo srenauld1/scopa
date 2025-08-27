@@ -1019,6 +1019,18 @@
     "t": [1,44708],
     "c": [1,1]
   },
+  "a85": {
+    "id": "20250824_1_1_eb",
+    "recdatenum": 2.0250824E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "eb",
+    "y": [8,22],
+    "x": [45,80],
+    "z": [2,11],
+    "t": [1,44708],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
