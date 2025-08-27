@@ -1,24 +1,24 @@
-function [cbflag, inew, ttl, success, dmslash] = cb_idx(inew, currkey, dmslash, n, maxn)
+function [cbflag, inew, ttl, dmslash] = cb_idx(currkey, n, maxn, dmslash)
 
-% process sequence of keypresses to create/output a numeric vector, inew, representing indices
+% process sequence of keypress callbacks to create and output a numeric vector, inew
+% if semicolon is included, inew is cell, otherwise ordinary array
 
 arguments (Input)
-    inew %original indices to be modified by this function
     currkey %current keypress
-    dmslash %whether to average each stack dimension
     n %number elements in array we are making indices for
-    maxn %max allowed length of inew
+    maxn = [] %max allowed length of inew
+    dmslash = [] %whether to average each stack dimension
 end
 arguments (Output)
     cbflag %struct holding callback flags (state switches)
     inew % output indices, can be same as input inew, or different
     ttl %text showing current state of keypresses
-    success %flag indicating index creation was successful
     dmslash %1 is flag to take mean of selected indices, 0 to not
 end
 
 persistent digitstr
 persistent inewtmp
+persistent inewtmp2
 persistent colon_pressed
 persistent hyphen_pressed
 persistent slash_pressed
@@ -42,24 +42,27 @@ if isempty(prevkey)
         error("only one field of struct nm can be true")
     end
 
-    if strcmp(nm, 'c') %copy roi to specified z
-        context_keys = {'c', 'return', 'escape', 'comma', 'semicolon_shift', 'hyphen'}; %don't include slash in 'c' sequence
-        dm = 3; %dimension of stack being modified
-    elseif strcmp(nm, 't')
-        context_keys = {'t', 'return', 'escape', 'slash', 'comma', 'semicolon_shift', 'hyphen'};
+    dm = []; %empty by default
+    context_keys = {nm, 'return', 'escape', 'comma', 'semicolon_shift', 'hyphen'};
+    if strcmp(nm, 'c') %copy roi to specified iz (z indices)
+        context_keys = cat(2, context_keys, {}); %nothing to add here yet
+    elseif strcmp(nm, 't') %change it (t indices)
+        context_keys = cat(2, context_keys, {'slash'}); %allow slash (averaging)
         dm = 4; %dimension of stack being modified
-    elseif strcmp(nm, 'z')
-        context_keys = {'z', 'return', 'escape', 'slash', 'comma', 'semicolon_shift', 'hyphen'};
+    elseif strcmp(nm, 'z') %change iz (z indices)
+        context_keys = cat(2, context_keys, {'slash'}); %allow slash (averaging)
         dm = 3; %dimension of stack being modified
+    elseif strcmp(nm, 'backspace') %delete {irsub,ir}, that is, {subroi index, roi index}
+        context_keys = cat(2, context_keys, {'semicolon'}); %allow semicolon (multiple vectors, semicolon separates vectors)
     end
 
 end
 
 if isempty(slash_pressed)
-    slash_pressed = 0; %can't be empty becaude it gets assigned to one index of dmslash
+    slash_pressed = 0; %can't be empty because it gets assigned an element of vector dmslash
 end
+inew = []; %empty unless successful exit
 ttltmp2 = [];
-success = 0;
 exit_sequence = 0;
 init_sequence = 0;
 
@@ -77,6 +80,22 @@ if currkeyp.isvalid
             if colon_pressed %ouch!
                 [inewtmp, ttltmp2, colon_pressed, exit_sequence, currkeyp] = colon_op(inewtmp, nm, currkeyp);
             end
+            digitstr = [];
+        else
+            currkeyp.isvalid = 0;
+        end
+    elseif strcmpi(currkey, 'semicolon')
+        if prevkeyp.isdigit
+            inewtmp = [inewtmp str2double(digitstr)];
+            if colon_pressed %ouch!
+                [inewtmp, ttltmp2, colon_pressed, exit_sequence, currkeyp] = colon_op(inewtmp, nm, currkeyp);
+            end
+            if isempty(inewtmp2)
+                inewtmp2 = inewtmp;
+            else
+                inewtmp2 = {inewtmp2; inewtmp};
+            end
+            inewtmp = []; %reset inewtmp if making multiple vectors (if semicolon is allowed and used)
             digitstr = [];
         else
             currkeyp.isvalid = 0;
@@ -111,15 +130,19 @@ if currkeyp.isvalid
         end
         if ~exit_sequence
             inewtmp = indsmake(inewtmp, indsall=n);
-            if ~isempty(maxn) && numel(inewtmp)>maxn && ~slash_pressed
-                ttltmp2 = ['YOU HAVE REQUESTED MORE ' nm ' INDICES (' num2str(numel(inewtmp)) ') THAN ALLOWED (' num2str(maxn) '), ' nm ' SELECTION EXITED WITHOUT CHANGE'];
+            if isempty(inewtmp2)
+                inewtmp2 = {inewtmp};
+            else
+                inewtmp2 = {inewtmp2; inewtmp};
+            end
+            if ~isempty(maxn) && numel(inewtmp2)>maxn && ~slash_pressed
+                ttltmp2 = ['YOU HAVE REQUESTED MORE ' nm ' INDICES (' num2str(numel(inewtmp2)) ') THAN ALLOWED (' num2str(maxn) '), ' nm ' SELECTION EXITED WITHOUT CHANGE'];
                 currkeyp.isvalid = 0;
-            elseif any(~ismember(inewtmp, 1:n))
+            elseif any(~ismember(inewtmp2, 1:n))
                 ttltmp2 = ['YOU HAVE REQUESTED ' nm ' INDICES OUTSIDE STACK RANGE, ' nm ' SELECTION EXITED WITHOUT CHANGE'];
                 currkeyp.isvalid = 0;
             else %success
-                inew = inewtmp;
-                success = 1;
+                inew = inewtmp2;
                 exit_sequence = 1;
                 cbflagtmp = flagset(0);
             end
@@ -159,12 +182,15 @@ else
 end
 
 ttl = ttltmp;
-dmslash(dm) = slash_pressed;
 cbflag = cbflagtmp;
+if ~isempty(dmslash)
+    dmslash(dm) = slash_pressed;
+end
 
 if exit_sequence || init_sequence %clear these after setting above output variables
     digitstr = [];
     inewtmp = [];
+    inewtmp2 = [];
     colon_pressed = [];
     hyphen_pressed = [];
     slash_pressed = [];
@@ -207,10 +233,12 @@ if keyp.isvalid %if it's not a single digit or alphabetic character or return ke
     switch x
         case 'semicolon_shift'
             x = ':';
+        case 'semicolon'
+            x = ';';
         case 'comma'
             x = ',';
         case 'hyphen'
-            x = '- (NUM EQUIDISTANT INDICES) ';
+            x = '- (NUM EQUISPACED INDICES) ';
         case 'slash'
             x = '/ (MEAN OF) ';
         case 'return'

@@ -52,7 +52,14 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
+%% 
 
+figure
+    N = 60;
+    axes('ColorOrder',brewermap(N,'PiYG'),'NextPlot','replacechildren')
+    X = linspace(0,pi*3,1000);
+    Y = bsxfun(@(x,n)n*sin(x+2*n*pi/N), X(:), 1:N);
+    plot(X,Y, 'linewidth',4)
     %% bump
 
     if o.mn.dobmp

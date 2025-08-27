@@ -1,4 +1,4 @@
-function [cbflag, roishape, ttl, success] = cb_roishape(currkey, roishape)
+function [cbflag, roishape, ttl] = cb_roishape(currkey)
 
 persistent roishape_tmp
 persistent ttltmp
@@ -18,10 +18,10 @@ if isempty(prevkey)
     end
 end
 
-success = 0;
 exit_sequence = 0;
 init_sequence = 0;
 invalid_key = 0;
+roishape = []; %always empty unless successful exit
 
 if strcmp(currkey, nm) %reset if you press init key
     ttltmp = [nm ' (shape): '];
@@ -35,10 +35,9 @@ else
             invalid_key = 1;
             ttltmp = 'YOU MUST SELECT ROISHAPE, OR PRESS ESCAPE';
         else
-            roishape = roishape_tmp;
             exit_sequence = 1;
             cbflagtmp = flagset(0);
-            success = 1;
+            roishape = roishape_tmp;
         end
     elseif strcmp(currkey, 'c')
         roishape_tmp = 'circle';
