@@ -1953,6 +1953,28 @@
       "vnm": "ts"
     }
   ],
+  "a80": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "a21",
+      "pth": "/Users/wienecke/stacks/ganoeb/untitled folder/20250824_1_1_a21_daq_.mat",
+      "vnm": "vy"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": [],
+      "ii": [],
+      "it": [],
+      "optid": "a90",
+      "pth": "/Users/wienecke/stacks/ganoeb/untitled folder/20250824_1_1_ord_a90_roi_.mat",
+      "vnm": "ts"
+    }
+  ],
   "md": {
     "autonm": 1,
     "maketime": "2025031519252622",
