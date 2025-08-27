@@ -995,6 +995,18 @@
     "t": [1,44708],
     "c": [1,1]
   },
+  "a83": {
+    "id": "20250824_1_1_gal",
+    "recdatenum": 2.0250824E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "gal",
+    "y": [18,25],
+    "x": [108,119],
+    "z": [14,21],
+    "t": [1,44708],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
