@@ -2918,6 +2918,34 @@
       "tg": []
     }
   },
+  "a92": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "chanstr": "all",
+      "maskname": "eleven2"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "dff015020",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "tm",
+    "sp": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044540",
