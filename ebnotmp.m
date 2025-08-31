@@ -1,5 +1,5 @@
 
-function ebnotmp(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, opt)
+function ebnotmp(stack, side, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, opt)
 
 
 arguments
@@ -7,6 +7,7 @@ arguments
     side
     cue
     ball
+    ballfv
     bump
     eb
     nol
@@ -82,7 +83,7 @@ for k = 1:numel(side)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                ebno_one(stack, side{k}, cue, ball, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
+                ebno_one(stack, side{k}, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
                 % close all
 
                 if ~plt(3) && ~plt(4) %don't loop over conditions if you're just plotting timeseries or bump (only loop for scatterplots)
@@ -98,7 +99,7 @@ end
 end
 
 
-function ebno_one(stack, side, cue, ball, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
+function ebno_one(stack, side, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, plt, histplt, bmpdomain, tsub, dozscore, drawrot, sliceeb)
 
 
 
@@ -260,7 +261,7 @@ if ~isempty(plt) && plt(1)
     %% bump as heatmap
 
 
-    dozscore_hm = 1;
+    dozscore_hm = 0;
     if dozscore_hm
         for k = 1:size(eb,1)
             % eb(k,:) = rescale(eb(k,:));
@@ -282,17 +283,22 @@ if ~isempty(plt) && plt(1)
     hold(h.im.ax{1}, "on")
     h.im.pl{1}.XData = t;
     % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    plot(h.im.ax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(3,:))
+    plot(h.im.ax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(4,:))
+    plot(h.im.ax{1}, t, rescale(ballfv, 1, size(eb,1)), color=cmap(5,:))
     % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color='g')
-    plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(2,:))
-
-    plot(h.im.ax{1}, t, rescale(gld, 1, size(eb,1)), color=cmap(4,:), linestyle='-', linewidth=2);
-    plot(h.im.ax{1}, t, rescale(glv, 1, size(eb,1)), color=cmap(4,:), linestyle=':', linewidth=2);
-    plot(h.im.ax{1}, t, rescale(grd, 1, size(eb,1)), color=cmap(5,:), linestyle='-', linewidth=2);
-    plot(h.im.ax{1}, t, rescale(grv, 1, size(eb,1)), color=cmap(5,:), linestyle=':', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(3,:))
+    wsz = 30;
+    [gldtmp, wsz] = smoothdata(gld, 'sgolay', wsz);
+    [glvtmp, wsz] = smoothdata(glv, 'sgolay', wsz);
+    % plot(h.im.ax{1}, t, rescale(gldtmp, 1, size(eb,1)), color=cmap(1,:), linestyle='-', linewidth=2);
+    % plot(h.im.ax{1}, t, rescale(glvtmp, 1, size(eb,1)), color=cmap(1,:), linestyle=':', linewidth=2);
+    [grdtmp, wsz] = smoothdata(grd, 'sgolay', wsz);
+    [grvtmp, wsz] = smoothdata(grv, 'sgolay', wsz);
+    plot(h.im.ax{1}, t, rescale(grdtmp, 1, size(eb,1)), color=cmap(2,:), linestyle='-', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(grvtmp, 1, size(eb,1)), color=cmap(2,:), linestyle=':', linewidth=2);
 
     xlim(limt)
-    title('eb original')
+    title('eb (heatmap), gall left (blue), gall right (red), cue (yellow), ball yaw (purple)')
     numxtick = 20;
     h.im.ax{1}.XTick = linspace(limt(1), limt(2), numxtick);
     h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
@@ -459,6 +465,7 @@ if ~isempty(plt) && plt(1)
         hold on
         hbr1 = bar(3.2, 1, 0.25);
         hbr2 = bar(3.5, 1, 0.25);
+        hbr4 = bar(-3.4, 1, 0.25);
 
         contrastfac = 1;
 
@@ -493,6 +500,7 @@ if ~isempty(plt) && plt(1)
             hpl2.CData = stackeb(:,:,k);
             hbr1.YData = nolz(k);
             hbr2.YData = norz(k);
+            hbr4.YData = ballfv(k);
             ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(tsubsamp(k))) ', epoch: ' num2str(epochts(tsubsamp(k)))]};
             fig2gif(hfg,k)
         end

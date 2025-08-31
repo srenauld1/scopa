@@ -7,7 +7,7 @@ arguments
     specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
-clear persistent
+clear glb tsget
 
 
 %% options
@@ -52,14 +52,6 @@ for k = 1:numel(oa) % loop over recordings
         end
     end
 
-%% 
-
-figure
-    N = 60;
-    axes('ColorOrder',brewermap(N,'PiYG'),'NextPlot','replacechildren')
-    X = linspace(0,pi*3,1000);
-    Y = bsxfun(@(x,n)n*sin(x+2*n*pi/N), X(:), 1:N);
-    plot(X,Y, 'linewidth',4)
     %% bump
 
     if o.mn.dobmp
@@ -175,6 +167,7 @@ figure
 
     try
         load([o.id.pthpre 'garebgal_.mat'], 'stacknew');
+        save('/Users/wienecke/stacks/ganoeb/20250824-1_d05_s8m_018_s8m/20250824_1_1_ord_garebgal_.mat', 'stacknew')
     catch
         stacknew = stackmix(stack, {'gar', 'eb', 'gal'}, rot=[-90,0,0], pthstacks=glb('pthstack'));
     end
@@ -182,8 +175,8 @@ figure
 
     %%
 
-    ebnotmp(stacknew, {'r'}, daq.(idaq).vy, daq.(idaq).by, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
-        glddv, glvdv, grddv, grvdv, ...
+    ebnotmp(stacknew, {'r'}, daq.(idaq).vy, daq.(idaq).by, daq.(idaq).bfv, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
+        gld, glv, grd, grv, ...
         plt=[1 0 0 0], ...
         facealpha=1, ...
         szthrres=[], ...
@@ -200,11 +193,20 @@ figure
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=3450:2:3650, ... 50:.01:200, ...
+        tsub=850:.2:1000, ... 50:.01:200, ...
         dozscore=0, ...
         drawrot=0, ...
         sliceeb=[1:size(stacknew,3)])
 
+    %% 
+
+    figure; 
+    plot(t, daq.(idaq).vy); 
+    yyaxis right; 
+    plot(t, daq.(idaq).bfv); 
+    hold on; 
+    plot(t, daq.(idaq).epochts, 'c');
+    title('ball yaw (blue), ball forward vel (red), epochs (cyan)')
 
     %%
 
@@ -298,8 +300,10 @@ figure
     yyaxis right;
     % hpl21 = plot(t, daq.(idaq).bfv, color=cmap(3,:), linestyle='-');
     hpl22 = plot(t, squeeze(ebmn), color=cmap(end,:), linestyle='-');
+    hpl22 = plot(t, rescale(daq.(idaq).vy, min(ebmn(:)), max(ebmn(:))), color=cmap(3,:), linestyle='-');
     % hpl22 = plot(t, -daq.(idaq).by, color=cmap(end,:), linestyle='-');
     hpl21.Parent.YAxis(2).Color = [0 0 0];
+    title('gall left blue, gall right red, eb mean black')
 
     %%
 

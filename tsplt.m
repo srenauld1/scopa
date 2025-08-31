@@ -268,7 +268,7 @@ if ~isempty(ix)
             idx = x{k}>ix(1) & x{k}<ix(2);
         else
             if x_is_index
-                idx = indsmake(ix, indsall=numel(x{1})); %in this situation all x should be same length, so just reference x{1} (right??)
+                idx = idxmake(ix, superset=numel(x{1})); %in this situation all x should be same length, so just reference x{1} (right??)
             else
                 error("since x is not just an index, ix must be 2-element vector representing min and max x indices to plot")
             end

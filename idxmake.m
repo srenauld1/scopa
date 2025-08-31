@@ -1,0 +1,96 @@
+function [idx, lab] = idxmake(idxin, opt)
+
+%make numeric vector using optional shorthand input idxin (typically for indexing into arrays)
+
+arguments
+    idxin {mustBeNumeric} = [] %input idx, translated into output idx from various shorthand
+    opt.superset {mustBeNumeric} = [] %superset from which output idx must be drawn (error if not member of superset)
+    opt.labprefix char = '' %for label, prefix (name) of output vector idx
+    opt.delimprefix char = ': ' %for label, delimiter separating label prefix (labprefix) from the rest of label
+    opt.delimvec char = ',' %for label, delimiter separating each vector element (if printed)
+    opt.printmax = 20 %max num char to print
+end
+superset = opt.superset;
+printmax = opt.printmax;
+labprefix = opt.labprefix;
+delimprefix = opt.delimprefix;
+delimvec = opt.delimvec;
+
+if isscalar(superset)
+    superset = 1:superset;
+end
+
+if any(idxin<0) & numel(idxin)>1
+    error("negative idx must be scalar")
+end
+if isempty(superset) && ( isempty(idxin) || idxin<0 || mod(idxin, 1)~=0 )
+    error("for empty, negative, or fractional idx, you must pass in superset (idx superset) as a reference")
+end
+
+fractional_idxin = 0;
+
+if isempty(idxin)
+    lab = ['1to' num2str(numel(superset))];
+    idx = 1:numel(superset);
+elseif idxin<0
+    lab = ['neg' num2str(idxin)];
+    if mod(idxin, 1)~=0
+        error("negative idx must be integer")
+    end
+    if -idxin<=numel(superset)
+        idx = round(linspace(1, numel(superset), -idxin));
+    else
+        error("negative idx are requesting more idx than exist")
+    end
+elseif all(isnan(idxin))
+    idx = idxin;
+elseif mod(idxin, 1)~=0
+    fractional_idxin = 1;
+    if numel(idxin)>1 || idxin<0
+        error("fractional idx must be positive scalar")
+    end
+    seglength = fix(idxin);
+    factmp = 10^(numel(num2str(idxin))-numel(num2str(seglength))-1);
+    numseg = mod(idxin, 1)*factmp;
+    numseg = round(numseg);
+    segspacing = floor(numel(superset)/numseg);
+    idx = [1:seginc:seglength]+segspacing*([1:numseg]'-1)+segspacing-seglength;
+    for j = 1:size(idx,1)
+        lab{j} = [num2str(idx(j,1)) '-' num2str(idx(j,end))];
+    end
+    lab = strjoin(lab, ': ');
+    idx = vec(idx.');
+    if numel(idx)>numel(superset) | any(idx<0)
+        sprintf("seglength*numseg exceeds num idx, plotting all idx")
+        idx = 1:numel(superset);
+    end
+else
+    idx = idxin;
+end
+
+idx = idx(:)';
+if any(~ismember(idx, superset))
+    error("at least one element of idx is outside superset")
+end
+
+%regardless of what happens above, apply this as an additional step
+if isequal(idx, min(idx):max(idx))
+    lab = [num2str(min(idx)) '-' num2str(max(idx))];
+elseif isequal(sort(idx), min(idx):max(idx))
+    lab = [num2str(min(idx)) '-' num2str(max(idx)) 'unsorted'];
+else
+    if ~fractional_idxin
+        if numel(idx)<printmax
+            lab = regexprep( mat2str(idx), {'\[', '\]', '\s+'}, {'', '', delimvec});
+        else
+            lab = 'noprint';
+        end
+    end
+end
+
+if ~isempty(labprefix)
+    lab = [labprefix delimprefix lab];
+end
+
+end
+

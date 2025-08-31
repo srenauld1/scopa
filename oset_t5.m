@@ -38,10 +38,11 @@ for m = 1:numel(rgname)
     o.roi.rgname = rgname{m};
     o.roi.domm = 1;
     if strcmp(rgname{m}, 'tm')
-        o.roi.mm.maskname = 'eleven';
+        o.roi.mm.maskname = 'eleven2';
         o.roi.doma = 0;
         o.roi.ma.numroi = 1024;
-    else
+    elseif strcmp(rgname{m}, 't5')
+        o.roi.mm.maskname = 'newrois';
         o.roi.doma = 0;
     end
     o.roi.nrm.post = 'dff015020';

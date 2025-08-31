@@ -3,7 +3,7 @@ function daq = daqld(opt, opt2)
 %{
 resample daq variables from daq sampling into imaging sampling (by volume and/or frame), also find each daq variable's derivative (for some, this is velocity)
 uses imaging frameClock on DAQ to assign DAQ samples to frames (nearest neighbor interp to find each frame's centroid)
-includes volume and frame flyback samples, then uses mod to convert to daqinds.slice
+includes volume and frame flyback samples, then uses mod to convert to daqidx.slice
 then, operates on daq variables according to coincident slice index, creating a different timeseries for each slice index
 this occurs differently according to daq variable type
 for 'normal' daq variables, averages daq variables during each frame,
@@ -91,7 +91,7 @@ voltminyaw = opt.voltminyaw;
 vrenm = opt.vrenm; %optional new names for each daq variable
 optid = opt.optid;
 
-idxreg = 'start';  %hard coding this because its effect on our 10khz daqs miniscule; idx can be 'start', 'end', 'center', denoting whether each daq sample represents the start, end, or center of the time bin (ie, start means first sample is t=0)
+idxreg = 'start';  %hard coding this because its effect on our 10khz daq is negligible; idx can be 'start', 'end', 'center', denoting whether each daq sample represents the start, end, or center of the time bin (ie, start means first sample is t=0)
 
 
 if ~isstring(vnormal)
@@ -212,13 +212,13 @@ try
 
 
         if strcmp(useinds, 'none')
-            daqinds.frame = []; %frame inds are not used outside function daqindsmake, although could be in the same way as slice or volume indices
-            daqinds.slice = [];
-            daqinds.vol = [];
+            daqidx.frame = []; %frame inds are not used outside function daqidxmake, although could be in the same way as slice or volume indices
+            daqidx.slice = [];
+            daqidx.vol = [];
             fprintf("user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
         else
-            if any(strcmp(varnames, 'frameClock')) %cannot run daqindsmake without frameClock
-                daqinds = daqindsmake(trialData.frameClock, trialData.(vtime), usefbl, usefbf, numvol, numslice, numslice_withflyback, doplt, pthpre);
+            if any(strcmp(varnames, 'frameClock')) %cannot run daqidxmake without frameClock
+                daqidx = daqidxmake(trialData.frameClock, trialData.(vtime), usefbl=usefbl, usefbf=usefbf, numvol=numvol, numslice=numslice, numslice_withflyback=numslice_withflyback, doplt=doplt, pthfig=[pthpre varname '_dv_supp_.gif']);
             else
                 error("user requested a value for useinds that requires frameClock, but frameClock is not on daq; when frameClock is not on daq, useinds='none' is the only option")
             end
@@ -227,25 +227,25 @@ try
         %%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
 
         if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
-            daqinds.vol = [];
+            daqidx.vol = [];
         end
         if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
-            daqinds.slice = [];
+            daqidx.slice = [];
         end
         if isnumeric(useinds)
-            if any(~ismember(useinds(useinds~=0), daqinds.slice))
+            if any(~ismember(useinds(useinds~=0), daqidx.slice))
                 error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
             end
             if all(useinds==0) %useinds=0 is same as useinds='vol'
-                daqinds.slice = [];
+                daqidx.slice = [];
             else
-                daqinds.slice(~ismember(daqinds.slice, useinds)) = 0;
+                daqidx.slice(~ismember(daqidx.slice, useinds)) = 0;
             end
             if ~ismember(0, useinds)
-                daqinds.vol = [];
+                daqidx.vol = [];
             end
         end
-        if isempty(daqinds.vol)
+        if isempty(daqidx.vol)
             include_volume_resample = 0;
         else
             include_volume_resample = 1;
@@ -262,7 +262,7 @@ try
 
         daq = table();
 
-        sliceinds_unique = unique(daqinds.slice(daqinds.slice~=0));
+        sliceinds_unique = unique(daqidx.slice(daqidx.slice~=0));
         num_unique_sliceinds = numel(sliceinds_unique);
         num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
         useinds_save = cell(num_resamples, 1);
@@ -275,10 +275,10 @@ try
                 useinds_save{si} = {'none'};
             else
                 if si<num_unique_sliceinds+1
-                    rsinds_tmp = bin2ind(daqinds.slice==sliceinds_unique(si)); %each slice
+                    rsinds_tmp = bin2ind(daqidx.slice==sliceinds_unique(si)); %each slice
                     useinds_save{si} = {['slice' num2str(sliceinds_unique(si))]};
                 else
-                    rsinds_tmp = daqinds.vol;
+                    rsinds_tmp = daqidx.vol;
                     useinds_save{si} = {'volume'};
                 end
 
@@ -387,7 +387,7 @@ try
         daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
 
 
-        for m = 1:numel(daq) %in case you used multiple registers with daqinds, daq struct will be nonscalar
+        for m = 1:numel(daq) %in case you used multiple registers with daqidx, daq struct will be nonscalar
 
             %%%% FLY PATH %%%%
 

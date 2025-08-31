@@ -34,5 +34,20 @@
     "maketime": "2025031917252584",
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthparent": [],
+    "pthtemplate": [],
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
   }
 }

@@ -145,8 +145,8 @@ clear pltexp_scat_prepvars %clear persistent variable within
 %% arrange figure, choose colors
 
 layout = {[4,4], stack(:,:,:,:,1)};
-marginax = [0.05,0.005];
-marginfg = [0.07,0.05];
+marginax = [0.005];
+marginfg = [0.05];
 splitfrac = 0.55;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='min');
 
@@ -161,8 +161,8 @@ end
 
 %% prep vars
 
-[iz, izstr] = indsmake(iz, indsall=size(stack, 3), label_prefix='z');
-[it, itstr] = indsmake(it, indsall=size(stack, 4), label_prefix='t');
+[iz, izstr] = idxmake(iz, superset=size(stack, 3), label_prefix='z');
+[it, itstr] = idxmake(it, superset=size(stack, 4), label_prefix='t');
 
 % stack = stack(:,:,iz,it,:);
 kpepidx = setdiff(1:numel(epochts), it);

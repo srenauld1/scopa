@@ -12,6 +12,7 @@ arguments
     opt2.t = [] %only required nonempty if channorm~=0 in roits
     opt2.pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt2.doplt = []
+    opt2.usegit = []
     opt2.roimask = []
 end
 opt2 = glboropt(opt2);
@@ -23,6 +24,7 @@ widyxz = opt2.widyxz;
 t = opt2.t;
 pthpy = opt2.pthpy;
 doplt = opt2.doplt;
+usegit = opt2.usegit;
 roimask = opt2.roimask;
 
 [opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
@@ -88,8 +90,8 @@ try
     if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
-    [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack); %don't input or output stack here, just loading rg
-    [~, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
+    [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack, usegit=usegit); %don't input or output stack here, just loading rg
+    [~, mm] = roidraw(justload=1, pthstack=pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
@@ -113,7 +115,7 @@ catch ME
     %%%% CROP stack TO rg CUBOID %%%%
 
     if ~maskin
-        [stack, rg] = stackcrop(stack, opt.rgname, pthstack=pthstack);
+        [stack, rg] = stackcrop(stack, opt.rgname, pthstack=pthstack, usegit=usegit);
     end
 
     stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (can't remember why we switch to single precision here)
@@ -127,7 +129,7 @@ catch ME
         else
             oneroi = 0;
         end
-        [roimask, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, maskname=maskname, chanstr=opt.mm.chanstr, do_oneroi=oneroi, cellout=1);
+        [roimask, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, maskname=maskname, chanstr=opt.mm.chanstr, do_oneroi=oneroi, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
     end
 
 

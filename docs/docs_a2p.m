@@ -12,6 +12,9 @@ suffix:
     's': scannoise-removed 
 %}
 
+scopagit syncs local with remote, gets called from structfile 
+if you get error "Unable to fetch from the remote "origin" at . . . ", try usegit=0
+
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
 
 glb is required in only a couple places within function tsget

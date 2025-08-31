@@ -1528,5 +1528,70 @@
     "maketime": "2025030622044516",
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "balldia": 9,
+    "ftv": {
+      "numpkthr": 10,
+      "numpx": 10,
+      "smlenpx": 2,
+      "smlensec": 1
+    },
+    "slopelensec": 0.49,
+    "slopelensec_supp": 0.4,
+    "slopeord": 2,
+    "slopeord_supp": 2,
+    "supprate": [],
+    "tomm": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vdegrees": "",
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0,
+    "voltminyaw": 0.52359877559829882,
+    "vradians": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
+    "vrenm": [
+      "t = Time, time, T",
+      "epochts = epoch",
+      "vyvnom = g4vel, g4velnom",
+      "vy = g4panels, g4yaw",
+      "vyv = g4panels_dv, g4yaw_dv",
+      "bf = ficTracIntForward",
+      "bfv = ficTracIntForward_dv",
+      "bs = ficTracIntSide",
+      "bsv = ficTracIntSide_dv",
+      "by = ficTracYaw, ficTracHeading",
+      "byv = ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam = ftcam"
+    ],
+    "vtime": [
+      "Time",
+      "time",
+      "T",
+      "t"
+    ]
   }
 }

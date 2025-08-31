@@ -45,15 +45,15 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             for line in f1:
                 filepatspec_all.append(ast.literal_eval(line))
 
-    ######### FIND FILES #########
+    ######### FIND FILES (INPUT FILES FOR DIFFERENT PARTS OF PIPELINE) #########
 
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
         suffixchar_original = 'o'
-        fn_suffix_scopa = '_' + suffixchar_original #find files matching scopa output pattern (do_register scopa suffix is 'o', below is flyg suffix for do_register)
+        fn_suffix_scopa = '_' + suffixchar_original #find files matching scopa output pattern (do_register scopa suffix for input file is 'o' (output ir 'or'), below is flyg suffix for do_register)
         if do_denoise and not dnraw or do_stitch and not dnraw or do_extract or do_crop_only or do_remove or do_a2p:
-            fn_suffix_scopa = '_' + suffixchar_original + 'r' 
+            fn_suffix_scopa = fn_suffix_scopa + 'r' 
             if use_background_subtracted:
                 fn_suffix_scopa = '_' + suffixchar_original + 'br'
             if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have 'd' if it's run
