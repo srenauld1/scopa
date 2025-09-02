@@ -9,6 +9,7 @@ arguments (Input)
     opt.numvec = [] %required number of vectors; if empty, can be any number
     opt.veclen = [] %required length of each vector; if empty, can be any number
     opt.veclenmax = [] %max allowed length of inew; if semicolon is listed in context_keys (ie inew can be multiple vectors), veclenmax can be nonscalar (cell or ordinary array), one element for each inew vector; if veclenmax is scalar, it is applied to all inew vectors
+    opt.dounique = 0 % if 1, inew = unique(inew, 'stable'), if 0, repeats allowed 
 end
 arguments (Output)
     cbflag %struct holding callback flags (state switches)
@@ -21,6 +22,7 @@ numvec = opt.numvec;
 superset = opt.superset;
 veclen = opt.veclen;
 veclenmax = opt.veclenmax;
+dounique = opt.dounique;
 
 persistent digitstr
 persistent inewtmp
@@ -93,7 +95,11 @@ if isempty(prevkey)
 
     dmtmp = []; %empty by default
     context_keys = {nm, 'return', 'escape', 'comma', 'semicolon_shift', 'hyphen'};
-    if strcmp(nm, 'c') %copy roi to specified iz (z indices)
+    if strcmp(nm, 'backspace') %delete {irsub,ir}, that is, {subroi index, roi index}
+        context_keys = cat(2, context_keys, {'semicolon'}); %allow semicolon (multiple vectors, semicolon separates vectors)
+    elseif strcmp(nm, 'c') %copy roi to specified iz (z indices)
+        context_keys = cat(2, context_keys, {}); %nothing to add here yet
+    elseif strcmp(nm, 'e') %copy roi to specified iz (z indices)
         context_keys = cat(2, context_keys, {}); %nothing to add here yet
     elseif strcmp(nm, 't') %change it (t indices)
         context_keys = cat(2, context_keys, {'slash'}); %allow slash (averaging)
@@ -101,8 +107,6 @@ if isempty(prevkey)
     elseif strcmp(nm, 'z') %change iz (z indices)
         context_keys = cat(2, context_keys, {'slash'}); %allow slash (averaging)
         dmtmp = 3; %dimension inew belongs to
-    elseif strcmp(nm, 'backspace') %delete {irsub,ir}, that is, {subroi index, roi index}
-        context_keys = cat(2, context_keys, {'semicolon'}); %allow semicolon (multiple vectors, semicolon separates vectors)
     end
 
 end
@@ -170,7 +174,10 @@ if currkeyp.isvalid
             end
         end
         if ~exit_sequence %if exit_sequence wasn't triggered with error, begin exit_sequence here
-            inewtmp = idxmake(inewtmp, superset=superset{end});
+            inewtmp = idxmake(inewtmp, superset=superset{end}, force_superset=0); %force_superset=0 so we catch any out-of-bounds elements with message rather than error
+            if dounique
+                inewtmp = unique(inewtmp, 'stable');
+            end
             if ~isempty(veclenmax) && numel(inewtmp)>veclenmax(end) && ~slash_pressed
                 if numvec_curr==1
                     ttltmp2 = ['YOU HAVE REQUESTED MORE ' nm ' INDICES (' num2str(numel(inewtmp)) ') THAN ALLOWED (' num2str(veclenmax(end)) '), ' nm ' SELECTION EXITED WITHOUT CHANGE'];

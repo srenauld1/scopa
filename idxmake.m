@@ -9,12 +9,14 @@ arguments
     opt.delimprefix char = ': ' %for label, delimiter separating label prefix (labprefix) from the rest of label
     opt.delimvec char = ',' %for label, delimiter separating each vector element (if printed)
     opt.printmax = 20 %max num char to print
+    opt.force_superset = 1 %1 to error if idx is outside superset, 0 to not error (in addition to enforcing bounds, superset can be used to translate idxin, like if negative, or fractional)
 end
 superset = opt.superset;
 printmax = opt.printmax;
 labprefix = opt.labprefix;
 delimprefix = opt.delimprefix;
 delimvec = opt.delimvec;
+force_superset = opt.force_superset;
 
 if isscalar(superset)
     superset = 1:superset;
@@ -69,7 +71,7 @@ else
 end
 
 idx = idx(:)';
-if any(~ismember(idx, superset))
+if any(~ismember(idx, superset)) && force_superset
     error("at least one element of idx is outside superset")
 end
 

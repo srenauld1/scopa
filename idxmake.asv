@@ -3,12 +3,13 @@ function [idx, lab] = idxmake(idxin, opt)
 %make numeric vector using optional shorthand input idxin (typically for indexing into arrays)
 
 arguments
-    idxin {mustBeNumeric} = []
-    opt.superset {mustBeNumeric} = []
-    opt.labprefix char = ''
+    idxin {mustBeNumeric} = [] %input idx, translated into output idx from various shorthand
+    opt.superset {mustBeNumeric} = [] %superset from which output idx must be drawn (error if not member of superset)
+    opt.labprefix char = '' %for label, prefix (name) of output vector idx
     opt.delimprefix char = ': ' %for label, delimiter separating label prefix (labprefix) from the rest of label
-    opt.delimvec char = ','
-    opt.printmax = 20
+    opt.delimvec char = ',' %for label, delimiter separating each vector element (if printed)
+    opt.printmax = 20 %max num char to print
+    opt.force_superset = 1 %1 to error if 
 end
 superset = opt.superset;
 printmax = opt.printmax;
@@ -69,7 +70,7 @@ else
 end
 
 idx = idx(:)';
-if any(~ismember(idx, superset))
+if any(~ismember(idx, superset)) && force_superset
     error("at least one element of idx is outside superset")
 end
 

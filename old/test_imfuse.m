@@ -31,11 +31,11 @@ stack2 = stacksub(:,:,15,8,2);
 
 
 clear cb_pr %clear persistent variables
-[imroi, imalpha] = roiolmake(imgray=stack1, roipx=roipixindp, col=roicol, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+[imroi, imalpha] = roiolmake(imgray=stack1, roipx=roipixindp, rgb=roicol, a=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi = squeeze(imroi);
 
 clear cb_pr %clear persistent variables
-[imroi2, imalpha2] = roiolmake(imgray=stack1, roipx=roipixindp2, col=roicol2, alp=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
+[imroi2, imalpha2] = roiolmake(imgray=stack1, roipx=roipixindp2, rgb=roicol2, a=roialpha2); %make an overlay for all rois, background is one frame since rois don't change across frames
 imroi2 = squeeze(imroi2);
 
 

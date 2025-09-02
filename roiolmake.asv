@@ -19,7 +19,6 @@ arguments
     opt.roipx = [] %length-r cell array of roi's linear indices, or vector of linear indices if one roi, must pass in this or roimask, but not both
     opt.rgb = [1,0,0] %color, size (r,3), where r matches roimask r
     opt.a = 0.3 %alpha (transparency)
-    opt.combine = 'occlude' %add, subtract, occlude
 end
 imgray = opt.imgray;
 imrgb = opt.imrgb;
@@ -28,7 +27,6 @@ roipx = opt.roipx;
 roimask = opt.roimask;
 rgb = opt.rgb;
 a = opt.a;
-combine = opt.combine;
 
 
 %%%% PREP BACKGROUND IMAGE %%%%
@@ -127,7 +125,7 @@ if ~islogical(roimask)
     roimask = logical(roimask);
 end
 
-numroi = size(roimask,4);
+numroi = size(roimask,4); 
 
 %%%% PREP OTHER OPTIONAL ARGUMENTS %%%%
 
@@ -158,24 +156,16 @@ idxne = find(any(roimask, [1,2,3])); %nonnempty roi indices
 overlaps = imrgb_mask; %initialize with input image rgb "mask" (anywhere there's a color)
 for k = 1:size(roimask,4)
 
-    if ismember(k, idxne) %skip empty rois to save time
+    roialpha = roimask(:,:,:,k).*a(k);
+    roirgb = roimask(:,:,:,k).*rgb(k,:,:,:); %include 4 colons in rgb to multiply roimask (which is 3d after k indexing) into 4th (rgb) dim
 
-        roialpha = roimask(:,:,:,k).*a(k);
-        roirgb = roimask(:,:,:,k).*rgb(k,:,:,:); %include 4 colons in rgb to multiply roimask (which is 3d after k indexing) into 4th (rgb) dim
+    overlaps = overlaps & sum(roirgb, numimdim); %sum final dim (rgb dim) to mark overlap in any rgb channel, then find overlaps with logical "and" (overlaps is logical array)
+    overlaps_sum_plusone = overlaps_sum_plusone + overlaps; %sum overlaps, plus one, to divide to get mean at end of roi loop
 
-        if strcmp(combine, 'occlude')
-            imalpha = imalpha.*~roimask(:,:,:,k);
-            imrgb = imrgb.*~roimask(:,:,:,k);
-        else
-            overlaps = overlaps & sum(roirgb, numimdim); %sum final dim (rgb dim) to mark overlap in any rgb channel, then find overlaps with logical "and" (overlaps is logical array)
-            overlaps_sum_plusone = overlaps_sum_plusone + overlaps; %sum overlaps, plus one, to divide to get mean at end of roi loop
-        end
-        imalpha = imalpha + roialpha;
-        imrgb = imrgb + roirgb;
+    imalpha = imalpha + roialpha;
+    imrgb = imrgb + roirgb;
 
-    end
-
-    if k==size(roimask,4) && ~strcmp(combine, 'occlude')   %on final roi, divide by each voxel's number of overlapping (nonempty) rois
+    if k==size(roimask,4)  %we do it this way so the averaging only occurs on the last nonempty roi, dividing by each voxel's number of overlapping rois
         imalpha = imalpha ./ overlaps_sum_plusone; %average where rois overlap
         imrgb = imrgb ./ overlaps_sum_plusone; %average where rois overlap
     end

@@ -404,7 +404,7 @@ cnt = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
 
-        [imroi, imalpha] = roiolmake(imgray=stack_oneframe, roipx=roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
+        [imroi, imalpha] = roiolmake(imgray=stack_oneframe, roipx=roipx{ir(ri)}, rgb=roicols(ri,:), a=roialpha); %make an overlay for one roi
 
         sz_framedims_ol = sz_framedims(1:ndims(stack_oneframe));
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];

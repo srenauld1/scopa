@@ -14,7 +14,7 @@ for si = 1:size(splits2,1)
 end
 closedinds = openinds+20;
 
-alp = [0.7 0.7 0.7]; %epoch shading color
+a = [0.7 0.7 0.7]; %epoch shading color
 
 [pth_save_prefix, fn_save, ~] = fileparts(filename_sd{1});
 spl = strsplit(fn_save, '_');
@@ -225,7 +225,7 @@ for ci = 1:length(err_sorting)
     for sai = 1:length(stradd2)
         stradd = ['ind' num2str(err_sorting(ci)) '_' caiman_params_selected '_norm_' norm_params_selected '_' stradd2{sai} '_'];
         plot_full_experiment(cue_new, mu, angint, ...
-            amp_mu, dff_gall, dff_no, tb, splits2, openinds, closedinds, alp, stradd, pth_save)
+            amp_mu, dff_gall, dff_no, tb, splits2, openinds, closedinds, a, stradd, pth_save)
         %close all
     end
 

@@ -24,7 +24,7 @@ invalid_key = 0;
 roishape = []; %always empty unless successful exit
 
 if strcmp(currkey, nm) %reset if you press init key
-    ttltmp = [nm ' (shape): '];
+    ttltmp = [nm ' (roishape): '];
     init_sequence = 1;
 elseif strcmp(currkey, 'escape')
     exit_sequence = 1;
@@ -41,22 +41,25 @@ else
         end
     elseif strcmp(currkey, 'c')
         roishape_tmp = 'circle';
-        ttltmp = [nm ' (shape): c (circle)'];
+        ttltmp = [nm ' (roishape): c (circle)'];
     elseif strcmp(currkey, 'e')
         roishape_tmp = 'ellipse';
-        ttltmp = [nm ' (shape): e (ellipse)'];
+        ttltmp = [nm ' (roishape): e (ellipse)'];
     elseif strcmp(currkey, 'f')
         roishape_tmp = 'freehand';
-        ttltmp = [nm ' (shape): f (freehand)'];
+        ttltmp = [nm ' (roishape): f (freehand)'];
     elseif strcmp(currkey, 'p')
         roishape_tmp = 'polygon';
-        ttltmp = [nm ' (shape): p (polygon)'];
+        ttltmp = [nm ' (roishape): p (polygon)'];
     elseif strcmp(currkey, 'r')
         roishape_tmp = 'rectangle';
-        ttltmp = [nm ' (shape): r (rectangle)'];
+        ttltmp = [nm ' (roishape): r (rectangle)'];
+    elseif strcmp(currkey, 'v')
+        roishape_tmp = 'voxel';
+        ttltmp = [nm ' (roishape): v (voxel)'];
     else
         invalid_key = 1;
-        % ttltmp = [nm ' (shape): INVALID KEY'];
+        % ttltmp = [nm ' (roishape): INVALID KEY'];
     end
 end
 

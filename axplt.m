@@ -30,7 +30,7 @@ if all(cellfun(@isempty,roipixindp))
 else
     do_overlay = 1;
     stack_oneframe = stack(:,:,:,1);
-    [imroi, roialphamask] = roiolmake(imgray=stack_oneframe, roipx=roipixindp, col=cols, alp=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
+    [imroi, roialphamask] = roiolmake(imgray=stack_oneframe, roipx=roipixindp, rgb=cols, a=roialpha); %make an overlay for all rois, background is one frame since rois don't change across frames
 end
 
 tinds_use = tinds;
