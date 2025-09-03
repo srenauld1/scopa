@@ -4,7 +4,7 @@ function [stack, rg] = stackcrop(stack, rgname, opt)
 
 arguments (Input)
     stack %stack, dim order yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid));
-    rgname = [] %short name for region (rg, the stack after cropping)
+    rgname = [] %short name for region (rg, the stack after cropping); if empty, default rgname is 'none'
     opt.pthstack = [] %path to stack
     opt.scopausername = []
     opt.rgnamedf = []
@@ -128,7 +128,7 @@ end
 
 %% define xyz limits (bounding box of what is drawn)
 
-roimask = roidraw(stack=stack, pthstack=pthstack, do_rg=1, mmname=rgname);
+roimask = roidraw(stack=stack, pthstack=pthstack, dorg=1, mmname=rgname);
 [iy, ix, iz] = ind2sub(size(roimask), find(roimask));
 iy = [min(iy), max(iy)]; %make sure we have bounding box, since rg must be rectangle or cuboid
 ix = [min(ix), max(ix)]; %make sure we have bounding box, since rg must be rectangle or cuboid

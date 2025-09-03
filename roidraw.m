@@ -2,11 +2,11 @@ function [roimask, mm] = roidraw(opt)
 
 %{
 
-do_rg
-    if do_rg=1, you are using roidraw to draw an rg (region)
-    by default, do_rg=1 when roidraw is called from stackcrop (the function that makes rg)
-    an rg must be rectangular or cuboidal, so default roishape when do_rg=1 is 'rectangle' (but it can be changed with s-switch 
-    when do_rg=1, you are limited to 1 roi (can have multiple subrois), 
+dorg
+    if dorg=1, you are using roidraw to draw an rg (region)
+    by default, dorg=1 when roidraw is called from stackcrop (the function that makes rg)
+    an rg must be rectangular or cuboidal, so default roishape when dorg=1 is 'rectangle' (but it can be changed with s-switch 
+    when dorg=1, you are limited to 1 roi (can have multiple subrois), 
     rg will be the bounding box of whatever roi you draw 
 
 USEGIT
@@ -162,24 +162,33 @@ TODO
     labels on figure title that include colon, [], etc
     min:increment:max in cb_idx, rather than just min:max
 
+WARNING 
+    there is currently not a way of ensuring input arguments 'stack' and 'rg' match (rg is a cropped version of a stack); 
+    for example, you could make an 'rg' and pass it into this function as argument 'stack', but pass a different rg into this function as argument 'rg'
+    the code does make sure the rg size matches the input 'stack' size, but if you pass in mismatched stack and rg of the same sizes, this mistake will not be caught
+    an improvement might make stack a struct throughout a2p (rather than an ordinary numeric array) with the image stack as one field, and the rg data as another field, but i haven't done this
+    nevertheless, the code still tries to match stack and rg in the saved roi data because we do need to know what images rois were drawn on
+
 %}
 
 
 arguments (Input)
     opt.stack = [] %image stack for roi drawing background (can pass in stack or pthstack)
-    opt.pthstack = [] %path to image stack for roi drawing background
-    opt.rg = [] %region input argument 'stack' represents
-    opt.mmname = 'none' %name given to roimask (roimask holds all rois drawn)
+    opt.pthstack = [] %path to image stack for roi drawing background (can pass in stack or pthstack)
+    opt.rg = [] %stack region the input argument 'stack' represents (ie in case you called stackcrop and passed its output into this function, you need to know/save what region you drew on)
+    opt.mmname = [] %name given to output roimask (and by extension, saved struct mm, whichg holds roimask); this is the name of the set of rois you are drawing in this call to roidraw; if empty, default name is 'none'
     opt.chanstr = 'all' % string giving instruction on how to use stack channels for drawing rois, can be '1', '2', 'all', '1cp', '2cp' ('1'and '2' draw on channels 1 and 2, repectively, 'all' will draw on all channels, one at a time, if multiple, '1cp' copies rois drawn on channel 1 onto 2, '2cp' copies rois drawn on channel 2 onto 1)
-    opt.do_rg = 0 %flag for drawing rg (region), which is a cuboid (roishape forced rectangle, mm not saved); do_rg is true when roidraw is called from stackcrop
-    opt.roishape = 'freehand'
+    opt.roishape = 'freehand' %name of draw tool, can be changed with figure callback; circle, ellipse, freehand, polygon, rectangle, voxel (voxel is single click on image to make single-voxel roi) 
     opt.roialpha = 0.33 %transparency for showing drawn rois over stack background
-    opt.cmap = [] %colormap for showing drawn rois over stack background
+    opt.cmap = [] %colormap for showing drawn rois over stack background; empty will use a default colormap
     opt.maxnt = 400 %max number of frames (t) to display as background for roi drawing
-    opt.remove_overlap = 0 %1 to remove overlapping pixels from all rois (so you don't have to press 'o' after every polygon, but equivalent to that); 0 will leave any overlapping voxels remaining after exiting drawing figure
+    opt.remove_overlap = 0 %1 to remove overlapping pixels from all rois (so you don't have to press 'o' after every subroi is drawn, but equivalent to that callback applied after every subroi is drawn); 0 will leave any overlapping voxels remaining after exiting drawing figure
     opt.cellout = 0 %1 will output roimask in cell, 0 will not (cellout=0 will error if user creates rois on more than 1 channel)
-    opt.usegit = []
+    opt.usegit = [] %1 to use git version control of opt file holding all rg
     opt.justload = 0 %if 0, error and exit if loading fails, if 1, draw if loading fails
+    opt.dorg = 0 %flag for drawing rg (region), which is a rectangle or cuboid (when dorg=1, default roishape is rectangle, and mm is not loaded or saved); dorg is true when roidraw is called from stackcrop
+    opt.rgname = [] %name of rg you are drawing when dorg=1, keep empty unless dorg=1
+    opt.pausetime = 0.1 %seconds, pause to allow drawing/callbacks to run smoothly; if callbacks frequently aren't caught, try increasing; pausetime=0.1 worked well on 2021 Apple M1 Pro 16 GB 
 end
 opt = glboropt(opt);
 stack = opt.stack;
@@ -187,7 +196,6 @@ pthstack = opt.pthstack;
 rg = opt.rg;
 mmname = opt.mmname;
 chanstr = opt.chanstr;
-do_rg = opt.do_rg;
 roishape = opt.roishape;
 roialpha = opt.roialpha;
 cmap = opt.cmap;
@@ -196,6 +204,9 @@ remove_overlap = opt.remove_overlap;
 cellout = opt.cellout;
 usegit = opt.usegit;
 justload = opt.justload;
+dorg = opt.dorg;
+rgname = opt.rgname;
+pausetime = opt.pausetime;
 
 fontsz = 10; %in figure title
 maxnumroi = 50; %just for preallocating
@@ -209,8 +220,8 @@ if numel(callstack) >= 2
     fcnm = callstack(2).file;
     [~, fcnm] = fileparts(fcnm);
 end
-if isequal(fcnm, 'stackcrop') && ~isequal(do_rg,1)
-    error("do_rg must be true when calling roidraw from stackcrop")
+if isequal(fcnm, 'stackcrop') && ~isequal(dorg,1)
+    error("dorg must be true when calling roidraw from stackcrop")
 end
 
 if isempty(stack) && ~justload
@@ -243,11 +254,15 @@ if roialpha<=0
     error("roialpha must be positive")
 end
 
-if do_rg
-    rgname = mmname; %for making rg when do_rg is true, rgname is the mmname and make mmname empty
-    mmname = [];
-    roishape = 'rectangle'; %automatically set this to 1 if do_rg
+if dorg
+    if ~isempty(mmname)
+        error("when dorg=1, name-value argument mmname must be empty")
+    end
+    roishape = 'rectangle'; %automatically set this to 1 if dorg
 else
+    if ~isempty(mmname)
+        error("when dorg=0, name-value argument rgname must be empty (because it is derived from name-value argument rg, or if that is not provided, it is derived from default rg)")
+    end
     if isempty(rg)
         [~, rg] = stackcrop(stack, pthstack=pthstack, usegit=usegit); %if rg is empty, it's default, which is no crop, so no need to output stack, just output the default rg (full stack)
     end
@@ -260,10 +275,13 @@ roimask = cell(nc,1); %needs to be cell in case 2-channel with different number 
 
 try
 
-    if do_rg
-        error("skip loading mm since do_rg is true")
+    if dorg
+        error("use this error to skip loading mm since dorg is true and we are not making mm, we are making rg")
     else
         id = idmake(pthstack);
+        if isempty(mmname)
+            mmname = 'none';
+        end
         fnsuffix = ['_' rgname '_' mmname '_mm'];
         pthmm = [id.pthrec, fnsuffix, '_.mat'];
         mm = load(pthmm);
@@ -336,12 +354,13 @@ catch ME
         imselectkeys = {'shift_shift', 'control_control'}; %hold down control with image click to select entire image as roi, hold down shift with image click to select range (from nearest selected whole image, if any, otherwise same as control_control)
         cbflag = flagset({'backspace', 'c', 'e', 's', 't', 'z'}, [0,1], init=1, me=1); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
 
-        [stacktmp, h, ndt] = stackshow([], [], [], stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, do_rg, fontsz, dmmean, cmap, roialpha);
+        [stacktmp, h, ndt] = stackshow([], [], [], stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, cmap, roialpha);
+        
         ttli_drawins = ndt+1; %title line showing drawing instructions
         ttli_switches = ndt+2; %title line showing switch state;
         ttli_lastkey = ndt+3; %title line showing last key;
-        ttli_remove = 3:ndt; %title line showing last key;
-        ttl_sv = h.ttl.String(ttli_remove);
+        ttli_remove = 3:ndt; %title lines that get deleted/recovered when draw tool is opened/closed
+        ttl_sv = h.ttl.String(ttli_remove); 
 
         %%%% DRAWING LOOP %%%%
 
@@ -382,7 +401,7 @@ catch ME
                         if isscalar(h.im.ol) && numel(iz)>1
                             roi_on_mean_z = 1;
                         end
-                        roiinfotmp = {'rectangle', hrtmp.Position};
+                        roiinfotmp = {'rectangle', [0,0,nx,ny]};
                         [h, roimask, hr, subroirgba, h.ttl.String, irsub] = subroiadd(h, subroinew, hr, roiinfotmp, roimask, ic, ir, irsub, cmap, roialpha, iz, roi_on_mean_z, h.ttl.String, [], iz_allpxroi_idx_new); % add drawn subroi and show as overlay
                     else
                         axfocus = 1; %this is always 1 now because we "zoom in" to the axes you click on
@@ -470,7 +489,7 @@ catch ME
                     if ~isempty(roishape_new)
                         roishape = roishape_new;
                         roishape_new = []; %not necessary since persistent variables in cb_roishape get cleared on exit, but for clarity let's leave this here
-                        if do_rg
+                        if dorg
                             h.ttl.String{ttli_lastkey} = cat(2, h.ttl.String{ttli_lastkey}, 'NOTE do rg IS TRUE SO rg WILL BE xyz BOUNDING BOX OF DRAWN ROI');
                         end
                         for k = 1:numel(h.ttl.String)
@@ -550,8 +569,8 @@ catch ME
                     break;
 
                 elseif strcmp(currkey, 'r') %increment roi (if at least one subroi exists for current roi)
-                    if do_rg
-                        h.ttl.String{ttli_lastkey} = 'CANNOT ADVANCE TO NEXT ROI BECAUSE do_rg=1 (YOU ARE LIMITED TO ONE ROI, BUT IT CAN HAVE MULTIPLE SUBROIS)';
+                    if dorg
+                        h.ttl.String{ttli_lastkey} = 'CANNOT ADVANCE TO NEXT ROI BECAUSE dorg=1 (YOU ARE LIMITED TO ONE ROI, BUT IT CAN HAVE MULTIPLE SUBROIS)';
                     else
                         if irsub==1
                             h.ttl.String{ttli_lastkey} = ['CANNOT ADVANCE TO NEXT ROI BECAUSE YOU HAVE NOT DRAWN A SUBROI FOR ROI ' num2str(ir)];
@@ -569,20 +588,20 @@ catch ME
                     else
                         tpauseflag = 1; %pause t
                         tshift = 0;
-                        h.ttl.String{ttli_lastkey} = 'spacebar, PAUSED t (leftarrow=BACKWARDS,rightarrow=FORWARDS)';
+                        h.ttl.String{ttli_lastkey} = 'spacebar, PAUSED t (leftarrow: t BACKWARDS, rightarrow: t FORWARD)';
                     end
 
                 elseif any(strcmp(currkey, {'z_shift', 'z_shift_control', 'z_control_shift'})) %quit
                     if ~isscalar(h.im.ol) 
-                        h.ttl.String{ttli_lastkey} = 'YOU MUST ZOOM IN TO ONE Z PLANE TO SCROLL Z WITH shift z OR shift control z';
+                        h.ttl.String{ttli_lastkey} = 'YOU MUST ZOOM IN TO ONE Z PLANE TO SCROLL Z WITH shift+z OR shift+control+z';
                     elseif isequal(nz, 1)
-                        h.ttl.String{ttli_lastkey} = 'STACK HAS ONLY ONE Z PLANE, SO YOU CANNOT SCROLL Z WITH shift z OR shift control z';
+                        h.ttl.String{ttli_lastkey} = 'STACK HAS ONLY ONE Z PLANE, SO YOU CANNOT SCROLL Z WITH shift+z OR shift+control+z';
                     else
                         if any(strcmp(currkey, {'z_shift_control', 'z_control_shift'}))
-                            h.ttl.String{ttli_lastkey} = 'shift & control & z, DECREASING Z';
+                            h.ttl.String{ttli_lastkey} = 'shift+control+z, DECREASING Z';
                             zshift = -1;
                         else
-                            h.ttl.String{ttli_lastkey} = 'shift & z, INCREASING Z';
+                            h.ttl.String{ttli_lastkey} = 'shift+z, INCREASING Z';
                             zshift = 1;
                         end
                         iznew = mod(iz+zshift-1, nz)+1;
@@ -607,7 +626,7 @@ catch ME
                 end
                 iznew = [];
                 itnew = [];
-                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, do_rg, fontsz, dmmean, cmap, roialpha);
+                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, cmap, roialpha);
                 newview = 1;
             elseif ~isempty(izcopyroi) %izcopyroi only used for c-switch (roi copy)
                 roi_on_mean_z_dummy = 0; %make roi_on_mean_z=0 because it must be false when copying rois (doesn't make sense to copy to a mean)
@@ -615,9 +634,28 @@ catch ME
                 izcopyroi = [];
             end
 
+
+            if ~drawflag %if not drawflag, just display some different titles (when newview, so we don't do it repeatedly); don't make this an else beneath if drawflag, so it occurs when exiting drawflag+newview
+                if newview
+                    if isscalar(h.im.ol)
+                        h.ttl.String{ttli_drawins} = 'DRAW INS:   CLICK IM: OPEN DRAW TOOL';
+                        if zoomflag
+                            h.ttl.String{ttli_drawins} = [h.ttl.String{ttli_drawins} ',   escape: LAST VIEW'];
+                        end
+                    else
+                        h.ttl.String{ttli_drawins} = 'DRAW INS:   CLICK IM: ZOOM';
+                    end
+                    h.ttl.String{ttli_drawins} = [h.ttl.String{ttli_drawins} ',   cntrl+CLICK IM: WHOLE-IM SUBROI,   shift+CLICK IM: WHOLE-IM SUBROI RANGE'];
+                    h.ttl.String{ttli_switches} = 'ALL SWITCHES OFF'; %might be overwritten 
+                    newview = 0;
+                end
+            end
+
+
             if drawflag
                 h.ttl.String(ttli_remove) = cell(1,numel(ttli_remove));
-                h.ttl.String{ttli_remove(1)} = 'CALLBACKS DISABLED WHEN DRAW TOOL OPEN';
+                h.ttl.String{ttli_remove(1)} = 'BUTTONS:   DISABLED WHEN DRAW TOOL OPEN';
+                h.ttl.String{ttli_remove(2)} = 'SWITCHES:  DISABLED WHEN DRAW TOOL OPEN';
                 if editflag
                     h.ttl.String{ttli_switches} = ['e SWITCH ON, EDITING ROI ' num2str(iredit(1)) ' SUBROI ' num2str(iredit(1))];
                 else
@@ -625,12 +663,12 @@ catch ME
                 end
                 ttl_tmp = '';
                 if roi_on_mean_z
-                    ttl_tmp = ', WILL COPY TO Z COMPRISING MEAN IMAGE';
+                    ttl_tmp = ',   WILL COPY TO Z COMPRISING MEAN IMAGE';
                 end
-                if do_rg
-                    h.ttl.String{ttli_drawins} = ['DRAW "' roishape '" (XY CROSS-SECTION OF rg "' rgname '")' ttl_tmp ', ESCAPE=CLOSE DRAW TOOL'];
+                if dorg
+                    h.ttl.String{ttli_drawins} = ['DRAW INS:   DRAW "' roishape '" (XY CROSS-SECTION OF rg "' rgname '")' ttl_tmp ',   escape: CLOSE DRAW TOOL'];
                 else
-                    h.ttl.String{ttli_drawins} = ['DRAW "' roishape '"' ttl_tmp ', ESCAPE=CLOSE DRAW TOOL'];
+                    h.ttl.String{ttli_drawins} = ['DRAW INS:   DRAW "' roishape '"' ttl_tmp ',   escape: CLOSE DRAW TOOL'];
                 end
 
                 switch roishape %ordered by use probability
@@ -673,7 +711,7 @@ catch ME
                     otherwise
                         error("invalid roishape")
                 end
-                h.ttl.String{ttli_drawins} = 'MOUSE=ADJUST, BACKSPACE=DELETE, RETURN=ACCEPT';
+                h.ttl.String{ttli_drawins} = 'DRAW INS:   mouse: ADJUST,   backspace: DELETE,   return: ACCEPT';
                 while true
                     if ~isempty(h.fg.UserData) %capture key press on figure callback
                         currkey2 = h.fg.UserData;
@@ -697,13 +735,13 @@ catch ME
                                     end
                                 end
                                 delete(hrtmp)
-                                pause(0.1) %without this pause the draw tool disappears after escape
+                                pause(pausetime) %without this pause the draw tool disappears after escape
                             end
                             hrtmp = [];
                             break
                         end
                     end
-                    pause(0.05)
+                    pause(pausetime)
                 end
                 if ~isempty(hrtmp)  %skip if it's an empty roi, or you pressed escape
                     if strcmp(roishape, 'voxel')
@@ -730,28 +768,16 @@ catch ME
                 if ~drawflag %when exiting this drawflag clause, change title
                     h.ttl.String{ttli_drawins} = ''; %this is not strictly necessary, just so it's empty during the brief pause when zooming out
                     h.ttl.String(ttli_remove) = ttl_sv;
-                end
-            else %if not drawflag, just display some different titles (when newview, so we don't do it repeatedly)
-                if newview
-                    if isscalar(h.im.ol)
-                        h.ttl.String{ttli_drawins} = 'CLICK IMAGE=OPEN DRAW TOOL';
-                        if zoomflag
-                            h.ttl.String{ttli_drawins} = [h.ttl.String{ttli_drawins} ', ESCAPE=LAST VIEW'];
-                        end
-                    else
-                        h.ttl.String{ttli_drawins} = 'CLICK IMAGE=ZOOM';
-                    end
-                    h.ttl.String{ttli_drawins} = [h.ttl.String{ttli_drawins} ', CNTRL+CLICK IMAGE=WHOLE-IMAGE SUBROI, SHIFT+CLICK IMAGE=WHOLE-IMAGE SUBROI RANGE'];
-                    newview = 0;
+                    newview = 1; %exiting draw tool counts as new view so we display different titles
                 end
             end
 
-            pause(0.05); %pause for callbacks and figure updates
+            pause(pausetime); %pause for callbacks and figure updates
 
         end
 
-        h.ttl.String = "CLOSING FIGURE IN 2 SECONDS";
-        pause(2)
+        h.ttl.String = "CLOSING FIGURE IN 1 SECOND";
+        pause(1)
         close(h.fg);
 
         %%%% ARRANGE MASK %%%%
@@ -809,7 +835,7 @@ catch ME
 
     %%%% SAVE %%%%
 
-    if ~do_rg
+    if ~dorg
         if chandraw==1 && nc==2 %do this so that 2-channel data gets empty 2nd element if channel 2 has no rois, otherwise 2nd element wouldn't exist, which would mislead user into thinking it's single-channel data
             mm(2) = structfun(@(x) [], mm, 'UniformOutput', false);
         end
@@ -825,7 +851,7 @@ end
 
 end
 
-function [stacktmp, h, ndt] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, do_rg, fontsz, dmmean, cmap, roialpha)
+function [stacktmp, h, ndt] = stackshow(h, subroirgba, roimask, stack, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, cmap, roialpha)
 
 idxstr = repmat({':'}, 1, 5); %do it this way in case we are only modifying one dimension, indexing with all elements of unchanged dimensions is costly
 if ~isequal(iz, 1:nz)
@@ -880,7 +906,7 @@ if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois
     end
 end
 
-[h, ndt] = titlemake(h, ic, rgname, mmname, ir, irsub, iz, it, nz, nt, roishape, do_rg, fontsz, dmmean);
+[h, ndt] = titlemake(h, ic, rgname, mmname, ir, irsub, iz, it, nz, nt, roishape, dorg, fontsz, dmmean);
 
 end
 
@@ -914,7 +940,7 @@ end
 
 end
 
-function [h, ndt] = titlemake(h, ic, rgname, mmname, ir, irsub, iz, it, nz, nt, roishape, do_rg, fontsz, dmmean)
+function [h, ndt] = titlemake(h, ic, rgname, mmname, ir, irsub, iz, it, nz, nt, roishape, dorg, fontsz, dmmean)
 
 max_num_iz_to_print = 10;
 if isequal(iz, 1:nz)
@@ -923,8 +949,8 @@ else
     if numel(iz)<=max_num_iz_to_print
         title_z = [',   Z: ' mat2str(iz)];
     else
-        tmpprint = sprintf('%d,', iz(1:3));
-        tmpprint2 = sprintf('%d,', iz(end-2:end));
+        tmpprint = sprintf('%d,', iz(1:4));
+        tmpprint2 = sprintf('%d,', iz(end-3:end));
         title_z = [',   Z: [' tmpprint(1:end-1) '...' tmpprint2(1:end-1) ']'];
     end
 end
@@ -941,15 +967,15 @@ if isequal(dmmean(4),1)
     end
 end
 
-if do_rg
+if dorg
     ttltmp = {
-        ['DRAWING: rg: "' rgname '",   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) '",   ROISHAPE: "' roishape '"'];
-        ['SHOWING: STACK (NO rg),   CHANNEL: ' num2str(ic) title_z title_t]
+        ['DRAWING:   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) ',   FOR RGNAME: "' rgname '",   ROISHAPE: "' roishape '"'];
+        ['SHOWING:   STACK (NOT AN rg),   CHANNEL: ' num2str(ic) title_z title_t]
         };
 else
     ttltmp = {
-        ['DRAWING:   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) ',   IN MMNAME: "' mmname '",   ROISHAPE: "' roishape '"'];
-        ['SHOWING:   STACK rg: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t]
+        ['DRAWING:   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) ',   FOR MMNAME: "' mmname '",   ROISHAPE: "' roishape '"'];
+        ['SHOWING:   rgname: "' rgname '",   CHANNEL: ' num2str(ic) title_z title_t]
         };
 end
 
@@ -957,24 +983,24 @@ h.ttl.String = ttltmp;
 
 ttltmp = { [...
     'BUTTONS:   ', ...
-    'escape: LAST VIEW,   ', ...
-    'r: NEXT ROI,   ', ...
-    'space/left/right: t (UN)PAUSE/BACK/FORWARD,   ', ...
-    'shift (control) z : z up (down),   ', ...
-    'up/down: CONTRAST,   ', ...
-    'o: REMOVE OVERLAP,   ', ...
-    'q: QUIT,   ', ...
+    'escape: LAST VIEW,  ', ...
+    'r: NEXT ROI,  ', ...
+    'space/left/right: t (UN)PAUSE/SCROLL,  ', ...
+    'shift+(cntrl+)z : z SCROLL,  ', ...
+    'up/down: CONTRAST,  ', ...
+    'o: RM OVERLAP,  ', ...
+    'q: QUIT', ...
     ]};
 h.ttl.String = cat(1, h.ttl.String, ttltmp);
 
 ttltmp = { [...
-    'SWITCHES:   ', ...
-    'backspace: DELETE ROI(S)   ', ...
-    'c: COPY CURRENT SUBROI TO z,   ', ...
-    'e: EDIT SUBROI,   ', ...
-    's: CHANGE ROISHAPE,   ', ...
-    't: CHANGE t,   ', ...
-    'z: CHANGE z,   ', ...
+    'SWITCHES:  ', ... %2 SPACES HERE TO ALIGN EVERYTHING
+    'backspace: DELETE ROI(S),  ', ...
+    'c: COPY CURRENT SUBROI TO z,  ', ...
+    'e: EDIT SUBROI,  ', ...
+    's: CHANGE ROISHAPE,  ', ...
+    't: CHANGE t,  ', ...
+    'z: CHANGE z,  ', ...
     ]};
 h.ttl.String = cat(1, h.ttl.String, ttltmp);
 

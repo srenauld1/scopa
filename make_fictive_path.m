@@ -157,7 +157,7 @@ delta_intx = (ft.intx - intx_raw_in) * transGain * ballRadius; % side motion
 delta_inty = (ft.inty - inty_raw_in) * transGain * ballRadius; % forward motion
 % get x and y allocentric position of the animal from egocentric integrated coordinates
 %   and heading
-% Forward/backward or y > 0 animal moves forwards
+% Forward/backward or y > 0 animal moves forward
 posy = posy_in + (delta_inty.*cos(heading) - delta_intx.*sin(heading));
 % Sideway movement or x > 0 animal moves rightwards
 posx = posx_in + (delta_inty.*sin(heading) + delta_intx.*cos(heading));
