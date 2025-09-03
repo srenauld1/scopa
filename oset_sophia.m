@@ -19,7 +19,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.roi.domm = 1; %do draw rois
     
     if strcmp(rgname{m}, 'none')
-        o.roi.mm.maskname = {'none'};
+        o.roi.mm.mmname = {'none'};
         o.roi.nrm.post = {'dff008000'};
     end
 

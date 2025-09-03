@@ -128,7 +128,7 @@ end
 
 %% define xyz limits (bounding box of what is drawn)
 
-roimask = roidraw(stack=stack, pthstack=pthstack, do_rg=1, maskname=rgname);
+roimask = roidraw(stack=stack, pthstack=pthstack, do_rg=1, mmname=rgname);
 [iy, ix, iz] = ind2sub(size(roimask), find(roimask));
 iy = [min(iy), max(iy)]; %make sure we have bounding box, since rg must be rectangle or cuboid
 ix = [min(ix), max(ix)]; %make sure we have bounding box, since rg must be rectangle or cuboid

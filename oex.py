@@ -9,7 +9,7 @@ from dict_unique import dict_unique
 from dicttxtld import dicttxtld
 
 
-def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgname, maskname):
+def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgname, mmname):
 
 
     # optlist hold carl's favorite options (each in a list) for tuning caiman roi extraction;
@@ -64,7 +64,7 @@ def oex(fnames, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, p
     optlist['fnames'] = [ fnames ]
     optlist['rgname'] = [ rgname ] 
     optlist['methodex'] = [ methodex ] 
-    optlist['maskname'] = [ maskname ] 
+    optlist['mmname'] = [ mmname ] 
 
     optlist['domm'] = [ 0 ] #false if not calling extract from matlab
     optlist['doma'] = [ 0 ] #false if not calling extract from matlab

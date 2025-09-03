@@ -63,9 +63,9 @@ if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
     if opt.domm
-        maskname = opt.mm.maskname;
+        mmname = opt.mm.mmname;
     else
-        maskname = 'none';
+        mmname = 'none';
     end
 else
     maskin = 1;
@@ -91,7 +91,7 @@ try
         error("roi id is derived from an optid file different from original")
     end
     [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack, usegit=usegit); %don't input or output stack here, just loading rg
-    [~, mm] = roidraw(justload=1, pthstack=pthstack, rg=rg, maskname=maskname); %don't input stack here, just loading mm
+    [~, mm] = roidraw(justload=1, pthstack=pthstack, rg=rg, mmname=mmname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
@@ -124,12 +124,7 @@ catch ME
     %%%% DRAW ROIS %%%%
 
     if opt.domm && ~maskin
-        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1 %if multiple automated morphological rois, only one drawn roi is allowed 
-            oneroi = 1;
-        else
-            oneroi = 0;
-        end
-        [roimask, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, maskname=maskname, chanstr=opt.mm.chanstr, do_oneroi=oneroi, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
+        [roimask, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, mmname=mmname, chanstr=opt.mm.chanstr, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
     end
 
 
@@ -137,7 +132,7 @@ catch ME
     %%%% AUTOMATED MORPHOLOGICAL SEGMENTATION %%%%
 
     if opt.doma && ~maskin
-        roimask = roimauto(stackmnt, opt.ma, roimaskin=roimask, widyxz=widyxz, pthstack=pthstack, rg=rg, maskname=maskname); 
+        roimask = roimauto(stackmnt, opt.ma, roimaskin=roimask, widyxz=widyxz, pthstack=pthstack, rg=rg, mmname=mmname); 
     end
 
 
@@ -146,7 +141,7 @@ catch ME
 
     if opt.docm && ~maskin
         stack = [];
-        [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, maskname=maskname);
+        [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, mmname=mmname);
     end
 
 

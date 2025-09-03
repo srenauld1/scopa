@@ -42,7 +42,7 @@ disp("nonfunctional vbin in ored/odist etc need to be able to be nested and retu
 disp("set up default roimake, where opt can be empty) - mean of fov")
 disp("need to make nan for cue in dark now that epoch is loaded on daq")
 disp("now if multiple recind are running in pl.sh, and one errors, the whole sequence will stop (i think only at the do copyfiles part though, so maybe if docopyfiles is 0 the recind without error will continue??) is this good or bad?")
-disp("should maskname none be reserved for skipping drawing?")
+disp("should mmname none be reserved for skipping drawing?")
 disp("right now opts thsat get written to opt file are only functional, and if entire vbin are non-functional (ignored) they are written as empty struct which is {} in txt file; is this best? should all ignored options get written as empty or nan or something like that? that seems like a lot of clutter")
 disp("odf argument unpack should unpack to the specified nest if vbin is nested, currently it just unnpacks the highest level, or if that might cause issue somewhere, make an unpack nest option")
 disp("TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING) output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames")

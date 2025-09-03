@@ -8,7 +8,7 @@ arguments
     opt2.roimaskin = []
     opt2.pthstack = []
     opt2.rg = []
-    opt2.maskname = []
+    opt2.mmname = []
 end
 
 chan = opt.chan;
@@ -26,7 +26,7 @@ md = opt2.md;
 widyxz = opt2.widyxz;
 roimaskin = opt2.roimaskin;
 pthstack = opt2.pthstack;
-maskname = opt2.maskname;
+mmname = opt2.mmname;
 rg = opt2.rg;
 
 if size(stack,4)>1
@@ -49,8 +49,8 @@ end
 if isempty(pthstack)
    error("must set pthstack or glb('pthstack')")
 end
-if isempty(maskname)
-   maskname = 'none';
+if isempty(mmname)
+   mmname = 'none';
 end
 if isempty(rg)
     [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
@@ -74,7 +74,7 @@ else
 end
 
 id = idmake(pthstack);
-fnsuffix = ['_' rgname '_' maskname '_ma'];
+fnsuffix = ['_' rgname '_' mmname '_ma'];
 pthma = [id.pthrec, fnsuffix, '_.mat'];
 
 roimaskout = roimaskin;
@@ -87,17 +87,17 @@ try
         roimaskout{c} = ma(c).mask;
     end
 
-    if any(~isfield(ma(1), {'mask', 'mask_in', 'rg', 'maskname', 'opt'})) || numel(ma)==2 && any(~isfield(ma(2), {'mask', 'mask_in', 'rg', 'maskname', 'opt'}))
-        error("ma struct must contain fields 'mask', 'mask_in', 'rg', 'maskname', 'opt'; you may have loaded an old ma struct")
+    if any(~isfield(ma(1), {'mask', 'mask_in', 'rg', 'mmname', 'opt'})) || numel(ma)==2 && any(~isfield(ma(2), {'mask', 'mask_in', 'rg', 'mmname', 'opt'}))
+        error("ma struct must contain fields 'mask', 'mask_in', 'rg', 'mmname', 'opt'; you may have loaded an old ma struct")
     end
     if ~isequal(ma(1).rg, rg) || numel(ma)==2 && ~isequal(ma(2).rg, rg)
         error("ma file exists but for at least one channel rg in ma file does not match current rg with same name; did you delete the rg you used to draw this ma?")
     end
-    if ~isequal(ma(1).maskname, maskname) || numel(ma)==2 && ~isequal(ma(2).maskname, maskname)
-        error("ma file exists but input roimask maskname does not match for at least one channel")
+    if ~isequal(ma(1).mmname, mmname) || numel(ma)==2 && ~isequal(ma(2).mmname, mmname)
+        error("ma file exists but input roimask mmname does not match for at least one channel")
     end
     if ~isequal(ma(1).opt, opt) || numel(ma)==2 && ~isequal(ma(2).opt, opt)
-        error("ma file exists but input roimask maskname does not match for at least one channel")
+        error("ma file exists but input roimask mmname does not match for at least one channel")
     end
 
 catch ME
@@ -109,7 +109,7 @@ catch ME
         ma(c).mask = roimaskout{c};
         ma(c).mask_in = roimaskin{c};
         ma(c).rg = rg;
-        ma(c).maskname = maskname;
+        ma(c).mmname = mmname;
         ma(c).opt = opt;
     end
 
@@ -155,16 +155,18 @@ if isempty(roimaskin)
     roimaskin = 1;
 end
 
-num_roim_manual = size(roimaskin, 4);
 
 if strcmp(maskseg, 'torus') && ~strcmp(maskmake, 'nonzero')
     error("for maskseg torus maskmake should be nonzero (everything but any manually drawn mask), otherwise your ellipse might fall outside the mask (still could happen with method 'nonzero'")
 end
 
-if num_roim_manual>1
-    error(sprintf("num_roim_manual is greater than one AND numroiauto is greater than zero" + newline + ...
-        "DELETE OR RENAME pth_roimaskman AND DRAW MANUAL MORPHOLOGICAL ROIS AGAIN" + newline + ...
-        "OR KEEP MANUAL MORPHOLOGICAL ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline))
+numroi_roimaskin = size(roimaskin, 4);
+numsubroi_roimaskin = size(regionprops3(sum(roimaskin,4)),1); %regionprops3 works for 2d or 3d, output is table, num rows is disconnected components (subrois)
+if numroi_roimaskin>1 || numsubroi_roimaskin>1
+    error(sprintf("numroi_roimaskin IS GREATER THAN ONE AND numroiauto IS GREATER THAN ZERO" + newline + ...
+        "THIS FUNCTION CURRENTLY ONLY OPERATES ON A SINGLE CONTIGUOUS ROI" + newline + ...
+        "DELETE OR RENAME FILE WITH DRAWN ROIS AND DRAW ROIS AGAIN" + newline + ...
+        "OR KEEP DRAWN ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline))
 end
 
 

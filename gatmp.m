@@ -1,18 +1,18 @@
 
 % gald.tg.roi.rgname = 'gal';
-% gald.tg.roi.mm.maskname = 'dorsal';
+% gald.tg.roi.mm.mmname = 'dorsal';
 % gald.tg.vnm = 'ts';
 %
 % galv.tg.roi.rgname = 'gal';
-% galv.tg.roi.mm.maskname = 'ventral';
+% galv.tg.roi.mm.mmname = 'ventral';
 % galv.tg.vnm = 'ts';
 %
 % gard.tg.roi.rgname = 'gar';
-% gard.tg.roi.mm.maskname = 'dorsal';
+% gard.tg.roi.mm.mmname = 'dorsal';
 % gard.tg.vnm = 'ts';
 %
 % garv.tg.roi.rgname = 'gar';
-% garv.tg.roi.mm.maskname = 'ventral';
+% garv.tg.roi.mm.mmname = 'ventral';
 % garv.tg.vnm = 'ts';
 %
 % gald = tsget(gald);

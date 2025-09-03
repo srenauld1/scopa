@@ -71,7 +71,7 @@ else
 end
 
 idx = idx(:)';
-if any(~ismember(idx, superset)) && force_superset
+if any(~ismember(idx, superset)) && force_superset && ~all(isnan(idx))
     error("at least one element of idx is outside superset")
 end
 

@@ -30,7 +30,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
         % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
     elseif any(strcmp(rgname{m}, {'no', 'ga'}))
-        o.roi.mm.maskname = {'left', 'right'};
+        o.roi.mm.mmname = {'left', 'right'};
     end
 
     o = odf(o, 'roi', rgname{m});

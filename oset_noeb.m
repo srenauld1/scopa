@@ -70,13 +70,13 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 16;
-        o.roi.mm.maskname = 'eb';
+        o.roi.mm.mmname = 'eb';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))
         o.roi.doma = 0; %do automated morph rois
-        o.roi.mm.maskname = {'left', 'right'};
+        o.roi.mm.mmname = {'left', 'right'};
     end
 
     o = odf(o, 'roi', rgname{m});

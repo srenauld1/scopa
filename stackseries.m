@@ -161,8 +161,8 @@ for spi = 1:numel(pthstackall)
         cnt = cnt+1;
 
         if cnt==1
-            [iz, izstr] = idxmake(iz, superset=size(stack,3), label_prefix='z');
-            [it, itstr] = idxmake(it, superset=size(stack,4), label_prefix='t');
+            [iz, izstr] = idxmake(iz, superset=size(stack,3), labprefix='z');
+            [it, itstr] = idxmake(it, superset=size(stack,4), labprefix='t');
         end
 
         stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension

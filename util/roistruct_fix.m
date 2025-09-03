@@ -33,8 +33,8 @@
 fnd = rdir('~/stacks/**/*mm_.mat');
 for k = numel(fnd)
     load(fnd(k).name, 'mm');
-    if any(~isfield(mm{1}, {'mask', 'maskname', 'chan', 'chan', 'rg'})) || numel(mm)==2 && any(~isfield(mm{2}, {'mask', 'maskname', 'chan', 'chan', 'rg'}))
-        error("mm struct must contain fields 'mask', 'maskname', 'chan', 'chan', 'rg'; you may have loaded an old mm struct")
+    if any(~isfield(mm{1}, {'mask', 'mmname', 'chan', 'chan', 'rg'})) || numel(mm)==2 && any(~isfield(mm{2}, {'mask', 'mmname', 'chan', 'chan', 'rg'}))
+        error("mm struct must contain fields 'mask', 'mmname', 'chan', 'chan', 'rg'; you may have loaded an old mm struct")
     end
     
     for q = 1:numel(mm)

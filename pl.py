@@ -160,7 +160,7 @@ for ri, _ in enumerate(pth_read_all):
           eng.scannoiserm(pth_read_all[ri], stopband_rsc, smlensec_rsc, stdout=mtlout, stderr=mtlerr, nargout=0)
 
         if do_extract or do_crop_only:
-          extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, pthmd_all[ri], extract_in_2d, methodex, rgname, maskname, do_crop_only, makeplots, cluster_backend, use_cluster)
+          extract(pth_prefix_all[ri], pth_read_all[ri], pth_optdf, pth_optroi, md, pthmd_all[ri], extract_in_2d, methodex, rgname, mmname, do_crop_only, makeplots, cluster_backend, use_cluster)
 
         if do_a2p:
           eng = matlab.engine.start_matlab()

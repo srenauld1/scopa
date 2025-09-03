@@ -261,7 +261,7 @@ if ~isempty(plt) && plt(1)
     %% bump as heatmap
 
 
-    dozscore_hm = 0;
+    dozscore_hm = 1;
     if dozscore_hm
         for k = 1:size(eb,1)
             % eb(k,:) = rescale(eb(k,:));

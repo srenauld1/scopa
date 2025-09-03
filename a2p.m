@@ -88,13 +88,13 @@ for k = 1:numel(oa) % loop over recordings
 
     %% specific
 
-    inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.maskname', 'left'}, lev=1);
-    inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.maskname', 'right'}, lev=1);
-    igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.maskname', 'dorsal'}, lev=1);
-    iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.maskname', 'ventral'}, lev=1);
-    igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.maskname', 'dorsal'}, lev=1);
-    igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.maskname', 'ventral'}, lev=1);
-    ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'mm.maskname', 'eb'}, lev=1);
+    inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'left'}, lev=1);
+    inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'right'}, lev=1);
+    igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.mmname', 'dorsal'}, lev=1);
+    iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.mmname', 'ventral'}, lev=1);
+    igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.mmname', 'dorsal'}, lev=1);
+    igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.mmname', 'ventral'}, lev=1);
+    ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'mm.mmname', 'eb4545'}, lev=1);
     idaq = fieldmatch(daq, lev=1);
     ibmp = fieldmatch(bmp, lev=1);
 
@@ -102,7 +102,24 @@ for k = 1:numel(oa) % loop over recordings
     % ebtmp
     % mitotmp
 
-%% 
+    %% 
+
+    figure; 
+    plot(daq.(idaq).by); 
+    yyaxis right; 
+    plot(daq.(idaq).bfv); 
+    hold on; 
+    plot(rescale(daq.(idaq).epochts, min(daq.(idaq).bfv), max(daq.(idaq).bfv)), '-c');
+
+    %% 
+
+
+    ie=1;
+    [~, fvtmp] = sampepoch(daq.(idaq).epochts, ie, daq.(idaq).bfv);
+    tinds = 10000:numel(fvtmp);
+    figure; histogram(fvtmp(tinds), 50)
+
+    %%
 
     dodv = 1;
     t = glb('t');
@@ -167,14 +184,44 @@ for k = 1:numel(oa) % loop over recordings
 
     try
         load([o.id.pthpre 'garebgal_.mat'], 'stacknew');
-        save('/Users/wienecke/stacks/ganoeb/20250824-1_d05_s8m_018_s8m/20250824_1_1_ord_garebgal_.mat', 'stacknew')
     catch
         stacknew = stackmix(stack, {'gar', 'eb', 'gal'}, rot=[-90,0,0], pthstacks=glb('pthstack'));
+        save([o.id.pthpre 'garebgal_.mat'], 'stacknew', '-v7.3', '-mat')
     end
     stackplt(stacknew, dmplt='yx(t)', it=1:3:600)
 
     %%
 
+    outsamp = 3;
+    iepoch=2;
+    boute = 2;
+    tsubtmp = {};
+    sampe = {};
+
+    for k =  1:numel(iepoch)
+        for q =  1:numel(boute)
+            ie = iepoch(k);
+            be = boute(q);
+            samptmp = find(sampepoch(daq.(idaq).epochts, ie));
+            startsamp = [1 find(diff(samptmp)>1)];
+            stopsamp = [startsamp(2:end)+1 numel(samptmp)];
+            sampe{ie,be} = samptmp(startsamp(be)):samptmp(stopsamp(be));
+            if sampe{ie,be}(1)<outsamp+1
+                tsubtmp{ie,be} = t([sampe{ie,be} sampe{ie,be}(end):sampe{ie,be}(end)+outsamp]);
+            else
+                tsubtmp{ie,be} = t([sampe{ie,be}(1)-outsamp:sampe{ie,be}(1) sampe{ie,be}(2:end) sampe{ie,be}(end):sampe{ie,be}(end)+outsamp]);
+            end
+        end
+    end
+
+    %%
+
+
+    % ie = 2;
+    % be = 2;
+    % tsubtmp2 = tsubtmp{ie,be};
+    % inc = 0.03;
+    % tsubtmp2 = tsubtmp2(1):inc:tsubtmp2(end);
     ebnotmp(stacknew, {'r'}, daq.(idaq).vy, daq.(idaq).by, daq.(idaq).bfv, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
         gld, glv, grd, grv, ...
         plt=[1 0 0 0], ...
@@ -193,7 +240,7 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=850:.2:1000, ... 50:.01:200, ...
+        tsub=880:.03:1000, ... 50:.01:200, ...
         dozscore=0, ...
         drawrot=0, ...
         sliceeb=[1:size(stacknew,3)])

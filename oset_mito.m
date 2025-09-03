@@ -12,7 +12,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; %do draw rois
-    o.roi.mm.maskname = {'lo'};
+    o.roi.mm.mmname = {'lo'};
     
     o.roi.doma = 1; %do automated morph rois
     o.roi.ma.numroi = 1024;
