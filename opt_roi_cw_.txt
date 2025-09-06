@@ -2946,6 +2946,34 @@
       "tg": []
     }
   },
+  "a93": {
+    "cm": {},
+    "docm": 0,
+    "doma": 0,
+    "domm": 1,
+    "doqc": 0,
+    "imhsv": {
+      "tg": []
+    },
+    "ma": {},
+    "mm": {
+      "chanstr": "all",
+      "mmname": "none"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "post": "f",
+      "pre": "f",
+      "wavp": []
+    },
+    "qc": {},
+    "rgname": "none",
+    "sp": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044540",
