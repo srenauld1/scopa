@@ -1,9 +1,0 @@
-function o = ored_bmp(o)
-
-%reduce bmp options to minimal functional set
-
-if strcmp(o.domtype, 'm') && isfield(o, 'mdl') %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
-    o.mdl = struct; %rmfield(o, 'mdl');
-    o.numangrs = [];
-    o.maxangrs = [];
-end

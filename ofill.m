@@ -56,8 +56,12 @@ else
                 optin.(fn1{k}) = rmfield(optin.(fn1{k}), tmphold{w});
             end
             for w = 1:numel(copybin)
-                optout.(fn1{k}).(copybin{w}) = optdf.(fn1{k});
-                optout.(fn1{k}).(copybin{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(copybin{w}), fn1{k});
+                if isfield(optdf.(fn1{k}), copybin{w})
+                    error("copybin cannot have same name as option")
+                else
+                    optout.(fn1{k}).(copybin{w}) = optdf.(fn1{k});
+                    optout.(fn1{k}).(copybin{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(copybin{w}), fn1{k});
+                end
             end
             for w = 1:numel(tmphold) %add previous copybin back to optout
                 optout.(fn1{k}).(tmphold{w}) = tmphold2.(tmphold{w});
@@ -70,6 +74,7 @@ end
 
 
     function optout = optudrec(optin, optout, fnparent)
+
         numstin = numel(optin);
         numstorig = numel(optout);
 

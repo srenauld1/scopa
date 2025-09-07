@@ -2,7 +2,7 @@ function o = oid(o, vbin, opt)
 
 % python oex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
 % this function starts at distribute, and derive and check require data, so only happen in python, not here
-% (so here we just do distribute, reduce, sort, unique, ID)
+% so here we just do distribute, reduce, sort, unique, ID
 
 arguments
     o %options struct
@@ -72,13 +72,21 @@ for k = 1:numel(vbin)
 
         if isfield(o(m), vbintmp)
             
+            %%%%%%%% PLACE OPTIONS IN TEMPORARY COPYBIN (IF NOT ALREADY) %%%%%%%%
+
+            opttmp2 = ocopybinset(o(m), vbintmp);
+
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-            optdist = odist(o(m), vbintmp); %optdist substructs (fields) are temporary names assigned during distribution
+            optdist = odist(opttmp2, vbintmp); %optdist substructs (fields) are temporary names assigned during distribution
 
             optout = [];
             fntmp = fieldnames(optdist);
             for p = 1:numel(fntmp)
+
+                %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
+                
+                optdist.(fntmp{p}) = ochk(optdist.(fntmp{p}), vbintmp);
 
                 %%%%%%%% REDUCE OPTIONS %%%%%%%%
 

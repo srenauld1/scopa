@@ -1,4 +1,4 @@
-function [cbflag, roishape, ttl] = cb_roishape(currkey)
+function [cbflag, roishape, ttl, valid_keys] = cb_roishape(currkey)
 
 persistent roishape_tmp
 persistent ttltmp
@@ -16,6 +16,7 @@ if isempty(prevkey)
     else
         error("only one field of struct nm can be true")
     end
+    valid_keys = {nm, 'return', 'escape', 'c', 'e', 'f', 'p', 'r', 'v'};
 end
 
 exit_sequence = 0;
@@ -23,43 +24,46 @@ init_sequence = 0;
 invalid_key = 0;
 roishape = []; %always empty unless successful exit
 
-if strcmp(currkey, nm) %reset if you press init key
-    ttltmp = [nm ' (roishape): '];
-    init_sequence = 1;
-elseif strcmp(currkey, 'escape')
-    exit_sequence = 1;
-    cbflagtmp = flagset(0);
-else
-    if strcmp(currkey, 'return')
-        if isempty(roishape_tmp)
-            invalid_key = 1;
-            ttltmp = 'YOU MUST SELECT ROISHAPE, OR PRESS ESCAPE';
-        else
-            exit_sequence = 1;
-            cbflagtmp = flagset(0);
-            roishape = roishape_tmp;
-        end
-    elseif strcmp(currkey, 'c')
-        roishape_tmp = 'circle';
-        ttltmp = [nm ' (roishape): c (circle)'];
-    elseif strcmp(currkey, 'e')
-        roishape_tmp = 'ellipse';
-        ttltmp = [nm ' (roishape): e (ellipse)'];
-    elseif strcmp(currkey, 'f')
-        roishape_tmp = 'freehand';
-        ttltmp = [nm ' (roishape): f (freehand)'];
-    elseif strcmp(currkey, 'p')
-        roishape_tmp = 'polygon';
-        ttltmp = [nm ' (roishape): p (polygon)'];
-    elseif strcmp(currkey, 'r')
-        roishape_tmp = 'rectangle';
-        ttltmp = [nm ' (roishape): r (rectangle)'];
-    elseif strcmp(currkey, 'v')
-        roishape_tmp = 'voxel';
-        ttltmp = [nm ' (roishape): v (voxel)'];
+if any(strcmp(currkey, valid_keys))
+    
+    if strcmp(currkey, nm) %reset if you press init key
+        ttltmp = [nm ' (roishape): '];
+        init_sequence = 1;
+    elseif strcmp(currkey, 'escape')
+        exit_sequence = 1;
+        cbflagtmp = flagset(0);
     else
-        invalid_key = 1;
-        % ttltmp = [nm ' (roishape): INVALID KEY'];
+        if strcmp(currkey, 'return')
+            if isempty(roishape_tmp)
+                invalid_key = 1;
+                ttltmp = 'YOU MUST SELECT ROISHAPE, OR PRESS ESCAPE';
+            else
+                exit_sequence = 1;
+                cbflagtmp = flagset(0);
+                roishape = roishape_tmp;
+            end
+        elseif strcmp(currkey, 'c')
+            roishape_tmp = 'circle';
+            ttltmp = [nm ' (roishape): c (circle)'];
+        elseif strcmp(currkey, 'e')
+            roishape_tmp = 'ellipse';
+            ttltmp = [nm ' (roishape): e (ellipse)'];
+        elseif strcmp(currkey, 'f')
+            roishape_tmp = 'freehand';
+            ttltmp = [nm ' (roishape): f (freehand)'];
+        elseif strcmp(currkey, 'p')
+            roishape_tmp = 'polygon';
+            ttltmp = [nm ' (roishape): p (polygon)'];
+        elseif strcmp(currkey, 'r')
+            roishape_tmp = 'rectangle';
+            ttltmp = [nm ' (roishape): r (rectangle)'];
+        elseif strcmp(currkey, 'v')
+            roishape_tmp = 'voxel';
+            ttltmp = [nm ' (roishape): v (voxel)'];
+        else
+            invalid_key = 1;
+            % ttltmp = [nm ' (roishape): INVALID KEY'];
+        end
     end
 end
 

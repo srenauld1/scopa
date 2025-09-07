@@ -91,7 +91,7 @@ try
         error("roi id is derived from an optid file different from original")
     end
     [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack, usegit=usegit); %don't input or output stack here, just loading rg
-    [~, mm] = roidraw(justload=1, pthstack=pthstack, rg=rg, mmname=mmname); %don't input stack here, just loading mm
+    [~, mm] = roidraw(nodraw=1, pthstack=pthstack, rg=rg, mmname=mmname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
     end
