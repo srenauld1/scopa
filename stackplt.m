@@ -336,12 +336,12 @@ index_labels = index_labels(dimorder);
 index_labels_avg = cell(numel(index_labels), 1);
 for k = 1:numel(dimorder_averaged_nontrivial) %averaged dimensions
     il = dimorder_averaged_nontrivial(k);
-    [~, index_labels_avg{il}] = idxmake(index_labels{il}, superset=index_labels{il}, labprefix=dimlabels{il}, printmax=max_num_inds_to_print);
+    [~, index_labels_avg{il}] = vecsub(index_labels{il}, superset=index_labels{il}, labprefix=[dimlabels{il} ': '], labmaxn=max_num_inds_to_print);
 end
 
 index_labels_tmp = index_labels(1:numdim_eachframe); %labels that are the same on every frame
 for k = 1:numel(index_labels_tmp)
-    [~, index_labels_tmp{k}] = idxmake(index_labels_tmp{k}, superset=index_labels_tmp{k}, labprefix=dimlabels{k}, printmax=max_num_inds_to_print);
+    [~, index_labels_tmp{k}] = vecsub(index_labels_tmp{k}, superset=index_labels_tmp{k}, labprefix=[dimlabels{k} ': '], labmaxn=max_num_inds_to_print);
 end
 lab_framestable = index_labels_tmp;
 

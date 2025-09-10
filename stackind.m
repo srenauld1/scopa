@@ -46,7 +46,7 @@ for k = 1:numel(fn)
             if numel(szintmp)<dim && ~isequal(ind,1) && ~isequal(ind,-1)
                 error("you requested non-singular " + fnnm + " but stack is less than " + num2str(dim) + " dimensions")
             end
-            ind = idxmake(ind, superset=szin(dim));
+            ind = vecsub(ind, superset=1:szin(dim));
             
             dtmp{dim} = ind;
             lab{dim} = ind;

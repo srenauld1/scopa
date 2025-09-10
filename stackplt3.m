@@ -83,7 +83,7 @@ end
 if isempty(its)
     its = 1:size(stack,4);
 end
-its = idxmake(its, superset=size(stack,4));
+its = vecsub(its, superset=1:size(stack,4));
 if numel(its)>maxnumframes
     its = its(1:maxnumframes);
     fprintf("you have requested more than 500 frames, just plotting the first 200 frames of the set; you can change it, its, or maxnumframes" + newline)

@@ -1,10 +1,11 @@
-function [cbflag, roishape, ttl, valid_keys] = cb_roishape(currkey)
+function [cbflag, roishape, ttl, validkeysp] = cb_roishape(currkey)
 
 persistent roishape_tmp
 persistent ttltmp
 persistent prevkey
 persistent nm
 persistent cbflagtmp
+persistent validkeysp
 
 if isempty(prevkey)
     cbflagtmp = flagset(currkey, 1);
@@ -16,7 +17,15 @@ if isempty(prevkey)
     else
         error("only one field of struct nm can be true")
     end
-    valid_keys = {nm, 'return', 'escape', 'c', 'e', 'f', 'p', 'r', 'v'};
+
+    validkeysp = {nm, 'return', 'escape', 'c', 'e', 'f', 'p', 'r', 'v'};
+
+    ttl_validkeysp = {[nm ' (init)'], '[0-9] (digits)', 'return (finish)', 'escape (exit)', 'comma (elements)', 'semicolon (vectors)', 'colon (range)', 'hyphen (equispace)', 'slash (mean)'};
+    ttl_validkeysp = ttl_validkeysp(startsWith(ttl_validkeysp, strcat(validkeysp, ' (')));
+    ttl_validkeysp = sprintf('%s, ', ttl_validkeysp{:});
+    ttl_validkeysp = ttl_validkeysp(1:end-2); %remove 2 because of trailing comma and whitespace
+    ttl_validkeysp = ['VALID KEYS: ' ttl_validkeysp];
+
 end
 
 exit_sequence = 0;
@@ -24,8 +33,8 @@ init_sequence = 0;
 invalid_key = 0;
 roishape = []; %always empty unless successful exit
 
-if any(strcmp(currkey, valid_keys))
-    
+if any(strcmp(currkey, validkeysp))
+
     if strcmp(currkey, nm) %reset if you press init key
         ttltmp = [nm ' (roishape): '];
         init_sequence = 1;
@@ -76,7 +85,7 @@ cbflag = cbflagtmp;
 if exit_sequence || init_sequence
     roishape_tmp = [];
     if exit_sequence
-        ttltmp = []; %we clear this on exit, not init, unlike cb_idx, since ttltmp is just assigned, not concatenated with each keypress
+        ttltmp = []; %we clear this on exit, not init, unlike cb_array, since ttltmp is just assigned, not concatenated with each keypress
         prevkey = [];
         nm = [];
         cbflagtmp = [];

@@ -1,5 +1,6 @@
 function todo()
 
+disp("should cb_key convert key+modifier to intended key? for example semicolon+shift convert to colon, in cb_key rather than where it gets used?")
 disp("graphics objects are placed in struct, it let's me name them (advantage is mostly just shorter names), but loses some of the heirarchical structure, which can be confusing, and most importantly, deleting the struct does not affect the graphics object, you have to run delete(object) for example, rather than rmfield(s, object), and this is confusing")
 disp("flip (rotate) all stacks for berg1, then make it an option in pl.sh")
 disp("change all dos to char vector, with hyphen separating what has been done and what is requested, like or-d for do denoise after do register has been done - but what about stitch, or a2p?")

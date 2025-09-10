@@ -218,7 +218,7 @@ fontsz = 10; %in figure title
 maxnumroi = 50; %just for preallocating
 maxnumsubroi = 50; %just for preallocating; max number of discontiguous subrois per roi
 
-keydict_roishape = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array (see that example for formatting)
+keydict_roishape = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array
     {'s', 's', 'init'}, ...
     {'return', 'return', 'finish'}, ...
     {'escape', 'escape', 'exit'}, ...
@@ -230,8 +230,8 @@ keydict_roishape = {  ... %callback keydict for using s-switch (via function 'cb
     {'v', 'voxel', 'single-voxel'}, ...
     };
 
-keydict_slash = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array (see that example for formatting)
-    {'slash', 'slash', 'init'}, ...
+keydict_slash = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array
+    {'slash', '/', 'init'}, ...
     {'return', 'return', 'finish'}, ...
     {'escape', 'escape', 'exit'}, ...
     {'y', 'y', 'y mean'}, ...
@@ -272,8 +272,8 @@ if ~cellout && nc>1
     error("cellout must be true when there are multiple channels, since there is one cell (roimask) for each channel")
 end
 
-iz = vecsub([], superset=1:nz); % z indices displayed in initial roi drawing figure (can be modified with callbacks)
-it = vecsub([], superset=1:nt); % t indices displayed in initial roi drawing figure (can be modified with callbacks)
+iz = vecsub([], superset=nz); % z indices displayed in initial roi drawing figure (can be modified with callbacks)
+it = vecsub([], superset=nt); % t indices displayed in initial roi drawing figure (can be modified with callbacks)
 if numel(it)>maxnt
     it = it(1:maxnt);
 end

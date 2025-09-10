@@ -161,8 +161,8 @@ end
 
 %% prep vars
 
-[iz, izstr] = idxmake(iz, superset=size(stack, 3), labprefix='z');
-[it, itstr] = idxmake(it, superset=size(stack, 4), labprefix='t');
+[iz, izstr] = vecsub(iz, superset=1:size(stack, 3), labprefix='z: ');
+[it, itstr] = vecsub(it, superset=1:size(stack, 4), labprefix='t: ');
 
 % stack = stack(:,:,iz,it,:);
 kpepidx = setdiff(1:numel(epochts), it);

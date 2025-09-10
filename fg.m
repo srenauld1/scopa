@@ -7,6 +7,7 @@ arguments
     opt.szf = 1
     opt.fontsz = 8
     opt.alignh = 'center' %horizontal alignment, 'left', 'center', 'right'
+    opt.cbshort = 0 %1 to convert callback keys to their short name (if one exists); for example, 'shift+semicolon' converted to 'colon'; cbshort is used in function cb_key, which is set here as callback function if doui=1
 end
 h = opt.h;
 doui = opt.doui;
@@ -14,6 +15,7 @@ gifvis = opt.gifvis;
 szf = opt.szf;
 fontsz = opt.fontsz;
 alignh = opt.alignh;
+cbshort = opt.cbshort;
 
 marginfg = 0.01;
 
@@ -25,7 +27,7 @@ if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes
 
     if doui
 
-        h.fg.KeyPressFcn = @(src,evnt)cb_key(src,evnt);
+        h.fg.KeyPressFcn = @(src,evnt)cb_key(src,evnt,cbshort=cbshort);
 
         % h.fgd = figure('Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
         % h.fgd.Position = [h.fg.Position(1)+h.fg.Position(3) 0 0.9-h.fg.Position(3) h.fg.Position(4)];

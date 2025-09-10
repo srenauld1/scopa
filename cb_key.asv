@@ -26,20 +26,13 @@ if ispc && strcmpi(event.Key, '0')
     event.Key = 'reutrn';
 end
 if ~isempty(event.Modifier) && ~isequal(event.Modifier, event.Key)
-    nmlong = [event.Key sprintf([modifier_delimiter '%s'] , event.Modifier{:})]; %expand all modifiers, precede with underscore to concatenate with main key
-    nmshort = [];
+    short_name_found = 0;
     if cbshort
-        switch nmlong %add to this as you need more keys (is there a function for doing this conversion already?)
-            case 'semicolon+shift'
-                nmshort = 'colon';
-            case 'semicolon+comma'
-                nmshort = 'lesser';
-            case 'semicolon+period'
-                nmshort = 'greater';
-        end
+        switch 
+
     end
-    if isempty(nmshort)
-        src.UserData = nmlong; %use long name if nmshort is not defined, or cbshort=0
+    if ~short_name_found
+        src.UserData = cb_fullname; %expand all modifiers, precede with underscore to concatenate with main key
     end
 else
     src.UserData = [event.Key];

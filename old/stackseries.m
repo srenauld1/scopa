@@ -11,6 +11,9 @@ suffix=list of suffixes to plot; it is also overly complicated because it
 wraps around stackld and stackplt, and saves memory; soon it will be
 deprecated/moved into stackplt
 
+its main benefit is that it plots multiple stacks without having to load them all into memory at once (since they can be very large)
+but this can easily be moved into stackplt
+
 plot multiple stacks created in different stages of scopa pipeline, in a single figure (saved as gif)
 stacks to plot denoted by suffixplt
 loads stacks and creates temporary stacks (subset according to user index inputs) one at a time, in a loop, then plots the accumulated stacks variable; 
@@ -161,8 +164,8 @@ for spi = 1:numel(pthstackall)
         cnt = cnt+1;
 
         if cnt==1
-            [iz, izstr] = idxmake(iz, superset=size(stack,3), labprefix='z');
-            [it, itstr] = idxmake(it, superset=size(stack,4), labprefix='t');
+            [iz, izstr] = vecsub(iz, superset=1:size(stack,3), labprefix='z: ');
+            [it, itstr] = vecsub(it, superset=1:size(stack,4), labprefix='t: ');
         end
 
         stacktmp{cnt, 1} = stack(:,:,iz,it,:); %make sure it's indexed into first dimension

@@ -189,10 +189,8 @@ launch.json can be found in the vscode file explorer, in scopa/vscode; it is a h
 for caiman registration or source extraction:
         
         Additional modules to be preloaded:
-                python/3.10.11
-
-        leave Slurm Custom Arguments blank
-
+                gcc/14.2.0 python/3.13.1
+                
         Custom Environment (drag text area to enlarge):
                 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
                 conda activate caiman
@@ -201,11 +199,9 @@ for caiman registration or source extraction:
 for deepcad denoising; if you want to step into deepcad code during VSCode debugging, make "justMyCode": false in launch.json; in VS code be sure to select set interpreter at workspace level, and choose deepcad (if you're using the shared wilson environment, which is named deepcad):
 
         Additional modules to be preloaded:
-                gcc/9.2.0 python/3.9.14 cuda/11.7
+                gcc/14.2.0 python/3.13.1 cuda/12.8
 
-        leave Slurm Custom Arguments blank
-
-        Custom Environment (drag text area to enlarge):
+        Slurm Custom Arguments:
                 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
                 conda activate deepcad
 
