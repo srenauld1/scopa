@@ -9,7 +9,7 @@ name-value argument p:
 name-value argument maxn sets max number of elements from x to convert to char in lab
 name-value argument delim specifies delimiter between each element in output lab
 name-value argument prefix specifies prefix in output lab 
-output lab does not necessarily reflect orientation of input vector x, since delimiter is independent of x (for example, lab can have comma or space delimiter even when input x is column vector)
+output lab does not necessarily reflect orientation of input vector x, since delimiter can be changed (for example, lab can have comma or space delimiter even when input x is column vector)
 
 TODO: accept non-vector input 
 TODO: more complex abbreviation options

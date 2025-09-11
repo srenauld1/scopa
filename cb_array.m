@@ -172,6 +172,16 @@ if currkey_isvalid
     elseif strcmpi(currkey, 'comma')
         if prevkey_isdigit && ~isequal(hyphen_pressed,1)
             outp = [outp str2double(digitstr)];
+            if colon_pressed 
+                [outp, ttl_problem, exit_sequence] = colon_op(outp);
+            end
+            digitstr = [];
+        else
+            currkey_isvalid = 0;
+        end
+    elseif strcmpi(currkey, 'period')
+        if prevkey_isdigit && ~isequal(hyphen_pressed,1)
+            outp = [outp str2double(digitstr)];
             if colon_pressed %ouch!
                 [outp, ttl_problem, exit_sequence] = colon_op(outp);
             end
@@ -211,7 +221,7 @@ if currkey_isvalid
                     digitstr = ['-' digitstr];
                 end
                 outp = [outp str2double(digitstr)];
-                if colon_pressed %ouch!
+                if colon_pressed 
                     [outp, ttl_problem, exit_sequence] = colon_op(outp);
                 end
             end

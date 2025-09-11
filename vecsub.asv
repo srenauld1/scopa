@@ -24,6 +24,7 @@ output:
 
 %}
 
+
 arguments
     x = [] %input used to translate superset into xout using one of the valid shorthand operators (see above)
     opt.superset = [] %if nonempty, superset of which xout must be member (error if not member of superset); if empty, xout is simply same as input x
@@ -37,6 +38,7 @@ dosort = opt.dosort;
 labprefix = opt.labprefix;
 labdelim = opt.labdelim;
 labmaxn = opt.labmaxn;
+
 
 if ~isempty(x) && ( ~isvector(x) || any(isnan(x)) )
     error("input x must be empty or vector without nan")
@@ -92,6 +94,7 @@ if dosort
     superset = sort(superset);
 end
 
+lab = [];
 if emptyop
     ix = 1:numel(superset);
 elseif negop
@@ -108,40 +111,43 @@ elseif compop
     if imag(x)<0
         ix = [1:seginc:seglen]'+segspacing*([1:numseg]-1);
     elseif imag(x)>0
-        ix = [1:seginc:seglen]'+segspacing*([1:numseg]-1)+segspacing-seglen+1;
+        ix = [1:seginc:seglen]'+segspacing*([1:numseg]-1)+segspacing-seglen;
     end
     if numel(ix)>numel(superset) || any(ix<0, 'all')
         fprintf("seglength*numseg exceeds numel(superset), output will equal superset" + newline)
-        ix = 1:numel(superset);
+        x = 1:numel(superset);
     end
 else
     ix = x;
 end
 
-if any(isnan(ix), 'all')
+ix = ix(:)';
+
+if any(isnan(ix))
     error("cannot have nan in output ix")
 end
 
-if ~isempty(superset) && any(~ismember(ix, 1:numel(superset)), 'all') && ~all(isnan(x))
+if ~isempty(superset) && any(~ismember(ix, 1:numel(superset))) && ~all(isnan(x))
     error("at least one element of xout is outside superset")
 end
-xout = superset(ix);
+xout = superset(ix(:));
 
-if compop && numseg*2<=labmaxn && seglen>2 %special label for complex input x (not created by
+if compop && numseg*2<=labmaxn && seglen~=1 %special label for complex input x (not created by
+    tp = 0;
+    if isrow(xout)
+        xout = xout(:);
+        tp = 1;
+    end
     lab = cell(1,size(xout,2));
     for k = 1:size(xout,2)
         lab{k} = [num2str(xout(1,k)) ':' num2str(xout(end,k))];
     end
     lab = strjoin(lab, ',');
+    if tp
+        xout = xout';
+    end
 else
-    lab = num2lab(xout(:), delim=labdelim, prefix=labprefix, maxn=labmaxn);
-end
-
-ix = ix(:);
-xout = xout(:);
-if isrow(superset)
-    ix = ix.';
-    xout = xout.';
+    lab = num2lab(xout, delim=labdelim, prefix=labprefix, maxn=labmaxn);
 end
 
 
