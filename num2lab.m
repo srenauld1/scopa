@@ -34,6 +34,9 @@ end
 if ~isempty(x) && ( ~isvector(x) || ~isnumeric(x) )
     error("x must be numeric vector")
 end
+if iscolumn(x)
+    x = x.';
+end
 
 if ~isempty(x) && isempty(p)
     if isscalar(x)

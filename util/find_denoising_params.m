@@ -23,17 +23,17 @@ clc
 % do_volume = 0 trains on some subset of z slices (which for this script, assumes just one slice at a time, but my code can operate on multiple)
 
 %data params
-stack_size_x = 128;
-stack_size_y = 60;
-stack_size_t = 8000;
-stack_size_z = 2; %set to 1 if not volumetric
-volume_rate = 23.165; %hz
+stack_size_x = 256;
+stack_size_y = 126;
+stack_size_t = 3000;
+stack_size_z = 6; %set to 1 if not volumetric
+volume_rate = 10; %hz
 
 %deepcad paramsc (adjust if you don't like default)
 do_volume = 1; %probably should not adjust
 patch_t_sec = 20; %adjust this first; 20 sec is a fairly arbitrary guess
 default_patch_xy = 120; %will be reduced to whole fov if fov is smaller than this
-train_datasets_size = 6000; %probably don't need to adjust
+train_datasets_size = 3000; %probably don't need to adjust
 overlap_factor = 0.8; %probably don't need to adjust; smaller means more temporal overlap, less spatial (balance point depends on other params)
 padinc = 5; %pointless i think; could probably be zero
 

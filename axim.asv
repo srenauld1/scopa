@@ -146,11 +146,11 @@ for j = 1:numax
     if doui
         if dool
             h.(nm)(q).pl{j}.ButtonDownFcn = 'callbacks for this image are assigned to overlay image with handle h.(nm)(q).ol';
-            h.(nm)(q).ol{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
+            h.(nm)(q).ol{j}.ButtonDownFcn = @(src,event)cb_click(src,event);
             h.(nm)(q).ol{j}.PickableParts = 'visible';
             h.(nm)(q).ol{j}.HitTest = 'on';
         else
-            h.(nm)(q).pl{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
+            h.(nm)(q).pl{j}.ButtonDownFcn = @(src,event)cb_click(src,event);
             h.(nm)(q).pl{j}.PickableParts = 'visible';
             h.(nm)(q).pl{j}.HitTest = 'on';
         end

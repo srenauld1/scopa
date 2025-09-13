@@ -38,8 +38,8 @@ labprefix = opt.labprefix;
 labdelim = opt.labdelim;
 labmaxn = opt.labmaxn;
 
-if ~isempty(x) && ( ~isvector(x) || any(isnan(x)) )
-    error("input x must be empty or vector without nan")
+if ~isempty(x) && ( ~isvector(x) || ( any(isnan(x)) && any(~isnan(x)) ) )
+    error("input x must be empty or vector without nan, or vector of all nan")
 end
 if ~isempty(superset) && ~isvector(superset)
     error("name-value argument superset must be empty or vector")
@@ -118,14 +118,18 @@ else
     ix = x;
 end
 
-if any(isnan(ix), 'all')
-    error("cannot have nan in output ix")
+if any(isnan(ix), 'all') && any(~isnan(x)) %use all here because ix may not be vector yet
+    error("output ix cannot have any nans, unless it's all nan, and input x did not have nan")
 end
 
-if ~isempty(superset) && any(~ismember(ix, 1:numel(superset)), 'all') && ~all(isnan(x))
-    error("at least one element of xout is outside superset")
+if all(isnan(ix))
+    xout = ix;
+else
+    if ~isempty(superset) && any(~ismember(ix, 1:numel(superset)), 'all')
+        error("at least one element of xout is outside superset")
+    end
+    xout = superset(ix);
 end
-xout = superset(ix);
 
 if compop && numseg*2<=labmaxn && seglen>2 %special label for complex input x (not created by
     lab = cell(1,size(xout,2));

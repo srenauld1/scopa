@@ -191,7 +191,7 @@ for j = 1:numsubplot
         if j==1
 
             if doui
-                h.(nm)(q).ax{j}.ButtonDownFcn = @(src,evnt)cb_click(src,evnt);
+                h.(nm)(q).ax{j}.ButtonDownFcn = @(src,event)cb_click(src,event);
                 h.(nm)(q).ax{j}.PickableParts = 'visible';
                 h.(nm)(q).ax{j}.HitTest = 'on';
             end

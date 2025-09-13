@@ -1,16 +1,20 @@
 function cb_key(src, event, opt)
 
 %{
+
 callback function to capture keypress
 keypress written to char vector in field UserData of src
 if cbshort=0 (default) . . . 
     when there are modifiers keys pressed (shift, control, alt/option) along with non-modifiers (everything else), 
-    src.UserData char vector is in reverse order of keys pressed, with modifier_delimiter separating all keys; 
-    we do this (rather than making callback a struct with separate event and modifier fields) to simplify interpretation outside this function;
-    we use plus symbol as modifier_delimiter because it is meaningful in this context (plus to indicate multiple keys were pressed) 
-    recommend not use an underscore as modifier_delimiter, because it needs to be escaped to print properly (or interpreter needs to be set to 'none');
+    src.UserData char vector concatenates all keys, delimited by hard-coded character set by variable 'delim'
+    this function returns one char vector (rather than, for example, a struct with key and modifier fields) to simplify keypress interpretation (can use a single function, strcmp, to detect target keypress);
+    regardless of the order in which the keys were pressed, output will be in the following order: order shift, control, alt/option, non-modifier    
+    if only modifier keys are pressed, they appear on their own (they do not also appear as the non-modifier) we use plus symbol as delim because it is meaningful in this context (multiple keys pressed) 
+    note: recommend not use an underscore as delim, because it needs to be escaped to print properly (or interpreter needs to be set to 'none');
+    note: as of 2025, command key on mac has been problematic in this function, so carl has avoided using it  
 if cbshort=1 . . . 
     callback keys are converted to their short name (if one exists); for example, 'shift+semicolon' is converted to 'colon'; 
+
 %}
 
 arguments
@@ -20,27 +24,37 @@ arguments
 end
 cbshort = opt.cbshort;
 
-modifier_delimiter = '+';  
+delim = '+';
 
-if ispc && strcmpi(event.Key, '0')
-    event.Key = 'reutrn';
-end
-if ~isempty(event.Modifier) && ~isequal(event.Modifier, event.Key)
-    nmlong = [event.Key sprintf([modifier_delimiter '%s'] , event.Modifier{:})]; %expand all modifiers, precede with underscore to concatenate with main key
-    nmshort = [];
-    if cbshort
-        switch nmlong %add to this as you need more keys (is there a function for doing this conversion already?)
-            case 'semicolon+shift'
-                nmshort = 'colon';
-            case 'semicolon+comma'
-                nmshort = 'lesser';
-            case 'semicolon+period'
-                nmshort = 'greater';
-        end
-    end
-    if isempty(nmshort)
-        src.UserData = nmlong; %use long name if nmshort is not defined, or cbshort=0
-    end
+tmpkey = event.Key; %copy to keytmp since event.Key is read only and we might have to change it below
+if isempty(event.Modifier)
+    tmpmod = '';
 else
-    src.UserData = [event.Key];
+    tmpmod = event.Modifier;
+end
+if ispc && strcmp(tmpkey, '0')
+    tmpkey = 'return';
+end
+if ismember(tmpkey, tmpmod)
+    tmpkey = ''; %we don't care to repeat modifier as the non-modifier
+end
+if isempty(tmpmod)
+    src.UserData = tmpkey; %expand all modifiers, precede with underscore to concatenate with main key
+else
+    src.UserData = [sprintf(['%s' delim], tmpmod{:}) tmpkey]; %expand all modifiers, precede with underscore to concatenate with main key
+end
+if endsWith(src.UserData, delim) %in case keytmp is empty/gets deleted
+    src.UserData = src.UserData(1:end-1);
+end
+if cbshort %use full name if cbshort=0, or if short name is not defined in switch block below
+    switch src.UserData %add to this as you need more keys (is there a function for doing this conversion already?)
+        case 'shift+semicolon'
+            src.UserData = 'colon';
+        case 'shift+comma'
+            src.UserData = 'lesser';
+        case 'shift+period'
+            src.UserData = 'greater';
+        case 'shift+equals'
+            src.UserData = 'plus';
+    end
 end

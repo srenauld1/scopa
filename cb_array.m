@@ -97,20 +97,26 @@ if isempty(prevkey)
         error("only one field of struct initkeyp can be true")
     end
 
-    if isempty(keydict) %use default keydict if none passed in 
-        keydictp = {  ... %cell vector, each element is itself a cell of length 1, 2, or 3, and each of these nested cells must contain a char vector (not a string, and not []); 1st element is key name (for code to identify the key pressed in callback); if present, 2nd element is key name for printing on a figure; if present, 3rd element is key function description (eg for printing on a figure); for example, {'comma', ',', 'separate elements'}; if 1 element, the key print name is given the key true name and key function description is omitted; if 2 elements, key function description is omitted; when printing, 3rd element is placed in parentheses by default
-            {initkeyp, initkeyp, 'init'}, ...
-            {'[0-9]', '[0-9]', 'digits'}, ...
-            {'return', 'return', 'finish'}, ...
-            {'escape', 'escape', 'exit'}, ...
-            {'comma', ',', 'elements'}, ...
-            {'semicolon', ';', 'vectors'}, ...
-            {'colon', ':', 'range'}, ...
-            {'hyphen', '-', 'equispace'}, ...
-            {'period', '.', 'discontiguous'}, ...
-            % {'slash', '/', 'mean'}, ... %removed this from default keydict for now, but code to use it is still in this function 
-            };
+    keydictdf = {  ... %default keydict; any passed in as name-value argument keydict must follow this pattern; cell vector, each element is itself a cell of length 1, 2, or 3, and each of these nested cells must contain a char vector (not a string, and not []); 1st element is key name (for code to identify the key pressed in callback); if present, 2nd element is key name for printing on a figure; if present, 3rd element is key function description (eg for printing on a figure); for example, {'comma', ',', 'separate elements'}; if 1 element, the key print name is given the key true name and key function description is omitted; if 2 elements, key function description is omitted; when printing, 3rd element is placed in parentheses by default
+        {initkeyp, initkeyp, 'init'}, ...
+        {'[0-9]', '[0-9]', 'digits'}, ...
+        {'return', ' return ', 'finish'}, ...
+        {'escape', ' escape ', 'exit'}, ...
+        {'comma', ',', 'elements'}, ...
+        {'semicolon', ' ; ', 'vectors'}, ...
+        {'colon', ' : ', 'range'}, ...
+        {'hyphen', ' - ', 'equispace'}, ...
+        {'plus', '+', 'discontiguous'}, ...
+        {'i', 'i', 'discontiguous'}, ...
+        % {'slash', '/', 'mean'}, ... %removed this from default keydict for now, but code to use it is still in this function
+        };
+
+    if isempty(keydict) %use default keydict if none passed in
+        keydictp = keydictdf;
     else
+        if any(ismember(cellfun(@(x) x{1}, keydict, 'UniformOutput', false), cellfun(@(x) x{1}, keydictdf, 'UniformOutput', false))) %if any user supplied keydict has same validkey as in default
+            error("wait what?")
+        end
         keydictp = keydict;
     end
 
@@ -269,7 +275,7 @@ if currkey_isvalid
                 end
             end
         end
-    elseif strcmpi(currkey, 'colon') %colon is originally semicolon+shift
+    elseif strcmpi(currkey, 'colon') %colon is originally shift+semicolon, translated into colon by cb_key
         if prevkey_isdigit && ~isequal(hyphen_pressed,1)
             outp = [outp str2double(digitstr)];
             digitstr = [];
@@ -295,25 +301,25 @@ if isempty(ttl_problem) %ttl_problem is for problem messages
         ttl_actionp = erase(ttl_actionp, invalidstr);
     end
     if currkey_isvalid %cat current key with all previous (valid) keys
-        validkeys_nmprint = validkeys_nmprint(~cellfun(@isempty, cellfun(@(x) regexp(currkey, sprintf('^%s$|', x)), validkeys, 'UniformOutput', false))); %find which of validkeys currkey matches, and grab the corresponding nmprint (name for printing in figure)
-        if numel(validkeys_nmprint)~=1
+        nmprint = validkeys_nmprint(~cellfun(@isempty, cellfun(@(x) regexp(currkey, sprintf('^%s$|', x)), validkeys, 'UniformOutput', false))); %find which of validkeys currkey matches, and grab the corresponding nmprint (name for printing in figure)
+        if numel(nmprint)~=1
             error("only one element from validkeys should match currkey")
         end
-        validkeys_nmprint = validkeys_nmprint{1}; %it must be scalar so this is fine
+        nmprint = nmprint{1}; %it must be scalar so this is fine
         if currkey_isdigit
-            validkeys_nmprint = currkey;
+            nmprint = currkey;
         end
         if init_sequence
-            validkeys_nmprint = [validkeys_nmprint bookend_symbol];
+            nmprint = [nmprint bookend_symbol];
         else
             if endsWith(ttl_actionp, bookend_symbol)
                 ttl_actionp = ttl_actionp(1:end-numel(bookend_symbol));
             end
         end
         if addspace
-            validkeys_nmprint = [pad('',1) validkeys_nmprint];
+            nmprint = [pad('',1) nmprint];
         end
-        ttl_actionp = [ttl_actionp ttltmp_empty validkeys_nmprint bookend_symbol];
+        ttl_actionp = [ttl_actionp ttltmp_empty nmprint bookend_symbol];
     else
         ttl_actionp = [ttl_actionp invalidstr];
     end

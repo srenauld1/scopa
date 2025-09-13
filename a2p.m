@@ -43,6 +43,9 @@ for k = 1:numel(oa) % loop over recordings
         glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
     end
 
+    stack = stack(:,:,:,1:find(glb('t')>300, 1, 'first')); 
+    widyxz=md.widyxz;
+    save('~/stacks/dad2g.mat', 'stack', 'widyxz', '-mat', '-v7.3')
 
     %% rois
 
