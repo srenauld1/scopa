@@ -206,6 +206,7 @@ cmap = opt.cmap;
 remove_overlap = opt.remove_overlap;
 cellout = opt.cellout;
 usegit = opt.usegit;
+nosave = opt.nosave;
 nodraw = opt.nodraw;
 dorg = opt.dorg;
 rgname = opt.rgname;
