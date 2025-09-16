@@ -473,10 +473,10 @@ catch ME
                         end
                         if numax==1 %if there's only one axes, no need to zoom in then select to draw, just one click to draw
                             drawflag = 1;
-                            [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                             if numel(iz)>1
                                 roi_on_mean_z = 1;
                             end
+                            [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                         else %if multiple axes, on first click zoomflag=1 and we "zoom into" clicked axes; on second click drawflag=1 and we begin drawing
                             zoomflag = 1;
                             iznew = imselected;
@@ -521,7 +521,6 @@ catch ME
                             sumz = sum(roimask{ic}(:,:,:,iredit(2),iredit(1)), [1,2]); %subroi comes before roi in roimask
                             if any(sumz(:))
                                 drawflag = 1;
-                                [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                                 editflag = 1;
                                 axfocus = 1; %this is always 1 now because we "zoom in" to the axes you click on
                                 iz_o = iz;  %save current iz to return to after drawing on the zoomed in axes (or if there's just one axes, this won't hurt either)
@@ -536,6 +535,7 @@ catch ME
                                     roi_on_mean_z = 1;
                                 end
                                 h.ttl.String = regexprep(h.ttl.String, 'ROISHAPE: "\w+"', ['ROISHAPE: "' roishape '"']);
+                                [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                             else
                                 ttl_action = ['CANNOT EDIT ROI,SUBROI ' mat2str([iredit(2),iredit(1)]) ' BECAUSE IT IS EMPTY'];
                             end
@@ -544,7 +544,7 @@ catch ME
 
                 elseif cbflag.s || ( switches_off && strcmp(currkey, 's') )  %s sequence; change roi shape (include the switches_off to prevent a context key in one sequence from initializing a different sequence)
                     ttl_switches = 's-SWITCH ON, CHANGE ROISHAPE (DRAW TOOL)';
-                    [roishape_new, cbflag, ttl_action, ttl_validkeys] = cb_array(currkey, keydict=keydict_roishape, numvec=1, veclen=1); %don't dounique in case user wants to see repeated frames
+                    [roishape_new, cbflag, ttl_action, ttl_validkeys] = cb_array(currkey, keydict=keydict_roishape, numvec=1); 
                     if ~isempty(roishape_new)
                         roishape = roishape_new;
                         if dorg
@@ -707,7 +707,8 @@ catch ME
                     dmmean(strfind(nmdm, 't')) = 0;
                 end
                 [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
-                [h.ttl.String, ttl_sv] = titlechange('newz', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
+                roi_on_mean_z_dummy = 0; %irrelevant here
+                [h.ttl.String, ttl_sv] = titlechange('newz', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z_dummy);
                 iznew = [];
                 itnew = [];
                 dmmean_tmp = [];
@@ -760,8 +761,7 @@ catch ME
                         error("invalid roishape")
                 end
                 ttl_howto_suffix = 'mouse: ADJUST,   backspace: DELETE,   return: ACCEPT';
-                    h.ttl.String{ttli.howto} = regexprep(h.ttl.String{ttli.howto}, ['(' ttl_prefixes{ttli.howto} ').*'], ['$1' ttl_howto_suffix]);
-
+                h.ttl.String{ttli.howto} = regexprep(h.ttl.String{ttli.howto}, ['(' ttl_prefixes{ttli.howto} ').*'], ['$1' ttl_howto_suffix]);
                 drawnow
                 while true
                     if ~isempty(h.fg.UserData) %capture key press on figure callback
@@ -779,7 +779,6 @@ catch ME
                                 break
                             end
                         elseif strcmp(currkey , 'backspace')
-                            [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                             if ~isempty(hrtmp.Position) %  if you drew something but want to delete it before hitting enter
                                 if editflag %if you're editing, and you hit escape (ie delete the recovered subroi), you have to delete it from roimask too
                                     [hr, roimask, ttl_action, success] = roidel({iredit}, hr, roimask, ic); %put iredit in cell for roidel
