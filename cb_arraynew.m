@@ -1,3 +1,6 @@
+
+
+
 function [out, cbflag, ttl_action, ttl_validkeys] = cb_array(currkey, opt)
 
 % process sequence of keypress callbacks to create and output a numeric vector, out
@@ -42,7 +45,7 @@ persistent cbflagp
 persistent validkeys
 persistent validkeys_nmprint
 persistent keydictp
-persistent digits_valid
+persistent keylog
 
 invalidstr = '  INVALID';
 bookend_symbol = ' ||| '; %to bookend the printed callback record (shouldn't be any of the validkeys of course
@@ -100,18 +103,11 @@ if isempty(prevkey)
         error("only one field of struct initkeyp can be true")
     end
 
-    keydictdf = {  ... %default keydict; any passed in as name-value argument keydict must follow this pattern; cell vector, each element is itself a cell of length 1, 2, or 3, and each of these nested cells must contain a char vector (not a string, and not []); 1st element is key name (for code to identify the key pressed in callback); if present, 2nd element is key name for printing on a figure; if present, 3rd element is key function description (eg for printing on a figure); for example, {',', ',', 'separate elements'}; if 1 element, the key print name is given the key true name and key function description is omitted; if 2 elements, key function description is omitted; when printing, 3rd element is placed in parentheses by default
+    keydictdf = {  ... %default keydict; any passed in as name-value argument keydict must follow this pattern; cell vector, each element is itself a cell of length 1, 2, or 3, and each of these nested cells must contain a char vector (not a string, and not []); 1st element is key name (for code to identify the key pressed in callback); if present, 2nd element is key name for printing on a figure; if present, 3rd element is key function description (eg for printing on a figure); for example, {'comma', ',', 'separate elements'}; if 1 element, the key print name is given the key true name and key function description is omitted; if 2 elements, key function description is omitted; when printing, 3rd element is placed in parentheses by default
         {initkeyp, initkeyp, 'init'}, ...
-        {'[0-9]', '[0-9]', 'digits'}, ...
         {'return', ' return ', 'finish'}, ...
         {'escape', ' escape ', 'exit'}, ...
-        {',', ',', 'element delim'}, ...
-        {';', ' ; ', 'vector delim'}, ...
-        {':', ' : ', 'range'}, ...
-        {'-', ' - ', 'equispace'}, ...
-        % {'i', 'i', 'multirange'}, ...
-        % {'plus', '+', 'multirange shift up'}, ...
-        % {'slash', '/', 'mean'}, ... %removed this from default keydict for now, but code to use it is still in this function
+        {'^(\d+):(\d+)$', 'x:y', 'range'}, ...
         };
 
     if isempty(keydict) %use default keydict if none passed in
@@ -147,17 +143,9 @@ if isempty(prevkey)
     ttl_validkeysp = ttl_validkeysp(1:end-2); %remove 2 because of trailing comma and whitespace
     ttl_validkeysp = ['VALID KEYS: ' ttl_validkeysp];
 
-    if ismember('[0-9]', validkeys)
-        digits_valid = 1;
-    else
-        digits_valid = 0;
-    end
-
 end
 
-if isempty(slash_pressed)
-    slash_pressed = 0; %can't be empty because it gets assigned an element of vector
-end
+
 out = []; %empty unless successful exit
 ttl_problem = [];
 ttltmp_empty = [];
@@ -165,160 +153,43 @@ exit_sequence = 0;
 init_sequence = 0;
 init_vec_sequence = 0;
 
-currkey_isdigit = ~isempty(regexp(currkey, '^[0-9]$', 'once'));
-currkey_isletter = ~isempty(regexp(currkey, '^[A-Za-z]$', 'once'));
-currkey_isvalid = ~isempty(regexp(currkey, sprintf('^%s$|', validkeys{:}), 'once'));
-if isempty(prevkey)
-    prevkey_isdigit = 0;
-else
-    prevkey_isdigit = ~isempty(regexp(prevkey, '^[0-9]$', 'once'));
-end
+if isequal(currkey, initkeyp) %when you press init key to restart the sequence, clear all persistent variables (can't clear this from within calling function roidraw, matlab bug)
+    init_sequence = 1;
+    currkey_isvalid = 1;
+elseif strcmpi(currkey, 'escape')
+    exit_sequence = 1;
+elseif strcmpi(currkey, 'return')
 
-if currkey_isvalid
-
-    currkey_isvalid = 0;
-
-    if currkey_isdigit
-        digitstr = [digitstr currkey];
-        currkey_isvalid = 1;
-    elseif currkey_isletter
-        digitstr = [digitstr currkey];
-        currkey_isvalid = 1;
-    elseif isequal(currkey, initkeyp) %when you press init key to restart the sequence, clear all persistent variables (can't clear this from within calling function roidraw, matlab bug)
-        init_sequence = 1;
-        currkey_isvalid = 1;
-    elseif strcmpi(currkey, ',')
-        if prevkey_isdigit && ~isequal(hyphen_pressed,1)
-            outp = [outp str2double(digitstr)];
-            if colon_pressed
-                [outp, ttl_problem, exit_sequence] = colon_op(outp);
-            end
-            digitstr = [];
-            currkey_isvalid = 1;
+    keylog = erase(keylog, ' '); %remove all whitespace
+    keylog = erase(keylog, ' '); %remove all whitespace
+    if contains(keylog, ';')
+        if ~startsWith(keylog, '{')
+            keylog = ['{' keylog]; %put opening bracket in if omitted and contains semicolon
         end
-    elseif strcmpi(currkey, '.')
-        if prevkey_isdigit && ~isequal(hyphen_pressed,1)
-            outp = [outp str2double(digitstr)];
-            if colon_pressed %ouch!
-                [outp, ttl_problem, exit_sequence] = colon_op(outp);
-            end
-            currkey_isvalid = 1;
-        end
-    elseif strcmpi(currkey, '+')
-        if prevkey_isdigit && ~isequal(hyphen_pressed,1) && ~isequal(colon_pressed,1)
-            outp = [outp str2double(digitstr)];
-            currkey_isvalid = 1;
-        end
-    elseif strcmpi(currkey, 'i')
-        if hyphen_pressed || plus_pressed
-            i_pressed = 1;
-            currkey_isvalid = 1;
-        end
-    elseif strcmpi(currkey, 'escape')
-        exit_sequence = 1;
-        currkey_isvalid = 1;
-    elseif strcmpi(currkey, '-')
-        if isequal(prevkey, initkeyp) || isequal(prevkey, 'slash')
-            hyphen_pressed = 1;
-            currkey_isvalid = 1;
-        end
-    elseif strcmpi(currkey, 'return') || strcmpi(currkey, ';')
-        numvec_curr = numel(outp2)+1;
-        exittmp = [0,0,0];
-        [superset, ttltmp{1}, exittmp(1)] = matchargs(numvec_curr, superset, elongate_superset);
-        [veclen, ttltmp{3}, exittmp(3)] = matchargs(numvec_curr, veclen, elongate_veclen);
-        if any(exittmp)
-            ttl_problem = ttltmp{find(exittmp,1)};
-            exit_sequence = 1;
-        else
-            if isempty(outp) && isempty(digitstr)
-                if isempty(superset{end})
-                    ttl_problem = 'YOU CANNOT INPUT EMPTY WHEN name-value argument "superset" IS EMPTY';
-                    exit_sequence = 1;
-                else
-                    ttltmp_empty = num2lab(superset{end});
-                    outp = superset{end};
-                end
-            end
-            if ~isempty(digitstr)
-                if hyphen_pressed
-                    digitstr = ['-' digitstr];
-                end
-                if digits_valid
-                    outp = [outp str2double(digitstr)];
-                else
-                    outp = [outp digitstr];
-                end
-                digitstr = [];
-                if colon_pressed
-                    [outp, ttl_problem, exit_sequence] = colon_op(outp);
-                end
-            end
-            if ~exit_sequence %if exit_sequence wasn't triggered with error, begin exit_sequence here
-                if digits_valid
-                    try
-                        outp = vecsub(outp, superset=superset{end}); %so we get message rather than error
-                    catch ME
-                        ttl_problem = ['FAILED TO MAKE VECTOR #' num2str(numvec_curr) ' WITH ERROR ' ME.message];
-                    end
-                end
-                if dounique
-                    outp = unique(outp, 'stable');
-                end
-                if ~isempty(superset{end}) && any(~ismember(outp, superset{end}))
-                    if numvec_curr==1
-                        ttl_problem = ['YOU HAVE REQUESTED ' initkeyp ' INDICES OUTSIDE RANGE'];
-                    else
-                        ttl_problem = ['IN VECTOR #' num2str(numvec_curr) ' YOU HAVE REQUESTED ' initkeyp ' INDICES OUTSIDE RANGE'];
-                    end
-                    exit_sequence = 1; %need this here since ~exit_sequence below
-                else
-                    if ~isempty(veclen) && numel(outp)~=veclen(end)
-                        ttl_problem = ['IN VECTOR #' num2str(numvec_curr) ' VECTOR LENGTH (' num2str(numel(outp)) ') DOES NOT MATCH VECLEN (' num2str(veclen(end)) ')'];
-                        exit_sequence = 1; %need this here since ~exit_sequence below
-                    end
-                    if ~exit_sequence % successful exit, if exit_sequence wasn't triggered with error,
-                        if isempty(outp2)
-                            outp2 = {outp};
-                        else
-                            outp2 = cat(1, outp2, outp);
-                        end
-                        if strcmpi(currkey, ';')
-                            init_vec_sequence = 1;
-                            currkey_isvalid = 1;
-                        elseif strcmpi(currkey, 'return')
-                            if ~isempty(numvec) && numel(outp2)~=numvec
-                                ttl_problem = ['NUMBER VECTORS DOES NOT MATCH NUMVEC (' num2str(numvec) ')'];
-                            else
-                                if isscalar(outp2)
-                                    outp2 = cell2mat(outp2);
-                                end
-                                out = outp2;
-                                currkey_isvalid = 1;
-                            end
-                            exit_sequence = 1;
-                        end
-                    end
-                end
-            end
-        end
-    elseif strcmpi(currkey, ':') %colon is originally shift+semicolon, translated into colon by cb_key
-        if prevkey_isdigit && ~isequal(hyphen_pressed,1)
-            outp = [outp str2double(digitstr)];
-            digitstr = [];
-            colon_pressed = 1;
-            currkey_isvalid = 1;
-        end
-    elseif strcmpi(currkey, 'slash') %forward slash
-        if isequal(prevkey, initkeyp)
-            slash_pressed = 1;
-            currkey_isvalid = 1;
+        if ~endsWith(keylog, '{')
+            keylog = [keylog '}']; %put closing bracket in if omitted and contains semicolon
         end
     end
+    if ~isempty(regexp('{1]', '{(?=.*\]$)|[(?=.*\}$)'), 'once')
+        ttl_problem = 'ARRAY BEGINS AND ENDS WITH DIFFERENT GROUPING SYMBOLS';
+    end
+    keylog = join(regexp(keylog, '{}', 'split'),'{[]}'); %insert [] between any '{}'
+    keylog = join(regexp(keylog, '{;', 'split'),'{[];'); %insert [] between any '{;'
+    keylog = join(regexp(keylog, ';}', 'split'),';[]}'); %insert [] between any ';}'
+    keylog = join(regexp(keylog, ';;', 'split'),';[];'); %insert [] between any ';;'
 
-    prevkey = currkey;
+    tmp = regexp(keylog, '{(.*)}', 'tokens');
+    for k = 1:numel(tmp)
+        tmp{k} = cellpr(tmp{k});
+    end
+    exit_sequence = 1;
+else
+    keylog = [keylog currkey];
+
+    '^(\[|{)\d((:\s*|,\s*|;\s*)\d)*(\]|})$';
 
 end
+
 
 
 if isempty(ttl_problem) %ttl_problem is for problem messages
@@ -341,6 +212,7 @@ if isempty(ttl_problem) %ttl_problem is for problem messages
                 ttl_actionp = ttl_actionp(1:end-numel(bookend_symbol));
             end
         end
+
         ttl_actionp = [ttl_actionp ttltmp_empty nmprint bookend_symbol];
     else
         ttl_actionp = [ttl_actionp invalidstr];
@@ -357,8 +229,9 @@ ttl_action = ttl_actionp;
 ttl_validkeys = ttl_validkeysp;
 cbflag = cbflagp;
 
+digitstr = [];
+
 if exit_sequence || init_sequence || init_vec_sequence %depending on sequence state, clear different sets of persistent variables, but only after setting above output variables
-    digitstr = [];
     outp = [];
     colon_pressed = [];
     hyphen_pressed = [];
@@ -413,4 +286,12 @@ if ~isempty(x)
     end
 end
 
+end
+
+
+function cellpr(s)
+    tmp = regexp(s, '{(.*)}', 'tokens');
+    for k = 1:numel(tmp)
+        tmp{k} = cellpr(tmp{k});
+    end
 end

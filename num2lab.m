@@ -60,7 +60,7 @@ if isempty(x)
     lab = '[]';
 elseif numel(x)<=maxn
     tmpprint = sprintf(pstr, x);
-    lab = [prefix tmpprint(1:end-1)];
+    lab = [prefix '[' tmpprint(1:end-1) ']'];
 else
     if isequal(x, x(1):x(end))
         lab = [prefix '[' num2str(x(1)) ':' num2str(x(end)) ']'];

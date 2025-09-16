@@ -8,10 +8,12 @@ arguments
     opt.ax = []
     opt.ydir = 'reverse' %default reverses y for images because we typically think of them top-to-bottom 
     opt.cmap = gray(256) %cmap or 'rgb'
+    opt.immin = []
+    opt.immax = []
     opt.txtvar = []
     opt.dr = [0,1]
     opt.sector_ind = 1
-    opt.subplot_ind = 1:size(im,3)
+    opt.subplot_ind = []
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 11 15]
@@ -28,6 +30,8 @@ h = opt.h;
 ax = opt.ax;
 ydir = opt.ydir;
 cmap = opt.cmap;
+immin = opt.immin;
+immax = opt.immax;
 txtvar = opt.txtvar;
 dr = opt.dr;
 sector_ind = opt.sector_ind;
@@ -76,16 +80,23 @@ if isempty(ax)
     ax = axarr(im);
 end
 
+[ny, nx, nz, nt, nc] = size(im);
+
+if isempty(subplot_ind)
+    subplot_ind = 1:nz;
+end
 numax = numel(subplot_ind);
 fontmedium = fontsz(2);
-
-[ny, nx, nz, nt, nc] = size(im);
 
 imroi = zeros(ny, nx, 3, 'single'); %ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
 imroialpha = zeros(ny, nx, 'single');
 
-immin = double(min(im(:)));
-immax = double(max(im(:)));
+if isempty(immin)
+    immin = double(min(im, [], 'all'));
+end
+if isempty(immax)
+    immax = double(max(im, [], 'all'));
+end
 imrange = immax-immin;
 
 

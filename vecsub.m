@@ -125,10 +125,14 @@ end
 if all(isnan(ix))
     xout = ix;
 else
-    if ~isempty(superset) && any(~ismember(ix, 1:numel(superset)), 'all')
-        error("at least one element of xout is outside superset")
+    if isempty(superset)
+        xout = ix;
+    else
+        if any(~ismember(ix, 1:numel(superset)), 'all')
+            error("at least one element of ix is outside superset")
+        end
+        xout = superset(ix);
     end
-    xout = superset(ix);
 end
 
 if compop && numseg*2<=labmaxn && seglen>2 %special label for complex input x (not created by

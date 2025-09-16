@@ -48,13 +48,17 @@ if endsWith(src.UserData, delim) %in case keytmp is empty/gets deleted
 end
 if cbshort %use full name if cbshort=0, or if short name is not defined in switch block below
     switch src.UserData %add to this as you need more keys (is there a function for doing this conversion already?)
+        case 'comma'
+            src.UserData = ',';
+        case 'period'
+            src.UserData = '.';
+        case 'semicolon'
+            src.UserData = ';';
         case 'shift+semicolon'
-            src.UserData = 'colon';
-        case 'shift+comma'
-            src.UserData = 'lesser';
-        case 'shift+period'
-            src.UserData = 'greater';
+            src.UserData = ':';
         case 'shift+equals'
-            src.UserData = 'plus';
+            src.UserData = '+';
+        case 'hyphen'
+            src.UserData = '-';
     end
 end

@@ -35,7 +35,7 @@ otmp.spec.pthparent_local = fullfile(filesep, 'Users', 'wienecke', 'stacks', fil
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in to use o2
 if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if otmp.spec.pth is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not otmp.spec.pth is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
     otmp.spec.recdate = {'20250907'}; %cell array of char (or scalar char), can use wildcards
-    otmp.spec.fly = {'2'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell ara2ray of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'ord'}; %cell array of char (or scalar char), can use wildcards, stack filename suffix to use; valid suffixes are defined in odfsv, d.spec.suffixchar_original and d.spec.suffixchars
     otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
