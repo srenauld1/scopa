@@ -102,7 +102,7 @@ for k = 1:numel(oa) % loop over recordings
     % mitotmp
 
     %% 
-
+    
     t = glb('t');
     figure; 
     plot(t, daq.(idaq).by, '-b'); 
@@ -190,24 +190,10 @@ for k = 1:numel(oa) % loop over recordings
     end
     stackplt(stacknew, dmplt='yx(t)', it=1:3:600)
 
-    %%
+%% 
 
-    padsamp = 3;
-    iepoch=2;
-    boute = 2;
-    tsubtmp = {};
-    sampe = {};
+    [~, ~, ~, ~, tpe] = trmake(daq.(idaq).epochts, padlen=[2], t=glb('t'), eb=[2 1]);
 
-
-
-    %%
-
-
-    % ie = 2;
-    % be = 2;
-    % tsubtmp2 = tsubtmp{ie,be};
-    % inc = 0.03;
-    % tsubtmp2 = tsubtmp2(1):inc:tsubtmp2(end);
     ebnotmp(stacknew, {'r'}, daq.(idaq).vy, daq.(idaq).by, daq.(idaq).bfv, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
         gld, glv, grd, grv, ...
         plt=[1 0 0 0], ...
@@ -226,7 +212,7 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=880:.03:1000, ... 50:.01:200, ...
+        tsub=tpe, ... 50:.01:200, ...
         dozscore=0, ...
         drawrot=0, ...
         sliceeb=[1:size(stacknew,3)])

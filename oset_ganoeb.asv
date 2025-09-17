@@ -19,7 +19,7 @@ o.bmp.indv = bmpindv;
 
 bmpdepv.tg.roi.rgname = 'eb';
 bmpdepv.tg.roi.domm = 1;
-bmpdepv.tg.roi.ma.maskseg = 'torus';
+bmpdepv.tg.roi.mj.maskseg = 'torus';
 bmpdepv.tg.roi.nrm.post = 'f';
 bmpdepv.tg.vnm = 'ts';
 % bmpdepv.tg.optid = 'a76';
@@ -43,9 +43,9 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{m}, 'eb')
-        o.roi.mm.mmname = 'eb4545';
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
+        o.roi.mm.mmname = 'eb4545';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 1.5;
@@ -57,7 +57,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.mm.mmname = {'left', 'right'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = odf(o, 'roi');
 
 end
 

@@ -150,12 +150,10 @@ if yconst
     limxtreme = max(abs(vec([ballinvdvrs bumpdvrs])));
 end
 
-tsubsamp = t2samp(tsub, t);
-limt = [min(t) max(t)];
-limsamp = [min(tsubsamp) max(tsubsamp)];
-limtsub = [min(tsub) max(tsub)];
-
-
+it = t2samp(tsub, t);
+lim_t = [min(t) max(t)];
+lim_it = [min(it) max(it)];
+lim_tsub = [min(tsub) max(tsub)];
 
 %% bump only
 
@@ -248,7 +246,7 @@ if ~isempty(plt) && plt(1)
     plot(hax, t, ballplot, color=cmap(4,:));
     plot(hax, t, bumpplot, color=cmap(5,:));
     % plot(hax, t, bump2plot, color=cmap(5,:), linestyle='--');
-    xlim(hax, limt)
+    xlim(hax, lim_t)
     ylim(hax, limpad)
     yline(hax, 0, '-k')
     hold(hax, 'off')
@@ -297,10 +295,10 @@ if ~isempty(plt) && plt(1)
     plot(h.im.ax{1}, t, rescale(grdtmp, 1, size(eb,1)), color=cmap(2,:), linestyle='-', linewidth=2);
     plot(h.im.ax{1}, t, rescale(grvtmp, 1, size(eb,1)), color=cmap(2,:), linestyle=':', linewidth=2);
 
-    xlim(limt)
+    xlim(lim_t)
     title('eb (heatmap), gall left (blue), gall right (red), cue (yellow), ball yaw (purple)')
     numxtick = 20;
-    h.im.ax{1}.XTick = linspace(limt(1), limt(2), numxtick);
+    h.im.ax{1}.XTick = linspace(lim_t(1), lim_t(2), numxtick);
     h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
     hold(h.im.ax{1}, "on")
 
@@ -313,10 +311,10 @@ if ~isempty(plt) && plt(1)
     % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
     % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
     % plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
-    % xlim(limt)
+    % xlim(lim_t)
     % title('eb2')
     % numxtick = 20;
-    % h.im.ax{1}.XTick = linspace(limt(1), limt(2), numxtick);
+    % h.im.ax{1}.XTick = linspace(lim_t(1), lim_t(2), numxtick);
     % h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
     % hold(h.im.ax{1}, "on")
 
@@ -384,7 +382,7 @@ if ~isempty(plt) && plt(1)
         sznew = 40; %max(size(stackmnt));
         % stackeb = stackcrop(stack, 'eb');
 
-        stack = stack(:,:,:,tsubsamp);
+        stack = stack(:,:,:,it);
         stackeb = stack;
         % stackeb = stackiso(stackeb, widyxz);
 
@@ -490,18 +488,18 @@ if ~isempty(plt) && plt(1)
         % hax.YLim = [0 1];
         hax.XLim = [-pi pi]*1.2;
         incc = 1;
-        for k = 1:incc:numel(tsubsamp) %for each timepoint, show bump
-            hpl.YData = eb(:,tsubsamp(k));
+        for k = 1:incc:numel(it) %for each timepoint, show bump
+            hpl.YData = eb(:,it(k));
             % hpl.YData = eb2(:,limtsamp(k));
-            % hln1.Value = bump(tsubsamp(k));
-            hln2.Value = cue(tsubsamp(k));
-            hln3.Value = ballinv(tsubsamp(k));
-            % hln4.Value = bump2(tsubsamp(k));
+            % hln1.Value = bump(it(k));
+            hln2.Value = cue(it(k));
+            hln3.Value = ballinv(it(k));
+            % hln4.Value = bump2(it(k));
             hpl2.CData = stackeb(:,:,k);
             hbr1.YData = nolz(k);
             hbr2.YData = norz(k);
             hbr4.YData = ballfv(k);
-            ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(tsubsamp(k))) ', epoch: ' num2str(epochts(tsubsamp(k)))]};
+            ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(it(k))) ', epoch: ' num2str(epochts(it(k)))]};
             fig2gif(hfg,k)
         end
 

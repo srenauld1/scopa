@@ -14,6 +14,12 @@ end
 
 % before entering optudrec (recursive opt update), copy all defaults for top level fields in optin
 
+callstack = dbstack();
+tsgetmsg = '';
+if ismember('tsget', {callstack.name})
+    tsgetmsg = "you must have made an invalid options struct for tsget (within tg) because this error is called indirectly from tsget";
+end
+
 if ~iscell(copybin)
     copybin = {copybin};
 end
@@ -29,7 +35,7 @@ end
 
 
 if numel(optdf)>1
-    error("optdf must be scalar structure")
+    error("optdf must be scalar structure" + newline + tsgetmsg)
 end
 
 if isempty(fieldnames(optin))
@@ -39,7 +45,7 @@ else
     fn1 = fn1(~ismember(fn1, copybinprev));
     for k = 1:numel(fn1)
         if ~isfield(optdf, fn1{k})
-            error(sprintf("d." + fn1{k} + " does not exist in odfsv"))
+            error(sprintf("d." + fn1{k} + " does not exist in odfsv") + newline + tsgetmsg)
         end
         if isempty(copybin)
             if all(ismember(fieldnames(optin.(fn1{k})), copybinprev)) %skip if the vbin is all copybins (ie if there is are no options passed in the vbin)
@@ -47,7 +53,7 @@ else
             else
                 optout.(fn1{k}) = optdf.(fn1{k});
             end
-            optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k});
+            optout.(fn1{k}) = optudrec(optin.(fn1{k}), optout.(fn1{k}), fn1{k}, tsgetmsg);
         else
             fn2 = fieldnames(optin.(fn1{k}));
             tmphold = fn2(ismember(fn2, copybinprev));
@@ -57,10 +63,10 @@ else
             end
             for w = 1:numel(copybin)
                 if isfield(optdf.(fn1{k}), copybin{w})
-                    error("copybin cannot have same name as option")
+                    error("copybin cannot have same name as option" + newline + tsgetmsg)
                 else
                     optout.(fn1{k}).(copybin{w}) = optdf.(fn1{k});
-                    optout.(fn1{k}).(copybin{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(copybin{w}), fn1{k});
+                    optout.(fn1{k}).(copybin{w}) = optudrec(optin.(fn1{k}), optout.(fn1{k}).(copybin{w}), fn1{k}, tsgetmsg);
                 end
             end
             for w = 1:numel(tmphold) %add previous copybin back to optout
@@ -73,7 +79,7 @@ end
 
 
 
-    function optout = optudrec(optin, optout, fnparent)
+    function optout = optudrec(optin, optout, fnparent, tsgetmsg)
 
         numstin = numel(optin);
         numstorig = numel(optout);
@@ -82,7 +88,7 @@ end
             if numstorig==1
                 optout = repelem(optout, numstin);
             elseif numstorig~=numstin
-                error("optdf must be scalar struct, or match length of optin")
+                error("optdf must be scalar struct, or match length of optin" + newline + tsgetmsg)
             end
 
             %for nonscalar struct, find fields that are struct in one index but empty in another (ie not specified) and make them struct so they appear in output tmp, then assign tmp to optout
@@ -97,7 +103,7 @@ end
                 end
             end
             for v = numstin:-1:1 %increment backwards to preallocate
-                tmp(v) = optudrec(optin(v), optout(v), fnparent);
+                tmp(v) = optudrec(optin(v), optout(v), fnparent, tsgetmsg);
             end
             optout = reshape(tmp, size(optin));
         else
@@ -109,9 +115,9 @@ end
                             optout.(fn{u}) = optin.(fn{u}); %if it's struct tg, don't update anything within
                         else
                             if ~isstruct(optout.(fn{u})) && ~isobject(optout.(fn{u})) %struct can refer to object not struct
-                                error(sprintf("d." + fn{u} + " does not exist in odfsv"))
+                                error(sprintf("d." + fn{u} + " does not exist in odfsv") + newline + tsgetmsg)
                             else
-                                optout.(fn{u}) = optudrec(optin.(fn{u}), optout.(fn{u}), fn{u});
+                                optout.(fn{u}) = optudrec(optin.(fn{u}), optout.(fn{u}), fn{u}, tsgetmsg);
                             end
                         end
                     else
@@ -125,13 +131,13 @@ end
                             optout.(fn{u}) = optin.(fn{u}); %if it's an old copybin
                         else
                             if ~isfield(optdf, fn{u})
-                                error(sprintf("neither d." + fn{u} + " nor d." + [fnparent '.' fn{u}] + " exist in odfsv"))
+                                error(sprintf("neither d." + fn{u} + " nor d." + [fnparent '.' fn{u}] + " exist in odfsv") + newline + tsgetmsg)
                             else
-                                optout.(fn{u}) = optudrec(optin.(fn{u}), optdf.(fn{u}), fn{u}); %if it's a struct (but not a copybin), like nested vbin
+                                optout.(fn{u}) = optudrec(optin.(fn{u}), optdf.(fn{u}), fn{u}, tsgetmsg); %if it's a struct (but not a copybin), like nested vbin
                             end
                         end
                     else
-                        error(sprintf("d." + [fnparent '.' fn{u}] + " does not exist in odfsv"))
+                        error(sprintf("d." + [fnparent '.' fn{u}] + " does not exist in odfsv") + newline + tsgetmsg)
                     end
                 end
             end

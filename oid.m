@@ -41,7 +41,7 @@ pthscopa = pathscopaget();
 callstack = dbstack();
 
 tsgetcall = 0;
-if strcmp(callstack(2).name, 'tsget3')
+if ismember('tsget', {callstack.name})
     tsgetcall = 1;
 end
 
@@ -74,7 +74,7 @@ for k = 1:numel(vbin)
             
             %%%%%%%% PLACE OPTIONS IN TEMPORARY COPYBIN (IF NOT ALREADY) %%%%%%%%
 
-            opttmp2 = ocopybinset(o(m), vbintmp);
+            opttmp2 = ocopybinset(o(m), vbintmp, tsgetcall);
 
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 

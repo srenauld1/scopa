@@ -1,4 +1,4 @@
-function optout = ocopybinset(optin, vbin, opt2)
+function optout = ocopybinset(optin, vbin, tsgetcall, opt2)
 
 %{
 --put a vbin from the options struct into a copybin
@@ -15,6 +15,7 @@ function optout = ocopybinset(optin, vbin, opt2)
 arguments
     optin
     vbin
+    tsgetcall %if tsgetcall, optin will never be in a copybin (since it is default options for specified vbin, filled, with wildcards), and nestvalid will need to be grabed from glb
     opt2.copybindf = []
 end
 opt2 = glboropt(opt2);
@@ -24,8 +25,13 @@ if isempty(copybindf)
     error("you must pass in copybindf or set glb('copybindf')")
 end
 
-copybin = optin.copybin;
-nestvalid = optin.nestvalid;
+if tsgetcall
+    copybin = {};
+    nestvalid = glb('nestvalid'); %maybe don't put nestvalid anywhere but glb? right now it's also in main oa struct, but we don't have access to that when this function is called from oid>tsget
+else
+    copybin = optin.copybin;
+    nestvalid = optin.nestvalid;
+end
 
 nestvalid = nestvalid(contains(nestvalid, vbin) & ~cellfun(@(x) isequal(x,vbin), nestvalid)); %remove nestvalid not in this vbin, and nestvalid that match vbin itself
 nestvalid = erase(nestvalid, [vbin '.']);

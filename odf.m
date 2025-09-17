@@ -439,9 +439,9 @@ if fill
     % now set some globals, as the final step in creating options struct (we know it's final because filled=1 now)
 
     %%%% these globals should not be edited by the user in general, so they take values from d (output from odfsv) %%%%
-    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
+    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('nestvalid')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
         xyscreen = screenpx;
-        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
+        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, nestvalid=d.nestvalid, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
     end
 
     %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%

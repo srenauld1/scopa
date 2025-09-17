@@ -1,6 +1,8 @@
 function [kpo, tso] = sampepoch(epochts, epoch, ts, opt)
 
 %index timeseries (ts) using indices (epoch) from input vector (epochts)
+%output kpo is logical array, samples belonging to an index listed in input 'epoch' assigned 1
+%output tso is same as input ts, but only samples belonging to an index listed in input 'epoch' are retained
 
 arguments (Input)
     epochts {mustBeVector}
