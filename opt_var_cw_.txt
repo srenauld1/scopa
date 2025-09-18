@@ -7,7 +7,7 @@
       "ii": 1,
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -17,7 +17,7 @@
       "ii": [],
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a1_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -29,7 +29,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -39,7 +39,7 @@
       "ii": [],
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a1_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -51,7 +51,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -61,7 +61,7 @@
       "ii": [],
       "it": [],
       "optid": "a18",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a18_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a18_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -73,7 +73,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -83,7 +83,7 @@
       "ii": [],
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a1_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -161,7 +161,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -171,7 +171,7 @@
       "ii": [],
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a1_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a1_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -182,7 +182,7 @@
     "ii": [],
     "it": [],
     "optid": "a24",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
+    "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
     "vnm": "ts"
   },
   "a10": [
@@ -193,7 +193,7 @@
       "ii": [],
       "it": [],
       "optid": "a24",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -203,7 +203,7 @@
       "ii": [],
       "it": [],
       "optid": "a25",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a25_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a25_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -215,7 +215,7 @@
       "ii": [],
       "it": [],
       "optid": "a24",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a24_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -225,7 +225,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -236,7 +236,7 @@
     "ii": [],
     "it": [],
     "optid": "a40",
-    "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
+    "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
     "vnm": "ts"
   },
   "a13": [
@@ -247,7 +247,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -257,7 +257,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -269,7 +269,7 @@
       "ii": 1,
       "it": [],
       "optid": "a5",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a5_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a5_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -279,7 +279,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -291,7 +291,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -301,7 +301,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -313,7 +313,7 @@
       "ii": 1,
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -323,7 +323,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -335,7 +335,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -345,7 +345,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -357,7 +357,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -367,7 +367,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -379,7 +379,7 @@
       "ii": 1,
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -389,7 +389,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -399,7 +399,7 @@
       "ii": [],
       "it": [],
       "optid": "a44",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -411,7 +411,7 @@
       "ii": 1,
       "it": [],
       "optid": "a1",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a1_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -421,7 +421,7 @@
       "ii": [],
       "it": [],
       "optid": "a44",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -433,7 +433,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -443,7 +443,7 @@
       "ii": [],
       "it": [],
       "optid": "a44",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -455,7 +455,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -465,7 +465,7 @@
       "ii": [],
       "it": [],
       "optid": "a44",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a44_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -477,7 +477,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -487,7 +487,7 @@
       "ii": [],
       "it": [],
       "optid": "a41",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a41_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a41_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -499,7 +499,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -509,7 +509,7 @@
       "ii": [],
       "it": [],
       "optid": "a41",
-      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a41_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a41_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -521,7 +521,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -531,7 +531,7 @@
       "ii": [],
       "it": [],
       "optid": "a48",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a48_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a48_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -543,7 +543,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -553,7 +553,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -565,7 +565,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -575,7 +575,7 @@
       "ii": [],
       "it": [],
       "optid": "a40",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a40_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -585,7 +585,7 @@
       "ii": [],
       "it": [],
       "optid": "a54",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a54_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a54_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -597,7 +597,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -607,7 +607,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -629,7 +629,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -641,7 +641,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
       "vnm": "by"
     },
     {
@@ -651,7 +651,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -663,7 +663,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
       "vnm": "by"
     },
     {
@@ -673,7 +673,7 @@
       "ii": [],
       "it": [],
       "optid": "a57",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_rd_a57_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_rd_a57_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -685,7 +685,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_a8_daq_.mat",
       "vnm": "by"
     },
     {
@@ -695,7 +695,7 @@
       "ii": [],
       "it": [],
       "optid": "a58",
-      "pth": "/Users/wienecke/stacks/noeb/20240729-1_barjump/20240729_1_1_rd_a58_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20240729-1_barjump/20240729_1_1_rd_a58_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -707,7 +707,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -717,7 +717,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -729,7 +729,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -739,7 +739,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-1_d05_s8m_016_s8m/20250316_1_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -751,7 +751,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/untitled folder 2/20250525_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/untitled folder 2/20250525_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -761,7 +761,7 @@
       "ii": [],
       "it": [],
       "optid": "a64",
-      "pth": "/Users/wienecke/stacks/noel/untitled folder 2/20250525_1_1_rd_a64_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/untitled folder 2/20250525_1_1_rd_a64_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -773,7 +773,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -783,7 +783,7 @@
       "ii": [],
       "it": [],
       "optid": "a64",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a64_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a64_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -795,7 +795,7 @@
       "ii": 1,
       "it": [],
       "optid": "a2",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a2_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -805,7 +805,7 @@
       "ii": [],
       "it": [],
       "optid": "a18",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a18_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a18_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -815,7 +815,7 @@
       "ii": [],
       "it": [],
       "optid": "a19",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a19_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a19_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -825,7 +825,7 @@
       "ii": [],
       "it": [],
       "optid": "a64",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a64_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a64_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -837,7 +837,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -847,7 +847,7 @@
       "ii": [],
       "it": [],
       "optid": "a64",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a64_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a64_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -859,7 +859,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -869,7 +869,7 @@
       "ii": [],
       "it": [],
       "optid": "a67",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -881,7 +881,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250601-1_508_s8f_018_s8f/20250601_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250601-1_508_s8f_018_s8f/20250601_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -891,7 +891,7 @@
       "ii": [],
       "it": [],
       "optid": "a67",
-      "pth": "/Users/wienecke/stacks/noel/20250601-1_508_s8f_018_s8f/20250601_1_1_rd_a67_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250601-1_508_s8f_018_s8f/20250601_1_1_rd_a67_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -903,7 +903,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250601-2_508_s8f_018_s8f/20250601_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250601-2_508_s8f_018_s8f/20250601_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -913,7 +913,7 @@
       "ii": [],
       "it": [],
       "optid": "a67",
-      "pth": "/Users/wienecke/stacks/noel/20250601-2_508_s8f_018_s8f/20250601_2_1_rd_a67_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250601-2_508_s8f_018_s8f/20250601_2_1_rd_a67_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -925,7 +925,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250601-3_f02_s8s_018_s8m/20250601_3_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250601-3_f02_s8s_018_s8m/20250601_3_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -935,7 +935,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250601-3_f02_s8s_018_s8m/20250601_3_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250601-3_f02_s8s_018_s8m/20250601_3_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -947,7 +947,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -957,7 +957,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -969,7 +969,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -979,7 +979,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -991,7 +991,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1001,7 +1001,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1011,7 +1011,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1023,7 +1023,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1033,7 +1033,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1043,7 +1043,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1055,7 +1055,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1065,7 +1065,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1075,7 +1075,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1085,7 +1085,7 @@
       "ii": [],
       "it": [],
       "optid": "a69",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1097,7 +1097,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1107,7 +1107,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1117,7 +1117,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1127,7 +1127,7 @@
       "ii": [],
       "it": [],
       "optid": "a69",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1139,7 +1139,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1149,7 +1149,7 @@
       "ii": [],
       "it": [],
       "optid": "a67",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1159,7 +1159,7 @@
       "ii": [],
       "it": [],
       "optid": "a73",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a73_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a73_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1171,7 +1171,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1181,7 +1181,7 @@
       "ii": [],
       "it": [],
       "optid": "a67",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a67_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1191,7 +1191,7 @@
       "ii": [],
       "it": [],
       "optid": "a71",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a71_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a71_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1201,7 +1201,7 @@
       "ii": [],
       "it": [],
       "optid": "a73",
-      "pth": "/Users/wienecke/stacks/noel/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a73_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250315-2_508_s8f_018_s8f/20250315_2_1_rd_a73_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1213,7 +1213,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1223,7 +1223,7 @@
       "ii": [],
       "it": [],
       "optid": "a64",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a64_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a64_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1233,7 +1233,7 @@
       "ii": [],
       "it": [],
       "optid": "a74",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a74_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a74_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1245,7 +1245,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1255,7 +1255,7 @@
       "ii": [],
       "it": [],
       "optid": "a75",
-      "pth": "/Users/wienecke/stacks/noel/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a75_roi_.mat",
+      "pth": "/Users/wienecke/stacks/elno/20250525-2_508_s8f_018_s8f/20250525_1_1_rd_a75_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1267,7 +1267,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1277,7 +1277,7 @@
       "ii": [],
       "it": [],
       "optid": "a70",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_rd_a70_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_rd_a70_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1289,7 +1289,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1299,7 +1299,7 @@
       "ii": [],
       "it": [],
       "optid": "a70",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_rd_a70_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_rd_a70_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1309,7 +1309,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1321,7 +1321,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1331,7 +1331,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/6081/20250608_1_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/6081/20250608_1_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1343,7 +1343,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1353,7 +1353,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1363,7 +1363,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1375,7 +1375,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a8_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1385,7 +1385,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1395,7 +1395,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1407,7 +1407,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1417,7 +1417,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1429,7 +1429,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1439,7 +1439,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1451,7 +1451,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1461,7 +1461,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a68_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1471,7 +1471,7 @@
       "ii": [],
       "it": [],
       "optid": "a86",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a86_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a86_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1483,7 +1483,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_a7_daq_.mat",
       "vnm": "by"
     },
     {
@@ -1493,7 +1493,7 @@
       "ii": [],
       "it": [],
       "optid": "a86",
-      "pth": "/Users/wienecke/stacks/noeb/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a86_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebno/20250221-1_d05_s7f_018_s7f/20250221_1_2_rd_a86_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1505,7 +1505,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1515,7 +1515,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1525,7 +1525,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1535,7 +1535,7 @@
       "ii": [],
       "it": [],
       "optid": "a69",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1545,7 +1545,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1557,7 +1557,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1567,7 +1567,7 @@
       "ii": [],
       "it": [],
       "optid": "a51",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a51_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1577,7 +1577,7 @@
       "ii": [],
       "it": [],
       "optid": "a68",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a68_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1587,7 +1587,7 @@
       "ii": [],
       "it": [],
       "optid": "a69",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a69_roi_.mat",
       "vnm": "ts"
     },
     {
@@ -1597,7 +1597,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1609,7 +1609,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1619,7 +1619,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1631,7 +1631,7 @@
       "ii": 1,
       "it": [],
       "optid": "a8",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a8_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1641,7 +1641,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1653,7 +1653,7 @@
       "ii": 1,
       "it": [],
       "optid": "a11",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a11_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a11_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1663,7 +1663,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1675,7 +1675,7 @@
       "ii": 1,
       "it": [],
       "optid": "a7",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a7_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a7_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1685,7 +1685,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1697,7 +1697,7 @@
       "ii": 1,
       "it": [],
       "optid": "a11",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_a11_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_a11_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1707,7 +1707,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250316-2_d05_s8m_016_s8m/20250316_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1719,7 +1719,7 @@
       "ii": 1,
       "it": [],
       "optid": "a5",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_a5_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250322-1_d05_s8m_016_s8m/20250322_1_2_a5_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1729,7 +1729,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250322-1_d05_s8m_016_s8m/20250322_1_2_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1741,7 +1741,7 @@
       "ii": 1,
       "it": [],
       "optid": "a12",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_a12_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250322-1_d05_s8m_016_s8m/20250322_1_2_a12_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1751,7 +1751,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250322-1_d05_s8m_016_s8m/20250322_1_2_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250322-1_d05_s8m_016_s8m/20250322_1_2_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1763,7 +1763,7 @@
       "ii": 1,
       "it": [],
       "optid": "a12",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250630-1_d05_s8m_018_s8m/20250630_1_1_a12_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250630-1_d05_s8m_018_s8m/20250630_1_1_a12_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1773,7 +1773,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250630-1_d05_s8m_018_s8m/20250630_1_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250630-1_d05_s8m_018_s8m/20250630_1_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1785,7 +1785,7 @@
       "ii": 1,
       "it": [],
       "optid": "a12",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_a12_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_a12_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1795,7 +1795,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20231119-2_d05_s7f_018_s7f/20231119_2_1_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1807,7 +1807,7 @@
       "ii": 1,
       "it": [],
       "optid": "a17",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250713-2_d05_s8m_018_s8m/20250713_2_2_a17_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250713-2_d05_s8m_018_s8m/20250713_2_2_a17_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1817,7 +1817,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250713-2_d05_s8m_018_s8m/20250713_2_2_rd_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250713-2_d05_s8m_018_s8m/20250713_2_2_rd_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1829,7 +1829,7 @@
       "ii": 1,
       "it": [],
       "optid": "a17",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_a17_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250716-1_d05_s8m_018_s8m/20250716_1_1_a17_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1839,7 +1839,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1851,7 +1851,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250716-1_d05_s8m_018_s8m/20250716_1_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1861,7 +1861,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250716-1_d05_s8m_018_s8m/20250716_1_1_ord_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1895,7 +1895,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250803-2_d05_s8m_018_s8m/20250803_2_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250803-2_d05_s8m_018_s8m/20250803_2_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1905,7 +1905,7 @@
       "ii": [],
       "it": [],
       "optid": "a76",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250803-2_d05_s8m_018_s8m/20250803_2_1_ord_a76_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250803-2_d05_s8m_018_s8m/20250803_2_1_ord_a76_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1917,7 +1917,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250809-1_d05_s8m_018_s8m/20250809_1_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250809-1_d05_s8m_018_s8m/20250809_1_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1927,7 +1927,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250809-1_d05_s8m_018_s8m/20250809_1_1_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250809-1_d05_s8m_018_s8m/20250809_1_1_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1939,7 +1939,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250809-1_d05_s8m_018_s8m/20250809_1_2_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250809-1_d05_s8m_018_s8m/20250809_1_2_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1949,7 +1949,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250809-1_d05_s8m_018_s8m/20250809_1_2_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250809-1_d05_s8m_018_s8m/20250809_1_2_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1961,7 +1961,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/untitled folder/20250824_1_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/untitled folder/20250824_1_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1971,7 +1971,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/untitled folder/20250824_1_1_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/untitled folder/20250824_1_1_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -1983,7 +1983,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250824-1_d05_s8m_018_s8m/20250824_1_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250824-1_d05_s8m_018_s8m/20250824_1_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -1993,7 +1993,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250824-1_d05_s8m_018_s8m/20250824_1_1_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250824-1_d05_s8m_018_s8m/20250824_1_1_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -2005,7 +2005,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250901-1_d05_s8m_018_s8m/20250901_1_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250901-1_d05_s8m_018_s8m/20250901_1_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -2015,7 +2015,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250901-1_d05_s8m_018_s8m/20250901_1_1_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250901-1_d05_s8m_018_s8m/20250901_1_1_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],
@@ -2027,7 +2027,7 @@
       "ii": 1,
       "it": [],
       "optid": "a21",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250901-2_d05_s8m_018_s8m/20250901_2_1_a21_daq_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250901-2_d05_s8m_018_s8m/20250901_2_1_a21_daq_.mat",
       "vnm": "vy"
     },
     {
@@ -2037,7 +2037,7 @@
       "ii": [],
       "it": [],
       "optid": "a90",
-      "pth": "/Users/wienecke/stacks/ganoeb/20250901-2_d05_s8m_018_s8m/20250901_2_1_ord_a90_roi_.mat",
+      "pth": "/Users/wienecke/stacks/ebgano/20250901-2_d05_s8m_018_s8m/20250901_2_1_ord_a90_roi_.mat",
       "vnm": "ts"
     }
   ],

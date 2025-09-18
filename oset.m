@@ -23,7 +23,7 @@ files = opt.files;
 
 %%%% scopausername, path to your scopa in different filesystems, and python path %%%%
 
-dodf = 0; %set to 1 use all defaults in odfsv.m (skip all oset_* files)
+dodf = 1; %set to 1 use all defaults in odfsv.m (skip all oset_* files)
 
 otmp.mn.usegit = 1; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
 otmp.mn.scopausername = userdatfile('scopausername'); %cw, wz, jf, yz, sr; (to route to different oset_* files below)
@@ -34,11 +34,11 @@ otmp.mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'ca
 otmp.spec.pthparent_local = fullfile(filesep, 'Users', 'wienecke', 'stacks', filesep);
 otmp.spec.pthparent_o2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparent_local ends with; a2p will automatically find it; otherwise fill this in to use o2
 if isempty(otmp.spec.pth) %if you're running a2p without input arguments (ie if otmp.spec.pth is empty), set recording specifiers here to find files; any missing fields will get defaults in odf; if not otmp.spec.pth is not empty and is not struct (ie if char or cell of file paths, with optional wildcards), will not use these specifiers
-    otmp.spec.recdate = {'20250824'}; %cell array of char (or scalar char), can use wildcards
+    otmp.spec.recdate = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.fly = {'*'}; %cell array of char (or scalar char), can use wildcards
     otmp.spec.trial = {'*'}; %cell ara2ray of char (or scalar char), can use wildcards
     otmp.spec.suffix = {'ord'}; %cell array of char (or scalar char), can use wildcards, stack filename suffix to use; valid suffixes are defined in odfsv, d.spec.suffixchar_original and d.spec.suffixchars
-    otmp.spec.substr = {'*'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
+    otmp.spec.substr = {'shite'}; %cell array of char (or scalar char), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
     otmp.spec.match = 'each'; %'any' or 'each'; 'sany' for all combinations of recdate, fly, trial, suffixstack, 'each' for matched indices of each (length 1 will be repeated to match anything longer)
 end
 
@@ -93,21 +93,21 @@ for k = 1:numel(otmp)
 
             case 'cw'
 
-                if contains(otmp(k).id.pthstack, {'ganopb'})
+                if contains(otmp(k).id.pthstack, {'ebgano'})
+
+                    otmp2 = oset_ebgano(otmp(k));
+
+                elseif contains(otmp(k).id.pthstack, {'ganopb'})
 
                     otmp2 = oset_ganopb(otmp(k));
 
-                elseif contains(otmp(k).id.pthstack, {'ganoeb'})
+                elseif contains(otmp(k).id.pthstack, {'elno'})
 
-                    otmp2 = oset_ganoeb(otmp(k));
-                    
-                elseif contains(otmp(k).id.pthstack, {'noel'})
+                    otmp2 = oset_elno(otmp(k));
 
-                    otmp2 = oset_noel(otmp(k));
+                elseif contains(otmp(k).id.pthstack, {'ebno'}) && ~contains(otmp(k).id.pthstack, {'ebgano'})
 
-                elseif contains(otmp(k).id.pthstack, {'noeb'}) && ~contains(otmp(k).id.pthstack, {'ganoeb'})
-
-                    otmp2 = oset_noeb(otmp(k));
+                    otmp2 = oset_ebno(otmp(k));
 
                 elseif contains(otmp(k).id.pthstack, {'fb8c'})
 

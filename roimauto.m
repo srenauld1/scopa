@@ -628,7 +628,7 @@ else
 
     if doellipse
         doplt = 1;
-        roicen_xy = e2c([midx, midy], numroi, doplt);
+        roicen_xy = ell2cir([midx, midy], numroi, doplt);
         roicen(:,1:2) = [roicen_xy(:,2) roicen_xy(:,1)];
     else
         roicen(:,1:2) = roicen_nonuniform(:,1:2);

@@ -204,28 +204,26 @@ end
 
 function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixchar_original, suffixchars)
 
-
 recdate = num2str(recdate); %just in case
 fly = num2str(fly); %just in case
 trial = num2str(trial); %just in case
 
-
 %%SCOPA PATTERN, TIF AND MAT
 fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
-
 valid_tif_fns = ['^\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
 pth_all_tif = rdir(fn_pattern_tif);
 [~, fn_all_tif, ext] = fileparts({pth_all_tif.name});
 fn_all_tif = strcat(fn_all_tif, ext);
 pth_all_tif = pth_all_tif(~cellfun(@isempty, regexp(fn_all_tif, valid_tif_fns))); %in case wildcard suffix returns unwanted files
+pth_all_tif = pth_all_tif(~cellfun(@isempty, regexp({pth_all_tif.name}, regexptranslate('wildcard', substr))));
 
 fn_pattern_mat = [fn_pattern_tif(1:end-4) '.mat'];
-
 valid_mat_fns = ['^\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.mat$'];
 pth_all_mat = rdir(fn_pattern_mat);
 [~, fn_all_mat, ext] = fileparts({pth_all_mat.name});
 fn_all_mat = strcat(fn_all_mat, ext);
 pth_all_mat = pth_all_mat(~cellfun(@isempty, regexp(fn_all_mat, valid_mat_fns))); %in case wildcard suffix returns unwanted files
+pth_all_mat = pth_all_mat(~cellfun(@isempty, regexp({pth_all_mat.name}, regexptranslate('wildcard', substr))));
 
 %%FLYG RAW PATTERN, TIF AND MAT
 if strcmp(suffix, 'o') || strcmp(suffix, '*')

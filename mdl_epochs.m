@@ -115,7 +115,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
                 seqft = 0;
                 if seqft
-                    noeb_seqfit
+                    ebno_seqfit
                 else
                     [ ft(ri,:), pred(:,ri), resid(:,ri), gof(ri), gof_val(ri) ] = ...
                         mdl_fit(indv, depv, ri, histinc, ...

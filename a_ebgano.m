@@ -1,24 +1,15 @@
 
-function ebnotmp(stack, side, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, opt)
+function a_ebgano(stack, roi, daq, bmp, t, sper, opt)
 
 
 arguments
     stack
-    side
-    cue
-    ball
-    ballfv
-    bump
-    eb
-    nol
-    nor
+    roi
+    daq
+    bmp
     t
     sper
-    pthpre
-    gld
-    glv
-    grd
-    grv
+    opt.noside = []
     opt.widyxz = []
     opt.lagsampxy = 0
     opt.lagsampz = 0
@@ -32,19 +23,18 @@ arguments
     opt.nothr = []
     opt.colsep = 0
     opt.epoch = []
-    opt.epochts = []
     opt.slopelensec = []
     opt.slopeord = 2
     opt.fitlinealpha =  0
     opt.yconst = 0
-    opt.pltstr = []
+    opt.pltstr = {'ts', 'heat', 'profile', 'hist', 'vol', 'ts2', 'scat', 'surf', 'scat2', 'polar', 'tsepoch'}
     opt.histplt = 0
-    opt.bmpdomain = [];
     opt.vt = []
     opt.dozscore = []
-    opt.drawrot = []
-    opt.sliceeb = []
+    opt.stackrot = []
+    opt.stackslice = []
 end
+noside = opt.noside;
 widyxz = opt.widyxz;
 lagsampxy = opt.lagsampxy;
 lagsampz = opt.lagsampz;
@@ -65,25 +55,92 @@ fitlinealpha = opt.fitlinealpha;
 yconst = opt.yconst;
 pltstr = opt.pltstr;
 histplt = opt.histplt;
-bmpdomain = opt.bmpdomain;
 vt = opt.vt;
 dozscore = opt.dozscore;
-drawrot = opt.drawrot;
-sliceeb = opt.sliceeb;
+stackrot = opt.stackrot;
+stackslice = opt.stackslice;
+pthpre = opt.pthpre;
 
+if ~isempty(mix)
+    mixstr = strjoin(mix, '');
+    pthmix = [glb('pthpre') mixstr '_.mat'];
+    try
+        load(pthmix, 'stacknew');
+    catch
+        stacknew = stackmix(stack, mix, rot=stackrot, pthstacks=glb('pthstack'));
+        save(pthmix, 'stacknew', '-v7.3', '-mat')
+    end
+    stack = stacknew;
+    stacknew = [];
+end
+
+if ndims(stack)~=4
+    error("stack must be 4d")
+end
 if isempty(epochts)
-    epochts = ones(size(cue));
+    epochts = ones(size(stack,4));
 end
 if isempty(epoch)
     epoch = {unique(epochts)};
 end
+if isstring(pltstr)
+    pltstr = convertStringsToChars(pltstr);
+end
+if ~iscell(pltstr)
+    pltstr = {pltstr};
+end
+if isstring(noside)
+    noside = convertStringsToChars(noside);
+end
+if ~iscell(noside)
+    noside = {noside};
+end
+if isempty(pthpre)
+    pthpre = pathauto;
+end
+if ~isempty(stackrot) && ( ~isequal(numel(stackrot),3) || ~isvector(stackrot) || iscell(stackrot) )
+    error("stackrot must be empty or ordinary length-3 vector")
+end
 
-for k = 1:numel(side)
+inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'left'}, lev=1);
+inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'right'}, lev=1);
+igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.mmname', 'dorsal'}, lev=1);
+iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.mmname', 'ventral'}, lev=1);
+igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.mmname', 'dorsal'}, lev=1);
+igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.mmname', 'ventral'}, lev=1);
+ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'mm.mmname', 'eb4545'}, lev=1);
+idaq = fieldmatch(daq, lev=1);
+ibmp = fieldmatch(bmp, lev=1);
+
+nol = roi.(inl).dat(1).ts;
+nor = roi.(inr).dat(1).ts;
+gld = roi.(igld).dat(1).ts;
+glv = roi.(iglv).dat(1).ts;
+grd = roi.(igrd).dat(1).ts;
+grv = roi.(igrv).dat(1).ts;
+epochts = daq.(idaq).epochts;
+vish = daq.(idaq).vy;
+ballh = daq.(idaq).by;
+ballvf = daq.(idaq).bfv;
+bmph = bmp.(ibmp).mu;
+bmpi = bmp.(ibmp).respcl;
+bmpdomain = bmp.(ibmp).domain;
+
+dvlen = sper*3;
+dvord = 2;
+glddv = tsdv('normal', gld, dvlen, dvord, sper);
+glvdv = tsdv('normal', glv, dvlen, dvord, sper);
+grddv = tsdv('normal', grd, dvlen, dvord, sper);
+grvdv = tsdv('normal', grv, dvlen, dvord, sper);
+
+ebmn = mean(stackcrop(stack, 'eb'), [1 2 3]);
+
+for k = 1:numel(noside)
     for m = 1:numel(epoch)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                ganoeb_tmp(stack, side{k}, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, drawrot, sliceeb)
+                tmpfun(stack, noside{k}, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
                 % close all
 
                 if ~ismember('scat', pltstr) && ~ismember('surf', pltstr) % only loop for scatterplots
@@ -99,55 +156,16 @@ end
 end
 
 
-function ganoeb_tmp(stack, side, cue, ball, ballfv, bump, eb, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, drawrot, sliceeb)
+function tmpfun(stack, noside, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice)
 
 
 %%%% PREP VARS %%%%
 
-datestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
-
-epochstr = sprintf('%.0f,' , epoch);
-epochstr = epochstr(1:end-1);
-
-if isempty(widyxz)
-    widyxz = [1,1,1];
-end
-
 if ~isempty(szthrxy) && ~isempty(szthrres)
     error("can only use szthrres or szthrxy")
 end
-
-kp1 = epochcrop(epochts, epoch);
-
 if ~isscalar(lagsampxy) || ~isscalar(lagsampz)
     error("make lagsec scalar for now")
-end
-
-if strcmp(side, 'l')
-    no = nol;
-elseif strcmp(side, 'r')
-    no = nor;
-elseif isempty(side)
-    no = ones(size(cue));
-end
-
-if isempty(cue)
-    cue = nan(size(t));
-end
-
-
-noz = zscore(no);
-nodv = tsdv('radians', no, slopelensec, slopeord, sper);
-
-bumpdv = tsdv('radians', bump, slopelensec, slopeord, sper);
-bumpdvrs = bumpdv*pi/max(abs(bumpdv));
-
-ballinv = -ball;
-ballinvdv = tsdv('radians', ballinv, slopelensec, slopeord, sper);
-ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
-
-if yconst
-    limxtreme = max(abs(vec([ballinvdvrs bumpdvrs])));
 end
 
 if ~isempty(epoch)
@@ -155,28 +173,61 @@ if ~isempty(epoch)
         error("cannot pass in both name-value argument 'vt' and name-value argument 'epoch'")
     end
     it = find(epochcrop(epochts, epoch));
+    vt = t(it);
 else
     it = t2i(vt, t); %this works for empty and nonempty vt
 end
 lim_t = [min(t) max(t)];
 lim_it = [min(it) max(it)];
-lim_tsub = [min(vt) max(vt)];
+lim_subt = [min(vt) max(vt)];
 
+if strcmp(noside, 'l')
+    no = nol;
+elseif strcmp(noside, 'r')
+    no = nor;
+elseif isempty(noside)
+    no = ones(size(vish));
+end
 
-maxnumts = 8;
-cmap = lines(maxnumts); %'lines' predefined colormap is the default for function 'plot'
+if isempty(vish)
+    vish = nan(size(t));
+end
+if isempty(widyxz)
+    widyxz = [1,1,1];
+end
+
+epochstr = sprintf('%.0f,' , epoch);
+epochstr = epochstr(1:end-1);
+
+datestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
+
+cmap = lines(8); % 'lines' predefined colormap is the default for function 'plot'
 cmap = cat(1, cmap, [0 0 0]); %add black
 
-bumpnan = polarnan(bump); %insert nan where wrap
-ballinvnan = polarnan(ballinv); %insert nan where wrap
-cuenan = polarnan(cue); %insert nan where wrap
 
+noz = zscore(no);
+nodv = tsdv('radians', no, slopelensec, slopeord, sper);
+
+bumpdv = tsdv('radians', bmph, slopelensec, slopeord, sper);
+bumpdvrs = bumpdv*pi/max(abs(bumpdv));
+
+ballinv = -ballh;
+ballinvdv = tsdv('radians', ballinv, slopelensec, slopeord, sper);
+ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
+
+if yconst
+    limxtreme = max(abs(vec([ballinvdvrs bumpdvrs])));
+end
+
+bumpnan = polarnan(bmph); %insert nan where wrap
+ballinvnan = polarnan(ballinv); %insert nan where wrap
+cuenan = polarnan(vish); %insert nan where wrap
 
 slopelensec_eb = sper*3;
 slopeord_eb = 2;
-eb2 = eb;
+eb2 = bmpi;
 for k = 1:size(eb2,1)
-    % eb(k,:) = rescale(eb(k,:));
+    % bmpi(k,:) = rescale(bmpi(k,:));
     eb2(k,:) = tsdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
     eb2(k,:) = zscore(eb2(k,:));
 end
@@ -186,7 +237,7 @@ end
 bumpmethodnew = 'max';
 switch bumpmethodnew
     case 'max'
-        eb2 = eb;
+        eb2 = bmpi;
         [~, tmp] = max(eb2);
         bump2 = interp1(linspace(-pi, pi, size(eb2,1)+1), tmp);
     case 'pva'
@@ -207,8 +258,8 @@ slopeord_alt = 2;
 dodv = 0;
 if dodv %all derivatives
     ballplot = tsdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
-    cueplot = tsdv('radians', cue, slopelensec_alt, slopeord_alt, sper);
-    bumpplot = tsdv('radians', bump, slopelensec_alt, slopeord_alt, sper);
+    cueplot = tsdv('radians', vish, slopelensec_alt, slopeord_alt, sper);
+    bumpplot = tsdv('radians', bmph, slopelensec_alt, slopeord_alt, sper);
     bump2plot = tsdv('radians', bump2, slopelensec_alt, slopeord_alt, sper);
 else
     ballplot = ballinvnan;
@@ -242,7 +293,7 @@ if ismember('ts', pltstr)
     yline(hax, 0, '-k')
     hold(hax, 'off')
 
-    title(hax, "cue direction black, negative ball direction red, z-scored glno blue")
+    title(hax, "vish direction black, negative ballh direction red, z-scored glno blue")
 
     pthsv = [pthpre 'bump_.fig'];
     saveas(gcf, pthsv)
@@ -256,37 +307,37 @@ if ismember('heat', pltstr)
 
     dozscore_hm = 1;
     if dozscore_hm
-        for k = 1:size(eb,1)
-            % eb(k,:) = rescale(eb(k,:));
-            % eb(k,:) = tsdv('normal', eb(k,:), slopelensec_eb, slopeord_eb, sper);
-            eb(k,:) = zscore(eb(k,:));
+        for k = 1:size(bmpi,1)
+            % bmpi(k,:) = rescale(bmpi(k,:));
+            % bmpi(k,:) = tsdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            bmpi(k,:) = zscore(bmpi(k,:));
         end
-        % eb(eb<0) = 0;
-        % eb = stackthr(eb);
+        % bmpi(bmpi<0) = 0;
+        % bmpi = stackthr(bmpi);
     end
 
     ax = axarr([1,1]);
     h = fg(szf=2);
-    h = axim(eb, h=h, ax=ax, notim=1, noax=0);
+    h = axim(bmpi, h=h, ax=ax, notim=1, noax=0);
     hold(h.im.ax{1}, "on")
     h.im.pl{1}.XData = t;
-    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    plot(h.im.ax{1}, t, rescale(ballinvnan, 1, size(eb,1)), color=cmap(4,:))
-    plot(h.im.ax{1}, t, rescale(ballfv, 1, size(eb,1)), color=cmap(5,:))
-    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color='g')
-    plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color=cmap(3,:))
+    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(bmpi,1)), color='m')
+    plot(h.im.ax{1}, t, rescale(ballinvnan, 1, size(bmpi,1)), color=cmap(4,:))
+    plot(h.im.ax{1}, t, rescale(ballvf, 1, size(bmpi,1)), color=cmap(5,:))
+    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(bmpi,1)), color='g')
+    plot(h.im.ax{1}, t, rescale(cuenan, 1, size(bmpi,1)), color=cmap(3,:))
     wsz = 30;
     [gldtmp, wsz] = smoothdata(gld, 'sgolay', wsz);
     [glvtmp, wsz] = smoothdata(glv, 'sgolay', wsz);
-    % plot(h.im.ax{1}, t, rescale(gldtmp, 1, size(eb,1)), color=cmap(1,:), linestyle='-', linewidth=2);
-    % plot(h.im.ax{1}, t, rescale(glvtmp, 1, size(eb,1)), color=cmap(1,:), linestyle=':', linewidth=2);
+    % plot(h.im.ax{1}, t, rescale(gldtmp, 1, size(bmpi,1)), color=cmap(1,:), linestyle='-', linewidth=2);
+    % plot(h.im.ax{1}, t, rescale(glvtmp, 1, size(bmpi,1)), color=cmap(1,:), linestyle=':', linewidth=2);
     [grdtmp, wsz] = smoothdata(grd, 'sgolay', wsz);
     [grvtmp, wsz] = smoothdata(grv, 'sgolay', wsz);
-    plot(h.im.ax{1}, t, rescale(grdtmp, 1, size(eb,1)), color=cmap(2,:), linestyle='-', linewidth=2);
-    plot(h.im.ax{1}, t, rescale(grvtmp, 1, size(eb,1)), color=cmap(2,:), linestyle=':', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(grdtmp, 1, size(bmpi,1)), color=cmap(2,:), linestyle='-', linewidth=2);
+    plot(h.im.ax{1}, t, rescale(grvtmp, 1, size(bmpi,1)), color=cmap(2,:), linestyle=':', linewidth=2);
 
     xlim(lim_t)
-    title('eb (heatmap), gall left (blue), gall right (red), cue (yellow), ball yaw (purple)')
+    title('bmpi (heatmap), gall left (blue), gall right (red), vish (yellow), ballh yaw (purple)')
     numxtick = 20;
     h.im.ax{1}.XTick = linspace(lim_t(1), lim_t(2), numxtick);
     h.im.ax{1}.XTickLabel = h.im.ax{1}.XTick;
@@ -298,9 +349,9 @@ if ismember('heat', pltstr)
     %
     % hold(h.im.ax{1}, "on")
     % h.im.pl{1}.XData = t;
-    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(eb,1)), color='m')
-    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(eb,1)), color=[0.1, 0.8, 0.8])
-    % plot(h.im.ax{1}, t, rescale(cuenan, 1, size(eb,1)), color='y')
+    % plot(h.im.ax{1}, t, rescale(bumpnan, 1, size(bmpi,1)), color='m')
+    % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(bmpi,1)), color=[0.1, 0.8, 0.8])
+    % plot(h.im.ax{1}, t, rescale(cuenan, 1, size(bmpi,1)), color='y')
     % xlim(lim_t)
     % title('eb2')
     % numxtick = 20;
@@ -313,7 +364,7 @@ if ismember('heat', pltstr)
     % idxsubp = 1;
     % h.ts = axts(h.fg, no, ax=ax, t=t, idxsubp=idxsubp);
 
-    % title("eb pva blue, eb max(dv) red, cue yellow", Position=[0 1])
+    % title("bmpi pva blue, bmpi max(dv) red, vish yellow", Position=[0 1])
 
     pthsv = [pthpre 'bump_.fig'];
     saveas(gcf, pthsv)
@@ -328,20 +379,20 @@ if ismember('profile', pltstr)
     dr = [0 1];
 
     if isempty(dozscore)
-        prompt = sprintf("ENTER 1 TO ZSCORE EB ROIS, 0 TO NOT: ");
+        prompt = sprintf("ENTER 1 TO ZSCORE bmpi ROIS, 0 TO NOT: ");
         commandwindow();
         dozscore = input(prompt);
     end
 
     if dozscore
-        for k = 1:size(eb,1)
-            % eb(k,:) = rescale(eb(k,:));
-            % eb(k,:) = tsdv('normal', eb(k,:), slopelensec_eb, slopeord_eb, sper);
-            eb(k,:) = zscore(eb(k,:));
+        for k = 1:size(bmpi,1)
+            % bmpi(k,:) = rescale(bmpi(k,:));
+            % bmpi(k,:) = tsdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            bmpi(k,:) = zscore(bmpi(k,:));
         end
     end
 
-    % stackeb = stackcrop(stack, 'eb');
+    % stackeb = stackcrop(stack, 'bmpi');
 
     stack = stack(:,:,:,it);
     stackeb = stack;
@@ -349,7 +400,7 @@ if ismember('profile', pltstr)
 
     stackeb_mnt = mean(stackeb,4);
 
-    if isempty(drawrot)
+    if isempty(stackrot)
 
         rots = -1*[0:10:180];
         stackmnzrot = {};
@@ -369,13 +420,13 @@ if ismember('profile', pltstr)
 
         prompt = sprintf("ENTER DEGREES TO ROTATE STACK FORWARD (ALONG X AXIS), OR EMPTY TO NOT ROTATE: ");
         commandwindow();
-        drawrot = input(prompt);
+        stackrot = input(prompt);
 
     end
 
-    if drawrot
-        drawrot = drawrot * -1;
-        tform = rigidtform3d([drawrot,0,0], [0,0,0]);
+    if any(stackrot)
+        stackrot = stackrot * -1;
+        tform = rigidtform3d(stackrot, [0,0,0]);
         rf = imref3d(size(stackeb_mnt));
         for k = 1:size(stackeb,4)
             tmp = imwarp(stackeb(:,:,:,k), rf, tform); %default output view is centeroutput
@@ -393,21 +444,21 @@ if ismember('profile', pltstr)
     stackmin = double(min(stackeb(:)));
     stackmax = double(max(stackeb(:)));
     stackrange = stackmax-stackmin;
-    clim_tmp = stackrange*dr+stackmin; %cdata limits set from whole EB region, rather than chosen subset
+    clim_tmp = stackrange*dr+stackmin; %cdata limits set from whole bmpi region, rather than chosen subset
 
-    if isempty(sliceeb)
+    if isempty(stackslice)
         stackplt(stackeb_mnt, dmplt='yx(z)')
-        prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT EB ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
+        prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT bmpi ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
         commandwindow();
-        sliceeb = input(prompt);
+        stackslice = input(prompt);
     end
 
-    if isempty(sliceeb)
-        sliceeb = 1:size(stackeb_mnt, 3);
+    if isempty(stackslice)
+        stackslice = 1:size(stackeb_mnt, 3);
     end
 
-    stackeb = mean(stackeb(:,:,sliceeb,:),3);
-    % stackeb = median(stackeb(:,:,sliceeb,:),3);
+    stackeb = mean(stackeb(:,:,stackslice,:),3);
+    % stackeb = median(stackeb(:,:,stackslice,:),3);
     stackeb = squeeze(stackeb);
 
     nolz = zscore(nol);
@@ -417,7 +468,7 @@ if ismember('profile', pltstr)
     ttl = title(hax, '');
 
     hax = subplot(2,1,1);
-    hpl = plot(hax, bmpdomain, eb(:,1));
+    hpl = plot(hax, bmpdomain, bmpi(:,1));
 
     yyaxis right
     hold on
@@ -438,7 +489,7 @@ if ismember('profile', pltstr)
     hln2 = xline(hax, 0, color=cmap(3,:));
     hln3 = xline(hax, 0, color=cmap(4,:));
     % hln4 = xline(hax, 0, color=cmap(4,:));
-    limy = axlim(eb, norz, nolz);
+    limy = axlim(bmpi, norz, nolz);
     hax.YAxis(1).Color = cmap(1,:);
     hax.YAxis(1).Color = cmap(1,:);
     hax.YAxis(2).Limits = limy.allpad;
@@ -447,18 +498,18 @@ if ismember('profile', pltstr)
     % hax.YLim = [0 1];
     hax.XLim = [-pi pi]*1.2;
     incc = 1;
-    for k = 1:incc:numel(it) %for each timepoint, show bump
-        hpl.YData = eb(:,it(k));
+    for k = 1:incc:numel(it) %for each timepoint, show bmph
+        hpl.YData = bmpi(:,it(k));
         % hpl.YData = eb2(:,limtsamp(k));
-        % hln1.Value = bump(it(k));
-        hln2.Value = cue(it(k));
+        % hln1.Value = bmph(it(k));
+        hln2.Value = vish(it(k));
         hln3.Value = ballinv(it(k));
         % hln4.Value = bump2(it(k));
-        hbr1.YData = ballfv(k);
+        hbr1.YData = ballvf(k);
         hbr2.YData = norz(k);
         hbr3.YData = nolz(k);
         hpl2.CData = stackeb(:,:,k);
-        ttl.String = {['cue (red), ball (yellow)']; ['t: ' num2str(t(it(k))) ', epoch: ' num2str(epochts(it(k)))]};
+        ttl.String = {['vish (red), ballh (yellow)']; ['t: ' num2str(t(it(k))) ', epoch: ' num2str(epochts(it(k)))]};
         fig2gif(hfg,k)
     end
 
@@ -471,9 +522,9 @@ if ismember('hist', pltstr)
     pthgif = pathauto(suffix='.gif', usetime=1);
     hfg = figure;
     hax = axes(Parent=hfg);
-    for k = 1:size(eb2,1)
-        histogram(hax, eb2(k,:));
-        xlim([-max(abs(eb2(:))) max(abs(eb2(:)))])
+    for k = 1:size(bmpi,1)
+        histogram(hax, bmpi(k,:));
+        xlim([-max(abs(bmpi(:))) max(abs(bmpi(:)))])
         ylim([0 4000])
         fig2gif(hfg,k,pthgif)
     end
@@ -495,9 +546,9 @@ if ismember('ts2', pltstr)
 
     bg = [nodv; nozrs]; %background; z-scored nodulus and derivative of nodulus
 
-    cuenan = polarnan(cue); %insert nan where wrap
+    cuenan = polarnan(vish); %insert nan where wrap
     ballinvnan = polarnan(ballinv); %insert nan where wrap
-    bumpnan = polarnan(bump); %insert nan where wrap
+    bumpnan = polarnan(bmph); %insert nan where wrap
 
     cmap = cmapmake(nodes={'r', 'k', 'b'});
     maxabs = max(abs(vec(bg)));
@@ -515,9 +566,9 @@ if ismember('ts2', pltstr)
     % plot(hax, ballinvdvrs, 'm-')
     % plot(hax, bumpnan, 'c-')
     % plot(hax, bumpdvrs, 'w-')
-    title("bump cyan, ball yellow, cue green, " + side + " GLNO derivative background")
+    title("bmph cyan, ballh yellow, vish green, " + noside + " GLNO derivative background")
 
-    pthsv = [pthpre side '_glno_.fig'];
+    pthsv = [pthpre noside '_glno_.fig'];
     saveas(gcf, pthsv)
 
 end
@@ -530,14 +581,14 @@ if ismember('scat', pltstr)
     nolz3 = zscore(nol);
     norz3 = zscore(nor);
     nodv = nolz3-norz3;
-    nodv = cue;
-    bumpdvrs = mean(eb);
-    bumpdvrs = eb(30,:);
+    nodv = vish;
+    bumpdvrs = mean(bmpi);
+    bumpdvrs = bmpi(30,:);
     ballinvdvrs = norz3;
     ballinvdvrs = nolz3;
 
 
-    pthsv = [pthpre 'glno_scatter_' datestr '_' side '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_.fig'];
+    pthsv = [pthpre 'glno_scatter_' datestr '_' noside '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_.fig'];
 
     xydist = sqrt(ballinvdvrs.^2 + bumpdvrs.^2); %distance from origin
 
@@ -555,7 +606,7 @@ if ismember('scat', pltstr)
     [nodvsrt, idx4] = sort(nodv);
     ballinvdvrs = ballinvdvrs(idx4);
     bumpdvrs = bumpdvrs(idx4);
-    kp1 = kp1(idx4);
+    kp1sort = kp1(idx4);
     if ncol<=1
         ncol = round(numel(nodvsrt)*ncol);
     end
@@ -649,8 +700,8 @@ if ismember('scat', pltstr)
 
     %%%%% EXCLUDE BY EPOCH %%%%%
 
-    kp1 = kp1(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
-    [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp1, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
+    kp1sort = kp1sort(1:numel(ballinvdvrs)); %just crop a samples at end to match length of timeseries after lag
+    [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp1sort, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);
 
 
     %%%%% EXCLUDE BY DISTANCE FROM ORIGIN %%%%%
@@ -671,14 +722,14 @@ if ismember('scat', pltstr)
     scatter(hax, ballinvdvrs, bumpdvrs, sztmp, cmap, 'filled', MarkerFaceAlpha=facealpha);
     hold(hax, 'off')
     axis square
-    xlabel("ball")
-    ylabel("bump")
+    xlabel("ballh")
+    ylabel("bmph")
     if ~yconst
         limxtreme = max(abs([hax.XLim hax.YLim]));
     end
     % hax.XLim = [-limxtreme limxtreme];
     % hax.YLim = [-limxtreme limxtreme];
-    title({[side ' glno derivative red neg blue pos black zero']; ['lagx: ' num2str(lagsampxy) ', lagz: ' num2str(lagsampz) ', epoch: ' epochstr]})
+    title({[noside ' glno derivative red neg blue pos black zero']; ['lagx: ' num2str(lagsampxy) ', lagz: ' num2str(lagsampz) ', epoch: ' epochstr]})
 
     % saveas(gcf, pthsv)
     fig2gif(h.fg, 1, [pthsv(1:end-4) '.gif']) %save as gif
@@ -705,13 +756,13 @@ if ismember('surf', pltstr)
     hax.YLim = [-limxtreme limxtreme];
     hax.ZLim = [-max(abs(hax.ZLim(:))) max(abs(hax.ZLim(:)))];
     axis( hax, 'vis3d' )
-    xlabel("ball")
-    ylabel("bump")
+    xlabel("ballh")
+    ylabel("bmph")
     zlabel("GLNO")
     colormap(hot(256))
     camlight right
     lighting phong
-    pthsv = [pthpre 'glno_surf_' side '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_' datestr '_.fig'];
+    pthsv = [pthpre 'glno_surf_' noside '_' num2str(lagsampxy) '_' num2str(lagsampz) '_' epochstr '_' datestr '_.fig'];
     vwel = linspace(0, 50, 10);
     vwel = vwel(1:end-1);
     vwaz = linspace(0, 50, 10);
@@ -729,36 +780,118 @@ if ismember('surf', pltstr)
 end
 
 
+if ismember('scat2', pltstr)
+
+    iepoch = 1:6;
+    hfg = figure;
+    hax = axes(parent=hfg);
+    hold on;
+
+    for q = 1:numel(iepoch)
+
+        ie = iepoch(q);
+        [~, gldtmp, glvtmp, grdtmp, grvtmp] = epochcrop(daq.(idaq).epochts, ie, gld, glv, grd, grv);
+        [~, glddv_tmp, glvdv_tmp, grddv_tmp, grvdv_tmp] = epochcrop(daq.(idaq).epochts, ie, glddv, glvdv, grddv, grvdv);
+
+        if dodv
+            if q==1
+                hsc1 = scatter(hax, glddv_tmp, glvdv_tmp);
+                hsc2 = scatter(hax, grddv_tmp, grvdv_tmp);
+                limx = axlim(glddv, grddv, limtype='allpad');
+                limy = axlim(glvdv, grvdv, limtype='allpad');
+                hax.XLim = limx;
+                hax.YLim = limy;
+            else
+                hsc1.XData = glddv_tmp;
+                hsc1.YData = glvdv_tmp;
+                hsc2.XData = grddv_tmp;
+                hsc2.YData = grvdv_tmp;
+            end
+        else
+            if q==1
+                hsc1 = scatter(hax, gldtmp, glvtmp);
+                hsc2 = scatter(hax, grdtmp, grvtmp);
+                limx = axlim(gld, grd, limtype='allpad');
+                limy = axlim(glv, grv, limtype='allpad');
+                hax.XLim = limx;
+                hax.YLim = limy;
+            else
+                hsc1.XData = gldtmp;
+                hsc1.YData = glvtmp;
+                hsc2.XData = grdtmp;
+                hsc2.YData = grvtmp;
+            end
+        end
+        fig2gif(hfg, q)
+    end
+
+end
+
+if ismember('polar', pltstr)
+
+    tdat = vish;
+    rdat = nor;
+
+    hfg = figure;
+    ax = axes(Parent=hfg);
+    pax = polaraxes(Units=ax.Units, Position=ax.Position);
+    hpl = polarscatter(pax, tdat, nan(size(tdat)), '.');
+    pax.RLim = axlim(rdat, limtype='allpad');
+
+    for q = 1:size(rdat,1)
+        hpl.RData = rdat(q,:);
+        fig2gif(hfg, q)
+    end
 
 end
 
 
-function [varx_lagxyz, vary_lagxyz, varz_lagxyz] = lagvars(varx, vary, varz, lagxy, lagz)
 
-%negative lag, first variable follows second (first var shifted right) (but should be opposite prob)
-%positive lag first variable precedes second (first var shifted left) (but should be opposite prob)
 
-%first apply xy lag
-if lagxy<=0
-    varx_lagxy = vec(varx(1+abs(lagxy):end));
-    vary_lagxy = vec(vary(1:end-abs(lagxy)));
-else
-    varx_lagxy = vec(varx(1:end-abs(lagxy)));
-    vary_lagxy = vec(vary(1+abs(lagxy):end));
+if ismember('tsepoch', pltstr)
+
+    epochs_all = {unique(epochts)};
+
+    hfg = figure;
+    hax = axes(parent=hfg);
+    limy1 = axlim(glddv, glvdv, grddv, grvdv, limtype='allpad');
+    limy2 = axlim(glddv, glvdv, grddv, grvdv, limtype='allpad');
+
+    for k = 1:numel(epochs_all)
+
+        esub = epochs_all(k);
+        [~, glddv_tmp, glvdv_tmp, grddv_tmp, grvdv_tmp, ebmn_tmp, ballvf_tmp, ttmp] = epochcrop(epochts, esub, glddv, glvdv, grddv, grvdv, squeeze(ebmn), t);
+
+        if k==1
+            yyaxis left
+            hold on
+            hpl11 = plot(hax, glddv_tmp, color=cmap(1,:), linestyle='-');
+            hpl12 = plot(hax, glvdv_tmp, color=cmap(1,:), linestyle='-', linewidth=2);
+            hpl13 = plot(hax, grddv_tmp, color=cmap(2,:), linestyle='-');
+            hpl14 = plot(hax, grvdv_tmp, color=cmap(2,:), linestyle=':', linewidth=2);
+            hax.YAxis(1).Limits = limy1;
+            yyaxis right
+            hold on
+            hpl21 = plot(hax, ebmn_tmp, color=cmap(end,:), linestyle='-');
+            hpl22 = plot(hax, ballvf_tmp, color=cmap(4,:), linestyle='-');
+            hax.YAxis(2).Limits = limy2;
+            hax.YAxis(2).Color = [0 0 0];
+        else
+            hpl11.YData = glddv_tmp;
+            hpl12.YData = glvdv_tmp;
+            hpl13.YData = grddv_tmp;
+            hpl14.YData = grvdv_tmp;
+            hpl21.YData = ebmn_tmp;
+            hpl22.YData = ballvf;
+        end
+
+    end
+
 end
 
-%now apply z lag
-if lagz<=0
-    varx_lagxyz = vec(varx_lagxy(1+abs(lagz):end));
-    vary_lagxyz = vec(vary_lagxy(1+abs(lagz):end));
-    varz_lagxyz = vec(varz(1:end - (abs(lagxy)+abs(lagz)))); %also include lagxy for 3rd var
-else
-    varx_lagxyz = vec(varx_lagxy(1:end-abs(lagz)));
-    vary_lagxyz = vec(vary_lagxy(1:end-abs(lagz)));
-    varz_lagxyz = vec(varz( (1+abs(lagxy)+abs(lagz) ):end));
 end
 
-end
+
 
 
 

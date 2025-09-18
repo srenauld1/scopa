@@ -1,4 +1,4 @@
-function z = e2c(x, m, doplt)
+function z = ell2cir(x, m, doplt)
 
 arguments
     x

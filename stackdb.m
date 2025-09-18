@@ -1,5 +1,7 @@
 function [stack, psfe] = stackdb(stack, opt)
 
+%deblur stack; work in progress
+
 arguments
     stack %yxzt image stack
     opt.doiso = 0 % 1 to resample stack into cube voxels before deblur, then put back to original size after

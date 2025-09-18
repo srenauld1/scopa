@@ -1,4 +1,4 @@
-function hstplt(inp, nbin)
+function histgif(inp, nbin)
 
 vals = zeros(size(inp,1), nbin);
 for k = 1:size(inp,1)

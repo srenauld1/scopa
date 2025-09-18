@@ -1,8 +1,11 @@
 function [kpo, tso] = epochcrop(epochts, epoch, ts, opt)
 
-%index timeseries (ts) using indices (epoch) from input vector (epochts)
-%output kpo is logical array, samples belonging to an index listed in input 'epoch' assigned 1
-%output tso is same as input ts, but only samples belonging to an index listed in input 'epoch' are retained
+%{
+index timeseries (ts) using indices (epoch) from input vector (epochts)
+output kpo is logical array, samples belonging to an index listed in input 'epoch' assigned 1
+output tso is same as input ts, but only samples belonging to an index listed in input 'epoch' are retained
+if epoch is not scalar, outputs are union of each epoch seubset  
+%}
 
 arguments (Input)
     epochts {mustBeVector}

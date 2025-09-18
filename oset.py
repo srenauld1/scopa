@@ -22,7 +22,7 @@ pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single ele
 recdate = ['20250601', '20250608'] #list of strings, as it appears in the directory and original scanimage file filename (with hyphen not underscore for now), '*' for any 
 fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
-folder_substring = ['ganoeb'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
+folder_substring = ['ebgano'] #list of strings, '*' for any, match recordings only in folders containing any substring in list  
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
 
 ## SOME OPTIONS IN ROUGH ORDER OF APPEARANCE ## 

@@ -127,7 +127,7 @@ end
 
 
 if runfit
-    [lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(t, lagsec); %actual lags depend on epoch (samples you're using)
+    [lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(lagsec, t); %actual lags depend on epoch (samples you're using)
     slope_lagall = zeros(numroi, numlag, 'single');
     rsq_lagall = zeros(numroi, numlag, 'single');
     p_lagall = zeros(numroi, numlag, 'single');

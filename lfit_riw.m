@@ -112,7 +112,7 @@ numsamp = size(resp,2);
 
 %% compute correlation after applying lags
 
-[lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(t, lagsec); %actual lags depend on epoch (samples you're using)
+[lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(lagsec, t); %actual lags depend on epoch (samples you're using)
 
 runfit = 1;
 if usesaved
