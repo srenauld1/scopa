@@ -2,7 +2,12 @@
 
 %{
 see docs_a2p
-20250809_1_[1-3]
+denoise
+    20250803_1_1
+    20250803_1_2
+    20250831_1_1
+    20250906_1_1 (also register)
+    20250907_3_1 (also register)
 %}
 
 function a2p(specin)
