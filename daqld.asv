@@ -118,14 +118,12 @@ elseif ~isempty(pthdaq)
     id = idmake(pthdaq);
     pt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '*.mat'];
     pthdaq = rdir(pt);
-    if isscalar(pthdaq) 
-        pthdaq = pthdaq.name;
-    else
-        error("pthdaq does not exist, or there are multiple matches")
+    if isempty(pthdaq)
+        error("pthdaq does not exist")
     end
     pthmd = [id.pthrec '_mdsi_.txt'];
     if isfile(pthmd)
-        md = mdsild(pthmd); %mdsild can run just with recid input, but if mdsild file does not exist, it cannot be created without pthstack, so we also call this in case pthstack is nonempty
+        md = mdsild(pthmd);
     else
         error("mdsi_.txt file does not exist, so either put it in filesystem, or derive it from raw stack (but for that, you must pass in pthstack, rather than pthdaq (and pthdaq will be derived automatically)")
     end
@@ -140,6 +138,7 @@ numslice_withflyback = md.numslice_withflyback;
 numslice = md.numslice;
 numvol = md.numvol;
 sper = md.sper;
+
 
 
 try
