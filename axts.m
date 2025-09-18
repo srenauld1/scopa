@@ -8,8 +8,8 @@ arguments
     opt.ax = []
     opt.labs = []
     opt.cols = []
-    opt.sector_ind = 1
-    opt.subplot_ind = 1
+    opt.idxsect = 1
+    opt.idxsubp = 1
     opt.widfac = 1
     opt.htfac = 1
     opt.dors = 1
@@ -27,8 +27,8 @@ h = opt.h;
 ax = opt.ax;
 labs = opt.labs;
 cols = opt.cols;
-sector_ind = opt.sector_ind;
-subplot_ind = opt.subplot_ind;
+idxsect = opt.idxsect;
+idxsubp = opt.idxsubp;
 widfac = opt.widfac;
 htfac = opt.htfac;
 dors = opt.dors;
@@ -90,7 +90,7 @@ nsamp = size(ts,2);
 numchan = max(cell2mat(cellfun(@(x) size(x,3), ticklab, 'UniformOutput', false)));
 numxtick = 20;
 
-numsubplot = numel(subplot_ind);
+numsubplot = numel(idxsubp);
 if isscalar(widfac) && numsubplot>1
     widfac = repelem(widfac, numsubplot);
 end
@@ -114,14 +114,14 @@ for j = 1:numsubplot
     h.(nm)(q).ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
     if colmaj
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).colmaj.x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).colmaj.y(idxsubp(j));
     else
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).y(idxsubp(j));
     end
-    h.(nm)(q).ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac(j));
-    h.(nm)(q).ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac(j));
+    h.(nm)(q).ax{j}.InnerPosition(3) = ax(idxsect).w(widfac(j));
+    h.(nm)(q).ax{j}.InnerPosition(4) = ax(idxsect).h(htfac(j));
 
     if notb
         h.(nm)(q).ax{j}.Toolbar.Visible = 'off';

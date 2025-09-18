@@ -115,7 +115,7 @@ for k = 1:numel(oa) % loop over recordings
 
 
     ie=1;
-    [~, fvtmp] = sampepoch(daq.(idaq).epochts, ie, daq.(idaq).bfv);
+    [~, fvtmp] = epochcrop(daq.(idaq).epochts, ie, daq.(idaq).bfv);
     tinds = 10000:numel(fvtmp);
     figure; histogram(fvtmp(tinds), 50)
 
@@ -144,8 +144,8 @@ for k = 1:numel(oa) % loop over recordings
     for q = 1:numel(iepoch)
 
         ie = iepoch(q);
-        [~, gldtmp, glvtmp, grdtmp, grvtmp] = sampepoch(daq.(idaq).epochts, ie, gld, glv, grd, grv);
-        [~, glddvtmp, glvdvtmp, grddvtmp, grvdvtmp] = sampepoch(daq.(idaq).epochts, ie, glddv, glvdv, grddv, grvdv);
+        [~, gldtmp, glvtmp, grdtmp, grvtmp] = epochcrop(daq.(idaq).epochts, ie, gld, glv, grd, grv);
+        [~, glddvtmp, glvdvtmp, grddvtmp, grvdvtmp] = epochcrop(daq.(idaq).epochts, ie, glddv, glvdv, grddv, grvdv);
 
         if dodv
             if q==1
@@ -190,24 +190,14 @@ for k = 1:numel(oa) % loop over recordings
     end
     stackplt(stacknew, dmplt='yx(t)', it=1:3:600)
 
-    %%
-
-    padsamp = 3;
-    iepoch=2;
-    boute = 2;
-    tsubtmp = {};
-    sampe = {};
-
-
 
     %%
 
+    epoch = 2;
+    bout = 1;
 
-    % ie = 2;
-    % be = 2;
-    % tsubtmp2 = tsubtmp{ie,be};
-    % inc = 0.03;
-    % tsubtmp2 = tsubtmp2(1):inc:tsubtmp2(end);
+    [~, ~, ~, ~, tpe] = trmake(daq.(idaq).epochts, padlent=2, t=glb('t'), eb=[epoch bout]);
+
     ebnotmp(stacknew, {'r'}, daq.(idaq).vy, daq.(idaq).by, daq.(idaq).bfv, bmp.(ibmp).mu, bmp.(ibmp).respcl, roi.(inr).dat(1).ts, roi.(inl).dat(1).ts, glb('t'), md.sper, o.id.pthpre, ...
         gld, glv, grd, grv, ...
         plt=[1 0 0 0], ...
@@ -226,7 +216,7 @@ for k = 1:numel(oa) % loop over recordings
         slopelensec=[0.3], ...
         bmpdomain=bmp.(ibmp).domain, ...
         widyxz=md.widyxz, ...
-        tsub=880:.03:1000, ... 50:.01:200, ...
+        vt=tpe, ... 50:.01:200, ...
         dozscore=0, ...
         drawrot=0, ...
         sliceeb=[1:size(stacknew,3)])
@@ -290,7 +280,7 @@ for k = 1:numel(oa) % loop over recordings
 
     % 
     % h = fg();
-    % h.ts = axts(h.fg, glddvtmp, t=t, subplot_ind=1);
+    % h.ts = axts(h.fg, glddvtmp, t=t, idxsubp=1);
 
 
     figure;
@@ -344,7 +334,7 @@ for k = 1:numel(oa) % loop over recordings
     ei = 2;
     t = glb('t');
 
-    [~, glddvtmp, glvdvtmp, grddvtmp, grvdvtmp, ebmntmp, t] = sampepoch(daq.(idaq).epochts, ei, glddv, glvdv, grddv, grvdv, squeeze(ebmn), t);
+    [~, glddvtmp, glvdvtmp, grddvtmp, grvdvtmp, ebmntmp, t] = epochcrop(daq.(idaq).epochts, ei, glddv, glvdv, grddv, grvdv, squeeze(ebmn), t);
 
     hfg = figure;
     hax = axes(parent=hfg);

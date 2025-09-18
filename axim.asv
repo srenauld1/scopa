@@ -10,8 +10,8 @@ arguments
     opt.cmap = gray(256) %cmap or 'rgb'
     opt.txtvar = []
     opt.dr = [0,1]
-    opt.sector_ind = 1
-    opt.subplot_ind = 1:size(im,3)
+    opt.idxsect = 1
+    opt.idxsubp = 1:size(im,3)
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 11 15]
@@ -30,8 +30,8 @@ ydir = opt.ydir;
 cmap = opt.cmap;
 txtvar = opt.txtvar;
 dr = opt.dr;
-sector_ind = opt.sector_ind;
-subplot_ind = opt.subplot_ind;
+idxsect = opt.idxsect;
+idxsubp = opt.idxsubp;
 widfac = opt.widfac;
 htfac = opt.htfac;
 fontsz = opt.fontsz;
@@ -76,7 +76,7 @@ if isempty(ax)
     ax = axarr(im);
 end
 
-numax = numel(subplot_ind);
+numax = numel(idxsubp);
 fontmedium = fontsz(2);
 
 [ny, nx, nz, nt, nc] = size(im);
@@ -95,14 +95,14 @@ for j = 1:numax
     hold(h.(nm)(q).ax{j}, 'on')
 
     if colmaj
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).colmaj.x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).colmaj.y(idxsubp(j));
     else
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).y(idxsubp(j));
     end
-    h.(nm)(q).ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac);
-    h.(nm)(q).ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac);
+    h.(nm)(q).ax{j}.InnerPosition(3) = ax(idxsect).w(widfac);
+    h.(nm)(q).ax{j}.InnerPosition(4) = ax(idxsect).h(htfac);
     if ~notim
         h.(nm)(q).ax{j}.DataAspectRatio = [1 1 1]; 
     end

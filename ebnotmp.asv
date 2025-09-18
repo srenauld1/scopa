@@ -156,7 +156,7 @@ if ~isempty(epoch)
     end
     it = find(epochcrop(epochts, epoch));
 else
-    it = t2i(vt, t); %this works for empty and nonempty vt
+    it = t2i(vt, t);
 end
 lim_t = [min(t) max(t)];
 lim_it = [min(it) max(it)];

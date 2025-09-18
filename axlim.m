@@ -63,8 +63,8 @@ end
 if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1},3), size(x,3)), ts(2:end)))
     error("all input ts must have same number of channels")
 end
-if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1}), size(x)), ts(2:end)))
-    fprintf("warning, timeseries in axlim are not all equal in length in time" + newline)
+if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1},2), size(x,2)), ts(2:end)))
+    fprintf("warning, timeseries in axlim are not all equal in length" + newline)
 end
 
 if nargin>1 && collapse_first_cell_dim

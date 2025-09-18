@@ -249,7 +249,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
 
-    tsub = t(it);
+    subt = t(it);
 
     switch sortstyle
         case 'slope' %by correlation
@@ -367,12 +367,12 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     ts4.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts4.ax, 'on');
     yyaxis left;
-    ts4.pl = plot(ts4.ax, tsub, nanresp(it));
+    ts4.pl = plot(ts4.ax, subt, nanresp(it));
     yyaxis right;
-    ts4.hpl2 = plot(ts4.ax, tsub, stim1(it));
+    ts4.hpl2 = plot(ts4.ax, subt, stim1(it));
     hold(ts4.ax, 'off');
     ts4.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts4.ax.XAxis] = axismod(ts4.ax.XAxis, tsub, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0, roundprec=0);
+    [ts4.ax.XAxis] = axismod(ts4.ax.XAxis, subt, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0, roundprec=0);
     [ts4.ax.YAxis(1)] = axismod(ts4.ax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
     [ts4.ax.YAxis(2)] = axismod(ts4.ax.YAxis(2), stim1(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
 

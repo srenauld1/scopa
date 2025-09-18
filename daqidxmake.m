@@ -125,18 +125,18 @@ if doplt
     end
     t = t-t(1); %zero, just for plotting, so maxtplot works as intended
     kp = find(t<maxtplot);
-    tsub = t(kp);
+    subt = t(kp);
     figure;
     sgtitle( ['use flyback lines: ' num2str(usefbl), '; use flyback frames: ' num2str(usefbf)])
     subplot(311);
-    plot(tsub, idx.frame(kp));
-    title(['idx.frame for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.frame) max(idx.frame)]) ])
+    plot(subt, idx.frame(kp));
+    title(['idx.frame for first ' num2str(numel(subt)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.frame) max(idx.frame)]) ])
     subplot(312);
-    plot(tsub, idx.slice(kp));
-    title(['idx.slice for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.slice) max(idx.slice)]) ])
+    plot(subt, idx.slice(kp));
+    title(['idx.slice for first ' num2str(numel(subt)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.slice) max(idx.slice)]) ])
     subplot(313);
-    plot(tsub, idx.vol(kp))
-    title(['idx.vol for first ' num2str(numel(tsub)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.vol) max(idx.vol)]) ])
+    plot(subt, idx.vol(kp))
+    title(['idx.vol for first ' num2str(numel(subt)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.vol) max(idx.vol)]) ])
     figsuffix = 'idx_.png';
     if isempty(pthfig)
         pthfig = pathauto(suffix=figsuffix, usetime=0);

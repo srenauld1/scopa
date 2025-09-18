@@ -250,7 +250,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
 
-    tsub = t(it);
+    subt = t(it);
 
     switch sortstyle
         case 'slope' %by correlation

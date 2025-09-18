@@ -292,7 +292,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
 
-    tsub = t(it);
+    subt = t(it);
 
     switch sortstyle
         case 'slope' %by correlation
@@ -402,12 +402,12 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     ts2.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
     hold(ts2.ax, 'on');
     yyaxis left;
-    ts2.pl = plot(ts2.ax, tsub, nanresp(it));
+    ts2.pl = plot(ts2.ax, subt, nanresp(it));
     yyaxis right;
-    ts2.hpl2 = plot(ts2.ax, tsub, stim(it));
+    ts2.hpl2 = plot(ts2.ax, subt, stim(it));
     hold(ts2.ax, 'off');
     ts2.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts2.ax.XAxis] = axismod(ts2.ax.XAxis, tsub, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0);
+    [ts2.ax.XAxis] = axismod(ts2.ax.XAxis, subt, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0);
     [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
     [ts2.ax.YAxis(2)] = axismod(ts2.ax.YAxis(2), stim(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 

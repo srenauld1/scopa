@@ -1,4 +1,4 @@
-function [kpo, tso] = sampepoch(epochts, epoch, ts, opt)
+function [kpo, tso] = epochcrop(epochts, epoch, ts, opt)
 
 %index timeseries (ts) using indices (epoch) from input vector (epochts)
 %output kpo is logical array, samples belonging to an index listed in input 'epoch' assigned 1

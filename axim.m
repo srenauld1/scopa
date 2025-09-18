@@ -12,8 +12,8 @@ arguments
     opt.immax = []
     opt.txtvar = []
     opt.dr = [0,1]
-    opt.sector_ind = 1
-    opt.subplot_ind = []
+    opt.idxsect = 1
+    opt.idxsubp = []
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 11 15]
@@ -22,7 +22,7 @@ arguments
     opt.doui = 0
     opt.notim = 0 %if what you're plotting is not actually an image (e.g., if it's some neural responses, concatenated along one dimension), let matlab determine the aspect ratio
     opt.notb = 0
-    opt.noax = 1
+    opt.noax = 1 %1 will not show the axes, 0 will show axes
     opt.nm = 'im'
     opt.axidx = [] %index of image axes you want to create, corresponds to index into nonscalar struct for holding image axes and their children 
 end
@@ -34,8 +34,8 @@ immin = opt.immin;
 immax = opt.immax;
 txtvar = opt.txtvar;
 dr = opt.dr;
-sector_ind = opt.sector_ind;
-subplot_ind = opt.subplot_ind;
+idxsect = opt.idxsect;
+idxsubp = opt.idxsubp;
 widfac = opt.widfac;
 htfac = opt.htfac;
 fontsz = opt.fontsz;
@@ -82,10 +82,10 @@ end
 
 [ny, nx, nz, nt, nc] = size(im);
 
-if isempty(subplot_ind)
-    subplot_ind = 1:nz;
+if isempty(idxsubp)
+    idxsubp = 1:nz;
 end
-numax = numel(subplot_ind);
+numax = numel(idxsubp);
 fontmedium = fontsz(2);
 
 imroi = zeros(ny, nx, 3, 'single'); %ones here, so only alphadata has to change later (showing the ones where the roi is located, scaled by alphafac)
@@ -106,14 +106,14 @@ for j = 1:numax
     hold(h.(nm)(q).ax{j}, 'on')
 
     if colmaj
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).colmaj.x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).colmaj.y(idxsubp(j));
     else
-        h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-        h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+        h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).x(idxsubp(j));
+        h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).y(idxsubp(j));
     end
-    h.(nm)(q).ax{j}.InnerPosition(3) = ax(sector_ind).w(widfac);
-    h.(nm)(q).ax{j}.InnerPosition(4) = ax(sector_ind).h(htfac);
+    h.(nm)(q).ax{j}.InnerPosition(3) = ax(idxsect).w(widfac);
+    h.(nm)(q).ax{j}.InnerPosition(4) = ax(idxsect).h(htfac);
     if ~notim
         h.(nm)(q).ax{j}.DataAspectRatio = [1 1 1]; 
     end

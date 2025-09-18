@@ -14,8 +14,8 @@ arguments
     opt.plot_z_as_color = 1
     opt.labs = []
     opt.cols = []
-    opt.sector_ind = 1
-    opt.subplot_ind = 1
+    opt.idxsect = 1
+    opt.idxsubp = 1
     opt.widfac = 1
     opt.htfac = 1
     opt.fontsz = [6 8 12]
@@ -32,8 +32,8 @@ actual_lags_xy_sec = opt.actual_lags_xy_sec;
 plot_z_as_color = opt.plot_z_as_color;
 labs = opt.labs;
 cols = opt.cols;
-sector_ind = opt.sector_ind;
-subplot_ind = opt.subplot_ind;
+idxsect = opt.idxsect;
+idxsubp = opt.idxsubp;
 widfac = opt.widfac;
 htfac = opt.htfac;
 fontsz = opt.fontsz;
@@ -63,7 +63,7 @@ if isempty(ax)
     ax = axarr(1);
 end
 
-numsubplot = numel(subplot_ind);
+numsubplot = numel(idxsubp);
 if numel(widfac)==1 && numsubplot>1
     widfac = repelem(widfac, numsubplot);
 end
@@ -106,8 +106,8 @@ h.(nm)(q).br = [];
 
 for j = 1:numsubplot
 
-    tmp_x_extent = ax(sector_ind).w(widfac(j));
-    tmp_y_extent = ax(sector_ind).h(htfac(j));
+    tmp_x_extent = ax(idxsect).w(widfac(j));
+    tmp_y_extent = ax(idxsect).h(htfac(j));
     newextent = max(tmp_x_extent, tmp_y_extent); %force this axis to be square, without
 
     switch sctype
@@ -117,11 +117,11 @@ for j = 1:numsubplot
             h.(nm)(q).ax{j} = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
 
             if colmaj
-                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).colmaj.x(idxsubp(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).colmaj.y(idxsubp(j));
             else
-                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).x(idxsubp(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).y(idxsubp(j));
             end
             h.(nm)(q).ax{j}.InnerPosition(3) = newextent;
             h.(nm)(q).ax{j}.InnerPosition(4) = newextent;
@@ -158,11 +158,11 @@ for j = 1:numsubplot
             h.(nm)(q).ax{j} = polaraxes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
 
             if colmaj
-                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_ind(j));
-                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).colmaj.x(idxsubp(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).colmaj.y(idxsubp(j));
             else
-                h.(nm)(q).ax{j}.InnerPosition(1) = ax(sector_ind).x(subplot_ind(j));
-                h.(nm)(q).ax{j}.InnerPosition(2) = ax(sector_ind).y(subplot_ind(j));
+                h.(nm)(q).ax{j}.InnerPosition(1) = ax(idxsect).x(idxsubp(j));
+                h.(nm)(q).ax{j}.InnerPosition(2) = ax(idxsect).y(idxsubp(j));
             end
             h.(nm)(q).ax{j}.InnerPosition(3) = newextent;
             h.(nm)(q).ax{j}.InnerPosition(4) = newextent;

@@ -74,7 +74,7 @@ if ~isempty(it)
     if ~isempty(its)
         error("its and it cannot both be nonempty")
     end
-    its = t2samp(it, t);
+    its = t2i(it, t);
     if isempty(its)
         error("none of your requested t indices exist")
     end

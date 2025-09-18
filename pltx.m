@@ -315,37 +315,37 @@ while plotloop %loop is turned off if no user input
                     h = fg(h=h, doui=doui, gifvis=gifvis, szf=1);
 
 
-                    sector_ind = 2;
+                    idxsect = 2;
                     cmap = gray(256);
-                    h = axim(stack, h=h, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
+                    h = axim(stack, h=h, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, idxsect=idxsect);
 
 
-                    sector_ind = 1;
-                    subplot_ind = [5 13];
+                    idxsect = 1;
+                    idxsubp = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    h.ts = axts(h.fg, ax, doui, numsamp_tslong_this_gif, varaxside_use, t, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, dors);
+                    h.ts = axts(h.fg, ax, doui, numsamp_tslong_this_gif, varaxside_use, t, lims_use, tlabsp, labsp, cols, idxsect, idxsubp, widfac, htfac, dors);
 
 
-                    sector_ind = 1;
-                    subplot_ind = 15; %subplot_ind=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
+                    idxsect = 1;
+                    idxsubp = 15; %idxsubp=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
                     drvid = [0 1];
                     douivid = 1;
                     doolvid = 1;
-                    h.vid = axim(h.fg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
+                    h.vid = axim(h.fg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, idxsect=idxsect, idxsubp=idxsubp, widfac=widfac, htfac=htfac);
 
 
                 end
 
                 if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed sctype (other plots aren't like this)
-                    sector_ind = 1;
-                    subplot_ind = 14;
+                    idxsect = 1;
+                    idxsubp = 14;
                     widfac = 1;
                     htfac = 1;
-                    h.sc = axsc(h.fg, ax, doui, sctype, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
+                    h.sc = axsc(h.fg, ax, doui, sctype, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, idxsect, idxsubp, widfac, htfac);
                 end
 
 
