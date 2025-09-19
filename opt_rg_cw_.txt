@@ -1235,6 +1235,18 @@
     "t": [1,20668],
     "c": [1,1]
   },
+  "a101": {
+    "id": "20250913_3_1_eb",
+    "recdatenum": 2.0250913E+7,
+    "flynum": 3,
+    "trialnum": 1,
+    "rgname": "eb",
+    "y": [11,18],
+    "x": [44,76],
+    "z": [2,14],
+    "t": [1,20668],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
