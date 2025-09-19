@@ -37,13 +37,13 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
 
     o.roi.rgname = rgname{m};
 
-    o.roi.domm = 1; %do draw rois
+    o.roi.domm = 1; 
 
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{m}, 'eb')
-        o.roi.mm.mmname = 'eb4545';
+        o.roi.mm.mmname = 'eb';
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
         o.roi.ma.maskmake = 'nonzero';

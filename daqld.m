@@ -68,7 +68,15 @@ pth_ftvid = opt2.pth_ftvid;
 pth_ftvidrs = opt2.pth_ftvidrs;
 doplt = opt2.doplt;
 
-[opt, pthdaq, doplt] = fset('daq', opt, pthdaq, doplt);
+if ~isempty(pthstack) && ~isempty(pthdaq)
+    error("only pass in pthstack or pthdaq, but not both (to be safe to avoid conflicts); pthstack is better to pass in, if convenient, because it allows you to derive metadata (*mdsi_.txt) in case thaqt file doesn't exist")
+end
+
+if ~isempty(pthstack)
+    [opt, pthstack, doplt] = fset('daq', opt, pthstack, doplt);
+elseif  ~isempty(pthdaq)
+    [opt, pthdaq, doplt] = fset('daq', opt, pthdaq, doplt);
+end
 
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
@@ -92,10 +100,6 @@ vrenm = opt.vrenm; %optional new names for each daq variable
 optid = opt.optid;
 
 idxreg = 'start';  %hard coding this because its effect on our 10khz daq is negligible; idx can be 'start', 'end', 'center', denoting whether each daq sample represents the start, end, or center of the time bin (ie, start means first sample is t=0)
-
-if ~isempty(pthstack) && ~isempty(pthdaq)
-    error("only pass in pthstack or pthdaq, but not both (to be safe to avoid conflicts); pthstack is better to pass in, if convenient, because it allows you to derive metadata (*mdsi_.txt) in case thaqt file doesn't exist")
-end
 
 if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here

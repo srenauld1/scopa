@@ -8,6 +8,7 @@ denoise
     20250831_1_1
     20250906_1_1 (also register)
     20250907_3_1 (also register)
+invalid literal for int() with base 10: '1,'
 %}
 
 function a2p(specin)
