@@ -1223,6 +1223,18 @@
     "t": [1,20668],
     "c": [1,1]
   },
+  "a100": {
+    "id": "20250913_3_1_gar",
+    "recdatenum": 2.0250913E+7,
+    "flynum": 3,
+    "trialnum": 1,
+    "rgname": "gar",
+    "y": [1,30],
+    "x": [1,128],
+    "z": [1,20],
+    "t": [1,20668],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
