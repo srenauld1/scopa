@@ -239,6 +239,13 @@ keydict_slash = {  ... %callback keydict for using s-switch (via function 'cb_ar
 
 clear cb_array
 
+if ~isempty(pthstack)
+    id = idmake(pthstack);
+    stackid = insertBefore(id.stackid, '_', '\'); %to print underscores properly
+else
+    error("you must pass in name-value argument 'pthstack', or set glb('pthstack')")
+end
+
 callstack = dbstack('-completenames');
 fcnm = [];
 if numel(callstack) >= 2
@@ -250,9 +257,6 @@ if isequal(fcnm, 'stackcrop') && ~isequal(dorg,1)
 end
 
 if isempty(stack) && ~nodraw
-    if isempty(pthstack)
-        error("if name-value argument stack is empty, name-value argument pthstack must be nonempty")
-    end
     stack = stackld(odf('sld', unpack=1), pthstack);
 end
 nd = ndims(stack);
@@ -276,7 +280,6 @@ stackmax = double(max(stack, [], 'all'));
 stackmnz = stacktype(mean(stack, strfind(nmdm, 'z')), class(stack));
 stackmnt = stacktype(mean(stack, strfind(nmdm, 't')), class(stack));
 stackmnzt = stacktype(mean(stackmnt, strfind(nmdm, 'z')), class(stack));
-
 
 if ~cellout && nc>1
     error("cellout must be true when there are multiple channels, since there is one cell (roimask) for each channel")
@@ -317,7 +320,6 @@ try
     if dorg
         error("use this error to skip loading mm since dorg is true and we are not making mm, we are making rg")
     else
-        id = idmake(pthstack);
         if isempty(mmname)
             mmname = 'none';
         end
@@ -394,7 +396,7 @@ catch ME
         imselectkeys = {'shift', 'control'}; %hold down control with image click to select entire image as roi, hold down shift with image click to select range (from nearest selected whole image, if any, otherwise same as control)
         cbflag = flagset({'backspace', 'c', 'e', 's', 'slash', 't', 'z'}, [0,1], init=1, me=1); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
 
-        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
 
         ttli = struct('drawing', 1, 'showing', 2, 'buttons', 3, 'switches', 4, 'howto', 5, 'action', 6);
         ttli.sv = [ttli.buttons, ttli.switches, ttli.howto]; %title line indices that get removed/restored when draw tool is opened/closed
@@ -706,7 +708,7 @@ catch ME
                     it = itnew;
                     dmmean(strfind(nmdm, 't')) = 0;
                 end
-                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
                 roi_on_mean_z_dummy = 0; %irrelevant here
                 [h.ttl.String, ttl_sv] = titlechange('newz', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z_dummy);
                 iznew = [];
@@ -940,7 +942,7 @@ end
 end
 
 
-function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
+function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
 
 
 idxstr = repmat({':'}, 1, 5); %do it this way in case we are only modifying one dimension, indexing with all elements of unchanged dimensions is costly
@@ -1002,12 +1004,12 @@ if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois
     end
 end
 
-h.ttl = titlemake(h.ttl, ic, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm);
+h.ttl = titlemake(h.ttl, ic, stackid, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm);
 
 end
 
 
-function ttl = titlemake(ttl, ic, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm)
+function ttl = titlemake(ttl, ic, stackid, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm)
 
 num_title_lines = 6;
 
@@ -1033,7 +1035,7 @@ if isempty(ttl.String) %when first making the figure/title
     end
     ttl.String(1) = { ['DRAWING:       ' title_roiset ',   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) ',   ROISHAPE: "' roishape '"'] };
 
-    ttl.String(2) = { ['SHOWING:       rgname: "' rgname '",   CHANNEL: ' num2str(ic) ',   ' title_z ',   ' title_t] };
+    ttl.String(2) = { ['SHOWING:       STACKID: ' stackid  ',  RGNAME: "' rgname '",   CHANNEL: ' num2str(ic) ',   ' title_z ',   ' title_t] };
 
     ttl.String(3) = { [...
         'BUTTONS:       ', ...

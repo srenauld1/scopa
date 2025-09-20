@@ -231,7 +231,7 @@
     "pltvis": 1,
     "pthpy": "",
     "scopausername": "youforgottossetuser",
-    "timestr": "2025091819523379",
+    "timestr": "2025091912435295",
     "usegit": 0
   },
   "nestvalid": [
@@ -372,8 +372,8 @@
     "fly": "",
     "match": "each",
     "pth": "",
-    "pthparent_local": "/Users/wienecke/stacks",
-    "pthparent_o2": "",
+    "pthparloc": "/Users/wienecke/stacks",
+    "pthparo2": "",
     "recdate": "",
     "substr": "",
     "suffix": "",

@@ -341,7 +341,7 @@ if files
     % fprintf("RUNNING odf with files true, SEARCHING FOR FILES" + newline)
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
-        rectmp = stackfind(pthparent_local=o.spec.pthparent_local, pthparent_o2=o.spec.pthparent_o2, suffixchars=o.spec.suffixchars, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
+        rectmp = stackfind(pthparloc=o.spec.pthparloc, pthparo2=o.spec.pthparo2, suffixchars=o.spec.suffixchars, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
     else
         rectmp = stackfind(pth=o.spec.pth, suffixchars=o.spec.suffixchars); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
@@ -454,7 +454,7 @@ if fill
     %%%% this global may or may not be automatically derived (from vbin 'spec'), depending on where this is being run %%%%
     if isempty(glb('pthparent'))
         if ( isfield(o, 'spec') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^spec$|\.spec$|^spec(\.){1}\w+$)'))) )
-            pthparent = pathparentget(o.spec.pthparent_local, o.spec.pthparent_o2);
+            pthparent = pathparentget(loc=o.spec.pthparloc, o2=o.spec.pthparo2);
             glb(pthparent=pthparent)
         end
     end

@@ -1,19 +1,25 @@
 function stacknew = stackmix(stack, rgnames, opt)
 
-% select, rotate, resample multiple regions (rg) of stack and put together in a montage
+% select, rotate, resample multiple regions (rg) of stack and put together in a single image (montage)
 
 arguments
     stack = []
     rgnames = [] %cell array of rgnames, regions to be put into montage
     opt.rot = [0,0,0] %Euler angles in x,y,z-order in degrees, specified as a 3-element numeric vector of the form [rx ry rz]; rgnames k gets rot(k,:), so if size(rot,1)>1, it must equal numel(rgnames), unless rot is empty (no rotations for any rgnames, or is 3-element row vector, in which case it is applied to all rgnames,
     opt.pthstacks = []
+    opt.stackids = []
 end
 opt = glboropt(opt);
-pthstacks = opt.pthstacks;
 rot = opt.rot;
+pthstacks = opt.pthstacks;
+stackids = opt.stackids;
 
-if isempty(stack) && isempty(pthstacks)
-    error("must pass in stack or name-value argument 'pthstacks'")
+if isempty(stack) && isempty(pthstacks) && isempty(stackids)
+    error("must pass in stack or name-value argument 'pthstacks' or name-value argument 'stackids'")
+end
+if isempty(stackids)
+    pthstacks
+
 end
 if isempty(pthstacks)
     pthstacks = glb('pthstack');

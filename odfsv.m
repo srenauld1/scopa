@@ -31,8 +31,8 @@ d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, orga
 
 %% spec
 
-d.spec.pthparent_local = '/Users/wienecke/stacks'; %on local machine, full path to folder containing all recording folders
-d.spec.pthparent_o2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparent_local; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
+d.spec.pthparloc = '/Users/wienecke/stacks'; %on local machine, full path to folder containing all recording folders
+d.spec.pthparo2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparloc; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 d.spec.suffixchar_original = ["o"]; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'; used in stackfind.m to locate stacks  
 d.spec.suffixchars = ["r", "d", "b", "s"]; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times; suffix denotes preprocessing steps applied to stack; suffixchar_original (defined above) can only appear once, at the beginning of the suffix (e.g., ord means registered then denoised, o alone means original/unprocessed); used in stackfind.m to locate stacks    
 d.spec.pth = '';  %cell array of char (or scalar char), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty

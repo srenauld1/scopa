@@ -1,14 +1,21 @@
 
 
 %{
+
 see docs_a2p
-denoise
+no glue and good
+    20250803_2_1 decent
+    20250824_1_1 decent
+    20250901_1_1 good
+    20250901_2_1 decent but motion
+    20250913_3_1 good walking bad bump tracking
+need to denoise
     20250803_1_1
     20250803_1_2
-    20250831_1_1
+    20250907_3_1 
+    20250831_1_1 (but this is done??)
     20250906_1_1 (also register)
-    20250907_3_1 (also register)
-invalid literal for int() with base 10: '1,'
+todo reorder opts like rg after deletion
 %}
 
 function a2p(specin)
@@ -17,7 +24,7 @@ arguments
     specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
 end
 
-clear glb tsget
+close all; clc; clear glb tsget
 
 
 %% options
@@ -29,6 +36,7 @@ for k = 1:numel(oa) % loop over recordings
     o = oa(k); %index into options for one recording, o
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
 
+    
     %% stack
 
     for m = transpose(fieldnames(o.sld))
@@ -52,6 +60,7 @@ for k = 1:numel(oa) % loop over recordings
         glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
     end
 
+
     %% rois
 
     if o.mn.doroi
@@ -59,6 +68,7 @@ for k = 1:numel(oa) % loop over recordings
             roi.(m{1}) = roimake(o.roi.(m{1}), stack=stack); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
+
 
     %% bump
 
@@ -96,14 +106,16 @@ for k = 1:numel(oa) % loop over recordings
 
     %% a_* functions (analysis specific to experiment)
 
-    if 0
+    if 1
 
-        epoch = 2;
-        bout = 1;
+        epoch = 4;
+        bout = 2;
 
-        [~, ~, ~, ~, tpe] = trmake(daq.(idaq).epochts, padlent=2, t=glb('t'), eb=[epoch bout]);
+        idaq = fieldmatch(daq, lev=1);
+        [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
 
-        a_ebgano('gargebal', roi, daq, bmp, glb('t'), md.sper, ...
+        a_ebgano(stack, roi, daq, bmp, glb('t'), md.sper, ...
+            mix={'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...
             facealpha=1, ...
@@ -113,19 +125,19 @@ for k = 1:numel(oa) % loop over recordings
             nothr='', ...
             colsep=0, ...
             xyrng=[], ...
-            epoch={}, ...{[1], [2], [3], [4], [5], [6]}, ...
+            epoch={1:6}, ...{[1], [2], [3], [4], [5], [6]}, ...
             lagsampxy=-1, ...
             lagsampz=0, ...
             yconst=1, ...
-            slopelensec=[0.3], ...
+            slopelensec=0.35, ...
+            slopeord=3, ...
             widyxz=md.widyxz, ...
             vt=tpe, ... 
-            dozscore=0, ...
-            drawrot=0, ...
-            sliceeb=[1:size(stacknew,3)])
+            dozscore=1, ...
+            stackrot=[-90,0,0], ...
+            stackslice=[])
 
     end
-
 
 end
 

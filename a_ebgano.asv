@@ -9,6 +9,7 @@ arguments
     bmp
     t
     sper
+    opt.mix = []
     opt.noside = []
     opt.widyxz = []
     opt.lagsampxy = 0
@@ -33,7 +34,10 @@ arguments
     opt.dozscore = []
     opt.stackrot = []
     opt.stackslice = []
+    opt.pthstack = []
 end
+opt = glboropt(opt);
+mix = opt.mix;
 noside = opt.noside;
 widyxz = opt.widyxz;
 lagsampxy = opt.lagsampxy;
@@ -48,7 +52,6 @@ xyrng = opt.xyrng;
 nothr = opt.nothr;
 colsep = opt.colsep;
 epoch = opt.epoch;
-epochts = opt.epochts;
 slopelensec = opt.slopelensec;
 slopeord = opt.slopeord;
 fitlinealpha = opt.fitlinealpha;
@@ -59,27 +62,28 @@ vt = opt.vt;
 dozscore = opt.dozscore;
 stackrot = opt.stackrot;
 stackslice = opt.stackslice;
-pthpre = opt.pthpre;
+pthstack = opt.pthstack;
+
+pthpre = erase(pthstack, '.mat');
+
+ebmn = mean(stackcrop(stack, 'eb'), [1 2 3]);
 
 if ~isempty(mix)
     mixstr = strjoin(mix, '');
+    pthmix = [pthpre mixstr '_.mat'];
     try
-        load([glb('pthpre') mixstr '_.mat'], 'stacknew');
+        load(pthmix, 'stacknew');
     catch
-        stacknew = stackmix(stack, mix, rot=stackrot, pthstacks=glb('pthstack'));
-        save([o.id.pthpre 'garebgal_.mat'], 'stacknew', '-v7.3', '-mat')
+        stacknew = stackmix(stack, mix, rot=stackrot, pthstacks=pthstack);
+        save(pthmix, 'stacknew', '-v7.3', '-mat')
     end
-    stackplt(stacknew, dmplt='yx(t)', it=1:3:600)
+    stack = stacknew;
+    stacknew = [];
+    stackrot = []; %set to empty so it doesn't happen below (make this better)
 end
 
 if ndims(stack)~=4
     error("stack must be 4d")
-end
-if isempty(epochts)
-    epochts = ones(size(stack,4));
-end
-if isempty(epoch)
-    epoch = {unique(epochts)};
 end
 if isstring(pltstr)
     pltstr = convertStringsToChars(pltstr);
@@ -93,9 +97,7 @@ end
 if ~iscell(noside)
     noside = {noside};
 end
-if isempty(pthpre)
-    pthpre = pathauto;
-end
+
 if ~isempty(stackrot) && ( ~isequal(numel(stackrot),3) || ~isvector(stackrot) || iscell(stackrot) )
     error("stackrot must be empty or ordinary length-3 vector")
 end
@@ -131,7 +133,16 @@ glvdv = tsdv('normal', glv, dvlen, dvord, sper);
 grddv = tsdv('normal', grd, dvlen, dvord, sper);
 grvdv = tsdv('normal', grv, dvlen, dvord, sper);
 
-ebmn = mean(stackcrop(stack, 'eb'), [1 2 3]);
+wsz = 30;
+[gld, wsz] = smoothdata(gld, 'sgolay', wsz);
+[glv, wsz] = smoothdata(glv, 'sgolay', wsz);
+[grd, wsz] = smoothdata(grd, 'sgolay', wsz);
+[grv, wsz] = smoothdata(grv, 'sgolay', wsz);
+
+
+if isempty(epochts)
+    epochts = ones(size(stack,4));
+end
 
 for k = 1:numel(noside)
     for m = 1:numel(epoch)
@@ -154,7 +165,7 @@ end
 end
 
 
-function tmpfun(stack, noside, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice)
+function tmpfun(stack, noside, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
 
 
 %%%% PREP VARS %%%%
@@ -166,9 +177,9 @@ if ~isscalar(lagsampxy) || ~isscalar(lagsampz)
     error("make lagsec scalar for now")
 end
 
-if ~isempty(epoch)
+if ~isequal(epoch, unique(epochts))
     if ~isempty(vt)
-        error("cannot pass in both name-value argument 'vt' and name-value argument 'epoch'")
+        error("cannot pass in name-value argument 'vt' when name-value argument 'epoch' is not equal to all epochs")
     end
     it = find(epochcrop(epochts, epoch));
     vt = t(it);
@@ -324,13 +335,6 @@ if ismember('heat', pltstr)
     plot(h.im.ax{1}, t, rescale(ballvf, 1, size(bmpi,1)), color=cmap(5,:))
     % plot(h.im.ax{1}, t, rescale(bump2nan, 1, size(bmpi,1)), color='g')
     plot(h.im.ax{1}, t, rescale(cuenan, 1, size(bmpi,1)), color=cmap(3,:))
-    wsz = 30;
-    [gldtmp, wsz] = smoothdata(gld, 'sgolay', wsz);
-    [glvtmp, wsz] = smoothdata(glv, 'sgolay', wsz);
-    % plot(h.im.ax{1}, t, rescale(gldtmp, 1, size(bmpi,1)), color=cmap(1,:), linestyle='-', linewidth=2);
-    % plot(h.im.ax{1}, t, rescale(glvtmp, 1, size(bmpi,1)), color=cmap(1,:), linestyle=':', linewidth=2);
-    [grdtmp, wsz] = smoothdata(grd, 'sgolay', wsz);
-    [grvtmp, wsz] = smoothdata(grv, 'sgolay', wsz);
     plot(h.im.ax{1}, t, rescale(grdtmp, 1, size(bmpi,1)), color=cmap(2,:), linestyle='-', linewidth=2);
     plot(h.im.ax{1}, t, rescale(grvtmp, 1, size(bmpi,1)), color=cmap(2,:), linestyle=':', linewidth=2);
 
@@ -390,124 +394,110 @@ if ismember('profile', pltstr)
         end
     end
 
-    % stackeb = stackcrop(stack, 'bmpi');
+    % stack = stackcrop(stack, 'eb');
 
     stack = stack(:,:,:,it);
-    stackeb = stack;
-    % stackeb = stackiso(stackeb, widyxz);
+    % stack = stackiso(stack, widyxz);
 
-    stackeb_mnt = mean(stackeb,4);
-
-    if isempty(stackrot)
-
-        rots = -1*[0:10:180];
-        stackmnzrot = {};
-        for k = 1:numel(rots)
-            tform = rigidtform3d([rots(k),0,0], [0,0,0]);
-            tmp = imwarp(stackeb_mnt, imref3d(size(stackeb_mnt)), tform); %default output view is centeroutput
-            stackmnzrot{k} = mean(tmp, 3);
-        end
-        szmx = max(cell2mat(cellfun(@size, stackmnzrot, 'UniformOutput', false)'));
-        tmp = zeros([szmx, numel(stackmnzrot)]);
-        for k = 1:numel(stackmnzrot)
-            tmp(1:size(stackmnzrot{k},1), 1:size(stackmnzrot{k},2), k) = stackmnzrot{k};
-        end
-        stackplt(tmp, dmplt='yx(z)', title_prefix=['rotations: ' num2str(rots)]);
-        stackplt(tmp, title_prefix=['rotations: ' num2str(rots)]);
-
-
-        prompt = sprintf("ENTER DEGREES TO ROTATE STACK FORWARD (ALONG X AXIS), OR EMPTY TO NOT ROTATE: ");
-        commandwindow();
-        stackrot = input(prompt);
-
-    end
-
-    if any(stackrot)
-        stackrot = stackrot * -1;
-        tform = rigidtform3d(stackrot, [0,0,0]);
-        rf = imref3d(size(stackeb_mnt));
-        for k = 1:size(stackeb,4)
-            tmp = imwarp(stackeb(:,:,:,k), rf, tform); %default output view is centeroutput
-            if k==1
-                stackebrt = zeros([size(tmp) size(stackeb,4)], class(stackeb));
-            end
-            stackebrt(:,:,:,k) = tmp;
-        end
-        stackeb = stackebrt;
-        stackebrt = [];
-    end
-
-    stackeb_mnt = mean(stackeb,4);
-
-    stackmin = double(min(stackeb(:)));
-    stackmax = double(max(stackeb(:)));
+    stackmin = double(min(stack(:)));
+    stackmax = double(max(stack(:)));
     stackrange = stackmax-stackmin;
     clim_tmp = stackrange*dr+stackmin; %cdata limits set from whole bmpi region, rather than chosen subset
 
     if isempty(stackslice)
-        stackplt(stackeb_mnt, dmplt='yx(z)')
-        prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT bmpi ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
-        commandwindow();
-        stackslice = input(prompt);
+        stackmnt = mean(stack,4);
+        % stackplt(stackmnt, dmplt='yx(z)')
+        % prompt = sprintf("ENTER Z-INDICES YOU WANT TO AVERAGE TO PLOT bmpi ACTIVITY, OR ENTER NOTHING TO AVERAGE ALL Z INDICES: ");
+        % commandwindow();
+        % stackslice = input(prompt);
+        if isempty(stackslice)
+            stackslice = 1:size(stackmnt, 3);
+        end
     end
 
-    if isempty(stackslice)
-        stackslice = 1:size(stackeb_mnt, 3);
-    end
-
-    stackeb = mean(stackeb(:,:,stackslice,:),3);
-    % stackeb = median(stackeb(:,:,stackslice,:),3);
-    stackeb = squeeze(stackeb);
+    stack = mean(stack(:,:,stackslice,:),3);
+    % stack = median(stack(:,:,stackslice,:),3);
+    stack = squeeze(stack);
 
     nolz = zscore(nol);
     norz = zscore(nor);
 
     hfg = figure;
+    hax = axes(Parent=hfg);
     ttl = title(hax, '');
 
     hax = subplot(2,1,1);
-    hpl = plot(hax, bmpdomain, bmpi(:,1));
+    yyaxis left
+    hbr1 = bar(-3.4, 1, 0.25); %ball forward vel
 
     yyaxis right
     hold on
-    hbr1 = bar(-3.4, 1, 0.25);
-    hbr2 = bar(3.5, 1, 0.25);
-    hbr3 = bar(3.2, 1, 0.25);
+    hpl = plot(hax, bmpdomain, bmpi(:,1), Color=cmap(2,:));
+    hbr2 = bar(hax, 3.2, 1, 0.25); %gld
+    hbr3 = bar(hax, 3.5, 1, 0.25); %glv
+    hbr4 = bar(hax, 4.1, 1, 0.25); %nol
+    hbr5 = bar(hax, 4.4, 1, 0.25); %glr
+    xline(hax, bmpdomain(1), 'k', LineWidth=3)
+    xline(hax, bmpdomain(end), 'k', LineWidth=3)
+
+    % hln1 = xline(hax, 0, color=cmap(1,:));
+    hln2 = xline(hax, 0, color=cmap(3,:));
+    hln2.Color
+    hln3 = xline(hax, 0, color=cmap(4,:));
+    % hln4 = xline(hax, 0, color=cmap(4,:));
+    limy1 = axlim(ballvf, limtype='allpad');
+    limy2 = axlim(bmpi, norz, nolz, gld, glv, limtype='allpad');
+
+    bmpirs = rescale(bmpi, limy2(1), limy2(2));
+    gldrs = rescale(gld, limy2(1), limy2(2));
+    glvrs = rescale(glv, limy2(1), limy2(2));
+    norzrs = rescale(norz, limy2(1), limy2(2));
+    nolzrs = rescale(nolz, limy2(1), limy2(2));
+
+    hax.XLim = [-3.8 4.5];
+    hax.XTick = [0, 3.2, 3.5, 4.1, 4.4];
+    hax.XTickLabel = {'0', 'nl', 'nr', 'gld', 'glv'};
+
+    hax.YAxis(1).Limits = limy1;
+    hax.YAxis(1).Color = cmap(1,:);
+    hbr1.FaceColor = cmap(1,:);
+    hbr1.ShowBaseLine='off';
+
+    hax.YAxis(2).Limits = limy2;
+    hax.YAxis(2).Color = cmap(2,:);
+    hbr2.FaceColor = cmap(2,:);
+    hbr2.FaceColor = cmap(2,:);
+    hbr3.FaceColor = cmap(2,:);
+    hbr4.FaceColor = cmap(2,:);
+    hbr2.BaseLine.Color = [0,0,0];
+    hbr3.BaseLine.Color = [0,0,0];
+    hbr4.BaseLine.Color = [0,0,0];
+    hbr5.BaseLine.Color = [0,0,0];
 
     hax2 = subplot(2,1,2);
-    hax2.DataAspectRatio = [1 1 1];
+    hax2.DataAspectRatio = [4 1 1];
     hax2.Colormap = gray(256);
     hax2.CLim = clim_tmp;
     hax2.Visible = 'off';
     hax2.YDir = 'reverse';
-    hpl2 = image(hax2, 'CData', stackeb(:,:,1));
+    hpl2 = image(hax2, 'CData', stack(:,:,1));
     hpl2.CDataMapping = 'scaled';
 
-    % hln1 = xline(hax, 0, color=cmap(1,:));
-    hln2 = xline(hax, 0, color=cmap(3,:));
-    hln3 = xline(hax, 0, color=cmap(4,:));
-    % hln4 = xline(hax, 0, color=cmap(4,:));
-    limy = axlim(bmpi, norz, nolz);
-    hax.YAxis(1).Color = cmap(1,:);
-    hax.YAxis(1).Color = cmap(1,:);
-    hax.YAxis(2).Limits = limy.allpad;
-    hax.YAxis(2).Color = cmap(2,:);
-    % hax.YLim = [-4 4];
-    % hax.YLim = [0 1];
-    hax.XLim = [-pi pi]*1.2;
     incc = 1;
     for k = 1:incc:numel(it) %for each timepoint, show bmph
-        hpl.YData = bmpi(:,it(k));
+        hpl.YData = bmpirs(:,it(k));
         % hpl.YData = eb2(:,limtsamp(k));
         % hln1.Value = bmph(it(k));
         hln2.Value = vish(it(k));
         hln3.Value = ballinv(it(k));
         % hln4.Value = bump2(it(k));
         hbr1.YData = ballvf(k);
-        hbr2.YData = norz(k);
-        hbr3.YData = nolz(k);
-        hpl2.CData = stackeb(:,:,k);
-        ttl.String = {['vish (red), ballh (yellow)']; ['t: ' num2str(t(it(k))) ', epoch: ' num2str(epochts(it(k)))]};
+        hbr2.YData = norzrs(k);
+        hbr3.YData = nolzrs(k);
+        hbr4.YData = gldrs(k);
+        hbr5.YData = glvrs(k);
+        hpl2.CData = stack(:,:,k);
+        hax.Title.String = {['vis hd (yellow), ball hd (purple)', 'bump / nor / nol / gld / glv (red)']; ['t: ' num2str(t(it(k))) ', epoch: ' num2str(epochts(it(k)))]};
         fig2gif(hfg,k)
     end
 
@@ -592,7 +582,7 @@ if ismember('scat', pltstr)
 
     %%%%% LAG %%%%%
 
-    [ballinvdvrs, bumpdvrs, nodv] = lagvars(ballinvdvrs, bumpdvrs, nodv, lagsampxy, lagsampz);
+    [ballinvdvrs, bumpdvrs, nodv] = lagvars(ballinvdvrs, bumpdvrs, lagsampxy, nodv, lagsampz);
     if any(any(isnan([ballinvdvrs, bumpdvrs, nodv])))
         % [ballinvdvrs, bumpdvrs, nodv] = remove_nans_as_group(ballinvdvrs, bumpdvrs, nodv);%%plotz becomes ones if z_is_empty, is this okay??
         error("there should not be any nans yet")

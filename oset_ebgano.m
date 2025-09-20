@@ -18,6 +18,7 @@ bmpindv.tg.vnm = 'vy';
 o.bmp.indv = bmpindv;
 
 bmpdepv.tg.roi.rgname = 'eb';
+bmpdepv.tg.roi.mm.mmname = 'eb';
 bmpdepv.tg.roi.domm = 1;
 bmpdepv.tg.roi.ma.maskseg = 'torus';
 bmpdepv.tg.roi.nrm.post = 'f';

@@ -1,29 +1,42 @@
-function pthparent = pathparentget(pthparent_local, pthparent_o2)
+function pthparent = pathparentget(opt)
+
+%{
+find path holding all stacks, if no input, user prompted to select path
+if you only pass in loc, but you are on o2, output pthparent will be correct for o2 as long as the parent folder has the same name locally and on o2
+or set both inputs, loc and o2, and regardless of the parent folder name, the parent path on the current filesystem is found
+%}
 
 arguments
-    pthparent_local = []
-    pthparent_o2 = []
+    opt.loc = [] %path holding all stacks on loc filesystem  
+    opt.o2 = [] %path holding all stacks on o2
 end
-if isempty(pthparent_local)
-    if isempty(pthparent_o2)
-        fprintf("YOU HAVE NOT SET pthparent_local, OR pthparent_o2, SO YOU WILL NOW BE PROMPTED TO CHOOSE DIRECTORY" + newline + "THE DIRECTORY YOU CHOOSE WILL BE THE ROOT DIRECTORY FOR STACK SEARCH" + newline)
+loc = opt.loc;
+o2 = opt.o2;
+
+if isempty(loc)
+    if isempty(o2)
+        fprintf("YOU HAVE NOT SET loc, OR pthparo2, SO YOU WILL NOW BE PROMPTED TO CHOOSE DIRECTORY" + newline + "THE DIRECTORY YOU CHOOSE WILL BE THE ROOT DIRECTORY FOR STACK SEARCH" + newline)
         pause(2)
-        pthparent_local = uigetdir(pathscopaget, 'choose directory to search for stacks');
+        loc = uigetdir(pathscopaget, 'choose directory to search for stacks');
     else
-        fprintf("you have set pthparent_o2 but not pthparent_local, assuming it is intentional and treating pthparent_o2 as your 'local'" + newline)
-        pthparent_local = pthparent_o2;
+        fprintf("you have set pthparo2 but not loc, assuming it is intentional and treating pthparo2 as your 'loc'" + newline)
+        loc = o2;
     end
 end
-pthparent_local = strrep(pthparent_local, '/', filesep);
-pthparent_local = strrep(pthparent_local, '\', filesep);
-if endsWith(pthparent_local, filesep)
-    pthparent_local = pthparent_local(1:end-1);
+if startsWith(loc, ['~' filesep])
+    hm = [getenv('HOME') filesep];
+    loc = regexprep(loc, ['^~' filesep], hm);
 end
-[~, pthstackdir, ~] = fileparts(pthparent_local);
+loc = strrep(loc, '/', filesep);
+loc = strrep(loc, '\', filesep);
+if endsWith(loc, filesep)
+    loc = loc(1:end-1);
+end
+[~, pthstackdir, ~] = fileparts(loc);
 
 envname = getenv('HOSTNAME');
 if ~isempty(regexp( envname, 'compute-', 'once' ))
-    if isempty(pthparent_o2)
+    if isempty(o2)
         fprintf("O2 parent path not specified, using default path based on parent folder name" + newline)
         pthscopa = pathscopaget();
         spl = strsplit(pthscopa, filesep);
@@ -33,12 +46,12 @@ if ~isempty(regexp( envname, 'compute-', 'once' ))
         end
         pthparent = fullfile('/', 'n', 'scratch', 'users', username(1), username, pthstackdir);
     else
-        if endsWith(pthparent_o2, filesep)
-            pthparent = pthparent_o2(1:end-1);
+        if endsWith(o2, filesep)
+            pthparent = o2(1:end-1);
         end
     end
 else
-    pthparent = pthparent_local;
+    pthparent = loc;
 end
 
 pthparent = [pthparent filesep];

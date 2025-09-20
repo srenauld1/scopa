@@ -13,8 +13,8 @@ classdef stackfindo
                 opt.pth = [] %full path pattern (can have wildcards)
                 opt.suffixchars = {'o', 'or', 'od', 'ord', 'obr', 'obrd', 'obrds'};
                 opt.pthsib = []  %full path to a file, returned files will include all matching files in same folder, along with pthsib
-                opt.pthparent_local = []
-                opt.pthparent_o2 = []
+                opt.pthparloc = []
+                opt.pthparo2 = []
                 opt.recdate = []
                 opt.fly = []
                 opt.trial = []
@@ -25,8 +25,8 @@ classdef stackfindo
             opt = glboropt(opt);
             pth = opt.pth;
             pthsib = opt.pthsib;
-            pthparent_local = opt.pthparent_local;
-            pthparent_o2 = opt.pthparent_o2;
+            pthparloc = opt.pthparloc;
+            pthparo2 = opt.pthparo2;
             suffixchars = opt.suffixchars;
             recdate = opt.recdate;
             fly = opt.fly;
@@ -88,7 +88,7 @@ classdef stackfindo
             if isempty(pth)
 
                 if isempty(pthsib)
-                    pthparent = pathparentget(pthparent_local, pthparent_o2);
+                    pthparent = pathparentget(loc=pthparloc, o2=pthparo2);
                 else
                     if isfile(pthsib)
                         pthparent = fileparts(pthsib);
