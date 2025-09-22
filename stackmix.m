@@ -1,56 +1,97 @@
-function stacknew = stackmix(stack, rgnames, opt)
+function stacknew = stackmix(opt)
 
-% select, rotate, resample multiple regions (rg) of stack and put together in a single image (montage)
-
+% select, rotate, and resample multiple regions (rg) from one or more stacks and put together in a single image (montage)
+% pass in stacks, or pthstacks 
 arguments
-    stack = []
-    rgnames = [] %cell array of rgnames, regions to be put into montage
+    opt.rgnames = [] %cell array of rgnames, regions to be put into montage
     opt.rot = [0,0,0] %Euler angles in x,y,z-order in degrees, specified as a 3-element numeric vector of the form [rx ry rz]; rgnames k gets rot(k,:), so if size(rot,1)>1, it must equal numel(rgnames), unless rot is empty (no rotations for any rgnames, or is 3-element row vector, in which case it is applied to all rgnames,
-    opt.pthstacks = []
-    opt.stackids = []
+    opt.stacks = [] %stack, or cell of stacks; must be empty if you pass in pthstacks or stackids 
+    opt.pthstacks = [] %cell array of paths to stacks to be mixed; must be empty if you pass in stacks or stackids
+    opt.stackids = []%cell array of stackids of stacks to be mixed; stackid is recdate_fly_trial_suffix; must be empty if you pass in stacks or pthstacks
+    opt.pthparent = [] %path to folder containing all stacks
+    opt.optsld = [] %options for stackld for loading all stacks found; if empty, default are used
 end
 opt = glboropt(opt);
+rgnames = opt.rgnames;
 rot = opt.rot;
+stacks = opt.stacks;
 pthstacks = opt.pthstacks;
 stackids = opt.stackids;
+pthparent = opt.pthparent;
+optsld = opt.optsld;
 
-if isempty(stack) && isempty(pthstacks) && isempty(stackids)
-    error("must pass in stack or name-value argument 'pthstacks' or name-value argument 'stackids'")
+
+%%%% GET STACKS %%%%
+
+if ~isempty(stacks) + ~isempty(pthstacks) + ~isempty(stackids) ~= 1
+    error("must pass in one and only one of the following name-value arguments: 'stacks', 'pthstacks', 'stackids'")
 end
-if isempty(stackids)
-    pthstacks
-
+if isempty(stacks)
+    stacks = {};
+    if isempty(pthstacks)
+        if ~iscell(stackids)
+            stackids = {stackids};
+        end
+        numspec = numel(stackids);
+        pthstacks = cell(1,numel(stackids));
+        for k = 1:numel(stackids)
+            pthstacks{k} = stackfind(stackid=stackids{k}, pthparloc=pthparent);
+        end
+        pthstacks = cellflat(pthstacks);
+        if all(cellfun(@isempty, pthstacks))
+            fprintf("no stacks found using name-value argument 'stackids'" + newline)
+            pthstacks = [];
+        end
+    else
+        if ~iscell(pthstacks)
+            pthstacks = {pthstacks};
+        end
+        numspec = numel(pthstacks);
+    end
+else
+    if ~iscell(stacks)
+        stacks = {stacks};
+    end
+    numspec = numel(stacks);
 end
 if isempty(pthstacks)
-    pthstacks = glb('pthstack');
+    pthstacks = {glb('pthstack')};
     if isempty(pthstacks)
-        error("must pass in name-value argument 'pthstacks' or set glb('pthstack')")
+        error("if stacks and stackids are empty, or if no stacks were found with stackids, must pass in name-value argument 'pthstacks' or set glb('pthstack')")
     end
+    numspec = 1;
 end
-if ~iscell(pthstacks)
-    pthstacks = {pthstacks};
-end
+
 pthstacks = unique(pthstacks, 'stable');
-numpths = numel(pthstacks);
-if isscalar(rgnames) && isscalar(pthstacks)
+numpth = numel(pthstacks);
+
+
+%%%% FORMAT RGNAMES %%%%
+
+if isempty(rgnames)
+    rgnames = '';
+end
+if ~iscell(rgnames)
+    rgnames = {rgnames};
+end
+if ~all(cellfun(@ischar,cellflat(rgnames)))
+    error("rgnames must be all char string")
+end
+if iscellnested(rgnames)
+    if numel(rgnames)~=numspec
+        error("if rgnames is cell of cell(s), number of inner cells in rgnames must equal number of stack specifiers (" + num2str(numspec) + ")")
+    end
+else
+    rgnames = repmat({rgnames}, numspec, 1);
+end
+
+
+
+%%%% GET RG %%%%
+
+if isscalar(cellflat(rgnames)) && isscalar(pthstacks)
     error("stackmix must work with multiple regions (taken from multiple pthstacks or multiple rgnames or both)")
 end
-% 
-% if isempty(rgnames)
-%     rgnames = '';
-% end
-% if ~iscell(rgnames)
-%     rgnames = {rgnames};
-% end
-% if numel(cellflat(rgnames))==numel(rgnames)
-%     rgnames = repmat(rgnames, numpths, 1);
-% end
-% rgnames_all = cell(1, numpths);
-% for k = 1:numpths
-%     rgnames_all{k} = rgnames{k};
-%     rgnames_all{k} = convertStringsToChars(rgnames_all{k});
-% end
-% rgnames = rgnames_all;
 
 pthscopa = pathscopaget();
 scopausername = userdatfile('scopausername');
@@ -60,9 +101,12 @@ pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
 numrg = 0;
 rg = {};
-for k = 1:numpths
-    if (k==1 && isempty(stack)) || k>1
-        [stack, pthstacks{k}] = stackld([], pthstacks{k}); %output pthstacks{k} in case tif converted to mat
+for k = 1:numpth
+    if (k==1 && isempty(stacks{k})) || k>1
+        if isempty(optsld)
+            optsld = odf('sld', unpack=1);
+        end
+        [stack, pthstacks{k}] = stackld(optsld, pthstacks{k}); %output pthstacks{k} in case tif converted to mat
     end
     if ndims(stack)<2 || ndims(stack)>6
         error("stack must be 2d-6d")
@@ -90,6 +134,9 @@ for k = 1:numpths
     end
 end
 
+
+%%%% CROP, WARP (OPTIONAL), RESAMPLE, CONCATENATE %%%%
+
 if isempty(rot)
     rot = [0,0,0];
 end
@@ -107,7 +154,7 @@ end
 sdf = structfun(@(x) diff(x)+1, rg{1}{2}, 'UniformOutput', false);
 
 stacknew = [];
-for k = 1:numpths
+for k = 1:numpth
     for q = 1:3%numel(pthstacks{k})
         stacktmp = stackcrop(stack, rgnames{q}, pthstack=pthstacks{k});
         stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);

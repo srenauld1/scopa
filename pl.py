@@ -41,7 +41,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
 
     [folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, do_autoallocate, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, jobind, file_matching_style,
+                      recdate, fly, trial, substr, jobind, file_matching_style,
                       registration_template_group_id, do_register, scopatmplt, clip, methodrg, clipinterp, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, dnraw, do_stitch, chan_dn, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
@@ -113,7 +113,7 @@ if do_copyfiles==0 and do_autoallocate==0:
 
 
 [pth_read_all, pth_fldr_all, fn_prefix_all, pth_prefix_all, pthmd_all, pth_daq_all, pth_ftvid_all, pth_ftdat_all, pth_opt_all, carls_old_project_all] = \
-  filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+  filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, dnraw, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed,
                  folder_with_all_recordings_on_storage_and_compute_filesystems)
 

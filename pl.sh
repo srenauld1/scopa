@@ -21,7 +21,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a pre
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
-#matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
+#matches within folders containing SUBSTR ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 
 #BASH LISTS BELOW MUST BE SPACE-DELIMITED, ENCLOSED BY PARENTHESES, AND IF QUOTED, USING SINGLE-QUOTES (all this prevents asterisk * from causing problems) 
@@ -32,8 +32,8 @@ PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/')
 RECDATE=('202508*')
 FLY=('*')
 TRIAL=('*')
-FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
-FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+SUBSTR=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing SUBSTR 
+FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, SUBSTR, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 
 ############ SET PARAMS FOR ANALYSIS ############
@@ -46,7 +46,7 @@ BGLENPX=(0) #must be even and nonzero, will run line-by-line background subtract
 MAX_SHIFTS_PRC=(15 15 15) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in oreg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 SMLENPX_MCP=(0 0 0) #gaussian xyz smoothing window length (pixels) in register (registration shifts computed with smoothed data, but shifts applied to nonsmoothed data), so fft-based shifting can still fail if image is so noisy that signal cannot be reconstructed in frequency domain; 0 0 0 to skip
 CLIPINTERP=(1) #clip intensity to remain in original data range (interpolation can smear the histogram, sometimes significantly, which can reduce data contrast, ie dff); applied per frame; this happens by default in the original normcorre for matlab, but not in caiman version
-REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
+REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, substr) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
 DNRAW=(0) #denoise original (unregistered) stack
 CHAN_DN=('all') #'all', '1', or '2'; refers to the index in the output stack from registration (suffix or_.tif), so if you discarded channel 1 in registration the output or will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_or*.tif exists)
@@ -180,7 +180,7 @@ pars["PTH_STORAGE_PREFIX"]="${PTH_STORAGE_PREFIX[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
 pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
-pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
+pars["SUBSTR"]="${SUBSTR[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 pars["SCOPATMPLT"]="${SCOPATMPLT[@]}"
 pars["CLIP"]="${CLIP[@]}"

@@ -27,7 +27,7 @@ doplt = opt2.doplt;
 usegit = opt2.usegit;
 roimask = opt2.roimask;
 
-[opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
 
 if isempty(stack)
     if isempty(pthstack)

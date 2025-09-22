@@ -1,9 +1,12 @@
 import numpy as np
+import json
 
-def stackshape(stack, md):
+
+def stackshape(stack, md, pthmd, force_match=0):
 
     # use stack and dict 'md' (from mdsisv.py) to find stack shape (order tzcyx), accounting for number of channels and whether flyback frames are present
     # hoped to compute numchan without reference to md['chan_save'], since it can be wrong, but 1-chan stack with flyback cannot be distinguished from 2-chan stack without flyback when flyback equals numslice, so just using channel_save to set numchan
+    # force_match=1 will force metadata to match first dimension of stack shape if possible by changing numvol, and will rewrite metadata file; if force_match=0 (default), an exception will be raised if stack shape does not match metadata
 
     dims_onechan = md['dims']
 
@@ -20,8 +23,18 @@ def stackshape(stack, md):
         hasfb = 1
         rmdr = np.prod(stack.shape)/np.prod(dims_onechan)/numchan
         if rmdr!=1:
-            raise Exception("number of stack elements must equal numchan*np.prod(md['dims']), or numchan*np.prod(md['dims']) with flyback; this error can occur if this is an aborted stack, or if something is wrong with your metadata")
+            if force_match:
+                numvoltmp = stack.shape[0]/(md['dims'][1]+md['flyback'])
+                if numvoltmp % 1 == 0:
+                    md['numvol'] = int(numvoltmp)
+                    md['dims'][0] = md['numvol']
+                    with open(pthmd, 'w') as file: 
+                        file.write(json.dumps(md, sort_keys=True, indent=4))
+                else:
+                    raise Exception("number of stack elements must equal numchan*np.prod(md['dims']), or numchan*np.prod(md['dims']) with flyback; this error can occur if this is an aborted stack, or if something is wrong with your metadata")
+            else:
+                raise Exception("number of stack elements must equal numchan*np.prod(md['dims']), or numchan*np.prod(md['dims']) with flyback; this error can occur if this is an aborted stack, or if something is wrong with your metadata")
 
     tzcyx = dims_onechan[0], dims_onechan[1], numchan, dims_onechan[2], dims_onechan[3]
 
-    return tzcyx, numchan, hasfb
+    return tzcyx, numchan, hasfb, md

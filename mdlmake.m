@@ -38,7 +38,7 @@ ldval = opt2.ldval;
 numsyn = opt2.numsyn;
 histinc = opt2.histinc;
 
-[opt, pthstack, doplt] = fset('mdl', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('mdl', opt, doplt, pthstack);
 
 if isempty(srate)
     error("must pass in srate or set glb('srate'), or set name-value argument srate")

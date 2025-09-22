@@ -17,7 +17,7 @@ srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
 
-[opt, pthstack, doplt] = fset('bmp', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('bmp', opt, doplt, pthstack);
 
 if isempty(srate)
     error("must pass in name-value argument srate or set glb('srate')")

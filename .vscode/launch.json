@@ -6,7 +6,7 @@
     "configurations": [
         
         {
-            "rgname": "Python Debugger: Current File",
+            "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",
             "program": "${file}",

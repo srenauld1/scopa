@@ -70,7 +70,7 @@ stimvid = opt2.stimvid;
 ftvid = opt2.ftvid;
 doplt = opt2.doplt;
 
-[opt, pthstack, doplt] = fset('pltx', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('pltx', opt, doplt, pthstack);
 
 vpmapl = opt.vpmapl;
 vpmapr = opt.vpmapr;

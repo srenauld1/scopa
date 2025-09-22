@@ -73,9 +73,9 @@ if ~isempty(pthstack) && ~isempty(pthdaq)
 end
 
 if ~isempty(pthstack)
-    [opt, pthstack, doplt] = fset('daq', opt, pthstack, doplt);
+    [opt, doplt, pthstack] = fset('daq', opt, doplt, pthstack);
 elseif  ~isempty(pthdaq)
-    [opt, pthdaq, doplt] = fset('daq', opt, pthdaq, doplt);
+    [opt, doplt, pthdaq] = fset('daq', opt, doplt, pthdaq);
 end
 
 vtime = opt.vtime; %name of variable representing time in original daq file

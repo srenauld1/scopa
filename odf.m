@@ -342,15 +342,16 @@ if files
 
     if isempty(o.spec.pth) %if fullpaths were not passed into a2p, use filename specifiers in spec to find files
         rectmp = stackfind(pthparloc=o.spec.pthparloc, pthparo2=o.spec.pthparo2, suffixchars=o.spec.suffixchars, recdate=o.spec.recdate, fly=o.spec.fly, trial=o.spec.trial, suffix=o.spec.suffix, substr=o.spec.substr, match=o.spec.match); %find files matching spec
+        if isempty(rectmp)
+            fprintf("NO STACKS FOUND USING THE otmp.spec FIELDS IN oset" + newline)
+        end
     else
         rectmp = stackfind(pth=o.spec.pth, suffixchars=o.spec.suffixchars); %find files matching fullpath input to a2p (can contain wildcards following rules in rdir)
         if isempty(rectmp)
-            fprintf("NONE OF THE FULL PATH INPUT (OR WILDCARD PATTERNS) TO a2p EXIST" + newline)
+            fprintf("NO STACKS FOUND USING THE FULL PATHS (OR PATHS WITH WILDCARDS) THAT WERE INPUT TO a2p" + newline)
         end
     end
-    if isempty(cell2mat(rectmp))
-        error("NO STACKS FOUND")
-    end
+
     idtmp = idmake(rectmp);
     numrec = numel(idtmp);
 
