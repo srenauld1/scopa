@@ -141,7 +141,13 @@ else %if full path input (wildcards allowed)
         valid_tif_fns = ['\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.mat$'];
         pthtmpmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_tif_fns))); %in case wildcard suffix returns unwanted files
         pthtmpmat = erase(pthtmpmat, '.mat');
-        pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat]);
+        valid_flygraw_tif_fns = '\d*-\d*_.*_trial_.*_.*.tif$';
+        pthtmpflygrawtif = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_flygraw_tif_fns))); %in case wildcard suffix returns unwanted files
+        pthtmpflygrawtif = erase(pthtmpflygrawtif, '.tif');
+        valid_flygraw_mat_fns = '\d*-\d*_.*_trial_.*_.*.mat$';
+        pthtmpflygrawmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_flygraw_mat_fns))); %in case wildcard suffix returns unwanted files
+        pthtmpflygrawmat = erase(pthtmpflygrawmat, '.mat');
+        pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat, pthtmpflygrawtif, pthtmpflygrawmat]);
     end
 
 end
@@ -214,10 +220,6 @@ end
 
 function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixchar_original, suffixchars)
 
-recdate = num2str(recdate); %just in case
-fly = num2str(fly); %just in case
-trial = num2str(trial); %just in case
-
 %%SCOPA PATTERN, TIF AND MAT
 fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
 valid_tif_fns = ['^\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
@@ -265,8 +267,6 @@ pth_prefix_all = cat(1, pth_all_tif, pth_all_mat, pth_all_flyg_raw_tif, pth_all_
 pth_prefix_all = unique(cellfun(@(x) x(1:end-4), {pth_prefix_all(:).name}, 'UniformOutput', false)); %unique files, whether tif or mat (will not find duplicates with one scopa and one flyg filename)
 
 end
-
-
 
 
 function pth_all = choose_ext(pth_prefix_all, ext)

@@ -141,6 +141,14 @@ else %if full path input (wildcards allowed)
         valid_tif_fns = ['\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.mat$'];
         pthtmpmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_tif_fns))); %in case wildcard suffix returns unwanted files
         pthtmpmat = erase(pthtmpmat, '.mat');
+        '_*_trial_*_*.tif'
+        valid_flygraw_tif_fns = ['\d*-\d*_*_trial_*' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
+        pthtmpmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_tif_fns))); %in case wildcard suffix returns unwanted files
+        pthtmpmat = erase(pthtmpmat, '.mat');
+        pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
+        pth_all_flyg_raw_tif = pth_all_flyg_raw_tif(~cellfun(@isempty, regexp({pth_all_flyg_raw_tif.name}, regexptranslate('wildcard', substr))));
+
+
         pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat]);
     end
 
@@ -214,10 +222,6 @@ end
 
 function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixchar_original, suffixchars)
 
-recdate = num2str(recdate); %just in case
-fly = num2str(fly); %just in case
-trial = num2str(trial); %just in case
-
 %%SCOPA PATTERN, TIF AND MAT
 fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
 valid_tif_fns = ['^\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
@@ -267,23 +271,17 @@ pth_prefix_all = unique(cellfun(@(x) x(1:end-4), {pth_prefix_all(:).name}, 'Unif
 end
 
 
-
-
 function pth_all = choose_ext(pth_prefix_all, ext)
 
 pth_all = {};
 for k = 1:numel(pth_prefix_all)
     tmpmat = [pth_prefix_all{k} '.mat'];
     tmptif = [pth_prefix_all{k} '.tif'];
-    if isfile(tmpmat) && ~strcmp(ext, 'tif')
+    if isfile(tmpmat) && ~( strcmp(ext, 'tif') && isfile(tmptif) )
         pth_all = cat(2, pth_all, tmpmat);
     end
-    if ~strcmp(ext, 'mat') || ~isfile(tmpmat)
-        if isfile(tmptif)
-            pth_all = cat(2, pth_all, tmptif);
-        else
-            error("there might be a bug in stackfind; this should never occur")
-        end
+    if isfile(tmptif) && ~( strcmp(ext, 'mat') && isfile(tmpmat) )
+        pth_all = cat(2, pth_all, tmptif);
     end
 end
 
