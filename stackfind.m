@@ -3,11 +3,10 @@ function pth_all = stackfind(opt)
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass in choose_ext as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
 arguments
-    opt.pth = [] %full path pattern (can have wildcards)
-    opt.pthsib = [] %full path to a file, returned files will include all matching files in same folder, along with pthsib
+    opt.pth = [] %full path pattern, can have wildcards (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators); if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr inputs
     opt.pthparloc = [] %path to parent folder (containing all stacks) on local filesystem (see pathparentget)
     opt.pthparo2 = []%path to parent folder (containing all stacks) on o2 (see pathparentget)
-    opt.stackid = [] %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use this if any of pth, pthsib, recdate, fly, trial, or suffix are nonempty
+    opt.stackid = [] %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
     opt.recdate = []%char or number, alone or in cell
     opt.fly = [] %char or number, alone or in cell
     opt.trial = []%char or number, alone or in cell
@@ -20,7 +19,6 @@ arguments
 end
 opt = glboropt(opt);
 pth = opt.pth;
-pthsib = opt.pthsib;
 pthparloc = opt.pthparloc;
 pthparo2 = opt.pthparo2;
 stackid = opt.stackid;
@@ -38,7 +36,7 @@ validtext = @(x) ~iscellnested(x) && ( isempty(x) || ischar(x) || ( iscell(x) &&
 if ~validtext(stackid) || ~validtext(suffix) || ~validtext(substr)
     error("stackid, suffix, and substr must be char or cell of char")
 end
-validtextornum = @(x) ~iscellnested(x) && ( isempty(x) || ischar(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) || ( iscell(x) && all(cellfun(@isnumeric, x)) ) );
+validtextornum = @(x) ~iscellnested(x) && ( isempty(x) || ischar(x) || isnumeric(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) || ( iscell(x) && all(cellfun(@isnumeric, x)) ) );
 if ~validtextornum(recdate) || ~validtextornum(fly) || ~validtextornum(trial)
     error("recdate, fly, and trial must be char or number or cell of char or cell of number")
 end
@@ -49,8 +47,8 @@ if ~isempty(suffixchars) && ~iscell(suffixchars)
     suffixchars = {suffixchars};
 end
 
-if ~isempty(pth) + ~isempty(pthsib) + ~isempty(stackid) > 1
-    error("can use at most one of pth, pthsib, or stackid input at a time")
+if ~isempty(pth) && ~isempty(stackid)
+    error("cannot use pth and stackid input at a time")
 end
 if ~isempty(pth)
     if ~isempty(stackid) || ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix) || ~isempty(substr)
@@ -61,18 +59,9 @@ if ~isempty(pth)
     if ~iscell(pth)
         pth = {pth};
     end
-elseif ~isempty(pthsib)
-    if ~isempty(stackid) || ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(substr)
-        error("cannot use stackid, recdate, fly, trial, or substr inputs with nonempty pthsib input")
-    end
-    pthsib = strrep(pthsib, '/', filesep);
-    pthsib = strrep(pthsib, '\', filesep);
-    if ~iscell(pthsib)
-        pthsib = {pthsib};
-    end
 elseif ~isempty(stackid)
     if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix)
-        error("cannot use recdate, fly, trial, or suffix inputs with nonempty stackid input")
+        error("cannot use recdate, fly, trial, or suffix inputs with nonempty stackid input (substr is allowed, however)")
     end
     spl = strsplit(stackid, '_');
     if endsWith(spl(end), '*')
@@ -100,26 +89,7 @@ end
 
 if isempty(pth)
 
-    if isempty(pthsib)
-        pthparent = pathparentget(loc=pthparloc, o2=pthparo2);
-    else
-        if isfile(pthsib)
-            pthparent = fileparts(pthsib);
-            if iscell(pthparent) %this was a cell once but i can't remember how that's possible
-                pthparent = pthparent{1};
-            end
-            pthparent = [pthparent filesep];
-            id = idmake(pthsib);
-            if ~isscalar(id)
-                error("id returned from idmake with pthsib input must be scalar")
-            end
-            recdate = {id.recdate};
-            fly = {id.fly};
-            trial = {id.trial};
-        else
-            error(sprintf("the following pthsib is not a file: " + newline + pthsib))
-        end
-    end
+    pthparent = pathparentget(loc=pthparloc, o2=pthparo2);
 
     fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix, substr);
 

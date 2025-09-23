@@ -279,7 +279,7 @@ def parse_methodrg(methodrg, numchan):
         methodrg = methodrg[0]
     
     if methodrg!='first' and methodrg!='second' and numchan==1:
-        print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to '1' TO OPERATE ON THE ONLY CHANNEL PRESENT")
+        print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to 'first' TO OPERATE ON THE ONLY CHANNEL PRESENT")
         methodrg = 'first'
 
     chan_primary = None #irrelevant unless methodrg denotes 2-channel registration 

@@ -5,11 +5,10 @@ function stack = stackseries(opt, opt2)
 %{
 
 this function works, but i don't think the main stack loading function
-(stackld) should be buried in a stack plotting function (this function), so
-this should be moved into stackplt, as an option, like series=1, or
-suffix=list of suffixes to plot; it is also overly complicated because it
-wraps around stackld and stackplt, and saves memory; soon it will be
-deprecated/moved into stackplt
+(stackld) should be buried in a stack plotting function (this function), 
+so this function is removed from a2p and put in scopa old folder
+stackseries should be moved into stackplt, as an option, like series=1, or
+suffix=list of suffixes to plot
 
 its main benefit is that it plots multiple stacks without having to load them all into memory at once (since they can be very large)
 but this can easily be moved into stackplt
@@ -22,6 +21,7 @@ if you're plotting multiple stacks in their entirity, this strategy is less effi
 calls stackld to load the stack; in stackld, if mat doesn't exist, will read tif and save as mat
 will also output one stack (the one listed in pthstack), not all in the series
 if suffixplt or doplt is empty, nothing will be plotted, but pthstack will be loaded and output
+
 %}
 
 arguments
@@ -76,7 +76,7 @@ id = idmake(pthstack);
 suffixstack = id.suffix;
 recid = id.recid;
 pthstackdir = id.pthstackdir;
-
+pthstack_nosuffix = [id.pthrec '_*_' id.ext]; %to find all sibling files using stackfind below, replace suffix with wildcard *
 
 if ~iscell(suffixstack)
     suffixstack = {suffixstack};
@@ -123,7 +123,7 @@ dr = dr(indsnew);
 
 cnt = 0;
 for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt, dr, and indsmissing
-    pthtmp = stackfind(pthsib=pthstack, suffix=suffixld{spi});
+    pthtmp = stackfind(pth=pthstack_nosuffix, suffix=suffixld{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
         pthstackall(cnt) = pthtmp;

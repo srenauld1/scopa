@@ -1,5 +1,13 @@
-function chan = stackchan(pthstack, md)
+function chan = stackchan(md)
 
+arguments
+    md = []
+end
+
+if isempty(md)
+    mdsild()
+
+end
 id = idmake(pthstack);
 
 [~, fn, ~] = fileparts(pthstack);

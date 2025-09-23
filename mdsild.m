@@ -1,15 +1,24 @@
-function md = mdsild(pth, opt)
+function md = mdsild(opt)
 
 arguments
-    pth %path to metadata file ('*mdsi_.txt') or path to stack
+    opt.pth = [] %path to metadata file ('*mdsi_.txt') or path to stack
     opt.pthpy = []
     opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
 opt = glboropt(opt);
+pth = opt.pth;
 pthpy = opt.pthpy;
 doflyg = opt.doflyg;
 
-id = idmake(pth); %just in case id info gets used below
+if isempty(pth)
+    if isempty(glb('pthstack'))
+        error("must pass in nonempty name-value argument 'pth', or set glb('pthstack')")
+    else
+        fprintf("WARNING, RETRIEVING METADATA FOR STACK LISTED IN glb('pthstack') BECAUSE NAME-VALUE ARGUMENT 'pth' IS EMPTY" + newline)
+    end
+    pth = glb('pthstack');
+end
+id = idmake(pth); 
 pthmd = [id.pthrec '_mdsi_.txt'];
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py

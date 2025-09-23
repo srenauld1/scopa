@@ -3,8 +3,8 @@ function pth_all = stackfind(opt)
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass in choose_ext as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
 arguments
-    opt.pth = [] %full path pattern (can have wildcards)
-    opt.pthsib = [] %full path to a file, returned files will include all matching files in same folder, along with pthsib
+    opt.pth = [] %full path pattern, can have wildcards (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators); if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr inputs
+    opt.pthsib = [] %full path to a file (cannot have wildcards, unlike like argument 'pth' above); returned files will include all matching files in same folder, along with pthsib
     opt.pthparloc = [] %path to parent folder (containing all stacks) on local filesystem (see pathparentget)
     opt.pthparo2 = []%path to parent folder (containing all stacks) on o2 (see pathparentget)
     opt.stackid = [] %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use this if any of pth, pthsib, recdate, fly, trial, or suffix are nonempty
@@ -63,16 +63,19 @@ if ~isempty(pth)
     end
 elseif ~isempty(pthsib)
     if ~isempty(stackid) || ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(substr)
-        error("cannot use stackid, recdate, fly, trial, or substr inputs with nonempty pthsib input")
+        error("cannot use stackid, recdate, fly, trial, or substr inputs with nonempty pthsib input (suffix is allowed, however)")
     end
     pthsib = strrep(pthsib, '/', filesep);
     pthsib = strrep(pthsib, '\', filesep);
     if ~iscell(pthsib)
         pthsib = {pthsib};
     end
+    if ~isscalar(pthsib)
+        error("pthsib must be path to a single stack")
+    end
 elseif ~isempty(stackid)
     if ~isempty(recdate) || ~isempty(fly) || ~isempty(trial) || ~isempty(suffix)
-        error("cannot use recdate, fly, trial, or suffix inputs with nonempty stackid input")
+        error("cannot use recdate, fly, trial, or suffix inputs with nonempty stackid input (substr is allowed, however)")
     end
     spl = strsplit(stackid, '_');
     if endsWith(spl(end), '*')
@@ -141,15 +144,13 @@ else %if full path input (wildcards allowed)
         valid_tif_fns = ['\d*_\d*_\d*_' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.mat$'];
         pthtmpmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_tif_fns))); %in case wildcard suffix returns unwanted files
         pthtmpmat = erase(pthtmpmat, '.mat');
-        '_*_trial_*_*.tif'
-        valid_flygraw_tif_fns = ['\d*-\d*_*_trial_*' suffixchar_original '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
-        pthtmpmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_tif_fns))); %in case wildcard suffix returns unwanted files
-        pthtmpmat = erase(pthtmpmat, '.mat');
-        pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
-        pth_all_flyg_raw_tif = pth_all_flyg_raw_tif(~cellfun(@isempty, regexp({pth_all_flyg_raw_tif.name}, regexptranslate('wildcard', substr))));
-
-
-        pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat]);
+        valid_flygraw_tif_fns = '\d*-\d*_.*_trial_.*_.*.tif$';
+        pthtmpflygrawtif = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_flygraw_tif_fns))); %in case wildcard suffix returns unwanted files
+        pthtmpflygrawtif = erase(pthtmpflygrawtif, '.tif');
+        valid_flygraw_mat_fns = '\d*-\d*_.*_trial_.*_.*.mat$';
+        pthtmpflygrawmat = pthtmp(~cellfun(@isempty, regexp(pthtmp, valid_flygraw_mat_fns))); %in case wildcard suffix returns unwanted files
+        pthtmpflygrawmat = erase(pthtmpflygrawmat, '.mat');
+        pth_prefix_all = unique([pth_prefix_all, pthtmptif, pthtmpmat, pthtmpflygrawtif, pthtmpflygrawmat]);
     end
 
 end

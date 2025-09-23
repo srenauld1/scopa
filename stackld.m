@@ -45,15 +45,11 @@ savemem = opt.savemem; %1 will use tiffstack (memmap stack, can save memory if y
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
 if ~isfile(pthstack) %in case pthstack includes wildcard *
-    tmp = stackfind(pth=pthstack);
-    if isempty(tmp)
+    pthstack = stackfind(pth=pthstack);
+    if isempty(pthstack)
         error("pthstack input to stackld did not return any stacks")
-    else
-        if isscalar(tmp)
-            pthstack = tmp.name;
-        else
-            error("pthstack input to stackld returned multiple stacks; try changing how you used wildcard to restrict results to a single file")
-        end
+    elseif iscell(pthstack) && ~isscalar(pthstack)
+        error("pthstack input to stackld returned multiple stacks; try changing how you used wildcard to restrict results to a single file")
     end
 end
 
