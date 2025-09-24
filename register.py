@@ -54,7 +54,7 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     md = check_aborted_stack(md, pthmd, stack, stackisvol)
 
-    tzcyx, numchan, hasfb, md = stackshape(stack, md, pthmd, force_match=0) #tzcyx, numchan, hasfb = stackshape(stack, md) --- IGNORE ---
+    tzcyx, numchan, hasfb, md = stackshape(stack, md, pthmd, force_match=1) #tzcyx, numchan, hasfb = stackshape(stack, md) --- IGNORE ---
 
     chanrm, chan_primary, methodrg = parse_methodrg(methodrg, numchan)
     

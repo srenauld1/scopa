@@ -39,11 +39,11 @@ def stack_reshape_transpose_clip_zero_type(stack, dims, clip=0):
     return stack
 
 
-def rename_original_scanimage_files(pth_readfile, fname, fn_prefix, fldr, suffixchar_original):
+def rename_original_scanimage_files(pth_readfile, fname, fn_prefix, fldr, suffixchar_raw):
 
 
     if re.search('trial', fname) or re.search('stackraw', fname):
-        fname_rename = fn_prefix + '_' + suffixchar_original + '_.' + fname[-3:]
+        fname_rename = fn_prefix + '_' + suffixchar_raw + '_.' + fname[-3:]
         pth_readfile_rename = fldr + fname_rename
         print("RENAMING FILE \n" + pth_readfile + "\nTO \n" + pth_readfile_rename)
         os.rename(pth_readfile, pth_readfile_rename) 

@@ -329,6 +329,17 @@ o = structsort(o, vectype='row');
 
 if findstacks
 
+    if ~isempty(o.spec.pth) %if user passed no input to a2p, or a struct with file specifiers, or is running odf with findstacks flag true but no oin or no spec field in oin
+        o.spec.recdate = '';
+        o.spec.fly = '';
+        o.spec.trial = '';
+        o.spec.suffix = '';
+        o.spec.substr = '';
+        o.spec.match = '';
+    end
+
+    % fprintf("RUNNING odf with findstacks true, SEARCHING FOR STACKS" + newline)
+
     tmp = struct2pairs(o.spec);
     pthstacks = stackfind(tmp{:});
     if isempty(pthstacks)

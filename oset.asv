@@ -16,7 +16,7 @@ has special handling in odf
 %}
 
 arguments
-    spec = '' % spec struct (see function stackfind), or char or cell of char specifying full path to stack(s); if the latter, can have wildcards *; if empty, will search for file using otmp.spec below; 
+    spec = '' % spec struct (see function stackfind) if empty, will search for file using otmp.spec below; 
     opt.findstacks = 1 % find recordings using spec (or o.spec, if spec is empty); if you just want access to params and do not want to search for stacks, make findstacks=0
 end
 findstacks = opt.findstacks;
@@ -35,12 +35,12 @@ if isempty(spec) %if you're running a2p without input arguments (ie if optional 
     otmp.spec.pthparloc = fullfile(filesep, 'Users', 'wienecke', 'stacks', filesep);
     otmp.spec.pthparo2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparloc ends with; a2p will automatically find it; otherwise fill this in to use o2
     otmp.spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
-    otmp.spec.stackid = {'20250920_1*'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
-    otmp.spec.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    otmp.spec.fly = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    otmp.spec.trial = {''}; %cell ara2ray of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    otmp.spec.suffix = {''}; %cell array of char (or char vector), can use wildcards, stack filename suffix to use; valid suffixes are defined in odfsv, d.spec.suffixchar_raw and d.spec.suffixchars; empty will find any (equivalent to '*')
-    otmp.spec.substr = {''}; %cell array of char (or char vector), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr); empty will find any (equivalent to '*')
+    otmp.spec.stackid = {''}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
+    otmp.spec.recdate = {'20250916'}; %cell array of char (or char vector), can use wildcards
+    otmp.spec.fly = {'*'}; %cell array of char (or char vector), can use wildcards
+    otmp.spec.trial = {'*'}; %cell ara2ray of char (or char vector), can use wildcards
+    otmp.spec.suffix = {'or'}; %cell array of char (or char vector), can use wildcards, stack filename suffix to use; valid suffixes are defined in odfsv, d.spec.suffixchar_raw and d.spec.suffixchars
+    otmp.spec.substr = {'*'}; %cell array of char (or char vector), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr)
     otmp.spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffix; 'each' for matched indices of each of these specifiers (length 1 will be repeated to match anything longer)
 else
     if isstruct(spec)
@@ -116,10 +116,6 @@ for k = 1:numel(otmp)
                 elseif contains(otmp(k).id.pthstack, {'ebno'}) && ~contains(otmp(k).id.pthstack, {'ebgano'})
 
                     otmp2 = oset_ebno(otmp(k));
-
-                elseif contains(otmp(k).id.pthstack, {'opto'})
-
-                    otmp2 = oset_opto(otmp(k));
 
                 elseif contains(otmp(k).id.pthstack, {'fb8c'})
 

@@ -1,12 +1,11 @@
-function md = mdsild(opt)
+function md = mdsild(pth, opt)
 
 arguments
-    opt.pth = [] %path to metadata file ('*mdsi_.txt') or path to stack
+    pth = [] %path to metadata file ('*mdsi_.txt') or path to stack
     opt.pthpy = []
     opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
 opt = glboropt(opt);
-pth = opt.pth;
 pthpy = opt.pthpy;
 doflyg = opt.doflyg;
 

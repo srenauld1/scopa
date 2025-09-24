@@ -27,8 +27,8 @@ if ~iscell(method)
     method = {method};
 end
 
-if isempty(imrate)
-    imrate = 1; %if empty, interpret smlensec as samples
+if ~isempty(smlensec) && isempty(imrate)
+    error("if smlensec is nonempty, must input imrate")
 end
 
 if isempty(smlenpx)

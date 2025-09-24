@@ -31,12 +31,11 @@ d.nestvalid = [ % all vbins (first line) and nested vbins (following lines, orga
 
 %% spec
 
-d.spec.pthparloc = ''; %on local machine, full path to folder containing all recording folders
+d.spec.pthparloc = '/Users/wienecke/stacks'; %on local machine, full path to folder containing all recording folders
 d.spec.pthparo2 = ''; %on o2, full path to folder containing all recording folders, leave empty to automatically find path in /n/files/scratch with same parent folder name as o.mn.pthparloc; ap2 will automatically determine if you're on O2; example path is '/n/scratch/users/c/caw846/stacks/'
 d.spec.suffixchar_raw = ["o"]; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'; used in stackfind.m to locate stacks  
 d.spec.suffixchars = ["r", "d", "b", "s"]; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times; suffix denotes preprocessing steps applied to stack; suffixchar_raw (defined above) can only appear once, at the beginning of the suffix (e.g., ord means registered then denoised, o alone means original/unprocessed); used in stackfind.m to locate stacks    
 d.spec.pth = '';  %cell array of char (or char vector), full path for file(s); if this is used, spec.recdate, spec.fly, spec.trial, spec.suffix are all 'fullpathinput' (rather than their default values); if this is empty (user doens't pass in full path(s) to a2p) then those fields are used and this remains empty
-d.spec.stackid = '';
 d.spec.recdate = ''; %cell array of char, can use wildcards
 d.spec.fly = ''; %cell array of char, can use wildcards
 d.spec.trial = ''; %cell array of char, can use wildcards
@@ -111,7 +110,7 @@ d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before sav
 d.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 d.sld.iy = []; %y indices to keep and save to mat
 d.sld.ix = []; %x indices to keep and save to mat
-d.sld.ic = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+d.sld.ic = []; %c indices to keep and save to mat; this is stack channel index (5th dimension in the original scanimage stack); this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all; will error if you request channel that doesn't exist
 d.sld.iz = []; %z indices to keep and save to mat
 d.sld.it = []; %t indices to keep and save to mat 
 d.sld.zerostack = 1; %subtract min to make min zero
