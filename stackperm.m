@@ -1,17 +1,23 @@
-function [stack, dmstackdf, sznew] = stackperm(stack, dmstack, dmstackdf)
+function [stack, dmstackout, sznew] = stackperm(stack, dmstackin, dmstackout)
 
-% put stack into default dimension order, given current order dmstack, and default order dmstackdf; inserts singleton dims if necessary
+% put stack into default dimension order, given current order dmstackin, and default order dmstackout; inserts singleton dims if necessary
 
 arguments
     stack
-    dmstack %char array, current stack dim order
-    dmstackdf = 'yxztck' %char array, default stack dim order (yxztck if empty)
+    dmstackin %char array, current stack dim order
+    dmstackout = [] %char array, new stack dim order (yxztck if empty)
 end
 
-dmstack = convertStringsToChars(dmstack);
-dmstackdf = convertStringsToChars(dmstackdf);
+if isempty(dmstackout)
+    dmstackout = glb('dmstack');
+    if isempty(dmstackout)
+        error("must pass in dmstackout, or set glb('dmstack')")
+    end
+end
+dmstackin = convertStringsToChars(dmstackin);
+dmstackout = convertStringsToChars(dmstackout);
 
-numdim = numel(dmstack);
+numdim = numel(dmstackin);
 
 if iscell(stack)
     if ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
@@ -25,18 +31,18 @@ end
 if numdim>0 && numdim~=numel(sz)
     error("dm length must match ndims(stack)")
 end
-if numdim>numel(dmstackdf)
-    error("length of dmstack cannot exceed length of dmstackdf")
+if numdim>numel(dmstackout)
+    error("length of dmstackin cannot exceed length of dmstackout")
 end
 
-if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf(1:numdim))
+if ~isempty(dmstackin) && ~isequal(dmstackin, dmstackout(1:numdim))
 
 
     loc = zeros(1,numdim);
     for k = 1:numdim
-        tmploc = strfind(dmstackdf, dmstack(k));
+        tmploc = strfind(dmstackout, dmstackin(k));
         if isempty(tmploc)
-            error("you must have passed in a character in dmstack that is not in dmstackdf")
+            error("you must have passed in a character in dmstackin that is not in dmstackout")
         else
             loc(k) = tmploc;
         end
@@ -50,12 +56,12 @@ if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf(1:numdim))
 
     [~, ordnew] = sort(loc);
 
-    sznewcell = num2cell(ones(numel(dmstackdf), 1));
+    sznewcell = num2cell(ones(numel(dmstackout), 1));
     for k = 1:numel(loc)
         sznewcell{loc(k)} = sz(k);
     end
     if ~isequal(vec(cell2mat(sznewcell)), sz(:))
-        fprintf("reshaping stack with dimension order " + dmstack + " into order " + dmstackdf + newline)
+        fprintf("reshaping stack with dimension order " + dmstackin + " into order " + dmstackout + newline)
         if iscell(stack)
             for k = 1:numel(stack)
                 stack{k} = permute(stack{k}, ordnew);
@@ -73,6 +79,6 @@ if ~isempty(dmstack) && ~isequal(dmstack, dmstackdf(1:numdim))
 
 else
 
-    fprintf("not permuting stack because 'dmstack' is empty, or matches 'dmstackdf' for first ndims(stack) dimensions" + newline)
+    fprintf("not permuting stack because 'dmstackin' is empty, or matches 'dmstackout' for first ndims(stack) dimensions" + newline)
 
 end

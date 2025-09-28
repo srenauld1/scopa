@@ -11,7 +11,7 @@ nocells = opt.nocells;
 skipsort = opt.skipsort;
 
 if numel(s)>1
-    for k = numel(s): -1 : 1 %for each element in nonscalar struct, backwards to preallocate
+    for k = numel(s): -1 : 1 %for each element in nonscalar struct, backward to preallocate
         [rind, cind] = ind2sub(size(s), k);
         tmp(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocells=nocells, skipsort=skipsort);
     end

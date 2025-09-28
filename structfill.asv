@@ -58,7 +58,7 @@ else
     for k = 1:numel(fn1)
         fin1 = fn1{k};
         % if ~isfield(sdf, fin1)
-        %     error("you input sin." + fin1 + ", but sdf." + fin1 + " does not exist")
+        %     error(sprintf("you input sin." + fin1 + ", but sdf." + fin1 + " does not exist"))
         % end
         if isstruct(sin.(fin1))
             if isempty(fnnest)
@@ -132,7 +132,7 @@ end
                             sout.(fin2) = sin.(fin2);
                         else
                             if ~isstruct(sout.(fin2)) && ~isobject(sout.(fin2)) %struct can refer to object not struct
-                                error(fin2 + " does not exist in default struct sdf")
+                                error(sprintf(fin2 + " does not exist in default struct sdf"))
                             else
                                 sout.(fin2) = structfill_recurse(sin.(fin2), sout.(fin2), fin2);
                             end
@@ -149,10 +149,10 @@ end
                         if isfield(sdf, fin2) %if it's in sdf (but not sout)
                             sout.(fin2) = structfill_recurse(sin.(fin2), sdf.(fin2), fin2); %if it's in a struct (but not a fnnest)
                         else
-                            error("neither " + fin2 + " nor " + [fnparent '.' fin2] + " exist in default struct sdf")
+                            error(sprintf("neither " + fin2 + " nor " + [fnparent '.' fin2] + " exist in default struct sdf"))
                         end
                     else
-                        error([fnparent '.' fin2] + " does not exist in default struct sdf")
+                        error(sprintf([fnparent '.' fin2] + " does not exist in default struct sdf"))
                     end
                 end
             end

@@ -7,5 +7,5 @@ o.roi.mm.mmname = 'fb8c'; %name of drawn roi, for filename
 o.roi.doma = 1; %do automated morphological roi segmentation (if you make this zero, you can draw more rois)
 o.roi.ma.numroi = 128; %number auto-rois; must be power of 2
 
-o = odf(o);
+o = ofill(o);
 

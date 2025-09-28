@@ -31,7 +31,7 @@ if isempty(stack)
     if isempty(pthstack)
         error("if name-value argument stack is empty, name-value argument pthstack must be nonempty")
     end
-    stack = stackld(odf('sld', unpack=1), pthstack);
+    stack = stackld(ofill('sld', unpack=1), pthstack);
 end
 if isempty(md)
     md = mdsild(pthstack);

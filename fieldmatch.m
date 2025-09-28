@@ -18,16 +18,17 @@ end
 arguments (Input)
     opt.lev = []; % level of nesting for output
     opt.multi = []; % 1 to allow output multiple matches
-    opt.delim = []; % delimiter in flattened struct
+    opt.delimflat = []; % delimiter in flattened struct
     opt.noerror = 1; % 1 will not stop execution if error just results in empty output (does not apply to syntax errors)
 end
 arguments (Output)
     common
     outall
 end
+opt = glboropt(opt);
 lev = opt.lev;
 multi = opt.multi;
-delim = opt.delim;
+delimflat = opt.delimflat;
 noerror = opt.noerror;
 
 if ~isempty(lev)
@@ -39,8 +40,8 @@ if isempty(multi)
     multi = 0;
 end
 multi = logical(multi);
-if isempty(delim)
-    delim = '__';
+if isempty(delimflat)
+    delimflat = '__';
 end
 
 if ~isstruct(s)
@@ -51,7 +52,7 @@ if ~isstruct(s)
     end
 end
 
-sf = structflat(s, delim=delim);
+sf = structflat(s, delimflat=delimflat);
 fna = fieldnames(sf);
 vala = struct2cell(sf);
 
@@ -63,7 +64,7 @@ else
         if numel(varargin{k})>2
             error("each criterion must be length 2 cell")
         end
-        cr = strrep(varargin{k}{1}, '.', delim);
+        cr = strrep(varargin{k}{1}, '.', delimflat);
         val = varargin{k}{end};
         idxfn = contains(fna, cr);
         idxval = cellfun(@(x) isequal(x,val), vala);
@@ -72,7 +73,7 @@ else
             if noerror
                 fprintf("no matches found for cr input number: " + num2str(k) + newline)
             else
-                error(sprintf("no matches found for cr input number: " + num2str(k)))
+                error("no matches found for cr input number: " + num2str(k))
             end
         end
         [~, fncr] = structunflat(cell2struct(vala(idx), fna(idx)));

@@ -5,7 +5,7 @@ rgname = {'none'}; % use 'none' to skip prompt to define substack (will enter ro
 
 o.daq.slopelensec = 0.43; %this works for sample rate 5.8251; make this as short as possible while window_is_too_short is still false, where slopeord is always 2, and samprate is the voluem rate if volumetric, or framerate if non-volumetric; slopeord = 2; slopelen = round(o.daq.slopelensec / (1/samprate)); window_is_too_short = slopelen<slopeord+1
 
-o = odf(o);
+o = ofill(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
@@ -17,7 +17,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.nrm.post = {'dff008000'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

@@ -90,7 +90,7 @@ numypix = size(stackmnt,1);
 
 if pixfit
     if min(stack(:))<0
-        error(sprintf("stack should be nonnegative ast this point"))
+        error("stack should be nonnegative ast this point")
     end
     resp = stack;
     clear stack

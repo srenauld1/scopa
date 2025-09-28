@@ -12,7 +12,7 @@ o.daq.slopelensec = .49;
 o.bmp.domtype = 'm';
 
 bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vy';
+bmpindv.tg.vnm = 'by';
 % bmpindv.tg.optid = 'a8';
 
 o.bmp.indv = bmpindv;
@@ -32,13 +32,14 @@ o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 
-o = odf(o);
+o = ofill(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
     o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; 
+    o.roi.sp.dr = {[0 0.5], [0 0.25]};
 
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = 3;
@@ -46,7 +47,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'eb')
         o.roi.mm.mmname = 'eb';
         o.roi.doma = 1; %do automated morph rois
-        o.roi.ma.numroi = 32;
+        o.roi.ma.numroi = {32, 64};
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 1.5;
@@ -58,7 +59,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.mm.mmname = {'left', 'right'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

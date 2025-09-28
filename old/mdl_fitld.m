@@ -1,4 +1,4 @@
-function [dofit, pthvalsv, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
+function [domdl, pthvalsv, ft, pred, gof, gof_val, depv_good_inds] = mdl_fitld(pthpre, ld, valnum, vfi)
 
 omit_time_from_savemodel_datestr = 1;
 
@@ -21,9 +21,9 @@ if ld && ~isempty(pthfitdat)
         fprintf("there are multiple fitata files, loading most recent, based on timestamp in filename" + newline)
     end
     load(pthfitdat(end).name, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds') 
-    dofit = 0;
+    domdl = 0;
 else
-    dofit = 1;
+    domdl = 1;
     ft = [];
     pred = [];
     gof = [];

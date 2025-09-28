@@ -1,17 +1,15 @@
 
-function a_ebgano(stack, roi, daq, bmp, t, sper, opt)
+function a_ebgano(s, roi, daq, bmp, t, opt)
 
 
 arguments
-    stack
+    s
     roi
     daq
     bmp
     t
-    sper
     opt.mix = []
     opt.noside = []
-    opt.widyxz = []
     opt.lagsampxy = 0
     opt.lagsampz = 0
     opt.facealpha = 0.3;
@@ -34,12 +32,10 @@ arguments
     opt.dozscore = []
     opt.stackrot = []
     opt.stackslice = []
-    opt.pthstack = []
 end
 opt = glboropt(opt);
 mix = opt.mix;
 noside = opt.noside;
-widyxz = opt.widyxz;
 lagsampxy = opt.lagsampxy;
 lagsampz = opt.lagsampz;
 szmin = opt.szmin;
@@ -62,25 +58,19 @@ vt = opt.vt;
 dozscore = opt.dozscore;
 stackrot = opt.stackrot;
 stackslice = opt.stackslice;
-pthstack = opt.pthstack;
 
-pthpre = erase(pthstack, '.mat');
 
-ebmn = mean(stackcrop(stack, 'eb'), [1 2 3]);
+ebmn = mean(stackcrop(s.stack, 'eb'), [1 2 3]);
 
 if ~isempty(mix)
-    mixstr = strjoin(mix, '');
-    pthmix = [pthpre mixstr '_.mat'];
-    try
-        load(pthmix, 'stacknew');
-    catch
-        stacknew = stackmix(stack, mix, rot=stackrot, pthstacks=pthstack);
-        save(pthmix, 'stacknew', '-v7.3', '-mat')
-    end
-    stack = stacknew;
-    stacknew = [];
+    s = stackmix(s=s, rgnames=mix, rot=stackrot);
     stackrot = []; %set to empty so it doesn't happen below (make this better)
 end
+
+stack = s.stack;
+pthstack = s.pth;
+sper = s.md.sper;
+widyxz = s.md.widyxz;
 
 if ndims(stack)~=4
     error("stack must be 4d")
@@ -139,6 +129,8 @@ wsz = 6;
 [grd, wsz] = smoothdata(grd, 'sgolay', wsz);
 [grv, wsz] = smoothdata(grv, 'sgolay', wsz);
 
+
+pthpre = erase(s.pth, '.mat');
 
 if isempty(epochts)
     epochts = ones(size(stack,4));

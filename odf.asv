@@ -1,496 +1,383 @@
-function o = odf(oin, vbin, copybin, opt)
-
-
-%{
-
-odf is just a wrapper for odfscal; odfscal operates on scalar struct argument oin; odf just loops over elements of oin
-
-WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS UGLY AND CONFUSING;
-note the docs in oset are also about odf, and are much more extensive than the docs here
-odf is intended to help the user easily set a potentially complex set of pipeline options (see function oset, where odf is called)
-
-can call odf in different ways
-    zero arguments sets o equal to d (all default options)
-    one argument sets options for fields in oin, setting default for options not listed 
-    two arguments sets options for d.vbin only, even if vbin don't appear in oin (if they don't they will be all default); vbin can be nested (vbin1.vbin2)
-    three arguments creates struct(s) (names in copybin) within vbin
-    name-value argument 'findstacks': if findstacks==1, will find stacks matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); findstacks mode must have 'spec' vbin in oin, or 'spec' as vbin second argument; if findstacks==0, will not search for stacks, but will keep found stacks in input struct and put them in the output struct
-
-struct d holds all default options;
-fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
-each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
-output struct o holds options used in a2p
-output o matches default d unless input oin specifies a different value
-in particular: if a field is in both oin.vbin and d.vbin, use the value in oin.vbin; if field is only in d.vbin, use the value in d.vbin; if field isn't in d.vbin, error
-
-%}
+function odf(pthopt)
+ 
+% default options for a2p
+% running odf writes all options to txt file in scopa using jsonencode (written to file to encourage stability)  
 
 arguments
-    oin = [] %input options struct for overwriting defaults in default options struct d; can be omitted to just invoke defaults for all vbin listed in vbin (or all possible vbin is vbin is empty)
-    vbin = '' %char, or cell of char; empty char '' is the same as all vbin (do not use []); if nonempty, and copybin is nonempty, update vbin and place results in copybin, and update ~vbin without placing in copybin; if nonempty and copybin is empty, just update vbin; if empty and copybin is nonempty, update all and place all in copybin
-    copybin = '' %char, or cell of char, or empty to skip; subfields into which vbin is copied
-    opt.findstacks = 0 %whether to use spec to find stacks, or skip
-    opt.fill = 0; %whether to fill all default nestings; if vbin is nonempty, will fill listed vbin, if vbin is empty will fill entire options struct; fill is not necessary for a vbin that has no nested vbin (so it will error in this case)
-    opt.unpack = 0; %if output is a single vbin in nestvalid, do not nest in enclosing struct (losing the name of the vbin in the output)
-    opt.wild = 0; %all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*'
-    opt.pthopt = [] %path to default options file; if empty, uses default path
+    pthopt = []
 end
-findstacks = opt.findstacks;
-fill = opt.fill;
-unpack = opt.unpack;
-wild = opt.wild;
-pthopt = opt.pthopt;
-
-metafields = {'copybin', 'id', 'filled', 'nestvalid'};
-
-if ischar(oin) || isstring(oin) || iscellstr(oin) || ( iscell(oin) && isstring(oin{1}) )  % check if oin was omitted, if so, first argument was vbin; update arguments accordingly
-    vbin = oin;
-    oin = [];
-end
-if ~( ischar(vbin) || isstring(vbin) || iscellstr(vbin) || ( iscell(vbin) && isstring(vbin{1}) ) )
-    error("vbin must be char or string or cell of char or string; if you want it to be empty, use empty char '' ")
-end
-
-
-%%%% load defaults %%%%
 
 pthscopa = pathscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
+%% mn (ap2: main pipeline control in a2p)
 
-if isempty(glb('dfset')) || glb('dfset')==0 %write defaults to file the first time odf gets called
-    odfsv(pthopt);
-end
+d.mn.do = ["sld", "daq"]; %["sld", "daq", "roi", "bmp", "mdl", "fmf"]
+d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mdl"]
+d.mn.usegit = 0;  %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
+d.mn.dmstackdf = 'yxztck'; %default stack dimension order; c is pmt channel, k is rgb channel if truecolor
+d.mn.scopausername = '';
+d.mn.pthpy = ''; %path to python executable 
+d.mn.copybindf = 'none'; %default name for copybin in case user didn't specify copybin; m
+d.mn.optiddf = 'z0'; %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names) 
+d.mn.delimflat = '__'; %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent 
+d.mn.onest = [ % all obins and obin nestings currently supported in options struct o; oset ensures all onest are populated; note some obins only appear nested within others (e.g. 'mm' only exists within 'roi'), but defaults for nested obin can still be retrieved using ofill, for example ofill('mm', unpack=1)
+    "mn", ...
+    "sld", ...
+    "daq", "daq.ftv", ...
+    "roi", "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", ...   
+    "bmp", "bmp.mdl", "bmp.mdl.opg", "bmp.mdl.opl", ...
+    "mdl", "mdl.opg", "mdl.opl", ...
+    "fmf", ...
+    "copybin", "full", "id", "onest", ... 
+    ];
 
-if isfile(pthopt)
-    d = structld(pthopt, nocells=1, dosort=0);
+%% daq (daqld: load, process daq)
+
+d.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
+d.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
+d.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
+d.daq.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
+d.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
+d.daq.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
+d.daq.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
+d.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, useinds is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a useinds_supp option) 
+d.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
+d.daq.slopeord = 2; % order of polynomial used to fit local slope
+d.daq.slopelensec_supp = 0.4; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
+d.daq.slopeord_supp = 2; % same as slopeord but for supplemental resampling rate (supprate, if nonempty)
+d.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if useinds is not 'none')
+d.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if useinds is not 'none')
+d.daq.balldia = 9; % mm, used to convert fictrac variables into mm
+d.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
+d.daq.voltmax = 10; % daq voltage max, need to find this in metadata
+d.daq.voltminyaw = 1/12 * 2*pi; %yaw position assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
+d.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
+    "t = Time, time, T";
+    "epochts = epoch";
+    "vyvnom = g4vel, g4velnom";
+    "vy = g4panels, g4yaw";
+    "vyv = g4panels_dv, g4yaw_dv";
+    "bf = ficTracIntForward";
+    "bfv = ficTracIntForward_dv";
+    "bs = ficTracIntSide";
+    "bsv = ficTracIntSide_dv";
+    "by = ficTracYaw, ficTracHeading";
+    "byv = ficTracYaw_dv, ficTracHeading_dv";
+    "ftcam = ftcam"]; 
+
+%% sld (stackld: load/process stack from tif / save to mat )
+
+d.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before saving to mat
+d.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
+d.sld.iy = []; %y indices to keep and save to mat
+d.sld.ix = []; %x indices to keep and save to mat
+d.sld.ic = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+d.sld.iz = []; %z indices to keep and save to mat
+d.sld.it = []; %t indices to keep and save to mat 
+d.sld.zerostack = 1; %subtract min to make min zero
+d.sld.clip = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
+d.sld.stackdtype = 'uint16';
+d.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+d.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
+d.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
+
+%%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
+
+d.roi.s = struct('tg', []);
+d.roi.rgname = 'none'; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
+d.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
+d.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
+d.roi.docm = 0; %do caiman extract.py; if true, load caiman rois with rgname in filename
+d.roi.doqc = 0; %do quality control (remove bad rois)
+
+%% mm (roidraw: mm = "morphological manual")
+
+d.mm.mmname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
+d.mm.chanstr = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels (whether 1 or 2 channel), '1cp' copies what is drawn on channel 1 onto channel 2; '2cp' copies what is drawn on channel 2 onto channel 1 
+
+%% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
+
+d.ma.chan = 1; %1, 2, or [1 2], which channel gets auto roi extraction; this is stack index, not pmt index; (for now all options below are same for each) option where auto rois interact has not been written yet);
+d.ma.numroi = 128; %partition rgname into numroi morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
+d.ma.maskmake = 'nonzero'; % %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+d.ma.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
+d.ma.roirad = []; %radius of roi (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance; units are length of pixel in x (if z length is double x and y length, roirad 6 is 2 pixels in x and y, and 1 in z)
+d.ma.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
+d.ma.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+d.ma.celsz = 8; %for bwmorph close after edge detection, helps connect edges
+d.ma.do3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
+
+%% cm (roifauto: cm = "caiman"; load, process, cluster, normalize functional rois/responses output by caiman in extract.py; option names here match option names in map2opt, and their counterparts in oex)
+
+%{
+methodex:
+    '1' (channel 1 only), 
+    '2' (channel 2 only), 
+    '12' (channel 1 and 2 independently), 
+    'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 
+    'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 
+    'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 
+    'seed12py' (inverse of seed21py), 
+    'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 
+    'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=true
+%}
+
+% MAIN
+d.cm.methodex = '1'; %see notes on methodex above
+d.cm.gSig = [2, 2, 0.5]; %approximate xyz half-size, in pixels, of average neurons; z ignored if extract_in_2d; later, forced to be odd when creating gsiz, so min gsiz is 3; any number 0-1 has same effect as 1, but since gSig is used to derive sigma_smooth_snmf, which is not clipped to 1, go ahead and use the real value; also, consider that our z are often much larger than xy when you set this, so if neurons are restricted to single z planes, make this 1 (since gsig unit is pixels); z (3rd element) ignored if extract_in_2d;
+d.cm.nb = 1; %nb is used everywhere; default 1; num background components
+d.cm.low_rank_background = true; % spatial, and patch; #default true; and  #true makes bankground nb, false makes it update with hals, if true with patches, each patch keeps its background, if false, each patch bg approximated with global background
+d.cm.update_background_components = true; %spatial; #default true; update background components during spatial phase
+d.cm.merge_thr = 0.85; %merge_components; default 0.85; threshold for merging components
+d.cm.only_init = false; %default false; only use the initialization for extraction (no updating of spatial and or temporal components, ie no alternating least squares for spatial and temporal refinement)
+d.cm.normalize_init = true; %init; default true; variance norm by pixel over time befroe initialization;  prob should always be true except for 1p data; patches take care of this to some extent but why not just do it always;
+d.cm.roidensity = 0.4; %not a caiman option; used to derive K (approximate number of neurons to find), given other options, gSig, and patch or fov size; keep above 0 and less than or equal to 1; 1 is "space filling" (as many neurons as possible given patch or fov size, reoslution, and gsiz); caiman demo does not use this variable, but effectively their demo sets it at 0.33)
+d.cm.p = 0; %for deconvolution model if 1 or 2, or skipping deconvolution if 0 (skip deconvolution if neuron is nonspiking); order of the autoregressive system - 0 for nonspiking, 1 for instanteous rise but not decay (low sample rate), 2 for non-ionstantaneous rise and decay (higher sample rate)
+
+% INITIALIZATION
+d.cm.method_init = 'graph_nmf'; %'greedy_roi' #'graph_nmf' #sparse_nmf; default greedy_roi; greedy_roi looks for globular sources; carl usually does not use greedy_roi
+d.cm.sigma_smooth_snmf_time = 0.5; %first element of sigma_smooth_snmf, for smoothing in time before initialization; sigma_smooth_snmf default is [0.5, 0.5, 0.5, 0.5], which is txyz std of gaussian smoothing filter applied just before initialization with method_init sparse_nmf or graph_nmf; similar to gSig for method_init greedy_roi, but unlike gSig, values 0-1 and evens do have effect; consider z width, relative to xy width, when setting this; in oex, the xyz elements are assigned the same values as gSig
+d.cm.perc_baseline_snmf = 20; % default 20; baseline percentile, removed from stack before initialization for method_init graph_nmf and sparse_nmf
+d.cm.max_iter_snmf = 500; %default 500; number iterations in initialization for method_init graph_nmf and sparse_nmf)
+
+% for method_init sparse_nmf only
+d.cm.sparsity_penalty = 0.5; %not a caiman option, but assigned to caiman options alpha_snmf (when using method_init sparse_nmf) and lambda_gnmf (when using method_init graph_nmf); note these have different defaults in caiman (alpha_snmf is 0.5, lambda_gnmf is 1)
+
+% for method_init graph_nmf only
+d.cm.SC_sigma = 1; % default 1; std for SC kernel
+d.cm.SC_thr = 0; % default 0; threshold for affinity matrix
+d.cm.SC_normalize = 1; % default True; standardize entries prior to computing affinity matrix
+d.cm.SC_use_NN = 0; % default False; sparsify affinity matrix by using only nearest neighbors
+d.cm.SC_nnn = 20; % default 20; number of nearest neighbors to use if SC_use_NN = True
+
+% for method_init greedy_roi only
+d.cm.rolling_sum = 0; %default false Using rolling sum for initialization (RollingGreedyROI), instead of total sum
+d.cm.rolling_length = 100; %default 100
+
+% UPDATE TEMPORAL COMPONENTS AND DECONVOLUTION (USED IN temporal.py AND deconvolution.py)%%%%%%%%%%%%
+%p belongs in this section, but because it is so important, it was moved above under section "general"
+d.cm.ITER = 3; % (default is 2; old value=5) -- block coordinate descent iterations
+d.cm.bas_nonneg = 0; %clip negatives in deconvolution (not the same as clipping negatives in stack); appears to not matter unless you're deconvolving (p is 1 or 2, not 0)
+d.cm.fudge_factor = 0.96; % (default is 0.96; old value = 1) -- bias correction factor for discrete time constants
+
+%UPDATE SPATIAL COMPONENTS (USED IN spatial.py, specifically in function threshold_components)%%%%%%%%%%%%
+%during refinement, in update_spatial, the following params are used in function threshold_components
+d.cm.thr_method = 'nrg'; %or 'max'
+d.cm.maxthr = 0.1; %for  thr_method = 'max' keep pixels above this threshold
+d.cm.nrgthr = 0.9999; %for  thr_method = 'nrg' keep pixels whose sorted cumsum contributes this much of total energy
+d.cm.extract_cc = 1; %true will throw away isolated pixels of some kind (cc means connected components)
+
+%PATCHES (USED IN cnmf.py AND map_reduce.py)%%%%%%%%%%%%
+%low_rank_background also has meaning for patches in run_CNMF_patches, see notes for low_rank_background above
+d.cm.patchfac = 4; %not a caiman option; how many times larger largest dim of patch is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches, or make it large to do one patch on the full fov (saqme as 0); caiman recommends 3-4 (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+d.cm.stridefac = 2; %not a caiman option; how many times larger largest dim of stride is than lagest dim of neuron diameter (ie largest dim of gsiz, since neuron diameter is approximately gsiz); 0 to skip patches; caiman recommends at least 1 (at least neuron dia) (if not 0);automatically skipped if two_channel_ex (seeded extraction); if fov is smaller than patch, it's just one patch; patches are useful if activity stats vary over fov (e.g. extracting same neurons from regions with varying SNR, patch runs will adapt to local stats)
+d.cm.nb_patch = 1; %default matches nb; num background components per patch
+d.cm.deconvolution_in_each_patch = 0; %not a caiman param but used to derive p_patch; this will only have effect if p is nonzero above
+
+%QUALITY EVALUATION (USED IN evaluate_components)%%%%%%%%%%%%
+% Each parameter has a low threshold (rval_lowest (default -1), SNR_lowest (default 0.5), cnn_lowest (default 0.1)) and high threshold (rval_thr (default 0.8), min_SNR (default 2.5), min_cnn_thr (default 0.9)).
+% in evaluate_components (called outside cnmf.fit), a component has to exceed ALL low thresholds as well as ONE high threshold to be accepted.
+% can turn off CNN part withy use_CNN = false;
+% these values below were set by carl as scopa defaults result in no roi filtering
+d.cm.SNR_lowest = 0; % 0.5 % 0 % 0.5 default% minimum SNR for accepted components
+d.cm.min_SNR = 0; % 0 % 2.5 default% accept components with that peak-SNR or higher
+d.cm.rval_lowest = -1; % -1 default 0.6% space correlation threshold
+d.cm.rval_thr = 0; % 0% 0.8 default% space correlation threshold
+d.cm.use_cnn = 0; % True default% use the CNN classifier affects if 2 below params are used
+d.cm.cnn_lowest = 0; % 0.1 default% neurons with cnn probability lower than this value are rejected
+d.cm.min_cnn_thr = 0; % 0.9 default% if cnn classifier predicts below this value, reject
+d.cm.decay_time = .2; % carl can only find this used in components evaluation (and onacid), approximate length of indicator tau off
+
+% AUTOMATED MORPH ROI IN extract_binary_masks_from_structural_channel
+d.cm.morph_min_area_size = 2; %min area (in pixels); only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+d.cm.morph_min_hole_size = 0; %holes with smaller area (in pixels) will be filled in; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+d.cm.morph_expand_method = 'closing'; %closing or dilation; only used for cm.base.rois.extract_binary_masks_from_structural_channel, which is only used in two_channel_ex when automated structural rois seed the other channel
+
+
+%% qc (quality control rois)
+
+d.qc.minpixperreg = 3; % min pix in each distongiguous region, roi selection criterion
+d.qc.minroisz = 5; % pixels, roi selection criterion
+d.qc.maxroisz = 300; % pixels
+d.qc.maxregperroi = 4; % for discontiguous rois
+d.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morphological mask (morph mask is all ones if you don't make one)
+
+
+%% nrm (roits: extract and/or normalize roi timeseries)
+
+% options for extraction/normalization of roi signals
+% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
+% all normalizations are applied to individual vector timeseries
+% normalization strings are listed below; they can be combined arbitrarily; if combined, they are applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
+    % 'f': no normalization
+    % 'dffuuuvvv': dff; vvv is sliding window length in seconds over which f0 is computed; if vvv is 000, f0 is computed across the entire timeseries, not a sliding window; uuu is percentile to compute f0 for each window (e.g. dff010008 is 10th percentile over 8-seconde sliding window, dff001000 is 1st percentile over entire timeseries)
+    % 'rscxxxyyy': rescale, sending xxx percentile to 0, yyy percentile to 1 (eg rsc000100 is same as default matlab rescale function)
+    % 'z': zscore
+    % 'nn': nonnegative (subtract min)
+    % 'box': box-cox
+
+d.nrm.pre = 'f'; %must have at least one string, compsed of syllables above; % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
+d.nrm.post = 'f'; %must have at least one string, compsed of syllables above; postcluster normalization is applied after clustering (ie to each roi)
+d.nrm.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
+d.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
+d.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
+d.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
+
+
+%% bmp (bmpmake: compute bump)
+
+% options for bump in bmpmake function
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mdl.tg.v1) and all matches from o.bmp.mdl.tg.v2
+% the value of the independent variable at the max predicted response is the preferred heading for each roi
+% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mdl.tg.v1 as the magnitude, in computing pva
+% if the rgname in o.bmp.mdl.tg.v1 is in o.bmp.numangrs, and that rgname is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
+
+d.bmp.indv = struct('tg', []);
+d.bmp.depv = struct('tg', []);
+d.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
+d.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
+d.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
+d.bmp.scope = 'all'; %which part of compass to use in computing bump parameters, using anything but 'all' doesn't make much sense uunless you have a 2-circle structure, like pb; cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
+d.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+d.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+d.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
+d.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average
+d.bmp.maxangrs = 8; %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)d.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
+d.bmp.dorescale = 0; %just before computing bump, rescale each cluster's timeseries to range 0-1
+d.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morph-func rois, some morph rois have no func members, making their response 'nan', omit will ignore this in computing pva)
+
+%% mdlmake (mdlmake: fit model, depv as function of indv)
+ 
+d.mdl.indv = struct('tg', []);
+d.mdl.depv = struct('tg', []);
+d.mdl.epochnum = 1;
+d.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
+d.mdl.lensec = 0; %seconds, 0 is one sample
+d.mdl.epochmix = 0; %1 to keep multi-timepoint model samples that have multiple epochs
+d.mdl.valnum = 0; %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochnum is divisible by valnum, will validate on numbouts/valnum bouts for each epoch in epochnum; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mdl.valsplit = 'boutsamples'; %'samples' or 'bouts' or 'boutsamples' %applied to all mdlnames; k in k-fold cross-validation; k non-overlapping validation sets; if numbouts of each epoch in epochnum is divisible by valnum, will validate on numbouts/valnum bouts for each epoch in epochnum; if only one bout for each epoch, will evenly split each bout into k validation sets; otherwise will error; 0 skips validation
+d.mdl.slvrg = 'globalsearch';
+d.mdl.max_iter_global = 3; %this will not be assigned to globalsearch object d.opg; instead is used in output function for optimization problem, to stop optimization
+d.mdl.slvrl = 'fmincon'; %'lsqcurvefit';
+d.mdl.mdlname = 'fnet_A01_s'; %'svd' or fnet string (see docs_mdlname.m)
+d.mdl.rm = []; %options for removing samples
+d.mdl.nrmi = []; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+d.mdl.nrmd = []; %'minmaxcnt'; %'minmax' range [0,1], 'minmaxcnt' range [-1,1], 'zscore' mean 0 unit var, 'none' . . . normalization used in fitting model but not all plotting . . . don't forget mse sensitive to scale
+
+%% global solver options
+
+if strcmp(d.mdl.slvrg, 'globalsearch')
+    d.opg = GlobalSearch; %globalsearch can only use fmincon
 else
-    error(sprintf("cannot find default options file, '" + pthopt + "', run odfsv.m to create the default options file"))
+    error("mdlmake currently only supports globalsearch")
 end
 
-if wild
-    wcpat = '*';
-    d = structflat(d);
-    fn = fieldnames(d);
-    for k = 1:numel(fn)
-        if ~ismember(fn{k}, metafields)
-            d.(fn{k}) = wcpat;
-        end
-    end
-    d = structunflat(d);
+%these are defaults for scopa, but are not the defaults output by optimoptions 
+d.opg.StartPointsToRun = 'bounds-ineqs'; 
+
+%these are the defaults output by calling GlobalSearch, contained in d.opg (except any updates above, shown here for convenience)
+% d.opg.NumTrialPoints = 1000; %1000
+% d.opg.BasinRadiusFactor = 0.2; %0.2000
+% d.opg.DistanceThresholdFactor = 0.75; %0.7500
+% d.opg.MaxWaitCycle = 20; %20
+% d.opg.NumStageOnePoints = 200; %200
+% d.opg.PenaltyThresholdFactor = 0.2; %0.2000
+% d.opg.Display = 'final'; %'final'
+% d.opg.FunctionTolerance = 1e-6; %1.0000e-06
+% d.opg.MaxTime = Inf; %Inf
+% d.opg.OutputFcn = []; %[]
+% d.opg.PlotFcn = []; %{@gsplotbestf, @gsplotfunccount}; %[]
+% d.opg.StartPointsToRun = 'all'; %'all'
+% d.opg.XTolerance = 1e-6; %1.0000e-06
+
+%% local solver options
+
+
+if strcmp(d.mdl.slvrl, 'fmincon')
+    d.opl = optimoptions(d.mdl.slvrl);
+else
+    error("mdlmake currently only supports local solver fmincon")
 end
 
-%%%% update options %%%%
+%these are defaults for scopa, but are not the defaults output by optimoptions 
+d.opl.Display = 'iter-detailed';
+d.opl.FiniteDifferenceType = 'central';
+% d.opl.MaxFunctionEvaluations = Inf;
+% d.opl.MaxIterations = 10000;
+d.opl.OutputFcn = [];
 
-if findstacks %if findstacks==1, oin must be scalar
-    if numel(oin)>1
-        error("if findstacks is true, oin must be scalar")
-    end
-    if fill==1
-        error("findstacks cannot be true when fill is true" + newline)
-    end
-    if wild
-        error("findstacks cannot be true when wild is true" + newline)
-    end
-    o = odfscal(d, oin, vbin, copybin, findstacks, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
-else %otherwise, oin can be nonscalar
-    if isempty(oin)
-        o = odfscal(d, oin, vbin, copybin, findstacks, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
-    else
-        for k = numel(oin):-1:1 %in case o is nonscalar, loop over each element, calling odfs; backwards to preallocate
-            o(k) = odfscal(d, oin(k), vbin, copybin, findstacks, fill, wild, pthscopa, metafields); %odfs is for scalar struct o
-        end
-    end
+% these are the defaults output by optimoptions, contained in d.opl (except any updates above, shown here, commented out, for convenience)
+% d.opl.Algorithm = 'interior-point'; %algorithm chosen automatically?? . . . was using 'Algorithm', 'interior-point'); % https://www.mathworks.com/help/optim/ug/choosing-the-algorithm.html
+% d.opl.BarrierParamUpdate = 'monotone';
+% d.opl.CheckGradients = false;
+% d.opl.ConstraintTolerance = 1.0000e-06;
+% d.opl.Display = 'final'; %'final'; %iter-detailed
+% d.opl.EnableFeasibilityMode = false;
+% d.opl.FiniteDifferenceStepSize = 'sqrt(eps)';
+% d.opl.FiniteDifferenceType = 'forward'; 
+% d.opl.HessianApproximation = 'bfgs';
+% d.opl.HessianFcn = [];
+% d.opl.HessianMultiplyFcn = [];
+% d.opl.HonorBounds = 1;
+% d.opl.MaxFunctionEvaluations = 3000; %3000 for interior-point, 100*numvariables for others
+% d.opl.MaxIterations = 1000; %1000 for interior-point, 400 for others
+% d.opl.ObjectiveLimit = -1.0000e+20;
+% d.opl.OptimalityTolerance = 1.0000e-06;
+% d.opl.OutputFcn = [];
+% d.opl.PlotFcn = [];
+% d.opl.ScaleProblem = false; %false
+% d.opl.SpecifyConstraintGradient = 0;
+% d.opl.SpecifyObjectiveGradient = 0;
+% d.opl.StepTolerance = 1.0000e-10; %set to zero, along with OptimalityTolerance, to force fminncon to run specified number of iterations in MaxIterations
+% d.opl.SubproblemAlgorithm = 'factorization';
+% d.opl.TypicalX = 'ones(numberOfVariables,1)';
+% d.opl.UseParallel = 0;
+
+
+%% fmf (flymaxfe: flymax visual stimulus feature extraction)
+
+d.fmf.stimtype = 'drone';
+d.fmf.id = 'CON_51';
+d.fmf.pthparent = [];
+d.fmf.pthtemplate = [];
+d.fmf.rep = 1;
+d.fmf.feat2 = [];
+d.fmf.getgrid = 1; %get the feature on a grid (phi theta if vistype is sphere, xy if gridtype is plane)
+d.fmf.vistype = 'plane'; %sphere, plane, or raw 
+d.fmf.it = -100;
+d.fmf.gridres = 256;
+d.fmf.flipped = 0;
+d.fmf.downsample_template = 1; %downsamples template, then uses it, rather than using template then downsampling; fine for most cases, just looks a little rougher
+d.fmf.crop_edges = 1;
+
+
+%% write options to file
+
+tmp = split(d.daq.vrenm, '=');
+if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
+    error("you cannot change new names for the daq in d.daq.vrenm if you're running a2p")
 end
-
-if unpack
-    if ~isscalar(o)
-        error("cannot unpack nonscalar struct")
-    end
-    if sum(isfield(o, d.nestvalid))>1
-        error("cannot unpack struct with multiple vbins")
-    else
-        o = o.(cell2mat(fieldnames(o)));
-    end
+if ~isequal(d, structunflat(structflat(d)))
+    error("at least one of the default values above is an empty struct; empty structs are not allowed to be default values (although empty vector, cell, char, and string are allowed); empty structs are used in oid to eliminate options structs that depend on other options, before writing to the options file")
 end
-
-
-end
-
-
-
-function o = odfscal(d, oin, vbin, copybin, findstacks, fill, wild, pthscopa, metafields)
-
-
-if isfield(oin, 'filled') && oin.filled==1
-    error("you cannot edit options struct after it has already been filled (filled=1)")
-end
-
-if fill && isfield(oin, 'filled') && oin.filled==1
-    error("you cannot fill options struct (argument fill cannot equal 1) because it has already been filled (filled=1)")
-end
-
-if fill && ~isempty(copybin)
-    error("this should work as long as vbin is empty, but for some reason it doesn't create copybin everywhere")
-end
-
-if findstacks
-    if ~isfield(oin, 'spec') && ~any(strcmp(vbin, 'spec'))
-        error("if findstacks is true, you must pass in input struct with spec vbin, or pass in vbin argument that includes 'spec'")
-    end
-    [~, flatfntmp, ~] = structflat(oin, 'prefix', 'o');
-    if any(strcmp(flatfntmp, 'spec.pth')) && ~isempty(oin.spec.pth)
-        if (any(strcmp(flatfntmp, 'spec.recdate')) && ~isempty(oin.spec.recdate)) || (any(strcmp(flatfntmp, 'spec.fly')) && ~isempty(oin.spec.fly)) || (any(strcmp(flatfntmp, 'spec.trial')) && ~isempty(oin.spec.trial)) || (any(strcmp(flatfntmp, 'spec.suffix')) && ~isempty(oin.spec.suffix)) || (any(strcmp(flatfntmp, 'spec.substr')) && ~isempty(oin.spec.substr))
-            error("in file mode, cannot pass in spec.pth and any of spec.recdate, spec.fly, spec.trial, spec.suffix, spec.substr")
-        end
-    end
-end
-
-
-
-%% prep inputs
-
-
-
 fnd = fieldnames(d);
-vbin_top = d.nestvalid(~contains(d.nestvalid, '.') & ~contains(d.nestvalid, metafields));
-
-if isempty(vbin)
-    vbin = {};
+onest_flat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.onest, repelem({'.'}, numel(d.onest)), 'un', false)));
+fninvalid = fnd(~ismember(fnd, onest_flat));
+if ~isempty(fninvalid)
+    error("the following fields are in d, but not listed in onest: " + cell2charv(fninvalid) )
 end
-if ~iscell(vbin)
-    vbin = {vbin};
-end
-if isempty(copybin)
-    copybin = {};
-end
-if ~iscell(copybin)
-    copybin = {copybin};
+onest_invalid = onest_flat(~ismember(onest_flat, fnd));
+if ~isempty(onest_invalid)
+    error("the following fields are listed in onest, but not fields in d: " + cell2charv(onest_invalid) )
 end
 
-if isempty(oin) || isempty(fieldnames(oin))
-    if isempty(vbin)
-        if fill %if fill with no vbin supplied, fill full nesting
-            oin = rmfield(d, setxor(fnd, vbin_top));
-        else %if not fill and no vbin, just return each unnested vbin
-            oin = d;
-        end
-    else
-        for k = 1:numel(vbin)
-            if ~isfield(d, vbin{k}) && ~ismember(vbin{k}, d.nestvalid)
-                error(sprintf("d." + vbin{k}) + " does not exist, and " + vbin{k} + " does not exist in d.nestvalid")
-            end
-            if ismember(vbin{k}, d.nestvalid) %if oin is empty but there's a nested vbin (a valid one, ie, listed in d.nestvalid)
-                vbintmp = strsplit(vbin{k}, '.');
-                eval(['oin.' vbin{k} '= d.(vbintmp{end});']) %fill defaults for the deepest sub-vbin, and the whole nested branch will get filled
-            else
-                oin.(vbin{k}) = d.(vbin{k});
-            end
-        end
-    end
-end
+fprintf("writing default options to: " + pthopt + newline)
+structsv(d, pthopt, overwrite=1, readonly=1, dosort=1)
 
-if isfield(oin, 'copybin')
-    copybinprev = oin.copybin;
-else
-    copybinprev = {};
-end
-
-structhold = struct;
-for k = 1:numel(metafields)
-    if isfield(oin, metafields{k}) %id is the one field that doesn't have defaults (it holds found stacks info)
-        structhold.(metafields{k}) = oin.(metafields{k}); %put it aside and put back below
-        oin = rmfield(oin, metafields{k});
-    end
-end
-
-
-%% assign defaults for any options not specified in oin
-
-
-if isempty(vbin)
-
-    o = ofill(oin, d, copybinprev, copybin);
-
-else
-
-    if any(contains(vbin, '.')) %if nested vbin, remove deepest vbin and operate on it, invoking defaults throughout the nested vbin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
-        [~, fbsortinds] = sort(cellfun(@numel, regexp(vbin, '[.]*')), 'descend'); %
-        vbin = vbin(fbsortinds); %sort to make update order deepest nested vbin to shallowest, otherwise doens't work
-        for kk = 1:numel(vbin)
-            for k = 1:numel(fnd)
-                if sum(cellfun(@numel, regexp(strsplit(vbin{kk}, '.'), ['^' fnd{k} '$'])))>1
-                    error(sprintf("you have multiple copies of vbin " + fnd{k} + " and possibly others; in a nested vbin each vbin can only appear once, for now at least"))
-                end
-            end
-        end
-        [~, fnflattmp] = structflat(oin, 'prefix', 'o'); %use prefix in case it's nonscalar
-        fnflattmp = erase(fnflattmp, ['o' '__']);
-
-        changed = 1;
-        notvbin = fnflattmp;
-        while changed
-            notvbintmp = notvbin;
-            notvbin = regexprep(notvbin, strcat('^', fnd, '\.'), ''); %remove contiguous sequence of vbins at the beginning (will not remove vbins preceded by a copybin)
-            changed = ~isequal(notvbin, notvbintmp);
-        end
-
-        % TODO: PREVIOUSLY THERE WAS A CHECK HERE FOR VBIN APPEARING AFTER NON-VBIN (LIKE O.ROI.PB.CM) . . . THIS MAY BE A PROBLEM, DEAL WITH IT SOMETIME
-
-        fnflat = cell(numel(notvbin), 1);
-        for k = 1:numel(notvbin) %use this in loop because we are removing novbins for each fnflattmp (don't want removal across indices)
-            fnflat{k} = regexprep(fnflattmp{k}, strcat('\.', notvbin{k}, '$'), ''); %keep only the vbins
-        end
-        fnflat = unique(fnflat);
-
-        ignorefields_for_full_nested_vbin = []; %TODO: THIS SHOULD PROBABLY NOT ACCUMULATE, MAY NOT WANT TO IGNORE THE SAME FIELDS IN DIFFERENT NESTING BRANCHES
-        for k = 1:numel(vbin)
-            if startsWith(vbin{k}, 'o.')
-                error("for nested vbin, omit the leading 'o.'")
-            end
-            vbintmp = strsplit(vbin{k}, '.');
-            vbinshallowest = vbintmp{1};
-            vbindeepest = vbintmp{end};
-            if sum(cellfun(@numel, regexp(strsplit(vbin{k}, '.'), ['^' vbindeepest '$'])))>1
-                error("currently vbindeepest can only appear once in a nested vbin, see note on 224 below")
-            end
-            if isempty(copybin) %if you're not making copybin of a nested vbin . . .
-                ignorefields_for_full_nested_vbin = unique([ignorefields_for_full_nested_vbin, copybinprev, copybin]); %just ignore coprbinprev
-            else %if you're making copybin of a nested vbin . . .
-                ignorefields_for_full_nested_vbin = unique([ignorefields_for_full_nested_vbin, copybinprev, vbindeepest]); %must ignore copybinprev and vbindeepest in ofill on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
-            end
-            if ~isfield(d, vbinshallowest)
-                error(sprintf("d." + vbinshallowest) + " does not exist; nested vbin must start with primary vbin directly under o")
-            end
-            if ismember(vbin{k}, fnflat) %if the nested vbin exists in oin, grab the deepest vbin
-                eval(['oindeepest.' vbindeepest ' = oin.' vbin{k} ';']); %use eval to succinctly extract nested field
-            else %if the nesting doesn't exist in oin, create it with defaults in the deepest layer, and nothing above
-                if isfield(d, vbindeepest)
-                    % fprintf("you input vbin '" + vbin{k} + "', but '" + vbindeepest + "' does not exist in your input to odf, so creating it and populating with default values" + newline)
-                else
-                    error(sprintf("d." + vbindeepest) + " does not exist")
-                end
-                oindeepest.(vbindeepest) = d.(vbindeepest);
-            end
-            oindeepest = ofill(oindeepest, d, copybinprev, copybin); %update deepest vbin
-            eval(['oin.' vbin{k} ' = oindeepest.' vbindeepest ';']); %after updating, put deepest back into oin where it was before (ie according to vbin nesting), with possible copybin applied
-            oinsub.(vbinshallowest) = oin.(vbinshallowest); %put that nested vbin aside and ...
-            oin = rmfield(oin, vbinshallowest); %remove it from oin
-            if k==numel(vbin)
-                o = ofill(oinsub, d, ignorefields_for_full_nested_vbin, []); %then update the full nested vbin; don't use copybin on full nested vbin (only use it on oindeepest above); here you must ignore copybinprev_and_newvbindeepest, which contains both the enclosing vbin for the newly created copybin (vbindeepest, which will include any copybin applied to vbindeepest, and thus don't need to be listed in copybinprev_and_newvbindeepest), as well as old copybin (copybinprev); note you could break this if copybindeepest appears more than once in the nesting, then ofill will ignore the shallower, so there's an above error to catch that
-            end
-        end
-
-    else %if non-nested vbin, remove vbin and operate on it, and then merge with everything else in input, which remains untouched
-
-        fn = fieldnames(oin);
-        for k = 1:numel(vbin)
-            if ismember(vbin{k}, fn)
-                oinsub.(vbin{k}) = oin.(vbin{k});
-                oin = rmfield(oin, vbin{k});
-            else
-                if isfield(d, vbin{k})
-                    % fprintf("note: " + vbin{k} + " does not exist in your input to odf, creating it and populating with all default values" + newline)
-                    oinsub.(vbin{k}) = d.(vbin{k}); %use all defaults vbin{k} is not in oin
-                else
-                    error(sprintf("d." + vbin{k}) + " does not exist")
-                end
-            end
-        end
-        copybin_inert = copybin(ismember(copybin, copybinprev));
-        if ~isempty(copybin_inert)
-            fprintf(strjoin(copybin_inert, ', ') + " has/have already been set, nothing will change in this/these copybin" + newline)
-        end
-        o = ofill(oinsub, d, copybinprev, copybin); %just update vbin
-    end
-
-    o = cell2struct([struct2cell(oin); struct2cell(o)],[fieldnames(oin); fieldnames(o)]); %combine with what was unchanged
-
-end
-
-for k = 1:numel(metafields)
-    if isfield(structhold, metafields{k})
-        o.(metafields{k}) = structhold.(metafields{k});
-    end
-end
-
-copybin = unique([copybinprev, copybin]); %must ignore copybinprev and vbindeepest in ofill on the full nested vbin branch (otherwise the vbin enclosing the new copybin, vbindeepest, will get populated with defaults, but this is only needed if copybin is nonempty
-if ~isempty(copybin)
-    o.copybin = copybin;
-end
-
-o = structsort(o, vectype='row');
-
-
-%% find stacks
-
-
-if findstacks
-
-    if ~isempty(o.spec.pth) %if user passed no input to a2p, or a struct with file specifiers, or is running odf with findstacks flag true but no oin or no spec field in oin
-        o.spec.recdate = '';
-        o.spec.fly = '';
-        o.spec.trial = '';
-        o.spec.suffix = '';
-        o.spec.substr = '';
-        o.spec.match = '';
-    end
-
-    % fprintf("RUNNING odf with findstacks true, SEARCHING FOR STACKS" + newline)
-
-    tmp = struct2pairs(o.spec);
-    pthstacks = stackfind(tmp{:});
-    if isempty(pthstacks)
-        fprintf("NO STACKS FOUND USING YOUR STACK SPECIFIERS (EITHER SET IN OSET, OR PASSED INTO a2p)" + newline)
-    end
-
-    idtmp = idmake(pthstacks);
-    numstacks = numel(idtmp);
-
-    if isfield(o, 'id') && ~isempty(o.id)
-        fprintf("WARNING, UPDATING FIELD id" + newline)
-    end
-    o = repelem(o, numstacks);
-    for h = 1:numstacks
-        o(h).id = idtmp(h);
-    end
-
-end
-
-
-
-%% fill (fill all nestings, and set globals, this is forced to be the last step in creating options struct)
-
-if fill
-
-    if ~isfield(o, 'id')
-        o.id = d.id;
-    end
-    if ~isfield(o, 'copybin')
-        o.copybin = d.copybin;
-    end
-    if ~isfield(o, 'nestvalid')
-        o.nestvalid = d.nestvalid;
-    end
-
-
-    if isempty(vbin)
-        nestfill = d.nestvalid;
-    else
-        nestfill = d.nestvalid(contains(d.nestvalid, vbin));
-    end
-
-    dnestflat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.nestvalid, repelem({'.'}, numel(d.nestvalid)), 'un', false)));
-    if any(ismember(copybinprev, dnestflat))
-        error('copybin names cannot match any vbin names')
-    end
-
-    oflat = structflat(o);
-    fnoflat = fieldnames(oflat);
-    fnoflat_before_copybin_all = [];
-    for m = 1:numel(copybinprev)
-        expr_cb = ['__' copybinprev{m} '__']; %double underscore is default for flattened options struct, keeping them seperate to make it clear, and maybe turn them into global variable
-        mtch_cb = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr_cb, 'match')));
-        if ~isempty(mtch_cb)
-            if any(cellfun(@numel, regexp(mtch_cb, ['__' copybinprev{m} '__']))>1)
-                error("there is a repeated copybin, this is currently not supported")
-            end
-            fnoflat_before_copybin = unique(extractBefore(mtch_cb, ['__' copybinprev{m}]));
-            fnoflat_before_copybin_all = unique([fnoflat_before_copybin_all fnoflat_before_copybin]);
-            for k = 1:numel(nestfill)
-                for w = 1:numel(fnoflat_before_copybin)
-                    if startsWith(nestfill{k}, fnoflat_before_copybin{w})
-                        dnest_after_copybin = erase(strrep(nestfill{k}, '.', '__'), fnoflat_before_copybin{w}); %double underscore is default for flattened options struct, keeping them seperate to make it clear, and maybe turn them into global variable
-                        if ~isempty(dnest_after_copybin)
-                            expr = strcat('^', fnoflat_before_copybin{w}, '__', copybinprev{m}, dnest_after_copybin);
-                            mtch = mtch_cb(~cellfun(@isempty, regexp(mtch_cb, expr, 'match')));
-                            if isempty(mtch)
-                                newnest = strrep(strrep(expr, '__', '.'), '^', ''); %replace double underscore with period, and remove leading carot
-                                o = odf(o, newnest, findstacks=0, wild=wild);
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-
-    for k = 1:numel(nestfill) %doesn't matter if these get updated in loop but fnoflat doesn't (right?)
-        if ~strcmp(nestfill{k}, 'filled') %filled is the one field that cannot be done here
-            if isempty(fnoflat_before_copybin_all) || all(cellfun(@isempty, regexp(nestfill{k}, strcat('^', strrep(fnoflat_before_copybin_all, '__', '.'))))) %if nestfill{k} is not any vbin with copybin from above
-                expr = ['^' strrep(nestfill{k}, '.', '__')];
-                mtch = fnoflat(~cellfun(@isempty, regexp(fnoflat, expr, 'match')));
-                if isempty(mtch)
-                    o = odf(o, nestfill{k}, findstacks=0, wild=wild);
-                end
-            end
-        end
-    end
-
-
-    % now set some globals, as the final step in creating options struct (we know it's final because filled=1 now)
-
-    %%%% these globals should not be edited by the user in general, so they take values from d (output from odfsv) %%%%
-    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('nestvalid')) && isempty(glb('ided_vbin')) && isempty(glb('inert_vbin')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen'))
-        xyscreen = screenpx;
-        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, nestvalid=d.nestvalid, ided_vbin=d.mn.ided_vbin, inert_vbin=d.mn.inert_vbin, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=xyscreen);
-    end
-
-    %%%% these globals (from vbin 'mn') may depend on user input, so they take values from o (which might match values from d) %%%%
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('scopausername')) && isempty(glb('usegit'))
-        if ( isfield(o, 'mn') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=o.mn.pltvis, plt=o.mn.plt, pthpy=o.mn.pthpy, scopausername=o.mn.scopausername, usegit=o.mn.usegit)
-        end
-    end
-
-    %%%% this global may or may not be automatically derived (from vbin 'spec'), depending on where this is being run %%%%
-    if isempty(glb('pthparent'))
-        if ( isfield(o, 'spec') && isempty(vbin) ) || ( ~isempty(vbin) && any(~cellfun(@isempty, regexp(vbin, '(^spec$|\.spec$|^spec(\.){1}\w+$)'))) )
-            pthparent = pathparentget(loc=o.spec.pthparloc, o2=o.spec.pthparo2);
-            glb(pthparent=pthparent)
-        end
-    end
-
-
-    % check for problems and mark as filled, unless you're only filling input vbin
-    
-    o.filled = 0;
-
-    if isempty(vbin) || isempty(setxor(vbin, vbin_top))
-
-        if isempty(o.mn.scopausername)
-            error('o.mn.scopausername cannot be empty')
-        end
-        if isempty(regexp(o.mn.scopausername, '^[a-zA-Z]+$'))
-            if strcmp(o.mn.scopausername, '*')
-                error('o.mn.scopausername is an asterisk, you may have called odf with wild=1 and fill=1 and empty or absent vbin, so the entire options struct was filled with asterisks')
-            end
-            error('o.mn.scopausername can only contain alphabetic characters')
-        end
-
-        o.filled = 1;
-    else
-        o = rmfield(o, metafields);
-    end
-
-    if ~all(ismember(fieldnames(o), d.nestvalid))
-        error("you cannot fill the entire options struct with a vbin that is not listed in nest valid (you may have created a vbin that can only appear within another vbin, outside that enclosing vbin)")
-    end
-
-end
-
-
-
-
-end
-
-
-
-
-
-
+glb(1, dfset=1); %mark that defaults have been set in globals; allow overwrite (prevent error) in case user is running odf outside normal use, and because it won't hurt to write
 
 

@@ -4,7 +4,7 @@ rgname = {'t5', 'tm'}; %use 'none' to skip prompt to define substack (will enter
 
 o.mn.doroi = 1; 
 o.mn.dofmf = 1; 
-o.mn.dofit = 1; 
+o.mn.domdl = 1; 
 
 o.sld.trm = [4,2];
 
@@ -46,7 +46,7 @@ for m = 1:numel(rgname)
         o.roi.doma = 0;
     end
     o.roi.nrm.post = 'dff015020';
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

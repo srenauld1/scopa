@@ -10,7 +10,7 @@ o.daq.slopeord_supp = 2;
 
 o.mn.doroi = 1;
 
-o = odf(o);
+o = ofill(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
@@ -23,7 +23,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.nrm.post = {'dff008000'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

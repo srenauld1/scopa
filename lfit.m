@@ -84,7 +84,7 @@ numypix = size(stackmnt,1);
 
 if pixfit
     if min(stack(:))<0
-        error(sprintf("stack should be nonnegative ast this point"))
+        error("stack should be nonnegative ast this point")
     end
     resp = stack;
     clear stack
@@ -200,7 +200,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     opttmp.imhsv.ignoresat = 1;
     opttmp.imhsv.ignoreval = 0;
-    opttmp = odf(opttmp, 'imhsv');
+    opttmp = ofill(opttmp, 'imhsv');
     imhsv = opttmp.imhsv;
     imhsv = plots_setup_hsv(imhsv);
 

@@ -1,6 +1,11 @@
 function [out, fld, idx] = structind(inp)
 
-% convert char vector or string into fields and indices for getfield or setfield (out); separate field and indices also output as fld and idx   
+%{
+
+convert char vector or string into fields and indices for getfield or setfield (out); 
+separate field and indices also output as fld and idx   
+
+%}
 
 spl = convertStringsToChars(strsplit(inp, '.'));
 if ~iscell(spl)

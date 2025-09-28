@@ -101,7 +101,7 @@ if ~isequal( [size(cma, 1), size(cma, 2)], [size(stackmnt, 1), size(stackmnt, 2)
     error("roimask and stackmnt sizes do not match")
 end
 if ndims(cma)~=4
-    error(sprintf("ERROR, \nTHIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON"))
+    error("THIS PIPELINE REQUIRES cma TO BE 4D (x,y,z,roi), EVEN IF SOME DIM (e.g., 3rd dim z) ARE SINGLETON")
 end
 
 if any(trm)

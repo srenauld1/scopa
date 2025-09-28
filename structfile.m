@@ -91,6 +91,9 @@ wcpat = '*'; % wildcard character; when searching for structs in file matching s
 nmprefix_withgit = 'a'; % prefix used when assigning default name to struct if usegit=1
 nmprefix_withoutgit = 'z'; % prefix used when assigning default name to struct if usegit=0
 
+if isempty(usegit)
+    usegit = 1; %if user passes in usegit=[], the default will not get set, so make sure here that it does (this is a general problem that needs fixing)
+end
 if isstruct(s) && isempty(fieldnames(s))
     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
 end
@@ -356,10 +359,10 @@ end
 [~, flnm, ~] = fileparts(pth);
 flnmsplit = strsplit(flnm, '_');
 if numel(flnmsplit)>1
-    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) %glb('ided_vbin') and rg and var
-        vbin = flnmsplit{2};
-        if isempty(glb(['maketime_' vbin]))
-            glb(['maketime_' vbin], maketime_infile); % previously tried to set globals as struct, but currently won't allow updating fields within maketime_infile struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(vbin) = maketime_infile; glb(maketime_infile=maketime_glb)
+    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) %glb('obin_ided') and rg and var
+        obin = flnmsplit{2};
+        if isempty(glb(['maketime_' obin]))
+            glb(['maketime_' obin], maketime_infile); % previously tried to set globals as struct, but currently won't allow updating fields within maketime_infile struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(obin) = maketime_infile; glb(maketime_infile=maketime_glb)
         end
     end
 end

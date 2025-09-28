@@ -1,10 +1,10 @@
-function o = ochk(o, vbin)
+function o = ochk(o, obin)
 
-if isfield(o, vbin)
-    error("you passed o with substruct " + vbin + " but should pass in that substruct itself")
+if isfield(o, obin)
+    error("you passed o with substruct " + obin + " but should pass in that substruct itself")
 end
 
-switch vbin %further specialized reduction by vbin
+switch obin %further specialized reduction by obin
     case 'roi'
         o = ochk_roi(o);
     case 'bmp'
@@ -22,7 +22,7 @@ if o.doma==1
 end
 
 if isempty(o.rgname)
-    error("rgname is empty, but by this point an empty rgname should have been set to rgnamedf in ofill");
+    error("rgname is empty, but by this point an empty rgname should have been set to rgnamedf in structfill");
 end
 
 end

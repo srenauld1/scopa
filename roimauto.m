@@ -163,10 +163,10 @@ end
 numroi_roimaskin = size(roimaskin, 4);
 numsubroi_roimaskin = size(regionprops3(sum(roimaskin,4)),1); %regionprops3 works for 2d or 3d, output is table, num rows is disconnected components (subrois)
 if numroi_roimaskin>1 || numsubroi_roimaskin>1
-    error(sprintf("numroi_roimaskin IS GREATER THAN ONE AND numroiauto IS GREATER THAN ZERO" + newline + ...
+    error("numroi_roimaskin IS GREATER THAN ONE AND numroiauto IS GREATER THAN ZERO" + newline + ...
         "THIS FUNCTION CURRENTLY ONLY OPERATES ON A SINGLE CONTIGUOUS ROI" + newline + ...
         "DELETE OR RENAME FILE WITH DRAWN ROIS AND DRAW ROIS AGAIN" + newline + ...
-        "OR KEEP DRAWN ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline))
+        "OR KEEP DRAWN ROIS AND REQUEST 0-1 AUTOMATED MORPHOLOGICAL ROIS" + newline)
 end
 
 
@@ -424,7 +424,7 @@ else
 
             else
 
-                error(sprintf("region '" + rgname + "' is roughly uniform blob, so maskseg 'skeleton' fails; try maskseg 'uniform' for roughly equal-volume ROIs within 2d or 3d rgname"))
+                error("region '" + rgname + "' is roughly uniform blob, so maskseg 'skeleton' fails; try maskseg 'uniform' for roughly equal-volume ROIs within 2d or 3d rgname")
 
             end
 

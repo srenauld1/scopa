@@ -27,7 +27,6 @@ function ftvdsrs = ftvalign(rsinds, numvol, imrate, numpkthr, smlenpx, numpx, sm
 % error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
 % and because the fictrac video is currently only used for visualization
 
-
 arguments
     rsinds %resampling indices (e.g. if they were on the daq)
     numvol = [] %number of imaging volumes
@@ -168,7 +167,7 @@ catch
         goodper = ftrate/imrate;
 
         if imrate > ftrate / 2
-            error(sprintf("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate"))
+            error("imaging rate is approximately " + num2str(imrate) + " hz, while fictrac rate is approximately " + num2str(ftrate) + " hz; this algorithm will not work well if imaging rate is high, relative to fictrac rate; threshold set at half fictrac rate")
         end
 
         szvd = size(ftvds);
@@ -293,7 +292,7 @@ catch
         fprintf("num peaks: " + num2str(numpk) + " numvol: " + num2str(numvol) + newline)
 
         if numpk~=numvol
-            error(sprintf("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg))
+            error("numpeaks does not equal numvol \n" + badpeaks_front_msg + "\n" + badpeaks_back_msg)
         end
 
         keepinds_vid = lkg(1)-pkhalfper:lkg(end)+pkhalfper;

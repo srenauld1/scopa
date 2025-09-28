@@ -46,7 +46,7 @@ try
                 end
 
                 vars{j} = mean(vars{j}(cb.val.k{j},:), 1);
-                labs{j} = labs{stackind}(cb.val.k{j});
+                labs{j} = labs{sind}(cb.val.k{j});
             end
         end
 
@@ -111,7 +111,7 @@ else
 
 
     otmp.roi.nrm.post = {'f'};
-    otmp = odf(otmp, 'roi', unpack=1); %call odf to retrieve params used in a2p so you don't have to pass in big param structs all the way down into this function;
+    otmp = ofill(otmp, 'roi', unpack=1); %call ofill to retrieve params used in a2p so you don't have to pass in big param structs all the way down into this function;
     otmp.rgname = 'inter';
 
     roi = roimake(stack, '~/stacks/20241222-5/20241222_5_1_ord_.mat', ti, sper, widyxz, '', otmp, roimaskman); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options

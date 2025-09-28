@@ -35,19 +35,19 @@ doplt = opt2.doplt;
 
 if isempty(opt)
     fprintf("user did not pass in options as argument, using all defaults")
-    opt = odf('spr', fill=1, unpack=1);
+    opt = ofill('spr', nest=1, unpack=1);
 end
 if isfield(opt, 'sld')
     optsld = opt.sld;
 else
     fprintf("user did not pass in substruct sld within spr, using all defaults for sld")
-    optsld = odf('sld', unpack=1);
+    optsld = ofill('sld', unpack=1);
 end
 if isfield(opt, 'sp')
     optsp = opt.sp;
 else
     fprintf("user did not pass in substruct sld within spr, using all defaults for sld")
-    optsp = odf('sp', unpack=1);
+    optsp = ofill('sp', unpack=1);
 end
 it = optsp.it; %t indices to plot, empty for all, negative for that number equidistant from all available, or segmentlength.numsegments
 iz = optsp.iz; %z indices to plot, empty for all, negative for that number equidistant from all available
@@ -122,7 +122,7 @@ indsnew = [indstmp(1:indsdst-1) indssrc indstmp(indsdst:end)];
 dr = dr(indsnew);
 
 cnt = 0;
-for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt, dr, and indsmissing
+for spi = numel(suffixld):-1:1 %backward so we don't have to make new suffixplt, dr, and indsmissing
     pthtmp = stackfind(pth=pthstack_nosuffix, suffix=suffixld{spi});
     if ~isempty(pthtmp)
         cnt = cnt+1;
@@ -136,7 +136,7 @@ for spi = numel(suffixld):-1:1 %backwards so we don't have to make new suffixplt
         suffixld(spi) = [];
     end
 end
-pthstackall = flip(pthstackall); %since spi was backwards above, and pthstackall was indexed with a loop increment cnt
+pthstackall = flip(pthstackall); %since spi was backward above, and pthstackall was indexed with a loop increment cnt
 
 if isempty(suffixplt) %if it's empty after looking for files, set doplt to 0
     fprintf(newline + "in stackseries, suffixplt is empty (either because the user made it empty, or none of the stacks listed in suffixplt were found), so doplt is now set to 0, regardless of how it was set entering stackseries" + newline)

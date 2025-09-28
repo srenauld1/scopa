@@ -101,7 +101,7 @@ classdef stackfindo
                         fly = id.fly;
                         trial = id.trial;
                     else
-                        error(sprintf("the following pthsib is not a file: " + newline + pthsib))
+                        error("the following pthsib is not a file: " + newline + pthsib)
                     end
                 end
 
@@ -237,7 +237,7 @@ classdef stackfindo
                 pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by suffixchars since flygraw pattern doesn't include suffix
                 pth_all_flyg_raw_mat = pth_all_flyg_raw_mat(~cellfun(@isempty, regexp({pth_all_flyg_raw_mat.name}, regexptranslate('wildcard', substr))));
 
-                for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backwards to remove;
+                for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backward to remove;
                     spl = strsplit(pth_all_flyg_raw_mat(k).name, '_');
                     if isempty(regexp(spl{end}, '^\d{5}.mat'))
                         pth_all_flyg_raw_mat(k) = [];

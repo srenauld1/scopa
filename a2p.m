@@ -9,7 +9,7 @@ see docs_a2p
 function a2p(spec)
 
 arguments
-    spec = '' %optional; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); if the latter, can have wildcards *; ; if empty, recording(s) searched for in oset>odf>stackfind using stack specifiers in function 'oset' (in struct otmp.spec)
+    spec = '' %optional; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); if the latter, can have wildcards *; ; if empty, recording(s) searched for in oset>ofill>stackfind using stack specifiers in function 'oset' (in struct otmp.spec)
 end
 
 close all; clc; clear glb tsget; clearvars -except spec; 
@@ -25,12 +25,12 @@ for k = 1:numel(oa) % loop over recordings
     %% stack
 
     for m = transpose(fieldnames(o.sld))
-        [s, pthstackmat] = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
+        s = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
     end
 
-    o.id.pthstack = pthstackmat; oa(k).id.pthstack = pthstackmat; %update with .mat extension, in case it was tif going in to stackld
+    o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case it was tif going in to stackld
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
-    glb(1, md=s.md, srate=s.md.volrate, t=s.md.sper:s.md.sper:s.md.numvol*s.md.sper, epochts=ones(1, s.md.numvol));
+    glb(1, md=s.md, srate=s.md.volrate, t=s.md.sper:s.md.sper:s.md.numvol*s.md.sper, epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
 
     %% daq
 
@@ -46,7 +46,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(o.roi.(m{1}), stack=stack); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -71,7 +71,7 @@ for k = 1:numel(oa) % loop over recordings
 
     %% models
 
-    if o.mn.dofit
+    if o.mn.domdl
         for m = transpose(fieldnames(o.mdl))
             mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=1);
         end
@@ -80,22 +80,19 @@ for k = 1:numel(oa) % loop over recordings
 
     %% interactive plots
 
-    if o.mn.dopltx
-        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
-    end
-
+    % pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
 
     %% a_* functions (analysis specific to experiment)
 
     if 1
 
-        epoch = 4;
-        bout = 2;
+        epoch = 6;
+        bout = 13;
 
         idaq = fieldmatch(daq, lev=1);
         [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
 
-        a_ebgano(stack, roi, daq, bmp, glb('t'), s.md.sper, ...
+        a_ebgano(s, roi, daq, bmp, glb('t'), ...
             mix={'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...
@@ -112,7 +109,6 @@ for k = 1:numel(oa) % loop over recordings
             yconst=1, ...
             slopelensec=0.35, ...
             slopeord=3, ...
-            widyxz=s.md.widyxz, ...
             vt=tpe, ... 
             dozscore=1, ...
             stackrot=[-90,0,0], ...

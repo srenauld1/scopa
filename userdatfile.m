@@ -36,10 +36,14 @@ if strcmpi(permission, 'read')
     if isfile(pthuserdat)
         userdat = structld(pthuserdat);
     else
-        error(sprintf(pthuserdat + " does not exist, in the command line, run userdatfile with all name-value arguments, and nothing else, like this (but fill in the blank value for each name-value argument): " + newline + "userdatfile(scopausername=, gittoken=, gitbranch=, gitusername=)"))
+        error(pthuserdat + " does not exist, in the command line, run userdatfile with all name-value arguments, and nothing else, like this (but fill in the blank value for each name-value argument): " + newline + "userdatfile(scopausername=, gittoken=, gitbranch=, gitusername=)")
     end
     if ~isempty(field)
-        userdat = userdat.(field);
+        if isfield(userdat, field)
+            userdat = userdat.(field);
+        else
+            error("'" + field + "' is not field of userdat struct in userdatfile " + pthuserdat)
+        end
     end
 
 else
@@ -47,7 +51,7 @@ else
     tmp = dbstack;
     if isscalar(tmp) && strcmp(tmp.file, 'userdatfile.m')
         if isfile(pthuserdat)
-            error(sprintf(pthuserdat + " already exists, delete it and run userdatfile again"))
+            error(pthuserdat + " already exists, delete it and run userdatfile again")
         else
             userdat = opt;
             structsv(userdat, pthuserdat, readonly=1, dosort=1);

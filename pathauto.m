@@ -1,15 +1,34 @@
 function pthsv = pathauto(opt)
 
 arguments
-    opt.pthstackdir = []
+    opt.pthdir = []
     opt.suffix = '' %includes extension
     opt.usetime = 1
     opt.usefun = 1
 end
-
-opt = glboropt(opt);
+pthdir = opt.pthdir;
+suffix = opt.suffix;
+usetime = opt.usetime;
+usefun = opt.usefun;
 
 fndefault = '00000000';
+
+if isempty(pthdir)
+    pthdir = glb('pthstackdir');
+    if isempty(pthdir)
+        error("you must pass in name-value argument 'pthdir' or set glb('pthstackdir')")
+    end
+end
+if startsWith(pthdir, ['~' filesep])
+    hm = [getenv('HOME') filesep];
+    pthdir = regexprep(pthdir, ['^~' filesep], hm);
+end
+if ~endsWith(pthdir, filesep)
+    error("pthdir (which is coped from from glb('pthstackdir') if you did not pass in name-value argument pthdir) must end with file separator")
+end
+if ~isfolder(pthdir)
+    error("pthdir '" + pthdir + "' DOES NOT EXIST (OR AT LEAST IS NOT A FOLDER)")
+end
 
 callstack = dbstack('-completenames');
 if numel(callstack) >= 2
@@ -18,24 +37,21 @@ else
     fcnnm = 'unknownfunction';
 end
 
-if isempty(opt.pthstackdir)
-    error(sprintf("glb('pthstackdir') has not been set, and name-value argument pthstackdir has not been set; you must do one or the other"))
-end
 infix = '';
-if opt.usefun
+if usefun
     [~, tmp, ~] = fileparts(fcnnm);
     infix = [infix '_' tmp];
 end
-if opt.usetime
+if usetime
     tmp = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
     infix = [infix '_' tmp];
 end
 infix = [fndefault infix];
 
-if ~startsWith(opt.suffix, '_')
-    opt.suffix = ['_' opt.suffix];
+if ~startsWith(suffix, '_')
+    suffix = ['_' suffix];
 end
 
-pthsv = [opt.pthstackdir infix opt.suffix];
+pthsv = [pthdir infix suffix];
 
 end

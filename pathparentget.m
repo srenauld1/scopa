@@ -56,7 +56,7 @@ end
 
 pthparent = [pthparent filesep];
 if ~isfolder(pthparent)
-    error(sprintf("pthparent '" + pthparent + "' DOES NOT EXIST"))
+    error("pthparent '" + pthparent + "' DOES NOT EXIST (OR AT LEAST IS NOT A FOLDER)")
 end
 
 

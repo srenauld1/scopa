@@ -15,6 +15,19 @@ suffix:
 scopagit syncs local with remote, gets called from structfile 
 if you get error "Unable to fetch from the remote "origin" at . . . ", try usegit=0
 
+module: high-level function called directly from a2p
+    stackld (sld)
+    daqld (daq)
+    roimake (roi)
+    bmpmake (bmp)
+    mdlmake (mdl)
+    
+for each module
+    varid: unique id assigned to a set of input variables; z0 when unknown 
+    optid: unique id assigned to a set of input options
+    output is saved to file with varid and optid in suffix 
+
+
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
 
 glb is required in only a couple places within function tsget
@@ -69,7 +82,7 @@ utility functions (and visualization functions):
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pathauto: create path (e.g. for saving figures)
     oset: set options
-    odf: invoke default options, overwriting defaults with input
+    ofill: invoke default options, overwriting defaults with input
     tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
     axarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
 

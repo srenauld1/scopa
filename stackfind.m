@@ -32,11 +32,11 @@ ext = opt.ext;
 suffixchar_raw = opt.suffixchar_raw;
 suffixchars = opt.suffixchars;
 
-validtext = @(x) ~iscellnested(x) && ( isemptycoc(x) || ischar(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) );
+validtext = @(x) ~iscellnested(x) && ( isemptyall(x) || ischar(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) );
 if ~validtext(stackid) || ~validtext(suffix) || ~validtext(substr)
     error("stackid, suffix, and substr must be char or cell of char")
 end
-validtextornum = @(x) ~iscellnested(x) && ( isemptycoc(x) || ischar(x) || isnumeric(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) || ( iscell(x) && all(cellfun(@isnumeric, x)) ) );
+validtextornum = @(x) ~iscellnested(x) && ( isemptyall(x) || ischar(x) || isnumeric(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) || ( iscell(x) && all(cellfun(@isnumeric, x)) ) );
 if ~validtextornum(recdate) || ~validtextornum(fly) || ~validtextornum(trial)
     error("recdate, fly, and trial must be char or number or cell of char or cell of number")
 end
@@ -47,8 +47,8 @@ if ~iscell(suffixchars) && ~isempty(suffixchars)
     suffixchars = {suffixchars};
 end
 
-if ~isemptycoc(pth)
-    if ~isemptycoc(stackid) || ~isemptycoc(recdate) || ~isemptycoc(fly) || ~isemptycoc(trial) || ~isemptycoc(suffix) || ~isemptycoc(substr)
+if ~isemptyall(pth)
+    if ~isemptyall(stackid) || ~isemptyall(recdate) || ~isemptyall(fly) || ~isemptyall(trial) || ~isemptyall(suffix) || ~isemptyall(substr)
         error("cannot use stackid, recdate, fly, trial, suffix, or substr inputs with nonempty pth input")
     end
     if ~iscell(pth)
@@ -56,8 +56,8 @@ if ~isemptycoc(pth)
     end
     pth = strrep(pth, '/', filesep);
     pth = strrep(pth, '\', filesep);
-elseif ~isemptycoc(stackid)
-    if ~isemptycoc(pth) || ~isemptycoc(recdate) || ~isemptycoc(fly) || ~isemptycoc(trial) || ~isemptycoc(suffix)
+elseif ~isemptyall(stackid)
+    if ~isemptyall(pth) || ~isemptyall(recdate) || ~isemptyall(fly) || ~isemptyall(trial) || ~isemptyall(suffix)
         error("cannot use pth, recdate, fly, trial, or suffix inputs with nonempty stackid input (substr is allowed, however)")
     end
     if ~iscell(stackid)
@@ -93,7 +93,7 @@ if isempty(suffixchars) || sum(strlength(suffixchars))==0 %sum(strlength(suffixc
 end
 
 
-if isemptycoc(pth)
+if isemptyall(pth)
 
     pthparent = pathparentget(loc=pthparloc, o2=pthparo2);
 
@@ -129,7 +129,7 @@ else %if full path input (wildcards allowed)
 end
 
 if isempty(pth_prefix_all)
-    if isemptycoc(pth)
+    if isemptyall(pth)
         for k = 1:numel(fspc.recdate)
             fspcstr = sprintf("pthparent: " + pthparent + newline + "recdate: " + fspc.recdate{k} + newline + "fly: " + fspc.fly{k} + newline + "trial: " + fspc.trial{k} + newline + "suffix: " + fspc.suffix{k} + newline + "substr: " + fspc.substr{k});
             fprintf(newline + "WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr + newline)
@@ -227,7 +227,7 @@ if strcmp(suffix, 'o') || strcmp(suffix, '*')
     pth_all_flyg_raw_mat = rdir(fn_pattern_flyg_raw_mat); %don't need to subset by suffixchars since flygraw pattern doesn't include suffix
     pth_all_flyg_raw_mat = pth_all_flyg_raw_mat(~cellfun(@isempty, regexp({pth_all_flyg_raw_mat.name}, regexptranslate('wildcard', substr))));
 
-    for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backwards to remove;
+    for k = flip(1:numel(pth_all_flyg_raw_mat)) %in case any files were created that are found by above pattern (since flyg has a variable number suffix after trial, before extension, above that gets wildcard, here files that have anything but 5 digits get removed); go backward to remove;
         spl = strsplit(pth_all_flyg_raw_mat(k).name, '_');
         if isempty(regexp(spl{end}, '^\d{5}.mat'))
             pth_all_flyg_raw_mat(k) = [];
@@ -317,12 +317,3 @@ end
 
 end
 
-function y = isemptycoc(x)
-
-if (iscell(x) && all(cellfun(@isempty, x))) || (~iscell(x) && isempty(x))
-    y = 1;
-else
-    y = 0;
-end
-
-end

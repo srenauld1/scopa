@@ -326,11 +326,11 @@ def write_registered_stack(stack, pth_tif_write):
 
     stack_shape = stack.shape
     print(stack_shape)
-    if len(stack.shape)==3: #transpose into tzyx, collapse t and z (if z exists) 
+    if len(stack.shape)==3: #transpose into tyx
         stack = np.transpose(stack, (0, 2, 1)).reshape(stack_shape[0], stack_shape[2], stack_shape[1])
-    elif len(stack.shape)==4:
+    elif len(stack.shape)==4:#transpose into tzyx, collapse t and z
         stack = np.transpose(stack, (0, 3, 2, 1)).reshape(stack_shape[0] * stack_shape[3], stack_shape[2], stack_shape[1])
-    elif len(stack.shape)==5:
+    elif len(stack.shape)==5:#transpose into tzcyx, collapse t and z and c
         stack = np.transpose(stack, (0, 3, 4, 2, 1)).reshape(stack_shape[0] * stack_shape[3] * stack_shape[4], stack_shape[2], stack_shape[1])
     imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 

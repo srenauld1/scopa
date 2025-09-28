@@ -48,7 +48,7 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 o.sld.smlensec = smlensec; 
 o.sld.zerostack = zerostack; 
-o = odf(o, 'sld');
+o = ofill(o, 'sld');
 
 stack = stackld(o.sld, pthstack);
 

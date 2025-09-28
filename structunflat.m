@@ -6,6 +6,7 @@ unflatten a struct that was flattened with structflat
 input cannot have any nesting if nonest is true (it should be flattened struct, eg with structflat)
 
 %}
+
 arguments
     s
     opt.delim = []

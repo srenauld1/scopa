@@ -2,23 +2,23 @@ function odel(opt)
 
 arguments
     opt.pthparent = []
-    opt.ided_vbin = []
+    opt.obin_ided = []
     opt.fig = 0
 end
 opt = glboropt(opt);
 pthparent = opt.pthparent;
-ided_vbin = opt.ided_vbin;
+obin_ided = opt.obin_ided;
 fig = opt.fig;
 
 if fig
 
     inf = "figure";
 
-    allvbin = {'gif', 'fig'};
+    allobin = {'gif', 'fig'};
 
     tmp2 = [];
-    for k = 1:numel(allvbin)
-        tmp = [pthparent '**' filesep '*.' allvbin{k}];
+    for k = 1:numel(allobin)
+        tmp = [pthparent '**' filesep '*.' allobin{k}];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end
@@ -42,22 +42,22 @@ else
     if isempty(scopausername)
         error("you have not set glb('scopausername')")
     end
-    if isempty(ided_vbin)
-        error("ided_vbin must be defined in glb or passed in as name-value argument")
+    if isempty(obin_ided)
+        error("obin_ided must be defined in glb or passed in as name-value argument")
     end
-    if isstring(ided_vbin)
-        ided_vbin = convertStringsToChars(ided_vbin);
+    if isstring(obin_ided)
+        obin_ided = convertStringsToChars(obin_ided);
     end
 
-    allvbin = [ided_vbin {'var', 'rg', 'mm'}];
+    allobin = [obin_ided {'var', 'rg', 'mm'}];
 
 
     tmp2 = [];
-    for k = 1:numel(allvbin)
-        tmp = [pthscopa 'opt_' allvbin{k} '_' scopausername '_*_.txt'];
+    for k = 1:numel(allobin)
+        tmp = [pthscopa 'opt_' allobin{k} '_' scopausername '_*_.txt'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
-        tmp = [pthparent '**' filesep '*_' allvbin{k} '_.mat'];
+        tmp = [pthparent '**' filesep '*_' allobin{k} '_.mat'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end

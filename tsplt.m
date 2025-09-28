@@ -104,12 +104,12 @@ if isempty(xall)
             if tsp
                 y{k} = transpose(ts{2+2*(k-1)});
                 % if size(x{k},1)~=size(y{k},1)
-                %     error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
+                %     error("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension")
                 % end
             else
                 y{k} = ts{2+2*(k-1)};
                 if size(x{k},2)~=size(y{k},2)
-                    error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
+                    error("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension")
                 end
             end
         end
@@ -244,7 +244,7 @@ if num_xy_pairs>maxnumts
     error("number timeseries (x-y pairs, counted after applying all input arguments) exceeds maxnumts")
 end
 if any(size(xseg, 1)>=cellfun(@numel, x)/minsampperseg)
-    error(sprintf("you've requested an xseg that will only show " + num2str(minsampperseg) + " true samples (not interpolated samples) on each frame; if that's really what you want, change minsampperseg (default, or as name-value argument)"))
+    error("you have requested an xseg that will only show " + num2str(minsampperseg) + " true samples (not interpolated samples) on each frame; if that is really what you want, change minsampperseg default, or as name-value argument")
 end
 
 

@@ -34,7 +34,7 @@ o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 
-o = odf(o);
+o = ofill(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
@@ -60,7 +60,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.mm.mmname = {'left', 'right'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

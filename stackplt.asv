@@ -72,8 +72,7 @@ end
 
 dmstackmax = 'yxztck'; %all dimensions allowed in stack; order is irrelevant
 maxnumdims = numel(dmstackmax);
-dimlabelsmax = vec(num2cell(dmstackmax));
-dimlabels = vec(num2cell(dmstack));
+dimlabels = vec(num2cell(dmstackmax));
 max_num_inds_to_print = 10;
 max_num_im_per_frame = 64;
 max_num_gif_frames = 2000;
@@ -130,8 +129,6 @@ if isempty(dmfrtmp)
     dmplt_all = dm_eachframe;
 else
     if ~endsWith(dmplt, dmfrtmp)
-        error("dmplt must end with averaged dimensions (dimensions in parentheses)")
-    end
     dm_acrossframes = erase(dmfrtmp, {'(', ')'});
     dm_eachframe = erase(dmplt, dmfrtmp);
     dmplt_all = [dm_eachframe dm_acrossframes];
@@ -319,9 +316,8 @@ end
 index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
 missing_dims = numel(index_labels_opt)+1:numel(index_labels_default);
 index_labels(missing_dims) = {nan};
-dimlabelsmax(missing_dims)
 
-dimlabels = [dimlabels(dimorder); dimlabelsmax(missing_dims)];
+dimlabels = dimlabels([dimorder missing_dims]);
 index_labels = index_labels([dimorder missing_dims]);
 
 

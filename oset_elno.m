@@ -28,7 +28,7 @@ o.bmp.mdl.epochnum = 1;
 % o.bmp.mdl.opl.MaxFunctionEvaluations = Inf; %3000;
 % o.bmp.mdl.opl.MaxIterations = 5000; %1000    else
 
-o = odf(o);
+o = ofill(o);
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
@@ -51,7 +51,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.mm.mmname = {'left2', 'right2'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

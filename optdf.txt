@@ -124,7 +124,7 @@
       "t"
     ]
   },
-  "filled": 0,
+  "delimflat": "__",
   "fmf": {
     "crop_edges": 1,
     "downsample_template": 1,
@@ -146,6 +146,7 @@
     "smlenpx": 2,
     "smlensec": 1
   },
+  "full": 0,
   "id": [],
   "imhsv": {
     "fg": "allrois",
@@ -197,6 +198,14 @@
     "valnum": 0,
     "valsplit": "boutsamples"
   },
+  "meta": [
+    "meta",
+    "copybin",
+    "full",
+    "id",
+    "delimflat",
+    "onest"
+  ],
   "mm": {
     "chanstr": "all",
     "mmname": "none"
@@ -206,11 +215,11 @@
     "dirtmp": "scopatmp",
     "dmstackdf": "yxztck",
     "dobmp": 0,
-    "dofit": 0,
+    "domdl": 0,
     "dofmf": 0,
     "dopltx": 0,
     "doroi": 0,
-    "ided_vbin": [
+    "obin_ided": [
       "sld",
       "daq",
       "roi",
@@ -218,7 +227,8 @@
       "mdl",
       "fmf"
     ],
-    "inert_vbin": [
+    "optiddf": "z0",
+    "optinert": [
       "sp",
       "tp",
       "imhsv",
@@ -226,15 +236,22 @@
       "savemem",
       "optid"
     ],
-    "optiddf": "z0",
     "plt": "",
     "pltvis": 1,
     "pthpy": "",
-    "scopausername": "youforgottossetuser",
-    "timestr": "2025092414264706",
+    "scopausername": "",
+    "timestr": "",
     "usegit": 0
   },
-  "nestvalid": [
+  "nrm": {
+    "channorm": 0,
+    "degdtr": 0,
+    "mincoh": 0.3,
+    "post": "f",
+    "pre": "f",
+    "wavp": []
+  },
+  "onest": [
     "spec",
     "mn",
     "daq",
@@ -263,18 +280,10 @@
     "bmp.mdl.opl",
     "daq.ftv",
     "copybin",
-    "filled",
+    "full",
     "id",
-    "nestvalid"
+    "onest"
   ],
-  "nrm": {
-    "channorm": 0,
-    "degdtr": 0,
-    "mincoh": 0.3,
-    "post": "f",
-    "pre": "f",
-    "wavp": []
-  },
   "opg": {
     "NumTrialPoints": 1000,
     "BasinRadiusFactor": 0.2,
@@ -342,7 +351,10 @@
     "doma": 0,
     "domm": 0,
     "doqc": 0,
-    "rgname": "none"
+    "rgname": "none",
+    "s": {
+      "tg": []
+    }
   },
   "sld": {
     "clip": [0,1],
@@ -401,10 +413,10 @@
     "ic": [],
     "ii": [],
     "it": [],
+    "obin": [],
     "optid": [],
     "recid": "curr",
     "stackid": "curr",
-    "vbin": [],
     "vnm": []
   },
   "tp": {

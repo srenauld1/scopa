@@ -257,7 +257,7 @@ if isequal(fcnm, 'stackcrop') && ~isequal(dorg,1)
 end
 
 if isempty(stack) && ~nodraw
-    stack = stackld(odf('sld', unpack=1), pthstack);
+    stack = stackld(ofill('sld', unpack=1), pthstack);
 end
 nd = ndims(stack);
 if nd<2 || nd>5
@@ -655,7 +655,7 @@ catch ME
                         tpauseflag = 0; %unpause t
                         tshift = 1;
                     else
-                        ttl_action = 'spacebar, PAUSED t (leftarrow: t BACKWARDS, rightarrow: t FORWARD)';
+                        ttl_action = 'spacebar, PAUSED t (leftarrow: t BACKWARD, rightarrow: t FORWARD)';
                         tpauseflag = 1; %pause t
                         tshift = 0;
                     end
@@ -853,7 +853,7 @@ catch ME
             end
 
             if remove_overlap %remove voxels from rois that overlap with rois drawn earlier
-                for k = flip(1:size(roimask{ic},4))  %go backwards through foreground rois to zero voxels that overlap with any rois drawn earlier
+                for k = flip(1:size(roimask{ic},4))  %go backward through foreground rois to zero voxels that overlap with any rois drawn earlier
                     overlaps = sum(roimask{ic},4)>1; %compute the sum after each overlap removal, so we don't remove all rois contributing to overlap
                     roimask{ic}(:,:,:,k) = roimask{ic}(:,:,:,k).*~overlaps; %zero overlap by multiplying by inverse mask
                 end
@@ -944,20 +944,8 @@ end
 
 function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
 
-
-idxstr = repmat({':'}, 1, 5); %do it this way in case we are only modifying one dimension, indexing with all elements of unchanged dimensions is costly
-if ~isequal(iz, 1:nz)
-    idxstr{3} = iz;
-end
-if ~isequal(it, 1:nt)
-    idxstr{4} = it;
-end
-if ~isequal(ic, 1:nc)
-    idxstr{5} = ic;
-end
-
 if any(dmmean) %we display the mean of stack dimensions corresponding to nonzero elements in vector dmmean
-    if isequal(idxstr, {':', ':', ':', ':', ':'})
+    if isequal(iz, 1:nz) && isequal(it, 1:nt) && isequal(ic, 1:nc)
         if isequal(find(dmmean),strfind(nmdm, 'z'))
             stacktmp = stackmnz;
         elseif isequal(find(dmmean),strfind(nmdm, 't'))
@@ -966,6 +954,14 @@ if any(dmmean) %we display the mean of stack dimensions corresponding to nonzero
             stacktmp = stackmnzt;
         end
     else
+        idxstr = repmat({':'}, 1, 5); %do it this way in case we are only indexing with averaged dimensions, indexing with all elements of unchanged dimensions is costly
+        if isequal(find(dmmean),strfind(nmdm, 'z'))
+            idxstr{strfind(nmdm, 'z')} = iz;
+        elseif isequal(find(dmmean),strfind(nmdm, 't'))
+            idxstr{strfind(nmdm, 't')} = it;
+        elseif isequal(find(dmmean),find(ismember(nmdm, 'c'))) %find(ismember()) for multiple char
+            idxstr{strfind(nmdm, 'c')} = ic;
+        end
         stacktmp = stacktype(mean(stack(idxstr{:}), find(dmmean)), class(stack));
     end
     stack_oneframe = stacktmp(:,:,:,1);

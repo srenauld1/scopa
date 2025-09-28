@@ -54,7 +54,7 @@ o.mdl.depv = mdldepv;
 o.mdl.mdlname = {'svd_0.95', 'svd_0.7'};
 o.mdl.lensec = {0.5, 1, 1.5, 2};
 
-o = odf(o);
+o = ofill(o);
 
 %%%% ROI %%%%
 
@@ -79,7 +79,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi.mm.mmname = {'left', 'right'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

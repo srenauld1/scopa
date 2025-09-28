@@ -2,28 +2,41 @@ function out = glb(inp)
 
 %{
 
-set globals in three ways
-        1)   a=2; b=3; glb(v=a, w=b)
-        2)   glb(v=2, w=3)
-        3)   a.v=2; a.w=3; glb(a)
-        4)   glb('v.j', 2) (this method required for setting field within struct directly in glb
+set/get/store global variables
 
-get globals
+SET GLOBALS 
+    you can set globals in three ways
+            1)   glb(a=2, b=3)
+            2)   glb('a', 2, 'b', 3) (use this method to set field within struct directly in glb; for example, glb('v.k', 99), since glb(v.k=99) will error
+            3)   s.a=2; s.b=3; glb(s)
+
+GET GLOBALS
     glb('v') will outut global variable v, if it's been set
     in all 3 set cases above, glb('v') will return 2 and glb('w') will return 3
-    you can only get one global at a time
-    unless you call glb or glb (no input arguments), which will outut a struct of all globals
+    you can only get one global at a time, unless you call glb without any input arguments (that is, glb or glb()), which will outut a struct of all globals
 
-remove all globals by calling
-    clear glb
-remove specific globals using -1 as first argument, followed by variables to remove, in two ways  
-    1) glb(-1, 'v', 'w')
-    2) glb(-1, {'v', 'w'})
+REMOVE GLOBALS 
+    remove all globals by calling
+        clear glb
+    remove specific globals using -1 as first argument, followed by variables to remove, in two ways  
+        1) glb(-1, 'v', 'w')
+        2) glb(-1, {'v', 'w'})
+    if global you try to remove does not exist, it is ignored (no error)
 
-you cannot set a global after it's already been set, unless you pass in 1 as first argument (or clear that global variable)
-    glb(1, v=99) will set global variable v to 99 (so will k.v=99; glb(1,k), for any struct k)
+CHANGE GLOBALS 
+    you cannot set a global variable after it's already been set, unless you pass in 1 as first argument (or remove that global variable)
+        for example, glb(1, v=99) will set global variable v to 99 (any of the above 3 "set globals" syntaxes are valid for changing global)
+    if global you try to change does not exist, it is ignored (no error)
 
-in general, if you prefer to use string, rather than char, you can, as long as you don't mix them for the same purpose in a single command 
+STRUCTS
+    you can directly set and get fields of a struct (scalar or nonscalar) with glb('name', value) syntax; struct indexing follows normal rules (just in quotes); for example
+        glb('a(4).b(2).c(3)', 3) sets 3rd element of c to 3 within 2nd element of nonscalar struct b within 4th element of nonscalar struct a
+        and to retrieve that value, call 
+            glb('a(4).b(2).c(3)')
+
+TIPS
+    in general, if you prefer to use string, rather than char, you can, as long as you don't mix them for the same purpose in a single command 
+
 
 %}
 
@@ -73,9 +86,6 @@ end
 
 if ~ismember(change, [-1, 0, 1])
     error("optional first argument 'change' can only be -1, 0, or 1")
-end
-if ~isequal(change, 0) && isempty(gset)
-    error("you are attempting to remove or change a global variable but no global variables exist")
 end
 if isequal(change, -1)
     inc = 1;
@@ -202,7 +212,7 @@ else
                     gset = setfield(gset, sind{:}, inp{k+1});
                 end
             else
-                error(sprintf("you are trying to set global variable '" + char(inp{k}) + "' after it's already been set" + newline + "make first argument 1 to update global variable(s)" + newline + "or clear global variable '" + char(inp{k}) + "' with first argument -1, like this: glb(-1, '" + char(inp{k}) + "')" + newline + "or 'clear glb' to clear all global variables before attempting to set" + newline))
+                error("you are trying to set global variable '" + char(inp{k}) + "' after it's already been set" + newline + "make first argument 1 to update global variable(s)" + newline + "or clear global variable '" + char(inp{k}) + "' with first argument -1, like this: glb(-1, '" + char(inp{k}) + "')" + newline + "or 'clear glb' to clear all global variables before attempting to set" + newline)
             end
         end
         out = gset;
@@ -214,7 +224,7 @@ else
         try
             out = getfield(gset, sind{:});
         catch ME
-            fprintf(string(ME.message) + newline + "will output empty array" + newline)
+            % fprintf(string(ME.message) + newline + "will output empty array" + newline)
             out = [];
         end
     end
