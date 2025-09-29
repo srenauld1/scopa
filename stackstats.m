@@ -24,7 +24,7 @@ end
 
 
 if isempty(pthsv_prefix)
-    pthsv_prefix = pathauto(suffix='', usetime=1);
+    pthsv_prefix = pthauto(suffix='', usetime=1);
 end
 
 

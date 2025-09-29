@@ -8,7 +8,7 @@ arguments
     opt.s = [] %stack, or cell of stacks; must be empty if you pass in pthstacks or stackids
     opt.pthstacks = [] %cell array of paths to stacks to be mixed; must be empty if you pass in stacks or stackids
     opt.stackids = []%cell array of stackids of stacks to be mixed; stackid is recdate_fly_trial_suffix; must be empty if you pass in stacks or pthstacks
-    opt.pthparent = [] %path to folder containing all stacks
+    opt.pthpar = [] %path to folder containing all stacks
     opt.optsld = [] %options for stackld for loading all stacks found; if empty, default are used
 end
 opt = glboropt(opt);
@@ -17,7 +17,7 @@ rot = opt.rot;
 s = opt.s;
 pthstacks = opt.pthstacks;
 stackids = opt.stackids;
-pthparent = opt.pthparent;
+pthpar = opt.pthpar;
 optsld = opt.optsld;
 
 mixstr = strjoin(mix, '');
@@ -44,7 +44,7 @@ catch
             numspec = numel(stackids);
             pthstacks = cell(1,numel(stackids));
             for k = 1:numel(stackids)
-                pthstacks{k} = stackfind(stackid=stackids{k}, pthparloc=pthparent);
+                pthstacks{k} = stackfind(stackid=stackids{k}, pthpar=pthpar);
             end
             pthstacks = cellflat(pthstacks);
             if all(cellfun(@isempty, pthstacks))
@@ -105,7 +105,7 @@ catch
         error("stackmix must work with multiple regions (taken from multiple pthstacks or multiple rgnames or both)")
     end
 
-    pthscopa = pathscopaget();
+    pthscopa = pthscopaget();
     scopausername = userdatfile('scopausername');
 
     pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];

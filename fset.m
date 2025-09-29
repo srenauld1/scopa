@@ -43,7 +43,7 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
 
     else
         if all(strcmp(fieldnames(opt), 'optid')) %if optid is the only option, create the corresponding options
-            pthscopa = pathscopaget();
+            pthscopa = pthscopaget();
             scopausername = glb('scopausername');
             if isempty(scopausername)
                 scopausername = userdatfile('scopausername');

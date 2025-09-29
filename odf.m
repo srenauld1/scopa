@@ -7,7 +7,7 @@ arguments
     pthopt = []
 end
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
@@ -17,21 +17,20 @@ end
 d.mn.do = ["sld", "daq"]; %["sld", "daq", "roi", "bmp", "mdl", "fmf"]
 d.mn.plt = [""]; %list of subroutines that get plots (none by default); ["daq", "sld", "ftv", "roi", "bmp", "mdl"]
 d.mn.usegit = 0;  %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
-d.mn.dmstackdf = 'yxztck'; %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton)
 d.mn.scopausername = ''; %username; must be alphabetic char vector; used in options filenames, and to route to correct oset_* files
 d.mn.pthpy = ''; %path to python executable, in case user calls some python code from a2p (caiman registration or roi extraction, for example)
+d.mn.dmstackdf = 'yxztck'; %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton)
 d.mn.copybindf = 'none'; %default name for copybin in case user didn't specify copybin (in which case copybin are temporary objects that only exist when creating options struct with oset)
 d.mn.optiddf = 'z0'; %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names) 
 d.mn.delimflat = '__'; %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent 
 d.mn.onest = [ % all obins and obin nestings currently supported in options struct o; oset ensures all onest are populated; note some obins only appear nested within others (e.g. 'mm' only exists within 'roi'), but defaults for nested obin can still be retrieved using ofill, for example ofill('mm', unpack=1)
     "mn", ...
     "sld", ...
-    "daq", "daq.ftv", ...
+    "daq", ...
     "roi", "roi.mm", "roi.ma", "roi.cm", "roi.qc", "roi.nrm", ...   
     "bmp", "bmp.mdl", "bmp.mdl.opg", "bmp.mdl.opl", ...
     "mdl", "mdl.opg", "mdl.opl", ...
     "fmf", ...
-    "copybin", "full", "id", "onest", ... 
     ];
 
 %% daq (daqld: load, process daq)
@@ -342,7 +341,7 @@ d.opl.OutputFcn = [];
 
 d.fmf.stimtype = 'drone';
 d.fmf.id = 'CON_51';
-d.fmf.pthparent = [];
+d.fmf.pthpar = [];
 d.fmf.pthtemplate = [];
 d.fmf.rep = 1;
 d.fmf.feat2 = [];
@@ -365,7 +364,7 @@ if ~isequal(d, structunflat(structflat(d)))
     error("at least one of the default values above is an empty struct; empty structs are not allowed to be default values (although empty vector, cell, char, and string are allowed); empty structs are used in oid to eliminate options structs that depend on other options, before writing to the options file")
 end
 fnd = fieldnames(d);
-onest_flat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.onest, repelem({'.'}, numel(d.onest)), 'un', false)));
+onest_flat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.mn.onest, repelem({'.'}, numel(d.mn.onest)), 'un', false)));
 fninvalid = fnd(~ismember(fnd, onest_flat));
 if ~isempty(fninvalid)
     error("the following fields are in d, but not listed in onest: " + cell2charv(fninvalid) )

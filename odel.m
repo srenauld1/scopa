@@ -1,12 +1,12 @@
 function odel(opt)
 
 arguments
-    opt.pthparent = []
+    opt.pthpar = []
     opt.obin_ided = []
     opt.fig = 0
 end
 opt = glboropt(opt);
-pthparent = opt.pthparent;
+pthpar = opt.pthpar;
 obin_ided = opt.obin_ided;
 fig = opt.fig;
 
@@ -18,7 +18,7 @@ if fig
 
     tmp2 = [];
     for k = 1:numel(allobin)
-        tmp = [pthparent '**' filesep '*.' allobin{k}];
+        tmp = [pthpar '**' filesep '*.' allobin{k}];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end
@@ -37,7 +37,7 @@ else
     % delete all options files; run this to restart optid/varid numbering
 
     inf = "option";
-    pthscopa = pathscopaget;
+    pthscopa = pthscopaget;
     scopausername = userdatfile('scopausername');
     if isempty(scopausername)
         error("you have not set glb('scopausername')")
@@ -57,7 +57,7 @@ else
         tmp = [pthscopa 'opt_' allobin{k} '_' scopausername '_*_.txt'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
-        tmp = [pthparent '**' filesep '*_' allobin{k} '_.mat'];
+        tmp = [pthpar '**' filesep '*_' allobin{k} '_.mat'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end

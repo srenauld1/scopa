@@ -16,7 +16,7 @@ arguments (Input)
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.scopausername = []
     opt.usegit = []
-    opt.pthparent = []
+    opt.pthpar = []
     opt.obin_ided = []
 end
 arguments (Output)
@@ -30,7 +30,7 @@ opt = glboropt(opt);
 dm = opt.dm;
 scopausername = opt.scopausername;
 usegit = opt.usegit;
-pthparent = opt.pthparent;
+pthpar = opt.pthpar;
 obin_ided = opt.obin_ided;
 
 numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
@@ -45,8 +45,8 @@ end
 if isempty(scopausername)
     error("you must pass in scopausername or set glb('scopausername')")
 end
-if isempty(pthparent)
-    error("you must pass in pthparent or set glb('pthparent')")
+if isempty(pthpar)
+    error("you must pass in pthpar or set glb('pthpar')")
 end
 if isempty(obin_ided)
     error("obin_ided are not defined in glb, using default defined in tsget, but you should define them in glb")
@@ -55,7 +55,7 @@ if isstring(obin_ided)
     obin_ided = convertStringsToChars(obin_ided);
 end
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
@@ -65,7 +65,7 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthparent, scopausername, pthscopa, obin_ided, usegit);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
         end
     end
 
@@ -177,7 +177,7 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthparent, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat] = tsget2(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
 if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
     tg = tg.tg; %since the input to this function is also named tg
@@ -190,7 +190,7 @@ tsout = cell(numtg,1);
 dattmp = cell(numtg,1);
 group = cell(numtg,1);
 for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, scopausername, pthscopa, obin_ided, usegit);
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
 end
 
 
@@ -254,7 +254,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat, group] = tsget3(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -420,7 +420,7 @@ for w = 1:numel(varid)
     for k = 1:numel(optid)
         optid_tmp = optid{k};
         fnpat = ['*' varid_tmp optid_tmp '_' obin '_.mat'];
-        pthpat = fullfile(pthparent, '**', fnpat);
+        pthpat = fullfile(pthpar, '**', fnpat);
         pthtmpall = rdir(pthpat);
         pthtmp = cell(numel(pthtmpall),1);
         for m = 1:numel(pthtmpall)

@@ -36,7 +36,7 @@ if getonly
     warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
 end
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 
 callstack = dbstack();
 tsgetcall = 0;

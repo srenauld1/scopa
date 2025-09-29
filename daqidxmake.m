@@ -139,7 +139,7 @@ if doplt
     title(['idx.vol for first ' num2str(numel(subt)) ' daq samples (' num2str(maxtplot) ' seconds); [min, max] (all samples): ' mat2str([min(idx.vol) max(idx.vol)]) ])
     figsuffix = 'idx_.png';
     if isempty(pthfig)
-        pthfig = pathauto(suffix=figsuffix, usetime=0);
+        pthfig = pthauto(suffix=figsuffix, usetime=0);
     end
     saveas(gca, pthfig, 'png');
 end

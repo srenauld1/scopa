@@ -148,7 +148,7 @@ if any(cellfun(@isstring, x)) || any(cellfun(@isstring, y))
     error("x and/or y contains a string, but shold be numeric, you may have misspelled a name-value argument or used the wrong term")
 end
 if isempty(pthgif)
-    pthgif = pathauto(suffix='.gif', usetime=1, usefun=1);
+    pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
 end
 if ~isempty(axpos) && isempty(hfg)
     error("must not pass in axpos without hfg")

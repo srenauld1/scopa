@@ -7,7 +7,7 @@ arguments
     pthopt = []
 end
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
@@ -342,7 +342,7 @@ d.opl.OutputFcn = [];
 
 d.fmf.stimtype = 'drone';
 d.fmf.id = 'CON_51';
-d.fmf.pthparent = [];
+d.fmf.pthpar = [];
 d.fmf.pthtemplate = [];
 d.fmf.rep = 1;
 d.fmf.feat2 = [];

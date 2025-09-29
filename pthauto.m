@@ -1,4 +1,4 @@
-function pthsv = pathauto(opt)
+function pthsv = pthauto(opt)
 
 arguments
     opt.pthdir = []

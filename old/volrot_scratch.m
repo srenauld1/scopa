@@ -74,7 +74,7 @@ if ndims(stackmnt)<3
             cmap = distinguishable_colors(numroi_init);
             scatter(cenperm(:,2), cenperm(:,1), [], cmap, 'filled')
             axis equal tight
-            fig2gif(hfg, 1, pathauto(suffix='.gif', usetime=1))
+            fig2gif(hfg, 1, pthauto(suffix='.gif', usetime=1))
             close(hfg);
 
             %%

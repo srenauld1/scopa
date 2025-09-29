@@ -17,7 +17,7 @@ renm = { ... %do it in this order, staerting with longest suffixes (most compoun
     '_nosn_: _os_', ...
     };
 
-pthparent = pathparentget;
+pthpar = pthparget;
 
 for q = 1:numel(renm)
     nmtmp = strsplit(renm{q}, ':');
@@ -27,7 +27,7 @@ for q = 1:numel(renm)
     nmold = strtrim(nmtmp{1});
     nmnew = strtrim(nmtmp{2});
 
-    pthpat = [pthparent '**/*' nmold '*'];
+    pthpat = [pthpar '**/*' nmold '*'];
     pth = rdir(pthpat);
     pthnew = cell(numel(pth),1);
     for k = 1:numel(pth)

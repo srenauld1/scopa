@@ -1,8 +1,9 @@
 function o = oset_fb8c(o)
 
+o.mn.do = ["sld", "daq", "roi"];
+
 rgname = {'fb8c'}; 
 
-o.mn.doroi = 1; 
 
 for m = 1:numel(rgname) 
 

@@ -198,7 +198,7 @@ else
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to '" + strtmp + "'" + newline)
                     elseif isstruct(strtmp)
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to the following struct: " + newline)
-                        printstruct(strtmp, 'structname', char(inp{k}))
+                        structprint(strtmp, 'structname', char(inp{k}))
                     else
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to " + strtmp + newline)
                     end

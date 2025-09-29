@@ -49,7 +49,7 @@ resprs = resprs(kp,:);
 if doplt
     nfr = 30;
     if isempty(pthgif)
-        pthgif = pathauto(suffix='discont.gif', usetime=1);
+        pthgif = pthauto(suffix='discont.gif', usetime=1);
     end
     hfg = figure;
     hax = axes(Parent=hfg);

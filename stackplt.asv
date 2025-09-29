@@ -64,7 +64,7 @@ fontsz = opt.fontsz;
 dosave = opt.dosave;
 
 if isempty(pthgif)
-    pthgif = pathauto(suffix='.gif', usetime=1);
+    pthgif = pthauto(suffix='.gif', usetime=1);
 end
 if isempty(dmplt)
     dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt

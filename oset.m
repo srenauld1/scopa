@@ -16,26 +16,24 @@ has special handling in ofill
 %}
 
 arguments
-    spec = '' % spec struct (see function stackfind), or char or cell of char specifying full path to stack(s); if the latter, can have wildcards *; if empty, will search for file using spec below;
+    spec = [] % spec struct (see function stackfind), or char or cell of char specifying full path to stack(s); if the latter, can have wildcards *; if empty, will search for file using spec below;
     opt.findstacks = 1 % find recordings using spec (or o.spec, if spec is empty); if you just want access to params and do not want to search for stacks, make findstacks=0
 end
 findstacks = opt.findstacks;
 
-%%%% dodf, git, scopausername, python path %%%%
+clear ofill
 
-dodf = 0; %set to 1 use all defaults in odf.m (skip all oset_* files)
 
-mn.usegit = 0; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
-mn.scopausername = userdatfile('scopausername'); %cw, wz, jf, yz, sr; (to route to different oset_* files below)
-mn.pthpy = fullfile(filesep, 'Users', 'wienecke', 'miniforge3', 'envs', 'caiman', 'bin', 'python3'); %path to python executable (if you want to run any python function from a2p, like mdsisv.py, or register.py, extract.py)
+%%%% make sure userdat.txt is set %%%%
+
+userdatfile()
 
 %%%% recording specifiers (used to find recordings if there is no input to a2p) %%%%
 
 if findstacks
 
     if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
-        spec.pthparloc = fullfile(filesep, 'Users', 'wienecke', 'stacks', filesep);
-        spec.pthparo2 = ''; %can leave blank if you keep experimental folders in the same folder that pthparloc ends with; a2p will automatically find it; otherwise fill this in to use o2
+        spec.pthpar = userdatfile('pthpar');
         spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
         spec.stackid = {'20250920*'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
         spec.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
@@ -44,18 +42,14 @@ if findstacks
         spec.suffix = {''}; %cell array of char (or char vector), can use wildcards, stack filename suffix to use; valid suffixes are defined in odf, d.spec.suffixchar_raw and d.spec.suffixchars; empty will find any (equivalent to '*')
         spec.substr = {''}; %cell array of char (or char vector), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr); empty will find any (equivalent to '*')
         spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffix; 'each' for matched indices of each of these specifiers (length 1 will be repeated to match anything longer)
-    else
-        if ischar(spec) || isstring(spec) || iscellstr(spec) || ( iscell(spec) && isstring(spec{1}) )
-            spec.pth = spec;
-        elseif ~isstruct(spec)
-            error("spec must be empty or char or string or cell of char or cell of string or struct")
-        end
+    elseif istextall(spec)
+        spec.pth = spec;
     end
 
     tmp = struct2pairs(spec);
     pthstacks = stackfind(tmp{:});
     if isempty(pthstacks)
-        error("NO STACKS FOUND USING YOUR STACK SPECIFIERS (EITHER SET IN OSET, OR PASSED INTO a2p)" + newline)
+        error("NO STACKS FOUND USING YOUR STACK SPECIFIERS" + newline)
     end
 
     idtmp = idmake(pthstacks);
@@ -64,108 +58,89 @@ end
 
 
 
-%%%% loop over found stacks in otmp, setting options depending on recording (and scopausername) %%%%
+%%%% loop over found stacks in idtmp, setting options (in oset_* files) specific to recording and scopausername %%%%
 
 for k = 1:numel(idtmp)
 
-    otmp2 = [];
+    otmp = []; %in case we don't enter any of the oset_* files below, empty otmp will invoke all default options when passed into ofill below
 
-    if dodf
+    switch userdatfile('scopausername')
 
-        otmp2 = otmp(k);
+        case 'wz'
 
-    else
+            if contains(idtmp(k).pthstack, {''}) %empty string means every recording
 
-        switch mn.scopausername
+                otmp = oset_wenyi();
 
-            case 'wz'
+            end
 
-                if contains(idtmp(k).pthstack, {''}) %empty string means every recording
+        case 'jf'
 
-                    otmp2 = oset_wenyi();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                end
+                otmp = oset_jingxuan();
 
-            case 'jf'
+            end
 
-                if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
+        case 'yz'
 
-                    otmp2 = oset_jingxuan();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                end
+                otmp = oset_yunzhi();
 
-            case 'yz'
+            end
 
-                if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
+        case 'sr'
 
-                    otmp2 = oset_yunzhi();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                end
+                otmp = oset_sophia();
 
-            case 'sr'
+            end
 
-                if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
+        case 'cw'
 
-                    otmp2 = oset_sophia();
+            if contains(idtmp(k).pthstack, {'ebgano'})
 
-                end
+                otmp = oset_ebgano();
 
-            case 'cw'
+            elseif contains(idtmp(k).pthstack, {'ganopb'})
 
-                if contains(idtmp(k).pthstack, {'ebgano'})
+                otmp = oset_ganopb();
 
-                    otmp2 = oset_ebgano();
+            elseif contains(idtmp(k).pthstack, {'elno'})
 
-                elseif contains(idtmp(k).pthstack, {'ganopb'})
+                otmp = oset_elno();
 
-                    otmp2 = oset_ganopb();
+            elseif contains(idtmp(k).pthstack, {'ebno'})
 
-                elseif contains(idtmp(k).pthstack, {'elno'})
+                otmp = oset_ebno();
 
-                    otmp2 = oset_elno();
+            elseif contains(idtmp(k).pthstack, {'opto'})
 
-                elseif contains(idtmp(k).pthstack, {'ebno'}) && ~contains(idtmp(k).pthstack, {'ebgano'})
+                otmp = oset_opto();
 
-                    otmp2 = oset_ebno();
+            elseif contains(idtmp(k).pthstack, {'fb8c'})
 
-                elseif contains(idtmp(k).pthstack, {'opto'})
+                otmp = oset_fb8c();
 
-                    otmp2 = oset_opto();
+            elseif contains(idtmp(k).pthstack, {'mito'})
 
-                elseif contains(idtmp(k).pthstack, {'fb8c'})
+                otmp = oset_mito();
 
-                    otmp2 = oset_fb8c();
+            elseif contains(idtmp(k).pthstack, {'312'})
 
-                elseif contains(idtmp(k).pthstack, {'mito'})
+                otmp = oset_312();
 
-                    % otmp2 = oset_mito();
-                    otmp2 = oset_mito2();
+            elseif contains(idtmp(k).pthstack, {'f91g'})
 
-                elseif contains(idtmp(k).pthstack, {'312'})
+                otmp = oset_t5();
 
-                    otmp2 = oset_312();
-
-                elseif contains(idtmp(k).pthstack, {'f91g'})
-
-                    otmp2 = oset_t5();
-
-                end
-
-            otherwise
-
-                error("scopausername not recognized, or empty; set mn.scopausername to one of the usernames that route oset into an oset_* file")
-
-        end
+            end
 
     end
 
-    if ~isempty(otmp2)
-        o(k) = ofill(otmp2, nest=1); %fill all options
-    else
-        if k==numel(otmp)
-            error("you must enter an oset_* file for at least one found recording in otmp, or you must make dodf=1")
-        end
-    end
+    o(k) = ofill(otmp, nest=1); %fill all options
 
 end
 
@@ -183,6 +158,8 @@ end
 %%%% finalize/organize options struct %%%%
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
+
+mn.usegit;% = 0; %1 to use git to sync with scopa remote repository to ensure integration across filesystems (eg for opt files); 0 to skip git
 
 try
     o = oid(o); %assign ids to options sets

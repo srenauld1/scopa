@@ -1,9 +1,18 @@
 function userdat = userdatfile(field, opt)
 
-% read/write user-specific data to/from txt file that is saved to scopa, but not version-controlled (listed in .gitignore)
+%{
+
+read/write user-specific data to/from file 'userdat.txt'
+userdat.txt is saved to scopa but not version-controlled (userdat.txt is in .gitignore)
+note pthscopa is automatically added below (does not rely on user input) to prevent accidental mismatch
+
+%}
 
 arguments
     field = []
+    opt.pthpar = []
+    opt.pthparo2 = []
+    opt.pthpy = []
     opt.scopausername = []
     opt.gittoken = []
     opt.gitbranch = []
@@ -28,7 +37,8 @@ else
     end
 end
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
+
 pthuserdat = [pthscopa 'userdat.txt'];
 
 if strcmpi(permission, 'read')
@@ -36,7 +46,13 @@ if strcmpi(permission, 'read')
     if isfile(pthuserdat)
         userdat = structld(pthuserdat);
     else
-        error(pthuserdat + " does not exist, in the command line, run userdatfile with all name-value arguments, and nothing else, like this (but fill in the blank value for each name-value argument): " + newline + "userdatfile(scopausername=, gittoken=, gitbranch=, gitusername=)")
+        fno = fieldnames(opt);
+        tmppr = sprintf('%s\n', fno{:});
+        error(pthuserdat + " does not exist on this filesystem" + newline + ...
+            "if you have userdat.txt on another filesystem, copy it to this filesystem" + newline + ...
+            "or, on this filesystem, in the command line, run userdatfile with all name-value arguments set, even if you have to set them to empty" + newline + ...
+            "if you run userdatfile in the command line on this filesystem, and do already have userdat.txt on another filesystem, make sure the arguments match those you used on the other filesystem" + newline + ...
+            "name-value arguments are: " + newline + tmppr(1:end-1))
     end
     if ~isempty(field)
         if isfield(userdat, field)
@@ -50,14 +66,11 @@ else
 
     tmp = dbstack;
     if isscalar(tmp) && strcmp(tmp.file, 'userdatfile.m')
-        if isfile(pthuserdat)
-            error(pthuserdat + " already exists, delete it and run userdatfile again")
-        else
-            userdat = opt;
-            structsv(userdat, pthuserdat, readonly=1, dosort=1);
-        end
+        userdat = opt;
+        userdat.pthscopa = pthscopa;  %add this automatically, to avoid accidental mismatch between real location output from pthscopaget, and location set here (if it were user input)
+        structsv(userdat, pthuserdat, overwrite=1, readonly=1, dosort=1);
     else
-        error("for security, you must run userdatfile with first argument 'w' from command line")
+        error("for security, when writing to userdat.txt, you must run userdatfile from command line")
     end
 
 end

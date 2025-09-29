@@ -6,13 +6,13 @@ from pathlib import Path
 import inspect
 
 
-def pathmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
+def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
     print("sys.path[0] returns: \n" + sys.path[0])
 
-    pth_scopa = pathscopaget()
+    pth_scopa = pthscopaget()
 
     if scopatmpdir:
         pth_scopatmpdir = scopatmpdir
@@ -86,7 +86,7 @@ def pathmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storag
 
 
 
-def pathscopaget():
+def pthscopaget():
     
     # Get the frame of the current function
     frame = inspect.currentframe()

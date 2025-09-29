@@ -89,7 +89,7 @@ if doplt
         dr = clip;
     end
     if isempty(pthgif)
-        pthgif = pathauto(suffix=['_50equidistantframes_dr_' clipstr '_.gif'], usetime=1);
+        pthgif = pthauto(suffix=['_50equidistantframes_dr_' clipstr '_.gif'], usetime=1);
     end
     stackplt(stack, dmplt='yxz(t)', it=-50, dr=dr, pthgif=pthgif)
 end

@@ -80,7 +80,7 @@ end
 matlab_dimorder_char = 'yxz';
 
 savedatsuffix = ['linfit_' lagstyle '_' num2str(pixfit) '_.mat'];
-pthdat = pathauto(suffix=savedatsuffix, usetime=0, usefun=0);
+pthdat = pthauto(suffix=savedatsuffix, usetime=0, usefun=0);
 
 stack = stack(:,:,:,:,chanuse);
 stackmnt = single(mean(stack, 4));
@@ -173,7 +173,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     %%%%%%%%%%% SETUP PLOT VARS %%%%%%%%%%%
 
     if isempty(pthgif)
-        pthgif = pathauto(suffix='.gif', usetime=1, usefun=1);
+        pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
     end
     [~, fldr, ~] = fileparts(fileparts(pthgif));
     fldr_title = strrep(strrep(fldr, '-', ' '), '_', ' ');

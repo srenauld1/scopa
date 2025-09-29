@@ -17,7 +17,7 @@ if strcmp(plt.fg, 'allrois') && isempty(roiwt)
 end
 
 if isempty(pthgif)
-    pthgif = pathauto(suffix='hsvmap.gif', usetime=1, usefun=1);
+    pthgif = pthauto(suffix='hsvmap.gif', usetime=1, usefun=1);
 end
 
 numscalebg = 256; %background intensity depth

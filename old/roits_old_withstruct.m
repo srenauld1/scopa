@@ -32,7 +32,7 @@ if isempty(roiwt)
     roiwt = 1;
 end
 if isempty(pthpre)
-    pthpre = pathauto(suffix='.gif', usetime=1);
+    pthpre = pthauto(suffix='.gif', usetime=1);
 end
 if isempty(t) && ( ~isempty(wavp) || channorm~=0 )
     error("must pass in t if passing wavp or channorm (must have t to apply wavelet filtering or wavelet cohernece based 2-channel normalization)")

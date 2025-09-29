@@ -4,8 +4,7 @@ function pth_all = stackfind(opt)
 
 arguments
     opt.pth = [] %full path pattern, can have wildcards (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators); if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr inputs
-    opt.pthparloc = [] %path to parent folder (containing all stacks) on local filesystem (see pathparentget)
-    opt.pthparo2 = []%path to parent folder (containing all stacks) on o2 (see pathparentget)
+    opt.pthpar = [] %path to parent folder containing all stacks (this function searches for stacks recursively within pthpar) 
     opt.stackid = [] %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
     opt.recdate = []%char or number, alone or in cell
     opt.fly = [] %char or number, alone or in cell
@@ -19,8 +18,7 @@ arguments
 end
 opt = glboropt(opt);
 pth = opt.pth;
-pthparloc = opt.pthparloc;
-pthparo2 = opt.pthparo2;
+pthpar = opt.pthpar;
 stackid = opt.stackid;
 recdate = opt.recdate;
 fly = opt.fly;
@@ -95,13 +93,15 @@ end
 
 if isemptyall(pth)
 
-    pthparent = pathparentget(loc=pthparloc, o2=pthparo2);
+    if isempty(pthpar)
+        pthpar = pthparget();
+    end
 
     fspc = expand_fn_specifiers(match, recdate, fly, trial, suffix, substr);
 
     pth_prefix_all = [];
     for k = 1:numel(fspc.recdate)
-        pth_prefix_all_onespec = stackfind_onespec(fspc.recdate{k}, fspc.fly{k}, fspc.trial{k}, fspc.suffix{k}, fspc.substr{k}, pthparent, suffixchar_raw, suffixchars);
+        pth_prefix_all_onespec = stackfind_onespec(fspc.recdate{k}, fspc.fly{k}, fspc.trial{k}, fspc.suffix{k}, fspc.substr{k}, pthpar, suffixchar_raw, suffixchars);
         pth_prefix_all = cat(1, pth_prefix_all, vec(pth_prefix_all_onespec));
     end
 
@@ -131,7 +131,7 @@ end
 if isempty(pth_prefix_all)
     if isemptyall(pth)
         for k = 1:numel(fspc.recdate)
-            fspcstr = sprintf("pthparent: " + pthparent + newline + "recdate: " + fspc.recdate{k} + newline + "fly: " + fspc.fly{k} + newline + "trial: " + fspc.trial{k} + newline + "suffix: " + fspc.suffix{k} + newline + "substr: " + fspc.substr{k});
+            fspcstr = sprintf("pthpar: " + pthpar + newline + "recdate: " + fspc.recdate{k} + newline + "fly: " + fspc.fly{k} + newline + "trial: " + fspc.trial{k} + newline + "suffix: " + fspc.suffix{k} + newline + "substr: " + fspc.substr{k});
             fprintf(newline + "WARNING, NO FILES FOUND WITH match '" + match + "' AND FILENAME SPECIFIERS:" + newline + fspcstr + newline)
         end
     else
@@ -194,10 +194,10 @@ end
 
 
 
-function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthparent, suffixchar_raw, suffixchars)
+function pth_prefix_all = stackfind_onespec(recdate, fly, trial, suffix, substr, pthpar, suffixchar_raw, suffixchars)
 
 %%SCOPA PATTERN, TIF AND MAT
-fn_pattern_tif = [pthparent '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
+fn_pattern_tif = [pthpar '**' filesep recdate '_' fly '_' trial '_' suffix '_.tif']; %double asterisk is 0 or more directories
 valid_tif_fns = ['^\d*_\d*_\d*_' suffixchar_raw '(' strjoin(strcat(suffixchars, '*'), '') ')*_.tif$'];
 pth_all_tif = rdir(fn_pattern_tif);
 [~, fn_all_tif, fn_ext] = fileparts({pth_all_tif.name});
@@ -216,9 +216,9 @@ pth_all_mat = pth_all_mat(~cellfun(@isempty, regexp({pth_all_mat.name}, regexptr
 %%FLYG RAW PATTERN, TIF AND MAT
 if strcmp(suffix, 'o') || strcmp(suffix, '*')
     if strcmp(trial, '*')
-        fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
+        fn_pattern_flyg_raw_tif = [pthpar '**' filesep recdate '-' fly '_*_trial_*_*.tif']; %double asterisk is 0 or more directories
     else
-        fn_pattern_flyg_raw_tif = [pthparent '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03s', trial ) '_*.tif']; %double asterisk is 0 or more directories
+        fn_pattern_flyg_raw_tif = [pthpar '**' filesep recdate '-' fly '_*_trial_' sprintf( '%03s', trial ) '_*.tif']; %double asterisk is 0 or more directories
     end
     pth_all_flyg_raw_tif = rdir(fn_pattern_flyg_raw_tif);
     pth_all_flyg_raw_tif = pth_all_flyg_raw_tif(~cellfun(@isempty, regexp({pth_all_flyg_raw_tif.name}, regexptranslate('wildcard', substr))));

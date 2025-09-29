@@ -500,7 +500,7 @@ end
 %%%% HISTOGRAM %%%%
 
 if ismember('hist', pltstr)
-    pthgif = pathauto(suffix='.gif', usetime=1);
+    pthgif = pthauto(suffix='.gif', usetime=1);
     hfg = figure;
     hax = axes(Parent=hfg);
     for k = 1:size(bmpi,1)

@@ -64,7 +64,6 @@
     "update_background_components": true,
     "use_cnn": 0
   },
-  "copybin": "",
   "daq": {
     "balldia": 9,
     "slopelensec": 0.4,
@@ -124,7 +123,6 @@
       "t"
     ]
   },
-  "delimflat": "__",
   "fmf": {
     "crop_edges": 1,
     "downsample_template": 1,
@@ -134,37 +132,11 @@
     "gridres": 256,
     "id": "CON_51",
     "it": -100,
-    "pthparent": [],
+    "pthpar": [],
     "pthtemplate": [],
     "rep": 1,
     "stimtype": "drone",
     "vistype": "plane"
-  },
-  "ftv": {
-    "numpkthr": 10,
-    "numpx": 10,
-    "smlenpx": 2,
-    "smlensec": 1
-  },
-  "full": 0,
-  "id": [],
-  "imhsv": {
-    "fg": "allrois",
-    "hrange_in_manual": [],
-    "hrange_out_manual": [0,0.6],
-    "huenorm": "native",
-    "hueshift": 0,
-    "huestr": "",
-    "ignorehue": 0,
-    "ignoresat": 0,
-    "ignoreval": 0,
-    "mdlname": "",
-    "satnorm": "relative",
-    "srange_in_manual": [],
-    "srange_out_manual": [0,1],
-    "valnorm": "relative",
-    "vrange_in_manual": [],
-    "vrange_out_manual": [0,1]
   },
   "ma": {
     "celsz": 8,
@@ -198,49 +170,41 @@
     "valnum": 0,
     "valsplit": "boutsamples"
   },
-  "meta": [
-    "meta",
-    "copybin",
-    "full",
-    "id",
-    "delimflat",
-    "onest"
-  ],
   "mm": {
     "chanstr": "all",
     "mmname": "none"
   },
   "mn": {
     "copybindf": "none",
-    "dirtmp": "scopatmp",
+    "delimflat": "__",
     "dmstackdf": "yxztck",
-    "dobmp": 0,
-    "domdl": 0,
-    "dofmf": 0,
-    "dopltx": 0,
-    "doroi": 0,
-    "obin_ided": [
+    "do": [
+      "sld",
+      "daq"
+    ],
+    "onest": [
+      "mn",
       "sld",
       "daq",
       "roi",
+      "roi.mm",
+      "roi.ma",
+      "roi.cm",
+      "roi.qc",
+      "roi.nrm",
       "bmp",
+      "bmp.mdl",
+      "bmp.mdl.opg",
+      "bmp.mdl.opl",
       "mdl",
+      "mdl.opg",
+      "mdl.opl",
       "fmf"
     ],
     "optiddf": "z0",
-    "optinert": [
-      "sp",
-      "tp",
-      "imhsv",
-      "tg",
-      "savemem",
-      "optid"
-    ],
     "plt": "",
-    "pltvis": 1,
     "pthpy": "",
     "scopausername": "",
-    "timestr": "",
     "usegit": 0
   },
   "nrm": {
@@ -251,39 +215,6 @@
     "pre": "f",
     "wavp": []
   },
-  "onest": [
-    "spec",
-    "mn",
-    "daq",
-    "sld",
-    "roi",
-    "bmp",
-    "mdl",
-    "pltx",
-    "fmf",
-    "roi.mm",
-    "roi.ma",
-    "roi.cm",
-    "roi.qc",
-    "roi.nrm",
-    "roi.sp",
-    "roi.imhsv",
-    "mdl.sp",
-    "mdl.tp",
-    "mdl.opg",
-    "mdl.opl",
-    "bmp.mdl",
-    "bmp.mdl",
-    "bmp.mdl.sp",
-    "bmp.mdl.tp",
-    "bmp.mdl.opg",
-    "bmp.mdl.opl",
-    "daq.ftv",
-    "copybin",
-    "full",
-    "id",
-    "onest"
-  ],
   "opg": {
     "NumTrialPoints": 1000,
     "BasinRadiusFactor": 0.2,
@@ -326,19 +257,6 @@
     "UseParallel": false,
     "Algorithm": "interior-point"
   },
-  "pltx": {
-    "doui": 1,
-    "dr": [0,1],
-    "epochnum": 1,
-    "it": [],
-    "iz": [],
-    "lags_to_plot": "best",
-    "lagsxy_sec": [0,0,1,0],
-    "lagsz_sec": [0,0,1,0],
-    "plot_z_as_color": 1,
-    "vpmapl": [1,2,3,4],
-    "vpmapr": [5,6,7,8]
-  },
   "qc": {
     "inmaskthr": 0.5,
     "maxregperroi": 4,
@@ -364,66 +282,11 @@
     "ix": [],
     "iy": [],
     "iz": [],
-    "savemem": 0,
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
     "stackdtype": "uint16",
     "trm": [],
     "zerostack": 1
-  },
-  "sp": {
-    "dr": [0,1],
-    "ir": [],
-    "it": -100,
-    "iz": [],
-    "roi_color": [1,0,0],
-    "roialpha": 0.3
-  },
-  "spec": {
-    "fly": "",
-    "match": "each",
-    "pth": "",
-    "pthparloc": "",
-    "pthparo2": "",
-    "recdate": "",
-    "stackid": "",
-    "substr": "",
-    "suffix": "",
-    "suffixchar_raw": "o",
-    "suffixchars": [
-      "r",
-      "d",
-      "b",
-      "s"
-    ],
-    "trial": ""
-  },
-  "spr": {
-    "suffixplt": [
-      "r",
-      "d",
-      "b",
-      "s"
-    ]
-  },
-  "tg": {
-    "group": "1",
-    "group2": "1",
-    "ic": [],
-    "ii": [],
-    "it": [],
-    "obin": [],
-    "optid": [],
-    "recid": "curr",
-    "stackid": "curr",
-    "vnm": []
-  },
-  "tp": {
-    "max_tinds": 1000,
-    "maxnumroiplot": 100,
-    "predlot_norm": "each",
-    "sort_method": "unbiased",
-    "timeseries_numsegments": 3
   }
 }

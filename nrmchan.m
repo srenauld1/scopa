@@ -75,7 +75,7 @@ numsamp = numel(resp1);
 lev = floor(log2(numsamp));
 
 if isempty(pthpre)
-    pthpre = pathauto();
+    pthpre = pthauto();
 end
 fngif = [pthpre 'resp_mra_.gif'];
 

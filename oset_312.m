@@ -1,8 +1,8 @@
 function o = oset_312(o)
 
-rgname = {'none'}; 
+o.mn.do = ["sld", "daq", "roi"];
 
-o.mn.doroi = 1; 
+rgname = {'none'}; 
 
 o.sld.ic = [];
 

@@ -48,7 +48,7 @@ if isempty(stack) && ~isTilde(1)
 end
 
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 

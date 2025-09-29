@@ -14,7 +14,7 @@ can call ofill in different ways
     one argument sets options for fields in optin, setting default for options not listed 
     two arguments sets options for d.obin only, even if obin don't appear in optin (if they don't they will be all default); obin can be nested (obin1.obin2)
     three arguments creates struct(s) (names in copybin) within obin
-    name-value argument 'findstacks': if findstacks=1, will find stacks matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); findstacks mode must have 'spec' obin in optin, or 'spec' as obin second argument; if findstacks=0, will not search for stacks, but will keep found stacks in input struct and put them in the output struct
+    name-value argument 'findstacks': if findstacks=1, will find stacks matching user supplied stack file specifiers (or default specifiers, if no user supplied specifiers); 
 
 struct d holds all default options;
 fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
@@ -29,22 +29,22 @@ arguments
     optin = [] %input options struct for overwriting defaults in default options struct d; can be omitted to just invoke defaults for all obin listed in obin (or all possible obin is obin is empty)
     obin = [] %char, or cell of char; empty char '' is the same as all obin (do not use []); if nonempty, and copybin is nonempty, update obin and place results in copybin, and update ~obin without placing in copybin; if nonempty and copybin is empty, just update obin; if empty and copybin is nonempty, update all and place all in copybin
     copybin = [] %char, or cell of char, or empty to skip; subfields into which obin is copied
-    opt2.findstacks = 0 %whether to use spec to find stacks, or skip
     opt2.nest = 0; %0 or 1; whether to fill all default nestings listed in d.onest (in odf.m); if obin is nonempty, will fill all nests in input obin only; if obin is empty will fill all nestings for entire options struct; nest=1 is not necessary for an obin that has no nested obin (so it will error in this case)
     opt2.unpack = 0; %if output is a single obin, do not nest in enclosing struct (you will lose the name of the obin in the output)
     opt2.wild = 0; %all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*'
     opt2.pthopt = [] %path to default options file; if empty, uses default path
 end
-findstacks = opt2.findstacks;
 nest = opt2.nest;
 unpack = opt2.unpack;
 wild = opt2.wild;
 pthopt = opt2.pthopt;
 
-istext = @(x) ischar(x) || isstring(x) || iscellstr(x) || ( iscell(x) && isstring(x{1}) );
+% persistent copybin
 
-if istext(optin)  % check if optin was omitted, if so, first argument was obin; update arguments accordingly
-    if istext(obin)
+istextall = @(x) ischar(x) || isstring(x) || iscellstr(x) || ( iscell(x) && isstring(x{1}) );
+
+if istextall(optin)  % check if optin was omitted, if so, first argument was obin; update arguments accordingly
+    if istextall(obin)
         copybin = obin;
     end
     obin = optin;
@@ -60,7 +60,7 @@ end
 if ~isequal(numel(obin), numel(unique(obin)))
     error("you cannot pass in repeat obins")
 end
-if ~istext(obin)
+if ~istextall(obin)
     error("obin must be empty or char or string or cell of char or cell of string")
 end
 if isemptyall(copybin)
@@ -72,13 +72,13 @@ end
 if ~isequal(numel(copybin), numel(unique(copybin)))
     error("you cannot pass in repeat copybins")
 end
-if ~istext(copybin)
+if ~istextall(copybin)
     error("copybin must be empty or char or string or cell of char or cell of string")
 end
 
-%%%% load defaults %%%%
+%%%% load default options with odf.m %%%%
 
-pthscopa = pathscopaget();
+pthscopa = pthscopaget();
 if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
@@ -90,8 +90,10 @@ end
 if isfile(pthopt)
     d = structld(pthopt, nocells=1, dosort=0);
 else
-    error(sprintf("cannot find default options file, '" + pthopt + "', run odf.m to create it"))
+    error("cannot find default options file: " + pthopt + newline + "run command 'odf' to create it")
 end
+
+%%%% optional setting all options to wildcard %%%%
 
 if wild %fill d with wildcard, except meta fields
     wcpat = '*';
@@ -105,28 +107,17 @@ if wild %fill d with wildcard, except meta fields
     d = structunflat(d, delim=d.delimflat);
 end
 
-%%%% fill options %%%%
+%%%% ofill_scalar %%%%
 
-if findstacks %if findstacks=1, optin must be scalar
-    if numel(optin)>1
-        error("if findstacks is true, optin must be scalar")
-    end
-    % if isequal(nest, 1)
-    %     error("findstacks cannot be true when nest is true" + newline)
-    % end
-    if wild
-        error("findstacks cannot be true when wild is true" + newline)
-    end
-    optout = ofill_scalar(d, optin, obin, copybin, findstacks, nest, wild, pthscopa);
-else %otherwise, optin can be nonscalar
-    if isempty(optin)
-        optout = ofill_scalar(d, optin, obin, copybin, findstacks, nest, wild, pthscopa); 
-    else
-        for k = numel(optin):-1:1 %in case optout is nonscalar, loop over each element, calling ofill_scalar; backward to preallocate
-            optout(k) = ofill_scalar(d, optin(k), obin, copybin, findstacks, nest, wild, pthscopa); 
-        end
+if isempty(optin)
+    optout = ofill_scalar(d, optin, obin, copybin, nest, wild, pthscopa);
+else
+    for k = numel(optin):-1:1 %in case optout is nonscalar, loop over each element, calling ofill_scalar; backward to preallocate
+        optout(k) = ofill_scalar(d, optin(k), obin, copybin, nest, wild, pthscopa);
     end
 end
+
+%%%% optional unpack %%%%
 
 if unpack
     if ~isscalar(optout)
@@ -144,7 +135,7 @@ end
 
 
 
-function optout = ofill_scalar(d, optin, obin, copybin, findstacks, nest, wild, pthscopa)
+function optout = ofill_scalar(d, optin, obin, copybin, nest, wild, pthscopa)
 
 
 if isfield(optin, 'full') && isequal(optin.full, 1)
@@ -173,8 +164,8 @@ if isempty(optin) || isempty(fieldnames(optin))
         end
     else
         for k = 1:numel(obin)
-            if ~isfield(d, obin{k}) && ~ismember(obin{k}, d.onest)
-                error(sprintf(obin{k}) + " does not exist in default options struct d, defined in odf.m, and " + obin{k} + " does not exist in d.onest")
+            if ~ismember(obin{k}, d.onest)
+                error(obin{k} + " does not exist in default options struct d, defined in odf.m, and " + obin{k} + " does not exist in d.onest")
             end
             if contains(obin{k}, '.') %if optin is empty but there's a nested obin (a valid one, listed in d.onest)
                 obin_split = strsplit(obin{k}, '.');
@@ -221,7 +212,7 @@ else
         for kk = 1:numel(obin)
             for k = 1:numel(fndf)
                 if sum(cellfun(@numel, regexp(strsplit(obin{kk}, '.'), ['^' fndf{k} '$'])))>1
-                    error(sprintf("you have multiple copies of obin " + fndf{k} + " and possibly others; in a nested obin each obin can only appear once, for now at least"))
+                    error("you have multiple copies of obin " + fndf{k} + " and possibly others; in a nested obin each obin can only appear once, for now at least")
                 end
             end
         end
@@ -261,7 +252,7 @@ else
                 ignorefields_for_full_nested_obin = unique([ignorefields_for_full_nested_obin, copybin_previous, obin_deepest]); %must ignore copybin_previous and obin_deepest in structfill on the full nested obin branch (otherwise the obin enclosing the new copybin, obin_deepest, will get populated with defaults, but this is only needed if copybin is nonempty
             end
             if ~isfield(d, obin_shallowest)
-                error(sprintf("d." + obin_shallowest) + " does not exist; nested obin must start with primary obin directly under optout")
+                error("d." + obin_shallowest + " does not exist; nested obin must start with primary obin directly under optout")
             end
             if ismember(obin{k}, fnflat_obin_only) %if the nested obin exists in optin, grab the deepest obin
                 sind = structind(obin{k});
@@ -272,7 +263,7 @@ else
                 eval(['optin_deepest.' obin_deepest ' = optin.' obin{k} ';']); %use eval to succinctly extract nested field
             else %if the nesting doesn't exist in optin, create it with defaults in the deepest layer, and nothing above
                 if ~isfield(d, obin_deepest)
-                    error(sprintf("d." + obin_deepest) + " does not exist")
+                    error("d." + obin_deepest + " does not exist")
                 end
                 optin_deepest.(obin_deepest) = d.(obin_deepest);
             end
@@ -296,7 +287,7 @@ else
                 if isfield(d, obin{k})
                     optin_tmp.(obin{k}) = d.(obin{k}); %if obin{k} is not in optin, use all defaults 
                 else
-                    error(sprintf("you requested obin " + obin{k} + ", but d." + obin{k}) + " does not exist")
+                    error("you requested obin " + obin{k} + ", but d." + obin{k} + " does not exist")
                 end
             end
         end
@@ -324,32 +315,6 @@ if ~isempty(copybin)
 end
 
 optout = structsort(optout, vectype='row');
-
-
-%% find stacks
-
-
-if findstacks
-
-    tmp = struct2pairs(optout.spec);
-    pthstacks = stackfind(tmp{:});
-    if isempty(pthstacks)
-        fprintf("NO STACKS FOUND USING YOUR STACK SPECIFIERS (EITHER SET IN OSET, OR PASSED INTO a2p)" + newline)
-    end
-
-    idtmp = idmake(pthstacks);
-    numstacks = numel(idtmp);
-
-    if isfield(optout, 'id') && ~isempty(optout.id)
-        fprintf("WARNING, UPDATING FIELD id" + newline)
-    end
-    optout = repelem(optout, numstacks);
-    for h = 1:numstacks
-        optout(h).id = idtmp(h);
-    end
-
-end
-
 
 
 %% nest (fill all nestings, and set globals, this is forced to be the last step in creating options struct)
@@ -436,10 +401,10 @@ if nest
     end
 
     %%%% this global may or may not be automatically derived (from obin 'spec'), depending on where this is being run %%%%
-    if isempty(glb('pthparent'))
+    if isempty(glb('pthpar'))
         if ( isfield(optout, 'spec') && isempty(obin) ) || ( ~isempty(obin) && any(~cellfun(@isempty, regexp(obin, '(^spec$|\.spec$|^spec(\.){1}\w+$)'))) )
-            pthparent = pathparentget(loc=optout.spec.pthparloc, o2=optout.spec.pthparo2);
-            glb(pthparent=pthparent)
+            pthpar = pthparget(loc=optout.spec.pthpar, o2=optout.spec.pthparo2);
+            glb(pthpar=pthpar)
         end
     end
 

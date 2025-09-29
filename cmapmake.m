@@ -127,7 +127,7 @@ end
 if doplt
     figure; imagesc(1:256); colormap(cmap);
     try
-        pthsv = pathauto(suffix='cmap.png', usetime=1, usefun=1);
+        pthsv = pthauto(suffix='cmap.png', usetime=1, usefun=1);
         saveas( gcf, pthsv)
     catch ME
         fprintf("cannot save cmap demo figure, error message is: " + ME.message + newline)

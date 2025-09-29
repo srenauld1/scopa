@@ -8,7 +8,7 @@ end
 %THIS IS JUST EXPLORATORY
 
 if isempty(pthsv)
-    pthsv = pathauto(suffix='.gif', usetime=1);
+    pthsv = pthauto(suffix='.gif', usetime=1);
 end
 
 

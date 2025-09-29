@@ -13,7 +13,7 @@ if framecount==1
     pthtmp = [];
 end
 if isempty(pthtmp)
-    pthtmp = pathauto(suffix='.gif', usetime=1);
+    pthtmp = pthauto(suffix='.gif', usetime=1);
 end
 if isempty(pthgif)
     pthgif = pthtmp;

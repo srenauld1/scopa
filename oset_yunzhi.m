@@ -1,6 +1,6 @@
 function o = oset_yunzhi(o)
 
-o.mn.doroi = 1; %make/load/process rois
+o.mn.do = ["sld", "daq", "roi"];
 
 o.roi.domm = 1; %do draw rois (since doma=1, you will be limited to drawing one roi; morphological segmentation will occur within this drawn roi)
 o.roi.mm.mmname = 'fb8c'; %name of drawn roi, for filename

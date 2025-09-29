@@ -2,9 +2,8 @@ function o = oset_t5(o)
 
 rgname = {'t5', 'tm'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-o.mn.doroi = 1; 
-o.mn.dofmf = 1; 
-o.mn.domdl = 1; 
+o.mn.do = ["sld", "roi", "fmf", "mdl"];
+
 
 o.sld.trm = [4,2];
 
@@ -30,7 +29,7 @@ o.mdl.lensec = 1.25;
 
 o.fmf.stimtype = 'drone';
 o.fmf.id = 'CON_51';
-o.fmf.pthparent = '/Users/wienecke/ds/data/rec';
+o.fmf.pthpar = '/Users/wienecke/ds/data/rec';
 o.fmf.pthtemplate = '/Users/wienecke/ds/data/stimuli';
 
 for m = 1:numel(rgname) 

@@ -74,7 +74,7 @@ for ai = 1:length(angrs)
         nfr = 30;
         pthgif = [];
         if isempty(pthgif)
-            pthgif = pathauto(suffix='discont_oldrs_.gif', usetime=1);
+            pthgif = pthauto(suffix='discont_oldrs_.gif', usetime=1);
         end
         hfg = figure;
         hax = axes(Parent=hfg);

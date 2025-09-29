@@ -31,7 +31,7 @@ classdef stackmixo < stackfindo
             end
 
 
-            pthscopa = pathscopaget();
+            pthscopa = pthscopaget();
             scopausername = userdatfile('scopausername');
 
             pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];

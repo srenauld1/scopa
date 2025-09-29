@@ -9,10 +9,10 @@ see docs_a2p
 function a2p(spec)
 
 arguments
-    spec = '' %optional; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); if the latter, can have wildcards *; ; if empty, recording(s) searched for in oset>ofill>stackfind using stack specifiers in function 'oset' (in struct otmp.spec)
+    spec = [] %optional; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); if the latter, can have wildcards *; ; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in function 'oset' (in struct spec)
 end
 
-close all; clc; clear glb tsget; clearvars -except spec; 
+close all; clc; clear glb tsget ofill; clearvars -except spec; 
 
 %% options
 
