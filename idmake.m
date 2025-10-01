@@ -6,9 +6,11 @@ arguments
     pthstacks %full path to stacks will fill all fields; if you just input stack filename, path fields will be empty; if you just input recdate_fly_trial, only those fields will be derived
 end
 
-if ~iscell(pthstacks)
+if ~isempty(pthstacks) && ~iscell(pthstacks)
     pthstacks = {pthstacks};
 end
+
+id = [];
 
 for k = 1:numel(pthstacks)
 

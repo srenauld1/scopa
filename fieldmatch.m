@@ -52,7 +52,7 @@ if ~isstruct(s)
     end
 end
 
-sf = structflat(s, delimflat=delimflat);
+sf = structflat(s, delim=delimflat);
 fna = fieldnames(sf);
 vala = struct2cell(sf);
 

@@ -39,7 +39,6 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; 
-    o.roi.sp.dr = {[0 0.5], [0 0.25]};
 
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = 3;

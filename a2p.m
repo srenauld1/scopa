@@ -6,17 +6,18 @@ see docs_a2p
 
 %}
 
-function a2p(spec)
+function a2p(usegit, spec)
 
 arguments
-    spec = [] %optional; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); if the latter, can have wildcards *; ; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in function 'oset' (in struct spec)
+    usegit logical = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
+    spec = [] % optional input; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); wildcards * are allowed; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in oset (in struct spec)
 end
 
-close all; clc; clear glb tsget ofill; clearvars -except spec; 
+close all; clc; clear glb tsget ofill; clearvars -except spec usegit; 
 
 %% options
 
-oa = oset(spec); % set options; oa stands for "o all" (ie options for all recordings)
+oa = oset(spec, usegit=usegit); % set options; oa stands for "o all" (ie options for all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 

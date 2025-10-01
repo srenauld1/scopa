@@ -30,8 +30,8 @@ if tsgetcall
     copybin = {};
     onest = glb('onest'); %maybe don't put onest anywhere but glb? right now it's also in main oa struct, but we don't have access to that when this function is called from oid>tsget
 else
-    copybin = optin.copybin;
-    onest = optin.onest;
+    copybin = glb('copybin');
+    onest = glb('onest'); %optin.mn.onest;
 end
 
 onest = onest(contains(onest, obin) & ~cellfun(@(x) isequal(x,obin), onest)); %remove onest not in this obin, and onest that match obin itself

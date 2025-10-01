@@ -1,4 +1,4 @@
-function pth_all = stackfind(opt)
+function pthstacks = stackfind(opt, opt2)
 
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass in choose_ext as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
@@ -15,6 +15,7 @@ arguments
     opt.ext = 'mat' % 'both' will return both mat and tif files for the same stack, if both exist; 'mat' will return mat if tif and mat, or only mat, are found; 'tif' will return tif if tif and mat, or only tif, are found
     opt.suffixchar_raw = 'o'; %stack suffix character for original/raw scanimage output files, also first character on processed stacks; for flyg users, except carl, original scanimage output files will not actually have suffix 'o' (they are named with flyg convention); carl renames the flyg/scanimage original files with suffix 'o'
     opt.suffixchars = {'r', 'd', 'b', 's'}; %all valid stack suffix characters output by scopa preprocessing pipeline (pl.py, pl.sh); r=registered, d=denoised, b=background-subtracted, s=scannoise-removed; can appear in any order, multiple times; suffix denotes preprocessing steps applied to stack; suffixchar_raw (defined above) can only appear once, at the beginning of the suffix (e.g., ord means registered then denoised, o alone means original/unprocessed)
+    opt2.err = 0 %error if no stacks found
 end
 opt = glboropt(opt);
 pth = opt.pth;
@@ -29,6 +30,7 @@ match = opt.match;
 ext = opt.ext;
 suffixchar_raw = opt.suffixchar_raw;
 suffixchars = opt.suffixchars;
+err = opt2.err;
 
 validtext = @(x) ~iscellnested(x) && ( isemptyall(x) || ischar(x) || ( iscell(x) && all(cellfun(@ischar, x)) ) );
 if ~validtext(stackid) || ~validtext(suffix) || ~validtext(substr)
@@ -137,15 +139,19 @@ if isempty(pth_prefix_all)
     else
         fprintf(newline + "WARNING, NO FILES FOUND MATCHING INPUT PATHS OR PATH PATTERNS" + newline)
     end
-    pth_all = [];
+    pthstacks = [];
 else
-    pth_all = choose_ext(pth_prefix_all, ext); %keep mat and remove tif if they are for the same recording
-    check_for_duplicate_specifiers(pth_all); %why do we care about this if we have check_for_duplicate_filenames (and that doens't even matter)?
-    check_for_duplicate_filenames(pth_all);
+    pthstacks = choose_ext(pth_prefix_all, ext); %keep mat and remove tif if they are for the same recording
+    check_for_duplicate_specifiers(pthstacks); %why do we care about this if we have check_for_duplicate_filenames (and that doens't even matter)?
+    check_for_duplicate_filenames(pthstacks);
 end
 
-if isscalar(pth_all)
-    pth_all = pth_all{1};
+if isscalar(pthstacks)
+    pthstacks = pthstacks{1};
+end
+
+if ~isequal(err, 0) && isempty(pthstacks)
+    error("NO STACKS FOUND WITH YOUR STACK SPECIFIERS IN pthpar " + pthpar + newline)
 end
 
 
@@ -245,17 +251,17 @@ pth_prefix_all = unique(cellfun(@(x) x(1:end-4), {pth_prefix_all(:).name}, 'Unif
 end
 
 
-function pth_all = choose_ext(pth_prefix_all, ext)
+function pthstacks = choose_ext(pth_prefix_all, ext)
 
-pth_all = {};
+pthstacks = {};
 for k = 1:numel(pth_prefix_all)
     tmpmat = [pth_prefix_all{k} '.mat'];
     tmptif = [pth_prefix_all{k} '.tif'];
     if isfile(tmpmat) && ~( strcmp(ext, 'tif') && isfile(tmptif) )
-        pth_all = cat(2, pth_all, tmpmat);
+        pthstacks = cat(2, pthstacks, tmpmat);
     end
     if isfile(tmptif) && ~( strcmp(ext, 'mat') && isfile(tmpmat) )
-        pth_all = cat(2, pth_all, tmptif);
+        pthstacks = cat(2, pthstacks, tmptif);
     end
 end
 
@@ -264,14 +270,14 @@ end
 
 
 
-function check_for_duplicate_specifiers(pth_all)
+function check_for_duplicate_specifiers(pthstacks)
 
-for k = 1:numel(pth_all)
-    id = idmake(pth_all{k});
+for k = 1:numel(pthstacks)
+    id = idmake(pthstacks{k});
     tmp{k} = [id.recdate '_' id.fly '_' id.trial '_' id.suffix];
 end
 if numel(tmp)~=numel(unique(tmp))
-    fprintf([sprintf('there are at least two found files with the same extension and same specifiers: date, fly, trial, and suffix (note suffix is "o" for original stack, whether named with flyg or scopa format); be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks: '), newline, sprintf('%s \n', pth_all{:})])
+    fprintf([sprintf('there are at least two found files with the same extension and same specifiers: date, fly, trial, and suffix (note suffix is "o" for original stack, whether named with flyg or scopa format); be sure duplicate specifiers belong to different recordings (e.g. in different locations, which can be distinguished with specifier "substr"); here are all found stacks: '), newline, sprintf('%s \n', pthstacks{:})])
 end
 
 end

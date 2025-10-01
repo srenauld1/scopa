@@ -1,12 +1,14 @@
-%% Create struct
-nn = numel(fn);
-for ii = 1:nn
-    Value         = eval(fn(ii));
-    VarName       = VarNames(ii);
-    out.(VarName) = Value;
-end
+
 
 %{
+
+FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
+FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE OBIN, SO OID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant obins that get removed in ored, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
+FIX: ORED NEEDS TO REMOVE NONFUNCTIONAL OBIN AT ANY NESTING 
+when constructing o, you can only append obin or option listed in odf;
+options can be structs themselves, but defaults for all fields have to be defined oin odf
+the only time a struct can appear within an option is struct tg, which has special handling in ofill
+
 
 disallow copybins unless user runs them through oid, since they should be temporary bins on way to id??
 should cb_key convert key+modifier to intended key? for example semicolon+shift convert to colon, in cb_key rather than where it gets used?

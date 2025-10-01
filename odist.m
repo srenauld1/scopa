@@ -20,7 +20,7 @@ optout = struct;
 for k = 1:numel(fn)
     copybintmp = fn{k};
     copybinstruct = optin.(copybintmp);
-    optflat = structflat(copybinstruct, delimflat=delimflat); % prefix=copybintmp);
+    optflat = structflat(copybinstruct, delim=delimflat); % prefix=copybintmp);
     fnflat = fieldnames(optflat);
 
     % if any(~cellfun(@isempty, regexp(fnflat,[delimflat '(\d+)' delimflat])))
@@ -74,7 +74,7 @@ end
 
 fn = fieldnames(optout);
 for k = 1:numel(fn)
-    optout.(fn{k}) = structunflat(optout.(fn{k}), delimflat=delimflat);
+    optout.(fn{k}) = structunflat(optout.(fn{k}), delim=delimflat);
 end
 
 

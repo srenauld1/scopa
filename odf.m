@@ -360,23 +360,33 @@ tmp = split(d.daq.vrenm, '=');
 if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vyvnom", "vy", "vyv", "bf", "bfv", "bs", "bsv", "by", "byv", "ftcam"])
     error("you cannot change new names for the daq in d.daq.vrenm if you're running a2p")
 end
-if ~isequal(d, structunflat(structflat(d)))
-    error("at least one of the default values above is an empty struct; empty structs are not allowed to be default values (although empty vector, cell, char, and string are allowed); empty structs are used in oid to eliminate options structs that depend on other options, before writing to the options file")
+
+dflat = structflat(d);
+if ~isequal(d, structunflat(dflat))
+    error("at least one of the default values above is an empty struct; empty structs are not allowed to be default values because empty structs are used in oid.m to eliminate options structs that depend on other options, before writing to the options file; valid empty values are empty vector, empty cell, empty char, and empty string")
 end
+
+if any(structfun(@iscell, dflat))
+    error("at least one of the default values above is a cell; cells are not allowed to be default values because cells are used in oid.m to distribute options into unique sets")
+end
+
 fnd = fieldnames(d);
 onest_flat = unique(cellflat(cellfun(@(x,y) strsplit(x,y), d.mn.onest, repelem({'.'}, numel(d.mn.onest)), 'un', false)));
 fninvalid = fnd(~ismember(fnd, onest_flat));
 if ~isempty(fninvalid)
     error("the following fields are in d, but not listed in onest: " + cell2charv(fninvalid) )
 end
+
 onest_invalid = onest_flat(~ismember(onest_flat, fnd));
 if ~isempty(onest_invalid)
-    error("the following fields are listed in onest, but not fields in d: " + cell2charv(onest_invalid) )
+    error("the following fields are listed in onest, but are not fields in d: " + cell2charv(onest_invalid) )
 end
 
 fprintf("writing default options to: " + pthopt + newline)
 structsv(d, pthopt, overwrite=1, readonly=1, dosort=1)
 
-glb(1, dfset=1); %mark that defaults have been set in globals; allow overwrite (prevent error) in case user is running odf outside normal use, and because it won't hurt to write
+glb(1, dfset=true); %mark that defaults have been set in globals; allow overwrite (prevent error) in case user is running odf outside normal use, and because it won't hurt to write
+
+
 
 

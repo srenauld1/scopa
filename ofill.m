@@ -3,11 +3,12 @@ function optout = ofill(optin, obin, copybin, opt2)
 
 %{
 
+todo: use correct delimflat (user set? where?)
+
 ofill is a wrapper for local function ofill_scalar; ofill_scalar operates on scalar struct argument optin; ofill loops over elements of optin
 
-WARNING THIS FUNCTION WORKS AS INTENDED BUT THE CODE AT THE BOTTOM THAT UPDATES ALL DEFAULTS IS UGLY AND CONFUSING;
-note the docs in oset are also about ofill, and are much more extensive than the docs here
-ofill is intended to help the user easily set pipeline options (see function oset, where ofill is called)
+note docs_oset are also about ofill and are more extensive than the docs here
+ofill is intended to help the user easily set pipeline options (see function oset, and related functions oset_*, where ofill gets called)
 
 can call ofill in different ways
     zero arguments sets optout equal to d (all default options)
@@ -16,11 +17,11 @@ can call ofill in different ways
     three arguments creates struct(s) (names in copybin) within obin
 
 struct d holds all default options;
-fields directly under d are mostly used within single functions called from a2p, except mn, which is used in a2p direcly
-each section contains options for a major routine called in a2p (section header is options field name, with function name in parentheses, and brief description of function)
-output struct optout holds options used in a2p
+fields directly under d are used within individual modules (high-level functions) called from a2p (except mn, which is used in a2p direcly)
+each section contains options for a module called in a2p (section header is option field name, with function name in parentheses, and brief description of function)
+output struct optout holds options used in a2p by these major functions
 output optout matches default d unless input optin specifies a different value
-in particular: if a field is in both optin.obin and d.obin, use the value in optin.obin; if field is only in d.obin, use the value in d.obin; if field isn't in d.obin, error
+in particular: if a field is in both optin.obin and d.obin, use the value in optin.obin; if field is only in d.obin, use the value in d.obin; if field in optin.obin isn't in d.obin, error
 
 %}
 
@@ -38,11 +39,7 @@ unpack = opt2.unpack;
 wild = opt2.wild;
 pthopt = opt2.pthopt;
 
-persistent copybin_previous
-if isempty(copybin_previous)
-    copybin_previous = {};
-end
-
+%%%% check inputs %%%%
 
 if istextall(optin)  % check if optin was omitted, if so, first argument was obin; update arguments accordingly
     if istextall(obin)
@@ -77,6 +74,7 @@ if ~istextall(copybin)
     error("copybin must be empty or char or string or cell of char or cell of string")
 end
 
+
 %%%% load default options with odf.m %%%%
 
 pthscopa = pthscopaget();
@@ -84,39 +82,42 @@ if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
-if isempty(glb('dfset')) || isequal(glb('dfset'), 0) %write defaults to file the first time ofill gets called
+if ~isequal(glb('dfset'), true) %write defaults to file the first time ofill gets called
     odf(pthopt);
 end
 
 if isfile(pthopt)
     d = structld(pthopt, nocells=1, dosort=0);
 else
-    error("cannot find default options file: " + pthopt + newline + "run command 'odf' to create it")
+    error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
 end
 
-%%%% optional setting all options to wildcard %%%%
 
-if wild %fill d with wildcard, except meta fields
+%%%% optionally set all options to wildcard (for tsget) %%%%
+
+if wild %fill d with wildcard, except mn fields
     wcpat = '*';
     d = structflat(d, delim=d.mn.delimflat);
     fn = fieldnames(d);
     for k = 1:numel(fn)
-        if ~ismember(fn{k}, d.meta)
+        if ~ismember(fn{k}, d.mn)
             d.(fn{k}) = wcpat;
         end
     end
     d = structunflat(d, delim=d.mn.delimflat);
 end
 
-%%%% ofill_scalar %%%%
+
+%%%% ofill_scalar (ofill for each struct element, ie stack) %%%%
 
 if isempty(optin)
-    optout = ofill_scalar(d, optin, obin, copybin, copybin_previous, nest, wild, pthscopa);
+    optout = ofill_scalar(d, optin, obin, copybin, nest, wild, pthscopa);
 else
     for k = numel(optin):-1:1 %in case optout is nonscalar, loop over each element, calling ofill_scalar; backward to preallocate
-        optout(k) = ofill_scalar(d, optin(k), obin, copybin, copybin_previous, nest, wild, pthscopa);
+        optout(k) = ofill_scalar(d, optin(k), obin, copybin, nest, wild, pthscopa);
     end
 end
+
 
 %%%% optional unpack %%%%
 
@@ -126,9 +127,8 @@ if unpack
     end
     if sum(isfield(optout, d.mn.onest))>1
         error("cannot unpack struct with multiple obins")
-    else
-        optout = optout.(cell2mat(fieldnames(optout)));
     end
+    optout = optout.(cell2mat(fieldnames(optout)));
 end
 
 
@@ -136,25 +136,34 @@ end
 
 
 
-function optout = ofill_scalar(d, optin, obin, copybin, copybin_previous, nest, wild, pthscopa)
+function optout = ofill_scalar(d, optin, obin, copybin, nest, wild, pthscopa)
+
+
+persistent copybin_previous
+if isempty(copybin_previous)
+    copybin_previous = {};
+end
 
 
 if isfield(optin, 'full') && isequal(optin.full, 1)
     error("you cannot use ofill to edit options struct after it has already been made full (after calling ofill with full=1)")
 end
-if nest && isfield(optin, 'full') && isequal(optin.full, 1)
-    error("nest cannot be true because all nestings are already present (must have previously set nest=1)")
+if nest
+    if isfield(optin, 'full') && isequal(optin.full, 1)
+        error("nest cannot be true because all nestings are already present (must have previously set nest=1)")
+    end
+    if ~isemptyall(copybin)
+        error("this should work as long as obin is empty, but for some reason it doesn't create copybin everywhere")
+    end
 end
-if nest && ~isemptyall(copybin)
-    error("this should work as long as obin is empty, but for some reason it doesn't create copybin everywhere")
-end
-
-%% prep inputs
 
 fndf = fieldnames(d);
 obin_top = d.mn.onest(~contains(d.mn.onest, '.'));
 
-%%%% IF optin IS EMPTY, CREATE IT AS DEFAULT FOR ANY REQUESTED OBIN (OR ALL obin, IF obin IS EMPTY) %%%%
+
+%% prep inputs
+
+%%%% IF optin IS EMPTY, CREATE IT WITH ALL DEFAULTS FOR ANY REQUESTED OBIN (OR ALL obin, IF obin IS EMPTY) %%%%
 
 if isempty(optin) || isempty(fieldnames(optin))
     if isempty(obin)
@@ -172,10 +181,11 @@ if isempty(optin) || isempty(fieldnames(optin))
                 obin_split = strsplit(obin{k}, '.');
                 obin_deepest = obin_split{end};
                 sind = structind(obin{k});
-                if isemptyall(d.(obin_deepest)) %if it's an empty struct, or field is empty 
-                    optin = setfield(gset, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first
+                if isemptyall(d.(obin_deepest)) %if it's an empty struct, or field is empty
+                    optin = setfield(optin, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first
                 end
                 optin = setfield(optin, sind{:}, d.(obin_deepest));
+                % eval(['oin.' vbin{k} '= d.(vbintmp{end});']) %fill defaults for the deepest sub-vbin, and the whole nested branch will get filled
             else
                 optin.(obin{k}) = d.(obin{k});
             end
@@ -187,128 +197,126 @@ end
 %% assign defaults for any options not specified in optin
 
 
-if isempty(obin)
+if 1%~nest
 
-    optout = structfill(optin, d, copybin_previous, copybin);
+    if isempty(obin)
 
-else
+        optout = structfill(optin, d, copybin_previous, copybin);
 
-    if any(contains(obin, '.')) %if nested obin, remove deepest obin and operate on it, invoking defaults throughout the nested obin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, otherwise we could just use eval for nested and nonnested)
-        [~, obin_sort_inds] = sort(cellfun(@numel, regexp(obin, '[.]*')), 'descend'); %
-        obin = obin(obin_sort_inds); %sort to make update order deepest nested obin to shallowest, otherwise doens't work
-        for kk = 1:numel(obin)
-            for k = 1:numel(fndf)
-                if sum(cellfun(@numel, regexp(strsplit(obin{kk}, '.'), ['^' fndf{k} '$'])))>1
-                    error("you have multiple copies of obin " + fndf{k} + " and possibly others; in a nested obin each obin can only appear once, for now at least")
+    else
+
+        if any(contains(obin, '.')) %if nested obin, remove deepest obin and operate on it, invoking defaults throughout the nested obin, and and then merge with everything else in input, which remains untouched (algorithm is different than non-nested, hence the if/else, 
+            [~, obin_sort_inds] = sort(cellfun(@numel, regexp(obin, '[.]*')), 'descend'); %
+            obin = obin(obin_sort_inds); %sort to make update order deepest nested obin to shallowest, otherwise doens't work
+            for kk = 1:numel(obin)
+                for k = 1:numel(fndf)
+                    if sum(cellfun(@numel, regexp(strsplit(obin{kk}, '.'), ['^' fndf{k} '$'])))>1
+                        error("you have multiple copies of obin " + fndf{k} + " and possibly others; in a nested obin each obin can only appear once, for now at least")
+                    end
                 end
             end
-        end
-        fn_optin_flat = fieldnames(structflat(optin, delim=d.mn.delimflat, prefix='o')); %use prefix in case it's nonscalar
-        fn_optin_flat = erase(fn_optin_flat, ['o' d.mn.delimflat]);
+            fn_optin_flat = fieldnames(structflat(optin, delim=d.mn.delimflat, prefix='o')); %use prefix in case it's nonscalar
+            fn_optin_flat = erase(fn_optin_flat, ['o' d.mn.delimflat]);
 
-        changed = 1;
-        obin_not = fn_optin_flat;
-        while changed
-            obin_not_tmp = obin_not;
-            obin_not = regexprep(obin_not, strcat('^', fndf, '\.'), ''); %remove contiguous sequence of obins at the beginning (will not remove obins preceded by a copybin)
-            changed = ~isequal(obin_not, obin_not_tmp);
-        end
+            changed = 1;
+            obin_not = fn_optin_flat;
+            while changed 
+                obin_not_tmp = obin_not;
+                obin_not = regexprep(obin_not, strcat('^', fndf, d.mn.delimflat), ''); %remove contiguous sequence of obins at the beginning (will not remove obins preceded by a copybin)
+                changed = ~isequal(obin_not, obin_not_tmp);
+            end
 
-        % TODO: PREVIOUSLY THERE WAS A CHECK HERE FOR OBIN APPEARING AFTER NON-OBIN (LIKE optout.ROI.PB.CM) . . . THIS MAY BE A PROBLEM, DEAL WITH IT SOMETIME
+            % TODO: PREVIOUSLY THERE WAS A CHECK HERE FOR OBIN APPEARING AFTER NON-OBIN (LIKE optout.ROI.PB.CM) . . . THIS MAY BE A PROBLEM, DEAL WITH IT SOMETIME
 
-        fnflat_obin_only = cell(numel(obin_not), 1);
-        for k = 1:numel(obin_not) %use this in loop because we are removing obin_not for each fn_optin_flat (don't want removal across indices)
-            fnflat_obin_only{k} = regexprep(fn_optin_flat{k}, strcat('\.', obin_not{k}, '$'), ''); %keep only the obins
-        end
-        fnflat_obin_only = unique(fnflat_obin_only);
+            fn_optin_flat_obin_only = cell(numel(obin_not), 1);
+            for k = 1:numel(obin_not) %use this in loop because we are removing obin_not for each fn_optin_flat (don't want removal across indices)
+                fn_optin_flat_obin_only{k} = regexprep(fn_optin_flat{k}, strcat(d.mn.delimflat, obin_not{k}, '$'), ''); %keep only the obins
+            end
+            fn_optin_flat_obin_only = unique(fn_optin_flat_obin_only);
 
-        ignorefields_for_full_nested_obin = []; %TODO: THIS SHOULD PROBABLY NOT ACCUMULATE, MAY NOT WANT TO IGNORE THE SAME FIELDS IN DIFFERENT NESTING BRANCHES
-        for k = 1:numel(obin)
-            if startsWith(obin{k}, 'o.')
-                error("for nested obin, omit the leading 'o.'")
-            end
-            obin_split = strsplit(obin{k}, '.');
-            obin_shallowest = obin_split{1};
-            obin_deepest = obin_split{end};
-            if sum(cellfun(@numel, regexp(strsplit(obin{k}, '.'), ['^' obin_deepest '$'])))>1
-                error("currently obin_deepest can only appear once in a nested obin, see note on 224 below")
-            end
-            if isempty(copybin) %if you're not making copybin of a nested obin . . .
-                ignorefields_for_full_nested_obin = unique([ignorefields_for_full_nested_obin, copybin_previous, copybin]); %just ignore coprbinprev
-            else %if you're making copybin of a nested obin . . .
-                ignorefields_for_full_nested_obin = unique([ignorefields_for_full_nested_obin, copybin_previous, obin_deepest]); %must ignore copybin_previous and obin_deepest in structfill on the full nested obin branch (otherwise the obin enclosing the new copybin, obin_deepest, will get populated with defaults, but this is only needed if copybin is nonempty
-            end
-            if ~isfield(d, obin_shallowest)
-                error("d." + obin_shallowest + " does not exist; nested obin must start with primary obin directly under optout")
-            end
-            if ismember(obin{k}, fnflat_obin_only) %if the nested obin exists in optin, grab the deepest obin
+            ignorefields_for_full_nested_obin = []; %TODO: THIS SHOULD PROBABLY NOT ACCUMULATE, MAY NOT WANT TO IGNORE THE SAME FIELDS IN DIFFERENT NESTING BRANCHES
+            for k = 1:numel(obin)
+                if startsWith(obin{k}, 'o.')
+                    error("for nested obin, omit the leading 'o.'")
+                end
+                obin_split = strsplit(obin{k}, '.');
+                obin_shallowest = obin_split{1};
+                obin_deepest = obin_split{end};
+                if sum(cellfun(@numel, regexp(strsplit(obin{k}, '.'), ['^' obin_deepest '$'])))>1
+                    error("currently obin_deepest can only appear once in a nested obin, see note on 224 below")
+                end
+                if isempty(copybin) %if you're not making copybin of a nested obin . . .
+                    ignorefields_for_full_nested_obin = unique([ignorefields_for_full_nested_obin, copybin_previous, copybin]); %just ignore coprbinprev
+                else %if you're making copybin of a nested obin . . .
+                    ignorefields_for_full_nested_obin = unique([ignorefields_for_full_nested_obin, copybin_previous, obin_deepest]); %must ignore copybin_previous and obin_deepest in structfill on the full nested obin branch (otherwise the obin enclosing the new copybin, obin_deepest, will get populated with defaults, but this is only needed if copybin is nonempty
+                end
+                if ~isfield(d, obin_shallowest)
+                    error("d." + obin_shallowest + " does not exist; nested obin must start with primary obin directly under optout")
+                end
+                obin_flat_tmp = strrep(obin{k}, '.', d.mn.delimflat);
+                % what to do when deeper specified than obin??
+                if ismember(obin_flat_tmp, fn_optin_flat_obin_only) %if the nested obin exists in optin, grab the deepest obin
+                    sind = structind(obin{k});
+                    optin_deepest.(obin_deepest) = getfield(optin, sind{:}); 
+                else %if the nesting doesn't exist in optin, create it with defaults in the deepest layer, and nothing above
+                    if ~isfield(d, obin_deepest)
+                        error("d." + obin_deepest + " does not exist")
+                    end
+                    optin_deepest.(obin_deepest) = d.(obin_deepest);
+                end
+
+                optin_deepest = structfill(optin_deepest, d, copybin_previous, copybin); %fill deepest obin
+
                 sind = structind(obin{k});
-                if isemptyall(d.(obin_deepest)) %if it's an empty struct, or field is empty
-                    optin = setfield(gset, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first
+                if isemptyall(optin_deepest.(obin_deepest)) %if it's an empty struct, or field is empty
+                    optin = setfield(optin, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first
                 end
-                optin = setfield(optin, sind{:}, d.(obin_deepest));
-                eval(['optin_deepest.' obin_deepest ' = optin.' obin{k} ';']); %use eval to succinctly extract nested field
-            else %if the nesting doesn't exist in optin, create it with defaults in the deepest layer, and nothing above
-                if ~isfield(d, obin_deepest)
-                    error("d." + obin_deepest + " does not exist")
+                optin = setfield(optin, sind{:}, optin_deepest.(obin_deepest)); %after updating, put deepest back into optin where it was before (ie according to obin nesting), with possible copybin applied
+
+                optin_shallowest.(obin_shallowest) = optin.(obin_shallowest); %put that nested obin aside and ...
+                optin = rmfield(optin, obin_shallowest); %remove it from optin
+                if isequal(k, numel(obin)) % fill new struct with all top-level fields
+                    optout = structfill(optin_shallowest, d, ignorefields_for_full_nested_obin, []); %then update the full nested obin; don't use copybin on full nested obin (only use it on optin_deepest above); here you must ignore copybinprev_and_newobindeepest, which contains both the enclosing obin for the newly created copybin (obin_deepest, which will include any copybin applied to obin_deepest, and thus don't need to be listed in copybinprev_and_newobindeepest), as well as old copybin (copybin_previous); note you could break this if copybindeepest appears more than once in the nesting, then structfill will ignore the shallower, so there's an above error to catch that
                 end
-                optin_deepest.(obin_deepest) = d.(obin_deepest);
             end
-            optin_deepest = structfill(optin_deepest, d, copybin_previous, copybin); %fill deepest obin
-            eval(['optin.' obin{k} ' = optin_deepest.' obin_deepest ';']); %after updating, put deepest back into optin where it was before (ie according to obin nesting), with possible copybin applied
-            optin_shallowest.(obin_shallowest) = optin.(obin_shallowest); %put that nested obin aside and ...
-            optin = rmfield(optin, obin_shallowest); %remove it from optin
-            if isequal(k, numel(obin)) % fill new struct with all top-level fields
-                optout = structfill(optin_shallowest, d, ignorefields_for_full_nested_obin, []); %then update the full nested obin; don't use copybin on full nested obin (only use it on optin_deepest above); here you must ignore copybinprev_and_newobindeepest, which contains both the enclosing obin for the newly created copybin (obin_deepest, which will include any copybin applied to obin_deepest, and thus don't need to be listed in copybinprev_and_newobindeepest), as well as old copybin (copybin_previous); note you could break this if copybindeepest appears more than once in the nesting, then structfill will ignore the shallower, so there's an above error to catch that
-            end
-        end
 
-    else %if non-nested obin, remove obin and operate on it, and then merge with everything else in input, which remains unchanged
+        else %if non-nested obin, remove obin and operate on it, and then merge with everything else in input, which remains unchanged
 
-        fn = fieldnames(optin);
-        for k = 1:numel(obin)
-            if ismember(obin{k}, fn)
-                optin_tmp.(obin{k}) = optin.(obin{k});
-                optin = rmfield(optin, obin{k});
-            else
-                if isfield(d, obin{k})
-                    optin_tmp.(obin{k}) = d.(obin{k}); %if obin{k} is not in optin, use all defaults 
+            fn = fieldnames(optin);
+            for k = 1:numel(obin)
+                if ismember(obin{k}, fn)
+                    optin_tmp.(obin{k}) = optin.(obin{k});
+                    optin = rmfield(optin, obin{k});
                 else
-                    error("you requested obin " + obin{k} + ", but d." + obin{k} + " does not exist")
+                    if isfield(d, obin{k})
+                        optin_tmp.(obin{k}) = d.(obin{k}); %if obin{k} is not in optin, use all defaults
+                    else
+                        error("you requested obin " + obin{k} + ", but d." + obin{k} + " does not exist")
+                    end
                 end
             end
+
+            optout = structfill(optin_tmp, d, copybin_previous, copybin); %just update obin
+
         end
-        copybin_inert = copybin(ismember(copybin, copybin_previous));
-        if ~isempty(copybin_inert)
-            error("does this ever happen?")
-            % fprintf("nothing will change in copybin " + strjoin(copybin_inert, ', ') + " because they have already been set" + newline)
-        end
-        optout = structfill(optin_tmp, d, copybin_previous, copybin); %just update obin
+
+        optout = cell2struct([struct2cell(optin); struct2cell(optout)],[fieldnames(optin); fieldnames(optout)]); %combine with what was unchanged
+
     end
 
-    optout = cell2struct([struct2cell(optin); struct2cell(optout)],[fieldnames(optin); fieldnames(optout)]); %combine with what was unchanged
+
+    copybin_previous = uniquearray(cat(2, copybin_previous, copybin)); %must ignore copybin_previous and obin_deepest in structfill on the full nested obin branch (otherwise the obin enclosing the new copybin, obin_deepest, will get populated with defaults, but this is only needed if copybin is nonempty
+
+    optout = structsort(optout, vectype='row');
+
 
 end
-
-
-copybin_previous = uniquearray(cat(2, copybin_previous, copybin)); %must ignore copybin_previous and obin_deepest in structfill on the full nested obin branch (otherwise the obin enclosing the new copybin, obin_deepest, will get populated with defaults, but this is only needed if copybin is nonempty
-
-optout = structsort(optout, vectype='row');
-
 
 %% nest (fill all nestings, and set globals, this is forced to be the last step in creating options struct)
 
 if nest
 
-    for k = 1:numel(d.meta)
-        if isfield(optout, d.meta{k})
-            if ~isequal(optout.(d.meta{k}), d.(d.meta{k}))
-                error("you cannot use input to ofill to modify any meta fields listed in d.meta (in odf.m); if you want to change any meta fields, change them in odf.m")
-            end
-        else
-            optout.(d.meta{k}) = d.(d.meta{k});
-        end
-    end
+    optout = optin;
 
     if isempty(obin)
         onest_tmp = d.mn.onest;
@@ -323,24 +331,24 @@ if nest
 
     optout_flat = structflat(optout, delim=d.mn.delimflat);
     fn_optout_flat = fieldnames(optout_flat);
-    fn_optout_flat_before_copybin_all = [];
-    for m = 1:numel(copybin_previous) %fill all nested obin within any copybin
+    fn_optout_flat_above_copybin_all = [];
+    for m = 1:numel(copybin_previous) %fill all nested obin within any copybin (that were not specified earlier)
         expr_cb = [d.mn.delimflat copybin_previous{m} d.mn.delimflat]; %double underscore is default for flattened options struct, keeping them seperate to make it clear, and maybe turn them into global variable
-        copybin_matched = fn_optout_flat(~cellfun(@isempty, regexp(fn_optout_flat, expr_cb, 'match')));
-        if ~isempty(copybin_matched)
-            if any(cellfun(@numel, regexp(copybin_matched, [d.mn.delimflat copybin_previous{m} d.mn.delimflat]))>1)
-                error("there is a repeated copybin, this is currently not supported")
+        fn_optout_flat_with_copybin = fn_optout_flat(~cellfun(@isempty, regexp(fn_optout_flat, expr_cb, 'match')));
+        if ~isempty(fn_optout_flat_with_copybin)
+            if any(cellfun(@numel, regexp(fn_optout_flat_with_copybin, expr_cb))>1)
+                error("there is at least one copybin that appears nested within itself (at some level); this is currently not supported")
             end
-            fn_optout_flat_before_copybin = unique(extractBefore(copybin_matched, [d.mn.delimflat copybin_previous{m}]));
-            fn_optout_flat_before_copybin_all = unique([fn_optout_flat_before_copybin_all fn_optout_flat_before_copybin]);
+            fn_optout_flat_above_copybin_tmp = unique(extractBefore(fn_optout_flat_with_copybin, [d.mn.delimflat copybin_previous{m}]));
+            fn_optout_flat_above_copybin_all = unique([fn_optout_flat_above_copybin_all fn_optout_flat_above_copybin_tmp]);
             for k = 1:numel(onest_tmp)
-                for w = 1:numel(fn_optout_flat_before_copybin)
-                    if startsWith(onest_tmp{k}, fn_optout_flat_before_copybin{w})
-                        onest_after_copybin = erase(strrep(onest_tmp{k}, '.', d.mn.delimflat), fn_optout_flat_before_copybin{w}); %double underscore is default for flattened options struct, keeping them seperate to make it clear, and maybe turn them into global variable
-                        if ~isempty(onest_after_copybin)
-                            expr_copybin_previous = strcat('^', fn_optout_flat_before_copybin{w}, d.mn.delimflat, copybin_previous{m}, onest_after_copybin);
-                            mtch = copybin_matched(~cellfun(@isempty, regexp(copybin_matched, expr_copybin_previous, 'match')));
-                            if isempty(mtch)
+                for w = 1:numel(fn_optout_flat_above_copybin_tmp)
+                    if startsWith(onest_tmp{k}, fn_optout_flat_above_copybin_tmp{w})
+                        onest_below_copybin = erase(strrep(onest_tmp{k}, '.', d.mn.delimflat), fn_optout_flat_above_copybin_tmp{w});
+                        if ~isempty(onest_below_copybin)
+                            expr_copybin_previous = strcat('^', fn_optout_flat_above_copybin_tmp{w}, d.mn.delimflat, copybin_previous{m}, onest_below_copybin);
+                            mtch = fn_optout_flat_with_copybin(~cellfun(@isempty, regexp(fn_optout_flat_with_copybin, expr_copybin_previous, 'match')));
+                            if isempty(mtch) %if there's an unfilled obin within a copybin 
                                 onest_new = strrep(strrep(expr_copybin_previous, d.mn.delimflat, '.'), '^', ''); %replace double underscore with period, and remove leading carot
                                 optout = ofill(optout, onest_new, wild=wild);
                             end
@@ -354,7 +362,7 @@ if nest
 
     for k = 1:numel(onest_tmp) %doesn't matter if these get updated in loop but fn_optout_flat doesn't (right?)
         if ~strcmp(onest_tmp{k}, 'full') %full is the one field that cannot be done here (that was not removed above as a meta field)
-            if isempty(fn_optout_flat_before_copybin_all) || all(cellfun(@isempty, regexp(onest_tmp{k}, strcat('^', strrep(fn_optout_flat_before_copybin_all, d.mn.delimflat, '.'))))) %if onest_tmp{k} is not any obin with copybin from above
+            if isempty(fn_optout_flat_above_copybin_all) || all(cellfun(@isempty, regexp(onest_tmp{k}, strcat('^', strrep(fn_optout_flat_above_copybin_all, d.mn.delimflat, '.'))))) %if onest_tmp{k} is not any obin with copybin from above
                 expr = ['^' strrep(onest_tmp{k}, '.', d.mn.delimflat)];
                 mtch = fn_optout_flat(~cellfun(@isempty, regexp(fn_optout_flat, expr, 'match')));
                 if isempty(mtch)
@@ -365,52 +373,28 @@ if nest
     end
 
 
-    % now set some globals, as the final step in creating options struct (we know it's final because full=1 now)
-
-    %%%% these globals should not be edited by the user in general, so they take values from d (output from odf) %%%%
-    if isempty(glb('pthscopa')) && isempty(glb('rgnamedf')) && isempty(glb('optiddf')) && isempty(glb('copybindf')) && isempty(glb('onest')) && isempty(glb('obin_ided')) && isempty(glb('optinert')) && isempty(glb('timestr')) && isempty(glb('suffixchars')) && isempty(glb('dmstackdf')) && isempty(glb('xyscreen')) && isempty(glb('delimflat'))
-        glb(pthscopa=pthscopa, rgnamedf=d.roi.rgname, optiddf=d.mn.optiddf, copybindf=d.mn.copybindf, onest=d.mn.onest, obin_ided=d.mn.obin_ided, optinert=d.mn.optinert, timestr=d.mn.timestr, suffixchars=d.spec.suffixchars, dmstackdf=d.mn.dmstackdf, xyscreen=screenpx(), delimflat=d.mn.delimflat);
-    end
-
-    %%%% these globals (from obin 'mn') may depend on user input, so they take values from optout (which might match values from d) %%%%
-    if isempty(glb('pltvis')) && isempty(glb('plt')) && isempty(glb('pthpy')) && isempty(glb('scopausername')) && isempty(glb('usegit'))
-        if ( isfield(optout, 'mn') && isempty(obin) ) || ( ~isempty(obin) && any(~cellfun(@isempty, regexp(obin, '(^mn$|\.mn$|^mn(\.){1}\w+$)'))) )
-            glb(pltvis=optout.mn.pltvis, plt=optout.mn.plt, pthpy=optout.mn.pthpy, scopausername=optout.mn.scopausername, usegit=optout.mn.usegit)
-        end
-    end
-
-    %%%% this global may or may not be automatically derived (from obin 'spec'), depending on where this is being run %%%%
-    if isempty(glb('pthpar'))
-        if ( isfield(optout, 'spec') && isempty(obin) ) || ( ~isempty(obin) && any(~cellfun(@isempty, regexp(obin, '(^spec$|\.spec$|^spec(\.){1}\w+$)'))) )
-            pthpar = pthparget();
-            glb(pthpar=pthpar)
-        end
-    end
-
 
     % check for problems (and mark as full if you're filling all onest, but not if you're just filling a subset of all onest, ie passed in as obin)
-    
+
     if isempty(obin) || isempty(setxor(obin, obin_top))
-        if isempty(optout.mn.scopausername)
-            error('optout.mn.scopausername cannot be empty')
-        end
-        if isempty(regexp(optout.mn.scopausername, '^[a-zA-Z]+$'))
-            if strcmp(optout.mn.scopausername, '*')
-                error('optout.mn.scopausername is an asterisk, you may have called ofill with wild=1 and nest=1 and empty or absent obin, so the entire options struct was filled with asterisks')
-            end
-            error('optout.mn.scopausername can only contain alphabetic characters')
-        end
-        optout.full = 1;
-    else
-        optout = rmfield(optout, d.meta);
+        % if isempty(optout.mn.scopausername)
+        %     error('optout.mn.scopausername cannot be empty')
+        % end
+        % if isempty(regexp(optout.mn.scopausername, '^[a-zA-Z]+$', 'once'))
+        %     if strcmp(optout.mn.scopausername, '*')
+        %         error('optout.mn.scopausername is an asterisk, you may have called ofill with wild=1 and nest=1 and empty or absent obin, so the entire options struct was filled with asterisks')
+        %     end
+        %     error('optout.mn.scopausername can only contain alphabetic characters')
+        % end
     end
 
     if ~all(ismember(fieldnames(optout), d.mn.onest))
         error("nest=1 but there is an obin that is not listed in d.mn.onest (in odf.m); you may have created an invalid obin, or placed a nested obin in an invalid location")
     end
-    oflat_final = structflat(optout, delim=d.mn.delimflat);
-    fn_oflat_final = fieldnames(oflat_final);
-    fn_oflat_final(structfun(@iscell, oflat_final));
+
+    glb(copybin=copybin_previous)
+
+    optout.full = 1;
 
 
 end
