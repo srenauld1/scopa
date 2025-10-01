@@ -196,5 +196,20 @@
     "stackdtype": "uint16",
     "trm": [],
     "zerostack": 1
+  },
+  "z2": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [1,2],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
   }
 }

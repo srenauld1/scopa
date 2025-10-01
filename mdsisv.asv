@@ -27,17 +27,23 @@ try
         md.numslice_withflyback = sistrparse(sistr, 'numFramesPerVolumeWithFlyback');
         md.flyback = md.numslice_withflyback - md.numslice;
 
-        if md.numslice==1 && md.numslice_withflyback==1 && strcmp(sistrparse(sistr, 'hStackManager.enable'), 'false')
-            fprintf("treating stack as planar yxt because numslice=1, numslice_withflyback=1, and hStackManager.enable is false" + newline)
-            md.numvol = sistrparse(sistr, 'framesPerSlice');
-        else
-            try
-                md.numvol = sistrparse(sistr, 'actualNumVolumes');
-            catch
-                md.numvol = sistrparse(sistr, 'numVolumes');
+        numvol_tmp = -1; %dummy value
+        if md.numslice==1 && md.numslice_withflyback==1
+            if ~strcmp(sistrparse(sistr, 'hStackManager.enable'), 'false')
+                fprintf("numslice is 1, but hStackManager.enable is true; this can happen on berg3 (at least)" + newline)
+                pause(2)
             end
+            fprintf("hStackManager.enable is false, treating stack as planar yxt" + newline)
+            numvol_tmp = sistrparse(sistr, 'framesPerSlice');
         end
+        if isequal(mdtif.nframes, numvol_tmp*numel(md.channel_save))
 
+        end
+        try
+            md.numvol = sistrparse(sistr, 'actualNumVolumes');
+        catch
+            md.numvol = sistrparse(sistr, 'numVolumes');
+        end
         md.xpix = sistrparse(sistr, 'pixelsPerLine');
         md.ypix = sistrparse(sistr, 'linesPerFrame');
         md.dims = [md.numvol, md.numslice_withflyback - md.flyback, md.ypix, md.xpix];

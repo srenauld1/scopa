@@ -134,6 +134,9 @@ for k = 1:numel(idtmp)
     o(k).mn.scopausername = userdatfile('scopausername');
     o(k).mn.usegit = usegit;
 
+    o(k).id = idtmp(k); %put id (stack info) into options struct
+
+
 end
 
 
@@ -165,9 +168,7 @@ o = structsort(o, vectype='row'); %recursively order alphabetically
 
 o = oid(o, usegit=usegit); %assign ids to options sets
 
-o.id = idtmp; %put id (stack info) into options struct
-
-oflat = structflat(o, delim=o(1).delimflat, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
+oflat = structflat(o, delim=o(1).mn.delimflat, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
 
 
 end

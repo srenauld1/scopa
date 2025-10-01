@@ -96,6 +96,7 @@ end
 %%%% LOAD STACK FROM TIF IF MAT DOESN'T EXIST OR FAILED OR YOU REQUESTED NEW STACK SETTINGS  %%%%
 
 overflow = [];
+md = [];
 
 try
     md = mdsild(pthstack);
@@ -161,7 +162,10 @@ if try_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast i
     try
         fprintf("trying to read stack with tifreadfast" + newline)
         stack = tifreadfast(pthstack); %here, stack is read into memory (is not memmapped)
-        [~, mdtif] = tifreadfast(pthstack, []);
+        % [~, mdtif] = tifreadfast(pthstack, []);
+        if isempty(md)
+            error("attempt to read metadata must have failed earlier; try to run mdsild on this stack and see wehat happens")
+        end
         [md, sz, chan, overflow] = stackcheck(md, sz, chan, stack, pthstack, ic, rawstack);
     catch
         if tiffstack_already_failed
