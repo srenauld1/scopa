@@ -33,6 +33,11 @@ doplt = opt2.doplt;
 dmstack = opt2.dmstack;
 dmstacktif = opt2.dmstacktif;
 
+if istextall(optin)  % check if optin was omitted, if so, first argument was mos; update arguments accordingly
+    pthstack = optin;
+    optin = [];
+end
+
 [optin, doplt, pthstack] = fset('sld', optin, doplt, pthstack);
 
 fbrm = optin.fbrm; % before saving stack as mat, crop flyback frames if they exist (if using scopa, flyback frames only exist in original scanimage stack)

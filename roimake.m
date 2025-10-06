@@ -4,11 +4,8 @@ function roi = roimake(opt, opt2)
 
 arguments
     opt = []
-    opt2.stack = []
-    opt2.pthstack = []
-    opt2.md = []
-    opt2.sper = [] %only required nonempty for normalizing by moving window in tsnorm
-    opt2.widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
+    opt2.s = [];
+    opt2.pthstack = [];
     opt2.t = [] %only required nonempty if channorm~=0 in roits
     opt2.pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt2.doplt = []
@@ -16,34 +13,46 @@ arguments
     opt2.roimask = []
 end
 opt2 = glboropt(opt2);
-stack = opt2.stack;
+s = opt2.s;
 pthstack = opt2.pthstack;
-md = opt2.md;
-sper = opt2.sper;
-widyxz = opt2.widyxz;
 t = opt2.t;
 pthpy = opt2.pthpy;
 doplt = opt2.doplt;
 usegit = opt2.usegit;
 roimask = opt2.roimask;
 
+if isempty(usegit)
+    usegit = 0;
+end
+if isempty(pthstack)
+    if ~isempty(s)
+        pthstack = s.pth;
+    end
+else
+    if ~isempty(s)
+        error("s and pthstack cannot both be nonempty")
+    end
+end
+
 [opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
 
-if isempty(stack)
+if isempty(s)
     if isempty(pthstack)
         error("if name-value argument stack is empty, name-value argument pthstack must be nonempty")
     end
-    stack = stackld(ofill('sld', unpack=1), pthstack);
+    s = stackld(ofill('sld', unpack=1), pthstack);
 end
+
+pthstack = s.pth;
+md = s.md;
+stack = s.stack;
+s = [];
+
 if isempty(md)
     md = mdsild(pthstack);
 end
-if isempty(sper)
-    sper = md.sper;
-end
-if isempty(widyxz)
-    widyxz = md.widyxz;
-end
+sper = md.sper;
+widyxz = md.widyxz;
 if isempty(t)
     t = md.sper:md.sper:md.numvol*md.sper;
 end
@@ -64,6 +73,9 @@ if isempty(roimask)
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
     if opt.domm
         mmname = opt.mm.mmname;
+        if iscell(mmname)
+            mmname = cell2mat(mmname);
+        end
     else
         mmname = 'none';
     end

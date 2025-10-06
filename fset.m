@@ -1,9 +1,9 @@
-function [opt, doplt, pth] = fset(obin, opt, doplt, pth)
+function [opt, doplt, pth] = fset(mos, opt, doplt, pth)
 
 % set some required arguments for high level functions in a2p
 
 arguments
-    obin %short name for calling function, also name of field holding options in options struct (eg 'roi', 'daq', etc)
+    mos %short name for calling function, also name of field holding options in options struct (eg 'roi', 'daq', etc)
     opt = [] %options for calling function
     doplt = [] %plot, or not
     pth = [] %path to data required for calling function (eg stack, daq file, etc)
@@ -15,8 +15,8 @@ if isempty(optiddf)
 end
 
 if isempty(opt)
-    fprintf("user did not pass in options as argument, using all defaults for obin '" + obin + "'")
-    opt = ofill(obin, rec=1, unpack=1);
+    fprintf("user did not pass in options as argument, using all defaults for mos '" + mos + "'")
+    opt = ofill(mos, rec=1, unpack=1);
 end
 
 if nargin>=4
@@ -52,7 +52,7 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
             if isempty(usegit)
                 usegit = 0;
             end
-            pthopt = [pthscopa 'opt_' obin '_' scopausername '_.txt'];
+            pthopt = [pthscopa 'opt_' mos '_' scopausername '_.txt'];
             opt = structfile(pthopt, s=[], nm=optid, usegit=usegit, dupe=0, dosort=1);
             opt.optid = optid; %put optid it back in opt struct
         end
@@ -60,10 +60,10 @@ if isfield(opt, 'optid') && ~isempty(opt.optid)
 else
     opt.optid = glb('optiddf');
     if isempty(opt.optid)
-        opt.optid = 'z0';
+        opt.optid = optiddf;
     end
 end
 
 if isempty(doplt)
-    doplt = any(strcmp(obin, glb('plt'))); %false if glb('plt') has not been set
+    doplt = any(strcmp(mos, glb('plt'))); %false if glb('plt') has not been set
 end

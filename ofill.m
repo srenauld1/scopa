@@ -206,11 +206,11 @@ if isempty(mosc_previous)
     mosc_previous = {};
 end
 
-if isfield(optin, 'full') && isequal(optin.full, 1)
-    error("you cannot use ofill to edit options struct after it has already been made full (after calling ofill with full=1)")
+if isfield(optin, 'finished') && isequal(optin.finished, 1)
+    error("you cannot use ofill to edit options struct after it has already been 'finished' (after calling ofill with finish=1)")
 end
 if finish
-    if isfield(optin, 'full') && isequal(optin.full, 1)
+    if isfield(optin, 'finished') && isequal(optin.finished, 1)
         error("finish cannot be true because all nestings are already present (must have previously set finish=1)")
     end
     if ~isemptyall(mosc)
@@ -289,29 +289,6 @@ else
         end
     end
 
-
-    % for k = 1:numel(mos_optin_only)
-    %     sind = structind(mos_optin_only{k});
-    %     tmp = getfield(optin, sind{:});
-    %     mos_child = regexp(mos, [mos_optin_only{k} '\.(.*$)'], 'tokens'); %check if current mos_optin_only is a parent of a mos filled above
-    %     mos_child = mos_child(~cellfun(@isempty, mos_child));
-    %     if ~isempty(mos_child) %if current mos_optin_only is a parent of a mos filled above
-    %         mos_child = mos_child{1}{1};
-    %         fn_tmp = fieldnames(tmp);
-    %         for q = 1:numel(fn_tmp)
-    %             if ~strcmp(fn_tmp{q}, mos_child) %then ignore that child to not overwrite that mos set above
-    %                 tmp = tmp.(fn_tmp{q});
-    %                 sind = structind([mos_optin_only{k} '.' fn_tmp{q}]);
-    %                 optout = setfield(optout, sind{:}, tmp); %create mos_optin_only in optout and set to their values in optin (otherwise structfill will error)
-    %             end
-    %         end
-    %     else
-    %         if ~ismember(mos_optin_only{k}, mostree_optout_open)
-    %             optout = setfield(optout, sind{:}, tmp); %create mos_optin_only in optout and set to their values in optin (otherwise structfill will error)
-    %         end
-    %     end
-    % end
-
     optout = structfill(optin, optout);
 
 end
@@ -370,7 +347,7 @@ if finish
 
 
     for k = 1:numel(mostree_tmp) %doesn't matter if these get updated in loop but fn_optout_flat doesn't (right?)
-        if ~strcmp(mostree_tmp{k}, 'full') %full is the one field that cannot be done here (that was not removed above as a meta field)
+        if ~strcmp(mostree_tmp{k}, 'finished') %finished is the one field that cannot be done here (that was not removed above as a meta field)
             if isempty(fn_optout_flat_above_mosc_all) || all(cellfun(@isempty, regexp(mostree_tmp{k}, strcat('^', strrep(fn_optout_flat_above_mosc_all, delimflat, '.'))))) %if mostree_tmp{k} is not any mos with mosc from above
                 expr = ['^' strrep(mostree_tmp{k}, '.', delimflat)];
                 mtch = fn_optout_flat(~cellfun(@isempty, regexp(fn_optout_flat, expr, 'match')));
@@ -383,7 +360,7 @@ if finish
 
 
 
-    % check for problems (and mark as full if you're filling all mostree, but not if you're just filling a subset of all mostree, ie passed in as mos)
+    % check for problems (and mark as finished if you're filling all mostree, but not if you're just filling a subset of all mostree, ie passed in as mos)
 
     if isempty(mos) || isempty(setxor(mos, mostree_optin_top))
         % if isempty(optout.mn.scopausername)
@@ -403,7 +380,7 @@ if finish
 
     glb(mosc=mosc_previous)
 
-    optout.full = 1;
+    optout.finished = 1;
 
 
 end

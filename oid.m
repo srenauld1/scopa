@@ -64,9 +64,9 @@ try
         error("tsget should call oid with getonly=1")
     end
 
-    if isempty(getfieldns(opt, 'full')) || any(cellfun(@isempty, getfieldns(opt, 'full'))) || any(cell2mat(getfieldns(opt, 'full'))~=1)
-        if ~tsgetcall %input struct does not require true 'full' field if oid is called from tsget
-            error("options struct must be 'full'; you may have removed final call to ofill in oset with argument rec=1")
+    if isempty(getfieldns(opt, 'finished')) || any(cellfun(@isempty, getfieldns(opt, 'finished'))) || any(cell2mat(getfieldns(opt, 'finished'))~=1)
+        if ~tsgetcall %input struct does not require true 'finished' field if oid is called from tsget
+            error("options struct must be 'finished'; you may have removed final call to ofill in oset with argument rec=1")
         end
     end
 

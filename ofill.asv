@@ -206,11 +206,11 @@ if isempty(mosc_previous)
     mosc_previous = {};
 end
 
-if isfield(optin, 'full') && isequal(optin.full, 1)
+if isfield(optin, 'finished') && isequal(optin.full, 1)
     error("you cannot use ofill to edit options struct after it has already been made full (after calling ofill with full=1)")
 end
 if finish
-    if isfield(optin, 'full') && isequal(optin.full, 1)
+    if isfield(optin, 'finished') && isequal(optin.full, 1)
         error("finish cannot be true because all nestings are already present (must have previously set finish=1)")
     end
     if ~isemptyall(mosc)
@@ -370,7 +370,7 @@ if finish
 
 
     for k = 1:numel(mostree_tmp) %doesn't matter if these get updated in loop but fn_optout_flat doesn't (right?)
-        if ~strcmp(mostree_tmp{k}, 'full') %full is the one field that cannot be done here (that was not removed above as a meta field)
+        if ~strcmp(mostree_tmp{k}, 'finished') %full is the one field that cannot be done here (that was not removed above as a meta field)
             if isempty(fn_optout_flat_above_mosc_all) || all(cellfun(@isempty, regexp(mostree_tmp{k}, strcat('^', strrep(fn_optout_flat_above_mosc_all, delimflat, '.'))))) %if mostree_tmp{k} is not any mos with mosc from above
                 expr = ['^' strrep(mostree_tmp{k}, '.', delimflat)];
                 mtch = fn_optout_flat(~cellfun(@isempty, regexp(fn_optout_flat, expr, 'match')));
