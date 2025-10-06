@@ -141,6 +141,77 @@
       "t"
     ]
   },
+  "a3": {
+    "balldia": 9,
+    "ftv": {
+      "numpkthr": 10,
+      "numpx": 10,
+      "smlenpx": 2,
+      "smlensec": 1
+    },
+    "slopelensec": 0.1,
+    "slopelensec_supp": 0.05,
+    "slopeord": 2,
+    "slopeord_supp": 2,
+    "supprate": 60,
+    "toballscale": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tounwrap": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "tozero": [
+      "ficTracIntSide",
+      "ficTracIntForward"
+    ],
+    "usefbf": 1,
+    "usefbl": 1,
+    "useinds": "none",
+    "vcategorical": [
+      "ftcam",
+      "cameraFrameClock",
+      "epoch",
+      "g4vel",
+      "g4velnom"
+    ],
+    "vcircular": [
+      "ficTracIntSide",
+      "ficTracIntForward",
+      "ficTracYaw",
+      "ficTracHeading",
+      "g4panels",
+      "g4yaw"
+    ],
+    "vnormal": [
+      "Time",
+      "heat",
+      "virmenIteration"
+    ],
+    "voltmax": 10,
+    "voltmin": 0,
+    "vrenm": [
+      "t: Time, time, T, t",
+      "epochts: epoch",
+      "vyvnom: g4vel, g4velnom",
+      "vy: g4panels, g4yaw",
+      "vyv: g4panels_dv, g4yaw_dv",
+      "bf: ficTracIntForward",
+      "bfv: ficTracIntForward_dv",
+      "bs: ficTracIntSide",
+      "bsv: ficTracIntSide_dv",
+      "by: ficTracYaw, ficTracHeading",
+      "byv: ficTracYaw_dv, ficTracHeading_dv",
+      "ftcam: ftcam"
+    ],
+    "vtime": [
+      "Time",
+      "time",
+      "T",
+      "t"
+    ]
+  },
   "autonm": 1,
   "loc": "/Users/sophiarenauld/scopa/",
   "maketime": "2025040312014807",
