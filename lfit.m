@@ -84,7 +84,7 @@ numypix = size(stackmnt,1);
 
 if pixfit
     if min(stack(:))<0
-        error(sprintf("stack should be nonnegative ast this point"))
+        error("stack should be nonnegative ast this point")
     end
     resp = stack;
     clear stack
@@ -127,7 +127,7 @@ end
 
 
 if runfit
-    [lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(t, lagsec); %actual lags depend on epoch (samples you're using)
+    [lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(lagsec, t); %actual lags depend on epoch (samples you're using)
     slope_lagall = zeros(numroi, numlag, 'single');
     rsq_lagall = zeros(numroi, numlag, 'single');
     p_lagall = zeros(numroi, numlag, 'single');
@@ -200,7 +200,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
     opttmp.imhsv.ignoresat = 1;
     opttmp.imhsv.ignoreval = 0;
-    opttmp = odf(opttmp, 'imhsv');
+    opttmp = ofill(opttmp, 'imhsv');
     imhsv = opttmp.imhsv;
     imhsv = plots_setup_hsv(imhsv);
 
@@ -292,7 +292,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
 
-    tsub = t(it);
+    subt = t(it);
 
     switch sortstyle
         case 'slope' %by correlation
@@ -326,90 +326,90 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     sectorind = 2;
     for j = 1:size(imhsv, 3)
 
-        st.hax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        st.hax{j}.InnerPosition(1) = ax(sectorind).x(j);
-        st.hax{j}.InnerPosition(2) = ax(sectorind).y(j);
-        st.hax{j}.InnerPosition(3) = ax(sectorind).w(1);
-        st.hax{j}.InnerPosition(4) = ax(sectorind).h(1);
-        st.hax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
-        st.hax{j}.XLim = [1 numxpix];
-        st.hax{j}.YLim = [1 numypix];
+        st.ax{j} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        st.ax{j}.InnerPosition(1) = ax(sectorind).x(j);
+        st.ax{j}.InnerPosition(2) = ax(sectorind).y(j);
+        st.ax{j}.InnerPosition(3) = ax(sectorind).w(1);
+        st.ax{j}.InnerPosition(4) = ax(sectorind).h(1);
+        st.ax{j}.DataAspectRatio = [1 1 1]; %don't think this is necessary
+        st.ax{j}.XLim = [1 numxpix];
+        st.ax{j}.YLim = [1 numypix];
 
-        st.hlnx{j} = xline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
-        st.hlny{j} = yline(st.hax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
+        st.lnx{j} = xline(st.ax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
+        st.lny{j} = yline(st.ax{j}, nan, 'w', 'LineStyle', 'none', 'LineWidth', crosshair_width);
 
-        hold(st.hax{j}, 'on')
-        st.hpl{j} = image(st.hax{j}, 'CData', squeeze(imhsv(:,:,j,:)));
+        hold(st.ax{j}, 'on')
+        st.pl{j} = image(st.ax{j}, 'CData', squeeze(imhsv(:,:,j,:)));
         axis off
         axis ij
-        hold(st.hax{j}, 'off')
+        hold(st.ax{j}, 'off')
 
     end
 
     sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
-    ts.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    ts.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    ts.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    ts.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    hold(ts.hax, 'on');
+    ts.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    hold(ts.ax, 'on');
     yyaxis left;
-    ts.hpl = plot(ts.hax, t, nanresp);
+    ts.pl = plot(ts.ax, t, nanresp);
     yyaxis right;
-    ts.hpl2 = plot(ts.hax, t, stim);
-    hold(ts.hax, 'off');
+    ts.hpl2 = plot(ts.ax, t, stim);
+    hold(ts.ax, 'off');
     ts.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts.hax.XAxis] = axismod(ts.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    [ts.hax.YAxis(1)] = axismod(ts.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts.hax.YAxis(2)] = axismod(ts.hax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    [ts.ax.XAxis] = axismod(ts.ax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    [ts.ax.YAxis(1)] = axismod(ts.ax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts.ax.YAxis(2)] = axismod(ts.ax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 
 
     sectorind = 1; spi = 5; widthfac = 1; heightfac = 1;
-    sc.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    sc.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    sc.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    sc.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    sc.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    sc.hpl = scatter(sc.hax, stim, nanresp, 2.5, 'filled');
-    sc.hax.PlotBoxAspectRatio = [1 1 1];
-    [sc.hax.XAxis] = axismod(sc.hax.XAxis, stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
-    [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7); %specify axis(1) otherwise to overwrite entire axis
+    sc.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    sc.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    sc.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    sc.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    sc.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    sc.pl = scatter(sc.ax, stim, nanresp, 2.5, 'filled');
+    sc.ax.PlotBoxAspectRatio = [1 1 1];
+    [sc.ax.XAxis] = axismod(sc.ax.XAxis, stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    [sc.ax.YAxis(1)] = axismod(sc.ax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7); %specify axis(1) otherwise to overwrite entire axis
 
 
     sectorind = 1; spi = 6; widthfac = 1; heightfac = 1;
-    pt.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    pt.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    pt.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    pt.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    pt.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    pt.hpl = patch(pt.hax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
+    pt.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    pt.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    pt.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    pt.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    pt.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    pt.pl = patch(pt.ax, nanresp, nanresp, nanresp, 'EdgeColor',' interp', 'LineWidth', 0.5, 'LineJoin', 'round');
     if ~isempty(pos.x)
-        pt.hpl.XData = [pos.x(1:end-1) nan]; %need the nan to make patch work
-        pt.hpl.YData = [pos.y(1:end-1) nan]; %need the nan to make patch work
-        pt.hpl.CData = [1:numel(nanresp)-1 nan]; %need the nan to make patch work
-        pt.hax.PlotBoxAspectRatio = [1 1 1];
-        pt.hax.Box = 'on';
-        [pt.hax.XAxis] = axismod(pt.hax.XAxis, pos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
-        [pt.hax.YAxis(1)] = axismod(pt.hax.YAxis(1), pos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
+        pt.pl.XData = [pos.x(1:end-1) nan]; %need the nan to make patch work
+        pt.pl.YData = [pos.y(1:end-1) nan]; %need the nan to make patch work
+        pt.pl.CData = [1:numel(nanresp)-1 nan]; %need the nan to make patch work
+        pt.ax.PlotBoxAspectRatio = [1 1 1];
+        pt.ax.Box = 'on';
+        [pt.ax.XAxis] = axismod(pt.ax.XAxis, pos.x, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='path (6 m square)',  labeltightfac=0.7, noticks=1);
+        [pt.ax.YAxis(1)] = axismod(pt.ax.YAxis(1), pos.y, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='',  labeltightfac=0.7, noticks=1);
     end
 
 
     sectorind = 1; spi = 7; widthfac = 2; heightfac = 1;
-    ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts2.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    ts2.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    ts2.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    ts2.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    hold(ts2.hax, 'on');
+    ts2.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts2.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts2.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts2.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts2.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    hold(ts2.ax, 'on');
     yyaxis left;
-    ts2.hpl = plot(ts2.hax, tsub, nanresp(it));
+    ts2.pl = plot(ts2.ax, subt, nanresp(it));
     yyaxis right;
-    ts2.hpl2 = plot(ts2.hax, tsub, stim(it));
-    hold(ts2.hax, 'off');
+    ts2.hpl2 = plot(ts2.ax, subt, stim(it));
+    hold(ts2.ax, 'off');
     ts2.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts2.hax.XAxis] = axismod(ts2.hax.XAxis, tsub, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0);
-    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts2.hax.YAxis(2)] = axismod(ts2.hax.YAxis(2), stim(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    [ts2.ax.XAxis] = axismod(ts2.ax.XAxis, subt, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)',  labeltightfac=0);
+    [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts2.ax.YAxis(2)] = axismod(ts2.ax.YAxis(2), stim(it), xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 
 
     %%%%%%%%%%% PLOT %%%%%%%%%%%
@@ -423,13 +423,13 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
             for j = 1:size(imhsv, 3)
                 if j==crosshair{k}(3)
-                    st.hlny{j}.Value = crosshair{k}(1);
-                    st.hlnx{j}.Value = crosshair{k}(2);
-                    st.hlny{j}.LineStyle = '-';
-                    st.hlnx{j}.LineStyle = '-';
+                    st.lny{j}.Value = crosshair{k}(1);
+                    st.lnx{j}.Value = crosshair{k}(2);
+                    st.lny{j}.LineStyle = '-';
+                    st.lnx{j}.LineStyle = '-';
                 else
-                    st.hlny{j}.LineStyle = 'none';
-                    st.hlnx{j}.LineStyle = 'none';
+                    st.lny{j}.LineStyle = 'none';
+                    st.lnx{j}.LineStyle = 'none';
                 end
             end
 
@@ -439,22 +439,22 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
                 nanstim(:) = nan;
                 nanresp(1:numel(resplag)) = resplag;
                 nanstim(1:numel(stimlag)) = stimlag;
-                sc.hpl.XData = nanstim;
-                sc.hpl.YData = nanresp;
-                ts.hpl.YData = nanresp;
+                sc.pl.XData = nanstim;
+                sc.pl.YData = nanresp;
+                ts.pl.YData = nanresp;
                 ts.hpl2.YData = nanstim;
-                ts2.hpl.YData = nanresp(it);
+                ts2.pl.YData = nanresp(it);
                 ts2.hpl2.YData = nanstim(it);
             else
-                sc.hpl.YData = resp(k,:);
-                ts.hpl.YData = resp(k,:);
-                ts2.hpl.YData = resp(k,it);
+                sc.pl.YData = resp(k,:);
+                ts.pl.YData = resp(k,:);
+                ts2.pl.YData = resp(k,it);
             end
 
             if ~yconst
-                [sc.hax.YAxis(1)] = axismod(sc.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts.hax.YAxis(1)] = axismod(ts.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,it), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                [sc.ax.YAxis(1)] = axismod(sc.ax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                [ts.ax.YAxis(1)] = axismod(ts.ax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp(k,it), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
             end
 
 

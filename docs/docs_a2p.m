@@ -2,6 +2,44 @@
 
 %{
 
+in matlab, if user explicitly sets name-value argument to empty when calling a function, the default value in arguments block is not used; 
+the arguments block default value is only used if user doesn't specify the name-value argument in the function call,  
+for example, daqld(pthdaq=[]) does not set pthdaq to its arguments block default value, but daqld() does; 
+so for many name-value arguments in scopa matlab code, where we don't want empty to be a valid value, arguments block often sets temporary default value to empty, then true default is set below arguments block; 
+this way, for example, pthdaq will get default value with daqld() and daqld(pthdaq=[])
+
+%{
+stack suffixes:
+    'o': original
+    'r': motion corrected
+    'd': denoised
+    'b': background-subtracted
+    's': scannoise-removed 
+%}
+
+scopagit syncs local with remote, gets called from structfile 
+if you get error "Unable to fetch from the remote "origin" at . . . ", try usegit=0
+
+module: high-level function called directly from a2p
+    stackld (sld)
+    daqld (daq)
+    roimake (roi)
+    bmpmake (bmp)
+    mdlmake (mdl)
+    
+for each module
+    varid: unique id assigned to a set of input variables; z0 when unknown 
+    optid: unique id assigned to a set of input options
+    output is saved to file with varid and optid in suffix 
+
+
+for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
+
+glb is required in only a couple places within function tsget
+strucfile gets called by: oid, tsget, stackcrop, and fset; can read and/or
+write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 
+warning: when reading struct from file, jsencode (called from structld) will insert an 'x' at the beginning of any fieldname that doesn't begin with a letter (an invalid fieldname); if a file was written with structsv, it will not contain invalid fieldnames because structsv only writes valid structs) 
+
 ap2 (analysis 2-photon)
     scopa 'post' pipeline for analyzing data output from scopa 'pre' pipeline
     primarily for defining/processing rois, fitting models, and visualizing data (including interactively)
@@ -49,7 +87,7 @@ utility functions (and visualization functions):
     pltx: pltx means plot experiment; versatile and interactive plotting function; can plot fictrac video, fictrac paths, scatterplots, brain images with rois 
     pthauto: create path (e.g. for saving figures)
     oset: set options
-    odf: invoke default options, overwriting defaults with input
+    ofill: invoke default options, overwriting defaults with input
     tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
     axarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
 

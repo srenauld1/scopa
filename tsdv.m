@@ -4,13 +4,16 @@ function dv = tsdv(vtype, tsin, slopelensec, slopeord, sper)
 % need to generalize this function for nd
 
 arguments
-    vtype {mustBeText} %normal, circular, or catergorical; tsin must be in radians if circular 
+    vtype {mustBeText} %normal, radians, degrees, or catergorical; tsin must be in radians if circular 
     tsin %input variable to be differentiated; must be in radians if vtype is circular
     slopelensec %slope length in seconds; rounded to nearest sample
     slopeord %order for polynomial fit to determine local slope 
     sper %sample period
 end
 
+if ~ismember(vtype, {'normal', 'radians', 'degrees', 'categorical'})
+    error("first argument must be 'normal', 'radians', 'degrees', or 'categorical'")
+end
 if isempty(slopelensec)
     slopelensec = sper*slopeord+1;
     error("WARNING, IN daqld, slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error (and without changing slopeord) is: " + num2str(slopelensec_new))
@@ -21,9 +24,11 @@ if slopelen<slopeord+1
     error("movingslope will error because slopelen is less than slopeord+1; your value of slopelensec, given value of sper (sample period), gives slopelen less than slopeord+1; use a different slopelen and/or slopeord (likely just slopelen should be changed)")
 end
 
-if strcmp(vtype, 'circular') % differentiate circular variable 
+if strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') % differentiate circular variable 
 
-    fprintf("USER REQUESTED 'circular' vtype, input must be in radians; assuming that it is and proceeding" + newline)
+    if strcmp(vtype, 'degrees')
+        tsin = deg2rad(tsin);
+    end
 
     inpx = cos(tsin);
     inpy = sin(tsin);
@@ -49,4 +54,9 @@ else
 
     error("vtype must be circular, normal, or categorical")
 
+end
+
+
+if strcmp(vtype, 'degrees')
+    dv = rad2deg(dv);
 end

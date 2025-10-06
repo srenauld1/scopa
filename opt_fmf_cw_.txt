@@ -1,0 +1,53 @@
+{
+  "a1": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthpar": "/Users/wienecke/ds/data/rec",
+    "pthtemplate": "/Users/wienecke/ds/data/stimuli",
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
+  },
+  "a2": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthpar": [],
+    "pthtemplate": [],
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
+  },
+  "md": {
+    "autonm": 1,
+    "maketime": "2025031917252584",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "crop_edges": 1,
+    "downsample_template": 1,
+    "feat2": [],
+    "flipped": 0,
+    "getgrid": 1,
+    "gridres": 256,
+    "id": "CON_51",
+    "it": -100,
+    "pthpar": [],
+    "pthtemplate": [],
+    "rep": 1,
+    "stimtype": "drone",
+    "vistype": "plane"
+  }
+}

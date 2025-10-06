@@ -57,7 +57,7 @@ if isa(s, 'char')
     s = open_patterned_tifdata(s);
     filehandlecreated = true;
 elseif ~s.file_is_open && exist(s.filename, 'file') == 2 %this lets us save s, restart the computer, load s, and call a read function without dealing with tags etc.
-    s.fid = fopen(s.filename, 'r'); %this assumes that the user hasn't modified the tif file. but if the user isn't sure they can always pass the filename instead of the struct.
+    s.fid = fopen(s.filename, 'r'); %this assumes that the user hasn't modified the tif file. but if the user isn't sure they can always pass in the filename instead of the struct.
     filehandlecreated = true;
 end
 if nargin < 2

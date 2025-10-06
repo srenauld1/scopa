@@ -24,18 +24,13 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
         mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
         mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
 
-        if mdt['numslice']==1 and mdt['numslice_withflyback']==1:
-            if re.findall( 'hStackManager.enable = (.*)', meta)[0]!='false': #if it's a single slice
-                # raise Exception("if numslice is 1, hStackManager.enable should be false")
-                print("if numslice is 1, hStackManager.enable should be false, but it's not, maybe your scanimage is different than mine")
-            else:
-                print("hStackManager.enable is false, treating stack as planar yxt")
+        if mdt['numslice']==1 and mdt['numslice_withflyback']==1 and re.findall( 'hStackManager.enable = (.*)', meta)[0]=='false': #if it's a single slice
+            print("treating stack as planar yxt because numslice=1, numslice_withflyback=1, and hStackManager.enable is false")
             mdt['numvol'] = int(re.findall( 'framesPerSlice = (.*)', meta)[0])
         else:
             try:
                 mdt['numvol'] = int(re.findall( 'actualNumVolumes = (.*)', meta)[0])
             except:
-                print("USING OLD SCANIMAGE VERSION METADATA PATTERNS")
                 mdt['numvol'] = int(re.findall( 'numVolumes = (.*)', meta)[0])
         
 

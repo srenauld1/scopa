@@ -98,12 +98,12 @@ for ei = 1:numel(epochinds_all)
                 if ~skipplot
 
                     if isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
-                        scatter_type = 'cartesian';
-                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        sctype = 'cartesian';
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     if ~isempty(polar_index) & ~isequal(polar_index, indpolar_prev)
-                        scatter_type = 'polar';
-                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
+                        sctype = 'polar';
+                        h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, tinew, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos);
                     end
                     indpolar_prev = polar_index;
 
@@ -524,17 +524,17 @@ end
 
 end
 
-function h = init_axes(h, stack, lims, ylim_constancy, roi_index, scatter_type, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
+function h = init_axes(h, stack, lims, ylim_constancy, roi_index, sctype, ax, ti, numsamp_max, numlags, actual_lags_xy_sec, plot_z_as_color, mkrsz, gifvis, fontmedium, blindspot, axisroomfac, zstartpos)
 
 %must reinitialize axes to switch between cartesian and polar axes in the same location of the same figure; to save time, this function is called only when the axis switches
 dummyvec_ts = nan(numsamp_max, 1);
 dummyvec_lag = nan(numlags, 1);
 
 
-if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axes that won't change
+if ~isfield(h, 'fg') %if no figure has been initialized yet, initialize the axes that won't change
 
 
-    [dms,arat] = pxscreenget();
+    [dms,arat] = screenpx();
     szf = 0.75; 
 
     szftmp = figsz(szf);
@@ -546,15 +546,15 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     %%%%%%%%%%%% BAR PLOT %%%%%%%%%%%%
 
-    sector_ind = 1;
+    idxsect = 1;
     spind = 1;
     width_multiplier = 2.8;
     height_multiplier = 1;
     haxbr = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    haxbr.InnerPosition(1) = ax(sector_ind).x(spind);
-    haxbr.InnerPosition(2) = ax(sector_ind).y(spind);
-    haxbr.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
-    haxbr.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
+    haxbr.InnerPosition(1) = ax(idxsect).x(spind);
+    haxbr.InnerPosition(2) = ax(idxsect).y(spind);
+    haxbr.InnerPosition(3) = ax(idxsect).w(width_multiplier);
+    haxbr.InnerPosition(4) = ax(idxsect).h(height_multiplier);
     hold(haxbr, 'on')
 
     hplbr = bar(haxbr, dummyvec_lag, dummyvec_lag);
@@ -574,16 +574,16 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     %%%%%%%%%%%% TIMESERIES %%%%%%%%%%%%
 
-    sector_ind = 1;
+    idxsect = 1;
     spind = 4;
     width_multiplier = 4;
     height_multiplier = 0.8;
 
     haxts = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
-    haxts.InnerPosition(1) = ax(sector_ind).x(spind);
-    haxts.InnerPosition(2) = ax(sector_ind).y(spind);
-    haxts.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
-    haxts.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
+    haxts.InnerPosition(1) = ax(idxsect).x(spind);
+    haxts.InnerPosition(2) = ax(idxsect).y(spind);
+    haxts.InnerPosition(3) = ax(idxsect).w(width_multiplier);
+    haxts.InnerPosition(4) = ax(idxsect).h(height_multiplier);
 
     hold(haxts, 'on')
     yyaxis left
@@ -611,22 +611,22 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     %%%%%%%%%%%% STACK IMAGES %%%%%%%%%%%%
 
-    sector_ind = 2;
+    idxsect = 2;
     width_multiplier = 1;
     height_multiplier = 1;
 
     if roi_index %if there are roi variables
 
-        for spind = 1:ax(sector_ind).numsubplot
+        for spind = 1:ax(idxsect).numsubplot
 
-            [cit, rit] = ind2sub([ax(sector_ind).numcolumns, ax(sector_ind).numrows], spind); %reverse output since subplots are column-major
-            spind_new = sub2ind([ax(sector_ind).numrows, ax(sector_ind).numcolumns], rit, cit);
+            [cit, rit] = ind2sub([ax(idxsect).numcolumns, ax(idxsect).numrows], spind); %reverse output since subplots are column-major
+            spind_new = sub2ind([ax(idxsect).numrows, ax(idxsect).numcolumns], rit, cit);
 
             haxfov{spind} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-            haxfov{spind}.InnerPosition(1) = ax(sector_ind).x(spind);
-            haxfov{spind}.InnerPosition(2) = ax(sector_ind).y(spind);
-            haxfov{spind}.InnerPosition(3) = ax(sector_ind).w(width_multiplier);
-            haxfov{spind}.InnerPosition(4) = ax(sector_ind).h(height_multiplier);
+            haxfov{spind}.InnerPosition(1) = ax(idxsect).x(spind);
+            haxfov{spind}.InnerPosition(2) = ax(idxsect).y(spind);
+            haxfov{spind}.InnerPosition(3) = ax(idxsect).w(width_multiplier);
+            haxfov{spind}.InnerPosition(4) = ax(idxsect).h(height_multiplier);
 
             hold(haxfov{spind}, 'on');
 
@@ -647,7 +647,7 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     else %if there are no roi variables
 
-        htx = text( ax(sector_ind).x(1), ax(sector_ind).y(1), 'NO ROI DATA, SKIPPING FOV PLOTS', 'FontSize', fontmedium, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
+        htx = text( ax(idxsect).x(1), ax(idxsect).y(1), 'NO ROI DATA, SKIPPING FOV PLOTS', 'FontSize', fontmedium, 'HorizontalAlignment', 'left', 'FontWeight', 'bold' ) ;
 
         haxfov = [];
         hplfov = [];
@@ -658,8 +658,8 @@ if ~isfield(h, 'hfg') %if no figure has been initialized yet, initialize the axe
 
     %%%%%%%%%%%% ASSIGN HANDLES TO OUTPUT STRUCT %%%%%%%%%%%%
 
-    h.hfg = hfg;
-    h.htx = htx;
+    h.fg = hfg;
+    h.tx = htx;
     h.haxbr = haxbr;
     h.haxts = haxts;
     h.hplbr = hplbr;
@@ -677,16 +677,16 @@ end
 %%%%%%%%%%%% SCATTERPLOT %%%%%%%%%%%%
 % initialize axes that can change (scatterplots, which can be cartesian or polar, and must be reinitialized for each switch)
 
-sector_ind = 1;
+idxsect = 1;
 spind = 7;
 width_multiplier = 3;
 height_multiplier = 3;
 
-tmp_x_extent = ax(sector_ind).w(width_multiplier);
-tmp_y_extent = ax(sector_ind).h(height_multiplier);
+tmp_x_extent = ax(idxsect).w(width_multiplier);
+tmp_y_extent = ax(idxsect).h(height_multiplier);
 minextent = min(tmp_x_extent, tmp_y_extent); %force this axis to be square, without
 
-switch scatter_type
+switch sctype
 
     case 'cartesian'
 
@@ -697,9 +697,9 @@ switch scatter_type
             delete(h.hpllnp)
         end
 
-        haxscc = axes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        haxscc.InnerPosition(1) = ax(sector_ind).x(spind);
-        haxscc.InnerPosition(2) = ax(sector_ind).y(spind);
+        haxscc = axes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscc.InnerPosition(1) = ax(idxsect).x(spind);
+        haxscc.InnerPosition(2) = ax(idxsect).y(spind);
         haxscc.InnerPosition(3) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
         haxscc.InnerPosition(4) = minextent; %do this rather than plotBoxAspectRatio to ensure shorter axis is used
 
@@ -731,9 +731,9 @@ switch scatter_type
             delete(h.hplscc)
         end
 
-        haxscp = polaraxes( 'Parent', h.hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-        haxscp.InnerPosition(1) = ax(sector_ind).x(spind);
-        haxscp.InnerPosition(2) = ax(sector_ind).y(spind);
+        haxscp = polaraxes( 'Parent', h.fg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+        haxscp.InnerPosition(1) = ax(idxsect).x(spind);
+        haxscp.InnerPosition(2) = ax(idxsect).y(spind);
         haxscp.InnerPosition(3) = minextent;
         haxscp.InnerPosition(4) = minextent;
 
@@ -894,7 +894,7 @@ end
 function [h, framecount] = plotvars(h, stack, lims, xi, yi, zi, ylim_constancy, roi_index, crosshair, gif_scope, framecount, laginds_to_plot, plotx, ploty, plotz, labx, laby, labz, labt, labr, cmp, r_dummy1, r_dummy2, polar_index, actual_lags_xy_sec, ccr, pval_norm, pthgif, roi_type, plot_z_as_color, figure_title)
 
 
-h.htx.String = figure_title;
+h.tx.String = figure_title;
 
 if strcmp(gif_scope, 'eachvar')
     framecount = 0;
@@ -1003,7 +1003,7 @@ for lagind = laginds_to_plot
 
     end
 
-    fig2gif(h.hfg, framecount, pthgif)
+    fig2gif(h.fg, framecount, pthgif)
 
 end
 

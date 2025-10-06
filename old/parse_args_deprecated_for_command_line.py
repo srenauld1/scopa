@@ -36,7 +36,7 @@ class parse_pars_file():
 
 def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, jobind, file_matching_style,
+                      recdate, fly, trial, substr, jobind, file_matching_style,
                       registration_template_group_id, do_register, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,    
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 
@@ -233,10 +233,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         default=[trial],  # default if nothing is provided
     )
     CLI.add_argument(
-        "--folder_substring",  # name on the CLI - drop the `--` for positional/required parameters
+        "--substr",  # name on the CLI - drop the `--` for positional/required parameters
         nargs="*", 
         type=str,
-        default=[folder_substring],  # default if nothing is provided
+        default=[substr],  # default if nothing is provided
     )
     CLI.add_argument(
         "--jobind",  # name on the CLI - drop the `--` for positional/required parameters
@@ -282,7 +282,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         args.recdate = pars.RECDATE
         args.fly = pars.FLY
         args.trial = pars.TRIAL
-        args.folder_substring = pars.FOLDER_SUBSTRING
+        args.substr = pars.SUBSTR
         args.file_matching_style = pars.FILE_MATCHING_STYLE
         args.registration_template_group_id = pars.REGISTRATION_TEMPLATE_GROUP_ID
         args.register_in_2d = pars.REGISTER_IN_2D
@@ -322,10 +322,10 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
         trial = args.trial[0] #keep as list
     else:
         trial = args.trial #keep as list
-    if isinstance(args.folder_substring[0], list):
-        folder_substring = args.folder_substring[0] #keep as list
+    if isinstance(args.substr[0], list):
+        substr = args.substr[0] #keep as list
     else:
-        folder_substring = args.folder_substring #keep as list
+        substr = args.substr #keep as list
     if isinstance(args.jobind[0], list):
         jobind = args.jobind[0] #keep as list
     else:
@@ -409,7 +409,7 @@ def parse_command_line(folder_with_all_recordings_on_storage_and_compute_filesys
 
     return (folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, 
                       do_copyfiles, fnind_fn_prefix, pth_parsfile, scopatmpdir, 
-                      recdate, fly, trial, folder_substring, jobind, file_matching_style,
+                      recdate, fly, trial, substr, jobind, file_matching_style,
                       registration_template_group_id, do_register, register_in_2d, bglenpx, smlenpx_mcp, max_shifts_prc, use_cluster,  
                       do_denoise, do_stitch, denoise_volume, denoise_slice_index, num_epochs_denoise, 
                       use_background_subtracted, use_denoised, epoch_choose_denoise, 

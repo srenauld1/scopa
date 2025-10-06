@@ -1,23 +1,29 @@
-function optout = odist(optin, vbin)
-
+function optout = odist(optin, obin, opt2)
 
 % odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but odist in python just gives 'any' (not 'each') functionality
-% optin can be a vbin, or a higher struct containing the vbin (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this) 
+% optin can be a obin, or a higher struct containing the obin (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this)
 
-if isfield(optin, vbin)
-    optin = optin.(vbin);
+arguments
+    optin
+    obin
+    opt2.delimflat = []
 end
-optin = copybinset(optin, vbin);
+opt2 = glboropt(opt2);
+delimflat = opt2.delimflat;
+
+if isfield(optin, obin)
+    optin = optin.(obin);
+end
 fn = fieldnames(optin);
 
 optout = struct;
 for k = 1:numel(fn)
     copybintmp = fn{k};
     copybinstruct = optin.(copybintmp);
-    optflat = structflat(copybinstruct); % prefix=copybintmp);
+    optflat = structflat(copybinstruct, delim=delimflat); % prefix=copybintmp);
     fnflat = fieldnames(optflat);
 
-    % if any(~cellfun(@isempty, regexp(fnflat,[delim '(\d+)' delim])))
+    % if any(~cellfun(@isempty, regexp(fnflat,[delimflat '(\d+)' delimflat])))
     %     error("cannot use nonscalar structs in o")
     % end
 
@@ -31,11 +37,11 @@ for k = 1:numel(fn)
         fnflatex = fnflat(expandinds);
         optflatcex = optflatcex(expandinds);
         for m = 1:numel(optflatcex)
-            if all(cellfun(@isnumeric,optflatcex{m}))
-                optflatcex{m} = num2cell(unique(cellfun(@unique, optflatcex{m})));
-            else
-                optflatcex{m} = unique(optflatcex{m}); %make sure no accidental repeats
+            if ~isvector(optflatcex{m})
+                error("optflatcex{m} must be vector")
             end
+            dmtmp = find(size(optflatcex{m})==max(size(optflatcex{m})));
+            optflatcex{m} = uniquearray(optflatcex{m}, dmtmp);
         end
         combos = combinations(optflatcex{:});
         for m = 1:size(combos,1)
@@ -68,5 +74,9 @@ end
 
 fn = fieldnames(optout);
 for k = 1:numel(fn)
-    optout.(fn{k}) = structunflat(optout.(fn{k}));
+    optout.(fn{k}) = structunflat(optout.(fn{k}), delim=delimflat);
 end
+
+
+end
+

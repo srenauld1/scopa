@@ -28,7 +28,7 @@ if iscell(vin)
     numelmax = max(cell2mat(cellfun(@(x) size(x), vin, 'UniformOutput', false)), [], 1);
     padlen = repelem({zeros(1,ndims(vin))}, numel(vin));
     for k = 1:numel(vin) %insert nan padding to convert cell to mat, in case different sizes
-        dimnot{k} = setxor(dim, 1:ndims(vin{k}));
+        dimnot{k} = setdiff(1:ndims(vin{k}), dim);
         szone{k} = size(vin{k}, dim);
         padlen{k}(dimnot{k}) = numelmax(dimnot{k})-size(vin{k}, dimnot{k});
         vin{k} = padarray(vin{k}, padlen{k}, nan, 'post');

@@ -1,8 +1,8 @@
 function o = oset_312(o)
 
-rgname = {'none'}; 
+o.mn.do = ["sld", "daq", "roi"];
 
-o.mn.doroi = 1; 
+rgname = {'none'}; 
 
 o.sld.ic = [];
 
@@ -18,7 +18,7 @@ for m = 1:numel(rgname)
         o.roi.nrm.post = {'rsc000100'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

@@ -1,24 +1,43 @@
-function roi = roimake(stack, opt, pthstack, sper, widyxz, t, pthpy, opt2)
+function roi = roimake(opt, opt2)
 
 % see docs_roimake.m
 
 arguments
-    stack
     opt = []
-    pthstack = []
-    sper = [] %only required nonempty for normalizing by moving window in tsnorm
-    widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
-    t = [] %only required nonempty if channorm~=0 in roits
-    pthpy = [] %only required to run caiman from matlab (roi.docm=1)
+    opt2.stack = []
+    opt2.pthstack = []
+    opt2.md = []
+    opt2.sper = [] %only required nonempty for normalizing by moving window in tsnorm
+    opt2.widyxz = [] %only required nonempty for maskseg 'uniform' in roimauto
+    opt2.t = [] %only required nonempty if channorm~=0 in roits
+    opt2.pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt2.doplt = []
+    opt2.usegit = []
     opt2.roimask = []
 end
+opt2 = glboropt(opt2);
+stack = opt2.stack;
+pthstack = opt2.pthstack;
+md = opt2.md;
+sper = opt2.sper;
+widyxz = opt2.widyxz;
+t = opt2.t;
+pthpy = opt2.pthpy;
 doplt = opt2.doplt;
+usegit = opt2.usegit;
 roimask = opt2.roimask;
 
-[opt, pthstack, doplt] = fset('roi', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
 
-md = glb('md');
+if isempty(stack)
+    if isempty(pthstack)
+        error("if name-value argument stack is empty, name-value argument pthstack must be nonempty")
+    end
+    stack = stackld(ofill('sld', unpack=1), pthstack);
+end
+if isempty(md)
+    md = mdsild(pthstack);
+end
 if isempty(sper)
     sper = md.sper;
 end
@@ -26,32 +45,35 @@ if isempty(widyxz)
     widyxz = md.widyxz;
 end
 if isempty(t)
-    t = glb('t');
+    t = md.sper:md.sper:md.numvol*md.sper;
 end
 
 pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
-pthpre = erase(pthroi, '.mat');
 
-
-if ndims(stack)<4
-    error("stack must be 4d or 5d")
+if ndims(stack)<4 || ndims(stack)>5
+    error("stack input to roidraw must have 4-5 dimensions")
 end
 
 numchan = size(stack,5);
 
-
+rg = [];
+mm = [];
+respcm = [];
 if isempty(roimask)
     maskin = 0;
-    roimask = cell(numchan,1);
+    roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
     if opt.domm
-        maskname = opt.mm.maskname;
+        mmname = opt.mm.mmname;
     else
-        maskname = 'none';
+        mmname = 'none';
     end
 else
     maskin = 1;
     if ~iscell(roimask)
-        roimask = {roimask};
+        roimask = {roimask};  %needs to be cell in case 2-channel with different number rois
+    end
+    if ~isequal(numel(roimask), numchan)
+        error("roimask must be cell, length numchan")
     end
 end
 
@@ -62,16 +84,24 @@ try
 
     roi = load(pthroi);
 
-    if any(~isfield(roi, {'ts', 'dat', 'maketime_optfile_roi'}))
-        error("roi struct must contain fields 'ts' and 'dat'; you may have loaded an old roi struct")
+    if any(~isfield(roi, {'dat', 'maketime_optfile_roi'})) || isfield(roi, 'ts')
+        error("roi struct, at highest level, must contain field and 'dat' (and not field ts); you may have loaded an old roi struct")
     end
     if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
-    [~, rg] = stackcrop([], pthstack, opt.rgname); %don't input or output stack here, just loading rg
-    mm = roidraw([], pthstack, rg=rg, maskname=maskname); %don't input stack herem, just loading mm
-    if ~isequal(roi.dat{1}.rg, rg) || ~isequal(roi.dat{1}.mm, mm{1}) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat{2}.rg, rg) || ~isequal(roi.dat{2}.mm, mm{2}) ) )
+    [~, rg] = stackcrop([], opt.rgname, pthstack=pthstack, usegit=usegit); %don't input or output stack here, just loading rg
+    [~, mm] = roidraw(nodraw=1, pthstack=pthstack, rg=rg, mmname=mmname); %don't input stack here, just loading mm
+    if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")
+    end
+    if ~isfield(roi, 'opt') %doing this check separately from above because added opt to saved variables later than others
+        roi.opt = opt;
+        save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
+    else
+        if ~isequal(roi.opt, opt)
+            error("opt saved/loaded from roi file does not match input opt")
+        end
     end
 
 
@@ -80,30 +110,21 @@ catch ME
 
     fprintf("" + ME.message + newline + "creating roi struct now" + newline)
 
-    
+
 
     %%%% CROP stack TO rg CUBOID %%%%
 
     if ~maskin
-        [stack, rg] = stackcrop(stack, pthstack, opt.rgname);
+        [stack, rg] = stackcrop(stack, opt.rgname, pthstack=pthstack, usegit=usegit);
     end
 
-    stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (don't use glb('stackmnt') because that is the whole fov)
-
+    stackmnt = single(mean(stack, 4)); %compute mean t stack after optional stackcrop (can't remember why we switch to single precision here)
 
 
     %%%% DRAW ROIS %%%%
 
     if opt.domm && ~maskin
-        if isfield(opt, 'ma') && ~isempty(fieldnames(opt.ma)) && opt.ma.numroi>1
-            oneroidraw = 1;
-        else
-            oneroidraw = 0;
-        end
-        mm = roidraw(stack, pthstack, rg=rg, maskname=maskname, methodmm=opt.mm.methodmm, oneroi=oneroidraw);
-        for k = 1:numel(mm)
-            roimask{k} = mm{k}.mask; 
-        end
+        [roimask, mm] = roidraw(stack=stack, pthstack=pthstack, rg=rg, mmname=mmname, chanstr=opt.mm.chanstr, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
     end
 
 
@@ -111,7 +132,7 @@ catch ME
     %%%% AUTOMATED MORPHOLOGICAL SEGMENTATION %%%%
 
     if opt.doma && ~maskin
-        roimask = roimauto(stackmnt, roimask, widyxz, opt.rgname, opt.ma); 
+        roimask = roimauto(stackmnt, opt.ma, roimaskin=roimask, widyxz=widyxz, pthstack=pthstack, rg=rg, mmname=mmname); 
     end
 
 
@@ -119,7 +140,8 @@ catch ME
     %%%% AUTOMATED FUNCTIONAL SEGMENTATION (CAIMAN) %%%%
 
     if opt.docm && ~maskin
-        [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, maskname=maskname);
+        stack = [];
+        [respcm, roimask] = roifauto(pthpy, opt.cm, rgname=opt.rgname, mmname=mmname);
     end
 
 
@@ -127,31 +149,29 @@ catch ME
     %%%% QUALITY CONTROL %%%%
 
     if opt.doqc && ~maskin
-        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm = trm, roicen = roidat.roicen, mask_allroi = roidat.mask_allroi);
+        roimask = roiqc(stackmnt, pth_roif, roitype, opt.qc, trm=trm, roicen=roidat.roicen, mask_allroi=roidat.mask_allroi);
     end
-
-
-
-    %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
-
-    roi.dat = roidatmake(stackmnt, roimask, rg, mm, pthstack);
 
 
 
     %%%% COMPUTE ROI RESPONSES AND NORMALIZE %%%%
 
-    if ~exist('respcm', 'var')
-        roi.ts = roits(stack, roimask, stackmnt, pthpre, sper, t, opt.nrm);
-    else
-        roi.ts = roits(respcm, roimask, stackmnt, pthpre, sper, t, opt.nrm);
-    end
+    [ts, roimask] = roits(opt.nrm, stack=stack, respcm=respcm, roimaskin=roimask, sper=sper, t=t);
+
+
+
+    %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
+
+    roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, pthstack);
+
 
 
     %%%% SAVE %%%%
 
-
     roi.maketime_optfile_roi = glb('maketime_roi');
+    roi.opt = opt;
     save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
+
 
 end
 
@@ -161,6 +181,10 @@ end
 
 if doplt && ~maskin
 
+    pthpre = erase(pthroi, '.mat');
+
+    stackplt(roi.dat(1).stackmnt, roipx=roi.dat(1).roipx)
+    
     chanplt = 1;
 
     imhsv = plots_setup_hsv(opt.imhsv);
@@ -187,8 +211,8 @@ if doplt && ~maskin
 
     %3d scatter, each roi a different hue
     hfg = figure; hold on
-    for i = 1:num_roim %overlay each pixel in its indexed color onto the pb image
-        scatter3( maskx(idx_vox2roi == i), masky(idx_vox2roi == i), maskz(idx_vox2roi == i), 'filled', 'MarkerFaceColor', cmap(i,:), 'MarkerFaceAlpha', 0.2 )
+    for k = 1:num_roim %overlay each pixel in its indexed color onto the pb image
+        scatter3( maskx(idx_vox2roi == k), masky(idx_vox2roi == k), maskz(idx_vox2roi == k), 'filled', 'MarkerFaceColor', cmap(k,:), 'MarkerFaceAlpha', 0.2 )
     end
     %plot3(midx,midy,midz,'.k', 'MarkerSize',12) %include midline if using 'skeleton'
     %scatter3(roicen(:,2 ), roicen(:,1), roicen(:,3), 80, 'k', 'filled') %show the centroids in each of their colors

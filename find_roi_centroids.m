@@ -8,7 +8,7 @@ for mi = 1:numrois
     roi_cen{mi} = zeros(1, 3); %preallocate zeros in case there are empty rois, also force to be 3d
 
     tmp = roimasks(:,:,:,mi);
-    roiprops = regionprops(logical(tmp), tmp, 'WeightedCentroid'); %pass logical(tmp) as first arg, and tmp as second, if you pass first arg as double(x) or even double(logical(x)) it's a labeled image rather than logical, which will treat any discontiguous regions as a same region (which we don't want), weighted centroid is fine for binary mask and not binary mask
+    roiprops = regionprops(logical(tmp), tmp, 'WeightedCentroid'); %pass in logical(tmp) as first arg, and tmp as second, if you pass in first arg as double(x) or even double(logical(x)) it's a labeled image rather than logical, which will treat any discontiguous regions as a same region (which we don't want), weighted centroid is fine for binary mask and not binary mask
     if any(tmp(:)) %if not any, centroid is nans, but we want zeros, so that's why preallocate roi_cen as zeros and skip here
         for rpi = 1:length(roiprops)
             centmp = roiprops(rpi).WeightedCentroid;

@@ -23,7 +23,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, pth_tif_read, dims_p
 
     #denoising score is the average of the standard deviation (through time) of all background pixels 
     #the epoch with the lowest denoising score is the best model (bestepoch) because s.d. is higher for overfit and underfit models 
-    #outside this function bestepoch is used to create the denoised stack (suffix cmrg_dcdn_.tif) 
+    #outside this function bestepoch is used to create the denoised stack (suffix rd_.tif) 
 
     #background could be computed more flexibly with thresholding; 
     #a triangle threshold would work for most of our data, since often our background is clearly distinguished from foreground
@@ -40,7 +40,7 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, pth_tif_read, dims_p
     #but the requested O2 resources will be left unused with early stopping, which hurts your priority score, and the extra time denoising is order hours  
 
     #todo: maybe background should be per slice, not whole stack;
-    #todo: background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't actually matter); it would simplify the code below to compute background once (on cmrg_.tif) before looping through epochs/slices 
+    #todo: background should be computed on un-denoised stack, not on each epoch of denoised stack (but probably doesn't actually matter); it would simplify the code below to compute background once (on or_.tif) before looping through epochs/slices 
 
     print("\n\n\nFINDING BEST DENOISING EPOCH")
     
@@ -88,8 +88,8 @@ def denoising_score(pth_trainset_all, epoch_choose_denoise, pth_tif_read, dims_p
                     #     dnsc_override = np.mean(np.std(ytmp[:,50:60,100:115], axis=0))
 
                     if do_plot_gif:
-                        pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/dcdn_gif_samp/'
-                        pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'dcdn_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
+                        pth_gif_fldr = '/'.join(pth_tif_read.split('/')[:-1]) + '/od_gif_samp/'
+                        pth_gif = pth_gif_fldr + pth_tif_read.split('/')[-1][:-4] + 'd_z' + str(sliceind) + '_e' + str(epoch_choose_denoise[ecnt]) + '_samp_.gif'
                         if not os.path.exists(pth_gif_fldr):
                             Path(pth_gif_fldr).mkdir(parents=True, exist_ok=True)
                         plot_gif(ytmp, pth_gif, indst = slice(0, num_gif_frames, 1))  

@@ -1,86 +1,192 @@
-function [imroi, imalpha] = roiolmake(imbg, roipx, opt)
+function [imrgb, imalpha] = roiolmake(opt)
 
-% make overlay for roi set defined by roipx, background is imbg;
-% roipx is cell array of roi pixel linear indices into imbg
-% imbg is the grayscale image stack, used as background
-% imroi is rgb stack matching size of imgb, but with color representing rois 
-% overlapping rois are averaged in color and transparency/alpha
-% imalpha is a grayscale stack matching size of imgb, with value representing transparency 
-% uses persistent variables because typically called in plotting loop
+%{
+
+make roi overlay between roimask (or roipx) and background image imgray (or imrgb)
+overlapping rois are averaged in color and alpha/transparency
+imalpha is a grayscale stack matching size of imgb, with value representing alpha/transparency 
+using name-value arguments even for background image to make clear distinction between grayscale and rgb, since number dimensions will not always distinguish them, likewise for roimask and roipx
+rgb average is additive, not subtractive (ie average of green and red is yellow, not brown)
+roi r is assigned color r, even if roi is empty
+
+%}
 
 arguments
-    imbg
-    roipx
-    opt.col = [1 0 0] 
-    opt.alp = 0.3
+    opt.imgray = [] %background image, grayscale, size yxz, can pass in this or imrgb, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
+    opt.imrgb = [] %background image, rgb, size yx3 or yxz3, must pass in this or imgray, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
+    opt.imalpha = [] %background image alpha, rgba, size yxa or yxza, optional; only need this if rois have different alpha and you want them averaged
+    opt.roimask = [] % mask for roi(s) (size yxzr), matching imgray yxz or imrgb yxz dimensions (z may be singleton), must pass in this or roipx, but not both
+    opt.roipx = [] %length-r cell array of roi's linear indices, or vector of linear indices if one roi, must pass in this or roimask, but not both
+    opt.rgb = [1,0,0] %color, size (r,3), where r matches roimask r
+    opt.a = 0.3 %alpha (transparency)
+    opt.combine = 'occlude' %add, subtract, occlude
 end
-col = opt.col;
-alp = opt.alp;
+imgray = opt.imgray;
+imrgb = opt.imrgb;
+imalpha = opt.imalpha;
+roipx = opt.roipx;
+roimask = opt.roimask;
+rgb = opt.rgb;
+a = opt.a;
+combine = opt.combine;
 
-persistent imalpha_oneroi
-persistent imroi_oneroi
 
-if isempty(imalpha_oneroi) && isempty(imroi_oneroi)
-    imalpha_oneroi = zeros(size(imbg,1), size(imbg,2), size(imbg,3), size(imbg,4), size(imbg,5), 'single');
-    imroi_oneroi = repmat(imalpha_oneroi, [ones(1, numel(size(imalpha_oneroi))) 3]);
+%%%% PREP BACKGROUND IMAGE %%%%
+
+singleton_z = 0;
+
+if isempty(imrgb)
+    if isempty(imgray)
+        if isempty(imalpha) && isempty(roimask)
+            error("if imrgb and imgray are empty, must pass in imalpha or roimask (not roipx) to determine image dimensions")
+        else
+            if ~isempty(imalpha)
+                [ny,nx,nz] = size(imalpha);
+            elseif ~isempty(roimask)
+                if ndims(roimask)==3
+                    [ny,nx,nr] = size(roimask);
+                    nz = 1;
+                    singleton_z = 1;
+                else
+                    [ny,nx,nz,nr] = size(roimask);
+                end
+            end
+            imrgb = zeros( ny, nx, nz, 3, 'single');
+        end
+    else
+        imgray = single(rescale(imgray));
+        imrgb = cat(ndims(imgray)+1,imgray,imgray,imgray);
+    end
+else
+    if ~isempty(imgray)
+        error("cannot pass in both imrgb and imgray")
+    end
+    if size(imrgb,ndims(imrgb))~=3
+        error("last dimension of imrgb must be size 3 (rgb)")
+    end
 end
 
-if ~iscell(roipx)
+if ndims(imrgb)==3
+    singleton_z = 1;
+    imrgb = reshape(imrgb, size(imrgb,1), size(imrgb,2), 1, size(imrgb,3));
+end
+
+numimdim = ndims(imrgb); %should always be 4
+if ~isequal(numimdim,4)
+    error("numimdim should alwayds be 4")
+end
+
+imrgb_mask = logical(sum(imrgb, numimdim));
+if isempty(imalpha)
+    imalpha = imrgb_mask.*a(1);
+end
+
+if ndims(imrgb)~=4 || ndims(imalpha)<2 || ndims(imalpha)>3
+    error("imrgb and must be 4d at this point and imalpha must be 2d or 3d")
+end
+
+
+%%%% PREP ROI MASK %%%%
+
+if isempty(roimask)
+    if isempty(roipx)
+        error("must pass in either roimask or roipx")
+    end
     if isvector(roipx)
         roipx = {roipx};
     else
-        error("roipx must be cell, or vector")
+        error("roimask must be cell, or vector of linear indices, or roi mask")
     end
-end
-numroi = numel(roipx); %do after possible conversion to cell 
-if size(col, 1)==1
-    col = repmat(col, [numroi 1]);
-end
-if numel(alp)==1
-    alp = repelem(alp, numroi);
-end
-
-assert(isequal(numroi,size(col,1),numel(alp)))
-
-
-rcnt = 0;
-for ri = 1:numel(roipx)
-    if ~isempty(roipx{ri})
-        rcnt = rcnt+1;
-        [imroi_oneroi, imalpha_oneroi] = roiolmake_each(roipx{ri}, imroi_oneroi, imalpha_oneroi, col(ri,:), alp(ri)); %make an overlay for one roi
-        if rcnt==1
-            imroi = imroi_oneroi;
-            imalpha = imalpha_oneroi;
-        else
-            overlaps = sum(imroi, numel(size(imroi))) & sum(imroi_oneroi, numel(size(imroi_oneroi))); %sum final dim for overlap in any rgb channel
-            overlaps_rgb = repmat(overlaps, [ones(1, numel(size(overlaps))) 3]);
-            imroi(overlaps_rgb) = (imroi(overlaps_rgb)+imroi_oneroi(overlaps_rgb))/2;
-            imroi(~overlaps_rgb) = imroi(~overlaps_rgb)+imroi_oneroi(~overlaps_rgb);
-            overlaps = imalpha & imalpha_oneroi;
-            imalpha(overlaps) = (imalpha(overlaps)+imalpha_oneroi(overlaps))/2;
-            imalpha(~overlaps) = imalpha(~overlaps)+imalpha_oneroi(~overlaps);
+    roimask = zeros([size(imrgb, [1,2,3]), numel(roipx)], 'logical');
+    for k = 1:numel(roipx)
+        if ~isempty(roipx{k})
+            [i1,i2,i3] = ind2sub(size(imrgb), roipx{k});
+            roimask(i1,i2,i3,k) = 1;
         end
     end
+else
+    if ~isempty(roipx)
+        error("cannot pass in both roimask and roipx")
+    end
 end
 
-if ndims(imroi)==3
-    imroi = reshape(imroi, size(imroi, 1), size(imroi, 2), 1, size(imroi, 3)); %include singleton z
+if ndims(roimask)<2 || ndims(roimask)>4
+    error("imrgb and must be 4d at this point and imalpha must be 2d, 3d, or 4d")
+end
+if singleton_z
+    if ndims(roimask)==4 && size(roimask,3)>1
+        error("if image has singleton z, so must roimask")
+    else
+        roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
+    end
+end
+if ~isequal(size(imrgb, [1,2,3]), size(imalpha, [1,2,3]), size(roimask, [1,2,3]))
+    error("roimask must match imrgb in first 3 dimensions")
+end
+if ~islogical(roimask)
+    roimask = logical(roimask);
 end
 
+numroi = size(roimask,4);
+
+%%%% PREP OTHER OPTIONAL ARGUMENTS %%%%
+
+if isscalar(a)
+    a = repelem(a, numroi);
+end
+a = single(a);
+if isvector(rgb)
+    if numel(rgb)~=3
+        error("rgb must be (n,3)")
+    end
+    rgb = rgb(:)'; %make it a row vector
+end
+if size(rgb,1)==1
+    rgb = repmat(rgb, [numroi 1]);
+end
+rgb = reshape(rgb, [numroi,1,1,3]);
+rgb = single(rgb);
+
+if ~isequal(numroi, size(rgb,1), numel(a))
+    error("numroi, size(rgb,1), numel(a) must all be equal")
 end
 
+%%%% MAKE OVERLAY %%%%
 
-function [imroi, imalpha] = roiolmake_each(pixind_oneroi, imroi, imalpha, col, alp)
+overlaps_sum_plusone = ones(size(imrgb_mask), 'single');
+idxne = find(any(roimask, [1,2,3])); %nonnempty roi indices
+overlaps = imrgb_mask; %initialize with input image rgb "mask" (anywhere there's a color)
+for k = 1:size(roimask,4)
 
-if numel(pixind_oneroi(:))>numel(imroi)
-    error("number roi pixels exceeds number image pixels")
+    if ismember(k, idxne) %skip empty rois to save time
+
+        roialpha = roimask(:,:,:,k).*a(k);
+        roirgb = roimask(:,:,:,k).*rgb(k,:,:,:); %include 4 colons in rgb to multiply roimask (which is 3d after k indexing) into 4th (rgb) dim
+
+        if strcmp(combine, 'occlude')
+            imalpha = imalpha.*~roimask(:,:,:,k);
+            imrgb = imrgb.*~roimask(:,:,:,k);
+        else
+            overlaps = overlaps & sum(roirgb, numimdim); %sum final dim (rgb dim) to mark overlap in any rgb channel, then find overlaps with logical "and" (overlaps is logical array)
+            overlaps_sum_plusone = overlaps_sum_plusone + overlaps; %sum overlaps, plus one, to divide to get mean at end of roi loop
+        end
+        imalpha = imalpha + roialpha;
+        imrgb = imrgb + roirgb;
+
+    end
+
+    if k==size(roimask,4) && ~strcmp(combine, 'occlude')   %on final roi, divide by each voxel's number of overlapping (nonempty) rois
+        imalpha = imalpha ./ overlaps_sum_plusone; %average where rois overlap
+        imrgb = imrgb ./ overlaps_sum_plusone; %average where rois overlap
+    end
+
 end
-imroi(:) = 0;
-imalpha(:) = 0;
-pixind_oneroi_rgb = pixind_oneroi(:)+numel(imalpha)*([1:3]-1);
-imroi(pixind_oneroi_rgb(:,1)) = col(1);
-imroi(pixind_oneroi_rgb(:,2)) = col(2);
-imroi(pixind_oneroi_rgb(:,3)) = col(3);
-imalpha(pixind_oneroi) = alp;
+
+if ndims(imrgb)==3
+    imrgb = reshape(imrgb, size(imrgb, 1), size(imrgb, 2), 1, size(imrgb, 3)); %include singleton z
+end
+
+% imrgba = cat(4, imrgb, imalpha);
 
 end
+

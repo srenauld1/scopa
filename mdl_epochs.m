@@ -52,7 +52,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
         pthvalsv = [pthpre '_val_' num2str(vfi) '_' timestr '_.mat'];
     end
 
-    dofit = 1;
+    domdl = 1;
     if ldval
         pthpatld = strrep(pthvalsv, [timestr '_.mat'], [timestr(1:numchar_timestr) '*_.mat']);
         pthvalld = rdir(pthpatld);
@@ -65,12 +65,12 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
                     fprintf("there are multiple saved val files, loading most recent, based on timestamp in filename" + newline)
                 end
                 load(pthvalld{end}, 'ft', 'pred', 'gof', 'gof_val', 'depv_good_inds')
-                dofit = 0;
+                domdl = 0;
             end
         end
     end
 
-    if dofit
+    if domdl
 
         %%%% create synthetic data to test optimization (optional) %%%%
 
@@ -115,7 +115,7 @@ for vfi = 1:numel(valnames) %this is 1 if there's 0 validation sets, otherwise i
 
                 seqft = 0;
                 if seqft
-                    noeb_seqfit
+                    ebno_seqfit
                 else
                     [ ft(ri,:), pred(:,ri), resid(:,ri), gof(ri), gof_val(ri) ] = ...
                         mdl_fit(indv, depv, ri, histinc, ...

@@ -13,11 +13,11 @@ parentDirSplit = strsplit(parentDir, {'\','/'});
 
 % Manually get the '_rois_morph_resp_.mat' file 
 fileName = uigetfile(parentDir);
-maskName = dir(fullfile(parentDir, [fileName(1:26), '*_rois_maskmanual_.mat']));
+mmname = dir(fullfile(parentDir, [fileName(1:26), '*_rois_maskmanual_.mat']));
 maskVecName = dir(fullfile(parentDir, [fileName(1:26), '*_rois_morph_morphroidata_.mat']));
 
 load(fullfile(parentDir, fileName), 'resp');
-load(fullfile(maskName.folder, maskName.name), 'maskmanual');
+load(fullfile(mmname.folder, mmname.name), 'maskmanual');
 load(fullfile(maskVecName.folder, maskVecName.name), 'mask_roi_vec');
 
 % Make images directory to store imaging plots

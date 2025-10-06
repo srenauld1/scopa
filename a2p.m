@@ -1,106 +1,134 @@
 
-% see docs_a2p
-% smr test
 
-function a2p(specin)
+%{
+
+see docs_a2p
+
+%}
+
+function a2p(usegit, spec)
 
 arguments
-    specin = '' %optional; full path to recording (char or cell, wildcards allow matching rules in rdir), or cell array of full paths (char), or struct with recording specifiers (see specin in oset and odf); if missing or empty, recording(s) searched for in oset using specifiers in oset
+    usegit logical = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
+    spec = [] % optional input; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); wildcards * are allowed; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in oset (in struct spec)
 end
 
-clear glb tsget %clear global/persistent vars
+close all; clc; clear glb tsget ofill; clearvars -except spec usegit;
 
-oa = oset(specin); % set options; oa stands for "o all" (ie options for all recordings)
+%% options
+
+oa = oset(spec, usegit=usegit); % set options; oa stands for "o all" (ie options for all recordings)
 
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
-    glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals for this element of o
-
-    %% paths
-
-    pth = pthmake(o.id.pthstack);
 
     %% stack
 
+
     for m = transpose(fieldnames(o.sld))
-        stack = stackld(o.sld.(m{1})); %load/process stack
+        s = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
     end
 
-    %% metadata
-
-    md = mdsild(pth.stack);
-    glb(1, md=md, t=md.sper:md.sper:md.numvol*md.sper, epochts=ones(1, md.numvol));
+    o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case it was tif going in to stackld
+    glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
+    glb(1, md=s.md, srate=s.md.volrate, t=s.md.sper:s.md.sper:s.md.numvol*s.md.sper, epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
 
     %% daq
 
     for m = transpose(fieldnames(o.daq))
         daq.(m{1}) = daqld(o.daq.(m{1})); %process daq
     end
-    glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
+    if ~isempty(daq.(m{1}))
+        glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
+    end
 
-    %% normalize for PMT offset
-    % minval = prctile(stack(:), 2);
-    % stack_minremove=stack - minval;
-    
+
     %% rois
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(stack, o.roi.(m{1})); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack, pthstack=s.pth, md=s.md); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
+
 
     %% bump
 
     if o.mn.dobmp
         for m = transpose(fieldnames(o.bmp))
-            bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %fit bump
+            bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %extract head direction bump
         end
     end
+
 
     %% flymax
 
     if o.mn.dofmf
         for m = transpose(fieldnames(o.fmf))
-            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(pth.stack, o.fmf.(m{1})); %extract flymax visual features
+            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
         end
     end
 
+
     %% models
 
-    if o.mn.dofit
+    if o.mn.domdl
         for m = transpose(fieldnames(o.mdl))
             mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=1);
         end
     end
 
-    %% plots
 
-    if o.mn.dopltx
-        fn = fieldnames(o.pltx);
-        for m = 1:numel(fn)
-            pltx(stack(:,:,:,fk,:), mdl.vars, o.pltx.doui,  ...
-                mdl.vnm, o.pltx.vpmap, o.pltx.epochnum, ...
-                o.pltx.lagsxy_sec, o.pltx.lagsz_sec, o.pltx.lags_to_plot, ...
-                o.pltx.plot_z_as_color, roidat.a1{1}, t, md.sper, zstartsub, ...
-                vis.epochts, glb('pltvis'), o.pltx.iz, o.pltx.it, ...
-                o.pltx.dr, mdl.fn_save_prefix_short, mdl.pthpre, ...
-                pthroiint, nrm, md.widyxz, vid=ftv, stim=stimvid)
-        end
+    %% interactive plots
+
+    % pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+
+
+    %% a_* functions (analysis specific to experiment)
+
+    if 1
+
+        epoch = 6;
+        bout = 13;
+
+        idaq = fieldmatch(daq, lev=1);
+        [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
+
+        a_ebgano(s, roi, daq, bmp, glb('t'), ...
+            mix={'gar', 'eb', 'gal'}, ...
+            noside={'r'}, ...
+            pltstr={'profile'}, ...
+            facealpha=1, ...
+            szthrres=[], ...
+            szmin=15, ...
+            szmaxfac=70, ...
+            nothr='', ...
+            colsep=0, ...
+            xyrng=[], ...
+            epoch={1:6}, ...{[1], [2], [3], [4], [5], [6]}, ...
+            lagsampxy=-1, ...
+            lagsampz=0, ...
+            yconst=1, ...
+            slopelensec=0.35, ...
+            slopeord=3, ...
+            vt=tpe, ...
+            dozscore=1, ...
+            stackrot=[-90,0,0], ...
+            stackslice=[])
+
     end
 
+    %%
 
-    %% specific
 
-    % ebnotmp(stack, {'r'}, daq.a1.vy, daq.a1.by, bmp.a1.mu, bmp.a1.respcl, roi.a2.ts{1}, roi.a3.ts{1}, t, md.sper, pth.pre, plt=[0 0 1 0], facealpha=0.2, szthrres=[], szmin=10, szmaxfac=70, nothr='', colsep=0, xyrng=[], epoch={1}, epochts=daq.a1.epochts, lagsampxy=1, lagsampz=[-5:5], yconst=1, slopelensec=[0.4], bmpdomain=bmp.a1.domain)
 
-    % t5tmp
-    % ebtmp
-    % mitotmp
+
+
+    %%
+
 
 
 end
-
 
 

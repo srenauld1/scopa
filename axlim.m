@@ -6,7 +6,7 @@ computes various limits for input ts, outputs struct
     lim.each gives limits for each timeseries in ts
     lim.eachpad adds roomfac onto lim.each
     lim.all gives limits for set of all timeseries in ts (pools dim 1 and 2)
-    lim.eachpad adds roomfac onto lim.all
+    lim.allpad adds roomfac onto lim.all
     lim.rs gives limits of timeseries if they are rescaled onto newlim (name-value argument with default [0 1])
     lim.eachpad adds roomfac onto lim.rs
 %}
@@ -63,8 +63,8 @@ end
 if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1},3), size(x,3)), ts(2:end)))
     error("all input ts must have same number of channels")
 end
-if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1}), size(x)), ts(2:end)))
-    fprintf("warning, timeseries in axlim are not all equal in length in time" + newline)
+if numel(ts)>1 && ~all(cellfun(@(x) isequal(size(ts{1},2), size(x,2)), ts(2:end)))
+    fprintf("warning, timeseries in axlim are not all equal in length" + newline)
 end
 
 if nargin>1 && collapse_first_cell_dim

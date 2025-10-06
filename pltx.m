@@ -1,51 +1,8 @@
-function pltx(stack, vars, doui, labs, vpmap, ...
-    epochinds_all, lagsxy_sec, lagsz_sec, lags_to_plot, plot_z_as_color, ...
-    roidat, ti, sper, zstartpos, epochts, gifvis, ...
-    iz, it, drvid, pthgif_prefix_short, pthgif_prefix, ...
-    pth_roim_interactive, normopt, widyxz, opt)
-
-arguments
-    stack = []
-    vars = []
-    doui = []
-    labs = []
-    vpmap = []
-    epochinds_all = []
-    lagsxy_sec = []
-    lagsz_sec = []
-    lags_to_plot = []
-    plot_z_as_color = []
-    roidat = []
-    ti = []
-    sper = []
-    zstartpos = []
-    epochts = []
-    gifvis = []
-    iz = []
-    it = []
-    drvid = []
-    pthgif_prefix_short = []
-    pthgif_prefix = []
-    pth_roim_interactive = []
-    normopt = []
-    widyxz = []
-    opt.vid = []
-    opt.stimvid = []
-end
-
-vid = opt.vid;
-stimvid = opt.stimvid;
+function pltx(opt, opt2)
 
 
-if ~iscell(epochinds_all)
-    epochinds_all = {epochinds_all};
-end
-
-
-dool = 1; %do overlay hard coded for now
-
-"TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
-"TODO: MENU, FULL roidraw, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
+% "TODO: SCATTER, POPULATION FEATURE, FT PATH, HEATMAP, MODEL"
+% "TODO: MENU, FULL roidraw, MERGE ALL A2P PLOTTING (MODULAR SUBPLOTS FOR SPECIALIZATION)"
 
 % scatterplot
 %   scatterplot of 2 or 3 timeseries the lag with the greatest correlation coefficient
@@ -63,6 +20,96 @@ dool = 1; %do overlay hard coded for now
 %if a var doens't exist at a plot position, nothing is plotted there, but the plot positions of other variables do not change
 % currently, stack must not be subset in x,y, or z, otherwise interactive roi indices will be wrong
 
+
+arguments
+    opt = []
+    opt2.stack = []
+    opt2.daq = []
+    opt2.roi = []
+    opt2.bmp = []
+    opt2.mdl = []
+    opt2.fmf = []
+    opt2.vars = []
+    opt2.labs = []
+    opt2.roidat = []
+    opt2.pthstack = []
+    opt2.md = []
+    opt2.sper = []
+    opt2.widyxz = [] 
+    opt2.t = [] 
+    opt2.zstartpos = [] 
+    opt2.epochts = []
+    opt2.pthpre = []
+    opt2.pth_roim_interactive = []
+    opt2.normopt = []
+    opt2.ftvid = []
+    opt2.stimvid = []
+    opt2.doplt = []
+end
+opt2 = glboropt(opt2);
+stack = opt2.stack;
+daq = opt2.daq;
+roi = opt2.roi;
+bmp = opt2.bmp;
+mdl = opt2.mdl;
+fmf = opt2.fmf;
+vars = opt2.vars;
+labs = opt2.labs;
+roidat = opt2.roidat;
+pthstack = opt2.pthstack;
+md = opt2.md;
+sper = opt2.sper;
+widyxz = opt2.widyxz;
+t = opt2.t;
+zstartpos = opt2.zstartpos;
+epochts = opt2.epochts;
+pthpre = opt2.pthpre;
+pth_roim_interactive = opt2.pth_roim_interactive;
+normopt = opt2.normopt;
+stimvid = opt2.stimvid;
+ftvid = opt2.ftvid;
+doplt = opt2.doplt;
+
+[opt, doplt, pthstack] = fset('pltx', opt, doplt, pthstack);
+
+vpmapl = opt.vpmapl;
+vpmapr = opt.vpmapr;
+lagsxy_sec = opt.lagsxy_sec;
+lagsz_sec = opt.lagsz_sec;
+lags_to_plot = opt.lags_to_plot;
+plot_z_as_color = opt.plot_z_as_color;
+epochnum = opt.epochnum;
+iz = opt.iz;
+it = opt.it;
+dr = opt.dr;
+doui = opt.doui;
+
+
+if isempty(md)
+    md = mdsild(pthstack);
+end
+if isempty(sper)
+    sper = md.sper;
+end
+if isempty(widyxz)
+    widyxz = md.widyxz;
+end
+if isempty(t)
+    t = md.sper:md.sper:md.numvol*md.sper;
+end
+if isempty(pth_roim_interactive)
+    pth_roim_interactive = [erase(pthstack, '.mat') 'int_roi_.mat'];
+end
+if ndims(stack)<4
+    error("stack must be 4d or 5d")
+end
+if ~iscell(epochnum)
+    epochnum = {epochnum};
+end
+
+
+drvid = dr;
+dool = 1; %do overlay hard coded for now
 gif_scope = 'allv_eache'; %'eachv_eache'; %eachv_eache or allv_eache or allv_alle (currently can't do eachv_alle, but will soon); change filename (or not) according to epoch and variable changes
 ts_scope = 'full'; %how much of total possible timseries to show in long timescale plot on top
 yaxisroomfac = 0.15; %fraction of total, extra room on y axis
@@ -98,12 +145,13 @@ clear pltexp_scat_prepvars %clear persistent variable within
 %% arrange figure, choose colors
 
 layout = {[4,4], stack(:,:,:,:,1)};
-marginax = [0.05,0.005];
-marginfg = [0.07,0.05];
+marginax = [0.005];
+marginfg = [0.05];
 splitfrac = 0.55;
-ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='minimize');
+ax = axarr(layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac, splitdim='y', stackjust='min');
 
-cols = brewermap(numel(fieldnames(vars)),'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
+maxnumvars = 8;%numel(fieldnames(vars));
+cols = brewermap(maxnumvars,'Dark2'); %distinguishable_colors(numel(fieldnames(vars)));
 cols(1,:) = cols(4,:);
 
 if any(ismember(cols, [0 0 0], 'rows'))
@@ -113,31 +161,42 @@ end
 
 %% prep vars
 
-[iz, izstr] = indsmake(iz, indsall=size(stack, 3), label_prefix='z');
-[it, itstr] = indsmake(it, indsall=size(stack, 4), label_prefix='t');
+[iz, izstr] = vecsub(iz, superset=1:size(stack, 3), labprefix='z: ');
+[it, itstr] = vecsub(it, superset=1:size(stack, 4), labprefix='t: ');
 
 % stack = stack(:,:,iz,it,:);
-kpepidx = setxor(1:numel(epochts), it);
+kpepidx = setdiff(1:numel(epochts), it);
 epochts(kpepidx) = 0;
 
+vid = [];
+vidrot = 0;
 if ~isempty(stimvid)
     vid = stimvid;
     vidrot = -90;
-    clear stimvid
-else
-    vidrot = 0;
+    stimvid = [];
+elseif ~isempty(ftvid)
+    vid = ftvid;
+    ftvid = [];
 end
 
 if ~isempty(vid)
     if ndims(vid)==2
-        % vid = vid(:,it);
+        vid = reshape(vid, size(vid,1), 1, 1, size(vid,2)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     elseif ndims(vid)==3
-        % vid = vid(:,:,it);
         vid = reshape(vid, size(vid,1), size(vid,2), 1, size(vid,3)); %insert singleton 3rd dim, make time 4th dim, to match imaging stack and use same plotting code
     end
 else
-    % vid = rand(10,10,numel(it));
     vid = rand(10,10,size(stack, 4));
+end
+
+if size(vid, ndims(vid))~=size(stack, ndims(stack))
+    error("stack and vid do not have the same number of frames")
+end
+
+fn = fieldnames(roi);
+for k = 1:numel(fn)
+    var{k} = roi.(fn{k}).dat.ts;
+
 end
 
 vars = struct2cell(vars);
@@ -159,14 +218,14 @@ vars = vars(vpmapflat);
 labs = labs(vpmapflat);
 lims = lims(vpmapflat);
 
-varcombos = make_varcombos(vars);
+varcombos = combomake(vars);
 
-[epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, ti, epochinds_all, sampinc, ts_scope, gif_scope);
+[epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, t, epochnum, sampinc, ts_scope, gif_scope);
 
 numfr_gif = check_gif_frame_number(gif_scope, tinds_all, varcombos, numfr_gif_max);
 
 
-[actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(ti, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
+[actual_lags_xy_sec, actual_lags_z_sec, lagsall_xy, lagsall_z, zero_lag_index, numlags] = pltexp_compute_lags(t, lagsxy_sec, lagsz_sec, lag_style); %actual lags depend on epoch (samples you're using)
 
 
 %% loop over epoch sets and plotting variables
@@ -180,7 +239,7 @@ while plotloop %loop is turned off if no user input
 
     if ~all(structfun(@isempty, cb)) && ~revert_vars
         framecount = 0;
-        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = uiapply(cb, vars_use, labs_use, roipixind_use, stack, ti, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
+        [vars_use, labs_use, lims_use, roipixind_use, varcombos_use] = pltexp_cbapply(cb, vars_use, labs_use, roipixind_use, stack, t, sper, pth_roim_interactive, normopt, newroirad, newroicen_all, widyxz, yaxisroomfac, numsamp);
         timestr_use = timestr_ui;
     else
         vars_use = vars;
@@ -194,7 +253,7 @@ while plotloop %loop is turned off if no user input
     [varsz, ~, ~] = get_vars_size(vars_use, timedim);
 
 
-    for ecnt = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
+    for ecnt = 1:numel(epochnum) %loop over all epoch sets (sets of samples within trial defining stimulus state)
 
         numsamp_tslong_this_gif = numsamp_tslong_all_gifs(ecnt);
         tinds = tinds_all{ecnt};
@@ -221,9 +280,9 @@ while plotloop %loop is turned off if no user input
                 yaxis_true_lims = find_yaxis_true_lims(lrscale, lims_use);
                 varsp = rescale2(varsp, tlabsp, yaxis_true_lims, skipnan_rescale);
 
-                pthgif = make_filename(labsp, gif_scope, epochstring, pthgif_prefix_short, timestr_use); %gif_scope determines whether pthgif gets updated
+                pthgif = make_filename(labsp, gif_scope, epochstring, pthpre, timestr_use); %gif_scope determines whether pthgif gets updated
                 [roiindp, roi_index_str] = find_roi_index(labsp);
-                figure_title = make_figure_title(pthgif_prefix_short, epochstring, sper, roi_index_str);
+                figure_title = make_figure_title(pthpre, epochstring, sper, roi_index_str);
                 labsp = process_labels(labsp, roiindp);
 
                 roipixindp = cell(numel(roiindp),1);
@@ -232,7 +291,7 @@ while plotloop %loop is turned off if no user input
                 varaxside_use = flag_empty_timeseries(varsp, varaxside, timedim);
 
                 "WARNING HARD CODING CHANNEL 1 FOR PREPVARS SCAT"
-                [init_scatter, scatter_type, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
+                [init_scatter, sctype, varsp_sc, labsp_sc, cols_sc, rdummies, cmp_sc, ccr, pval_norm, laginds_to_plot] = ...
                     pltexp_scat_prepvars(scinds, numlags, lagsall_xy, lagsall_z, varsp(:,:,1), labsp, cols, threshold_data, varaxside_use, ...
                     plot_z_as_color, polarinds, numsamp_tslong_this_gif, zero_lag_index, lags_to_plot, pval_siglev, bar_contrast);
 
@@ -253,46 +312,46 @@ while plotloop %loop is turned off if no user input
                     framecount = 0;
 
 
-                    h = initfig(h=h, doui=doui, gifvis=gifvis, szf=1);
+                    h = fg(h=h, doui=doui, gifvis=gifvis, szf=1);
 
 
-                    sector_ind = 2;
+                    idxsect = 2;
                     cmap = gray(256);
-                    h.st = initaxim(h.hfg, ax, stack, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, sector_ind=sector_ind);
+                    h = axim(stack, h=h, ax=ax, stackp=stackp, doui=doui, dool=dool, cmap=cmap, txtvar=zstartpos, dr=drvid, idxsect=idxsect);
 
 
-                    sector_ind = 1;
-                    subplot_ind = [5 13];
+                    idxsect = 1;
+                    idxsubp = [5 13];
                     widfac = [4 1];
                     htfac = [2 2];
-                    h.ts = initaxts(h.hfg, ax, doui, numsamp_tslong_this_gif, varaxside_use, ti, lims_use, tlabsp, labsp, cols, sector_ind, subplot_ind, widfac, htfac, dors);
+                    h.ts = axts(h.fg, ax, doui, numsamp_tslong_this_gif, varaxside_use, t, lims_use, tlabsp, labsp, cols, idxsect, idxsubp, widfac, htfac, dors);
 
 
-                    sector_ind = 1;
-                    subplot_ind = 15; %subplot_ind=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
+                    idxsect = 1;
+                    idxsubp = 15; %idxsubp=16 with widfac>1 forces image into margins, but it looks fine that way and gives more room for other plots
                     widfac = 2;
                     htfac = 2;
                     cmap = gray(256);
                     drvid = [0 1];
                     douivid = 1;
                     doolvid = 1;
-                    h.vid = initaxim(h.hfg, ax, vid, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, sector_ind=sector_ind, subplot_ind=subplot_ind, widfac=widfac, htfac=htfac);
+                    h.vid = axim(h.fg, vid, ax=ax, doui=douivid, dool=doolvid, cmap=cmap, dr=drvid, idxsect=idxsect, idxsubp=idxsubp, widfac=widfac, htfac=htfac);
 
 
                 end
 
-                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed scatter_type (other plots aren't like this)
-                    sector_ind = 1;
-                    subplot_ind = 14;
+                if strcmp(gif_scope, 'eachv_eache') || (strcmp(gif_scope, 'allv_eache') && vcount == 1) || (strcmp(gif_scope, 'allv_alle') && ecnt == 1 && vcount == 1) || init_scatter %scatterplot also needs to be initialized if it's changed sctype (other plots aren't like this)
+                    idxsect = 1;
+                    idxsubp = 14;
                     widfac = 1;
                     htfac = 1;
-                    h.sc = initaxsc(h.hfg, ax, doui, scatter_type, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, sector_ind, subplot_ind, widfac, htfac);
+                    h.sc = axsc(h.fg, ax, doui, sctype, mkrsz, blindspot, numsamp_tslong_this_gif, numlags, actual_lags_xy_sec, plot_z_as_color, labsp, cols, idxsect, idxsubp, widfac, htfac);
                 end
 
 
                 %%%% PLOT AXES %%%%
                 [h, framecount, cb] = axplt(h, stack, stackp, vid, ...
-                    framecount, varsp, varaxside_use, ti, tinds, cols, ...
+                    framecount, varsp, varaxside_use, t, tinds, cols, ...
                     roialpha, roipixindp, pthgif, figure_title, varsz, doui, ...
                     timestr_ui, sampinc, varsp_sc, labsp_sc, rdummies, cmp_sc, ...
                     ccr, pval_norm, laginds_to_plot, cols_sc, scdimmin, scdimsd, vidrot);
@@ -414,9 +473,9 @@ pthgif = [pthgif_prefix '_' strrep(strjoin(pthgif_suffix), ' ', '_') '_' timestr
 end
 
 
-function figure_title = make_figure_title(pthgif_prefix_short, epochstring, sper, roi_index_str)
+function figure_title = make_figure_title(pthpre, epochstring, sper, roi_index_str)
 
-stackidtmp = strsplit(pthgif_prefix_short, filesep);
+stackidtmp = strsplit(pthpre, filesep);
 stackid = stackidtmp{end};
 sample_period_string = make_sample_period_string(sper);
 figure_title = [strrep(stackid, '_', ' ') ',   ' epochstring.parsed  ',   ' sample_period_string ' SAMPLES,    ROI #' roi_index_str];
@@ -464,10 +523,10 @@ end
 
 
 
-function numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full)
+function numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, t, tinds_full)
 
 if strcmp(ts_scope, 'full')
-    numsamp_tslong_all_gifs = numel(ti); %show full timeseries
+    numsamp_tslong_all_gifs = numel(t); %show full timeseries
     numsamp_tslong_all_gifs = repelem(numsamp_tslong_all_gifs, numel(tinds_full));
 elseif strcmp(ts_scope, 'epoch')
     if strcmp(gif_scope, 'allv_alle')
@@ -505,11 +564,11 @@ end
 end
 
 
-function [epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, ti, epochinds_all, sampinc, ts_scope, gif_scope)
+function [epochstring_all, tinds_all, numsamp_tslong_all_gifs] = apply_epochinds(epochts, t, epochnum, sampinc, ts_scope, gif_scope)
 
-for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within trial defining stimulus state)
-    if isempty(cell2mat(epochinds_all))
-        if numel(epochinds_all)>1
+for j = 1:numel(epochnum) %loop over all epoch sets (sets of samples within trial defining stimulus state)
+    if isempty(cell2mat(epochnum))
+        if numel(epochnum)>1
             error("empty should be singleton")
         end
         epochstring_all{j}.short = 1;
@@ -518,13 +577,13 @@ for j = 1:numel(epochinds_all) %loop over all epoch sets (sets of samples within
         tinds_full{j} = find(ismember_each(epochts, epochinds_pretend));
         tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
     else
-        epochstring_all{j} = make_epoch_string(epochinds_all{j});
-        tinds_full{j} = find(ismember_each(epochts, epochinds_all{j}));
+        epochstring_all{j} = make_epoch_string(epochnum{j});
+        tinds_full{j} = find(ismember_each(epochts, epochnum{j}));
         tinds_all{j} = tinds_full{j}(1):sampinc:tinds_full{j}(end);
     end
 end
 
-numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, ti, tinds_full);
+numsamp_tslong_all_gifs = find_total_num_samp(ts_scope, gif_scope, t, tinds_full);
 
 end
 

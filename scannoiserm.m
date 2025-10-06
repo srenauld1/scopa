@@ -6,7 +6,7 @@ arguments
     stopband = [10,20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
     smlensec = 0 %temporal gaussian smooth window in seconds; makes scan noise more bandlimited
     zerostack = 1 %subtract min to make min zero
-    it = 50.3 %frames to plot (empty for all); 50.3 means 3 equidistant 50-frame segments 
+    it = 3.50 %frames to plot (empty for all); 3.50 means 3 equidistant 50-frame segments 
     iz = [] %z slices to plot (empty for all)
     doplt = 0;
     frameinds = [] %subset of frames to test filtering faster (since it it purely spatial filtering, and frameinds indexing applied after any temporal smoothing is applied); although filtering all frames should not take very long (1-10 minutes at the most)
@@ -24,7 +24,7 @@ if iscell(smlensec)
     smlensec = cell2mat(smlensec);
 end
 
-id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass this input if we don't have to
+id = idmake(pthstack); %also ran this in a2p earlier, but it's fast and let's us not pass in this input if we don't have to
 
 pthstack_nosn = [pthstack(1:end-4) 'nosn_.mat'];
 
@@ -48,9 +48,9 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 o.sld.smlensec = smlensec; 
 o.sld.zerostack = zerostack; 
-o = odf(o, 'sld');
+o = ofill(o, 'sld');
 
-stack = stackld(pthstack, o.sld);
+stack = stackld(o.sld, pthstack);
 
 
 %% index into frameinds, if nonempty

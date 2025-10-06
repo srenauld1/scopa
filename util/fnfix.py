@@ -23,7 +23,7 @@ elif (re.search('/content', pth_env[0])):
 pth_super = '/'.join(pth_allrec.split('/')[:-2])
 
 # patold = ['cmnrg', 'cmnrgcaddn', 'cmnex']
-# patnew = ['cmrg', 'cmrg_dcdn', 'cmex']
+# patnew = ['cmrg', 'ord', 'cmex']
 
 patold = ['']
 patnew = ['']

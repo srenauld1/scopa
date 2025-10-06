@@ -1,15 +1,21 @@
-function tsout = roits(tsin, roimask, stackmnt, pthpre, sper, t, opt, memthr, doplt)
+function [tsout, roimask] = roits(opt, opt2)
+
+%{
+compute roi timeseries, with various normalization options, given stack and roimasks
+tsout is 2-element cell for 2-channel data (even if only one channel has rois, ie if roimask is cell with one empty element), each cell is size(roi,time); 
+for single-channel data, tsout is not cell, it is just matrix size (roi,time)
+%}
 
 arguments
-    tsin % stack (must be yxztc), or roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
-    roimask
-    stackmnt
-    pthpre
-    sper
-    t
     opt
-    memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
-    doplt = 0
+    opt2.stack = [] %stack (must be yxztc),
+    opt2.respcm = [] % roi timeseries (roi,t,c), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
+    opt2.roimaskin = []
+    opt2.sper = []
+    opt2.t = []
+    opt2.pthpre = []
+    opt2.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
+    opt2.doplt = 0
 end
 normpre = opt.pre; % normalization before clustering of pixels into rois, or subrois into rois (ie normalization applied to each pixel or subroi)
 normpost = opt.post; %normalization after clustering of pixels into rois, or subrois into rois (ie normalization applied to each roi)
@@ -18,52 +24,106 @@ degdtr = opt.degdtr; % detrend polynomial degree; 0 to skip detrending
 channorm = opt.channorm; %work in progress; 2-channel normalization with wavelet coherence based filtering
 mincoh = opt.mincoh; %work in progress min coherence threshold for channorm
 
-if ~iscell(roimask)
-    roimask = {roimask};
-end
-
-chanuse = ~cellfun(@isempty, roimask);
-
-srate = 1/sper;
+stack = opt2.stack;
+respcm = opt2.respcm;
+roimaskin = opt2.roimaskin;
+sper = opt2.sper;
+t = opt2.t;
+pthpre = opt2.pthpre;
+memthr = opt2.memthr;
+doplt = opt2.doplt;
 
 if isempty(t) && channorm~=0
-    error("must pass t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
+    error("must pass in t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
 end
 
-numchan = size(stackmnt,5);
-roiwt = [];
-wtsz = cell(numchan,1);
-for k = 1:numchan
-    if chanuse(k)
-        roiwttmp = roiwtmake(stackmnt(:,:,:,:,k), roimask{k});
-        if k==1
-            wtsz{k} = [1:size(roiwttmp,1)];
-        elseif k==2
-            if chanuse(1)
-                wtsz{k} = [1:size(roiwttmp,1)] + numel(wtsz{k-1});
-            else
-                wtsz{k} = [1:size(roiwttmp,1)]; %if channel 1 is not used, don't add channel 1 rois
-            end
-        end
-        roiwt = cat(1, roiwt, roiwttmp);
+if (isempty(stack) && isempty(respcm)) || (~isempty(stack) && ~isempty(respcm))
+    error("stack and respcm cannot both be empty or nonempty")
+end
+
+if isempty(respcm)
+    if ndims(stack)<=3
+        error("stack input must be >3d")
     end
-end
-
-if unique(roiwt)==0
-    error("roiwt contains no pixel or subroi indices for any roi")
-end
-
-if ndims(tsin)>3 %if tsin is greater than 3d, it is stack (not roi timeseries), since stack must be yxzt
     stack_input = 1;
+    tsin = stack;
+    stack = [];
+    szspace = size(tsin, [1,2,3]);
+    numchan = size(tsin,5);
     if numchan==1
         tsin = reshape(tsin, [], size(tsin, ndims(tsin))); %reshape to (pixel,time)
     elseif numchan==2
         tsin = reshape(tsin, [], size(tsin, ndims(tsin)-1), numchan); %reshape to (pixel,time)
     end
 else
+    if ndims(respcm)>3
+        error("respcm input must be <=3d")
+    end
     stack_input = 0;
+    tsin = respcm;
+    respcm = [];
+    szspace = size(tsin, 1);
+    numchan = size(tsin,3);
 end
-% this doesn't do anythign for current data
+
+if iscell(roimaskin) %awkward to do this before iscell(roimask) below, but we need chanuse up here
+    chanuse = ~cellfun(@isempty, roimaskin);
+else
+    if isempty(roimaskin)
+        chanuse = 0;
+    else
+        chanuse = 1;
+    end
+end
+
+roimask = roimaskin;
+
+for k = 1:numchan
+    if ~chanuse(k)
+        roimask{k} = ones(szspace, 'logical');
+    end
+end
+
+
+cellout = 0;
+if iscell(roimask)
+    if ~isequal(chanuse,0) %don't output cell if roimask was single-channel and empty
+        cellout = 1;
+    end
+    if numel(roimask)>1 && numchan==1
+        error("if numchan==1, roimask must be cell with numchan elements")
+    end
+else
+    if numchan>1
+        error("if numchan>1, roimask must be cell with numchan elements")
+    end
+    roimask = {roimask};
+end
+
+
+roiwt = [];
+wtsz = cell(numchan,1);
+for k = 1:numchan
+    roiwttmp = roiwtmake(roimask{k});
+    if k==1
+        wtsz{k} = [1:size(roiwttmp,1)];
+    elseif k==2
+        if chanuse(1)
+            wtsz{k} = [1:size(roiwttmp,1)] + numel(wtsz{k-1});
+        else
+            wtsz{k} = [1:size(roiwttmp,1)]; %if channel 1 is not used, don't add channel 1 rois
+        end
+    end
+    roiwt = cat(1, roiwt, roiwttmp);
+end
+
+if isequal(unique(roiwt), 0)
+    error("roiwt contains no pixel or subroi indices for any roi")
+end
+
+
+
+
 tsin = tsnorm(tsin, normpre, sper, memthr); %first normalization, optional
 
 if ndims(tsin)~=2 && ndims(tsin)~=3
@@ -80,53 +140,61 @@ end
 
 for k = 1:numchan
     tsout{k} = [];
-    if chanuse(k)
-        if any(goodinds(:,:,k)) %some pre-normalizations (first call to tsnorm, above) will output empty (like dff when F0 is too low, divides by zero); some caiman runs (with bad params) will output all nans
-            tsout{k} = zeros(numel(wtsz{k}), size(tsin,2), 'single'); %make it cell since each channel can have different number rois
-            varsz = whos('tsin');
-            numseg = ceil(varsz.bytes/memthr);
-            if numseg>1 %if tsin is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since tsout, even though it is also single precision, is generally much smaller than tsin
-                seglen = ceil(size(tsin,2)/numseg);
-                for w = 1:numseg
-                    idx = [1:seglen]+seglen*(w-1);
-                    idx(idx>size(tsin,2)) = [];
-                    if ~isempty(goodinds) && ~all(goodinds(:,:,k))
-                        tsout{k}(:,idx) = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),idx,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
-                    else
-                        tsout{k}(:,idx) = roiwt(wtsz{k}, :) * single(tsin(:,idx,k)) ./ sum(roiwt(wtsz{k}, :),2); %summed fluorescence in each roi, normalized by total intensity
-                    end
-                end
-            else
+    if any(goodinds(:,:,k)) %some pre-normalizations (first call to tsnorm, above) will output empty (like dff when F0 is too low, divides by zero); some caiman runs (with bad params) will output all nans
+        tsout{k} = zeros(numel(wtsz{k}), size(tsin,2), 'single'); %make it cell since each channel can have different number rois
+        varsz = whos('tsin');
+        numseg = ceil(varsz.bytes/memthr);
+        if numseg>1 %if tsin is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since tsout, even though it is also single precision, is generally much smaller than tsin
+            seglen = ceil(size(tsin,2)/numseg);
+            for w = 1:numseg
+                idx = [1:seglen]+seglen*(w-1);
+                idx(idx>size(tsin,2)) = [];
                 if ~isempty(goodinds) && ~all(goodinds(:,:,k))
-                    tsout{k} = roiwt(wtsz{k},goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k},goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
+                    tsout{k}(:,idx) = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),idx,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
                 else
-                    tsout{k} = roiwt(wtsz{k},:) * single(tsin(:,:,k)) ./ sum(roiwt(wtsz{k},:),2); %summed fluorescence in each roi, normalized by total intensity
+                    tsout{k}(:,idx) = roiwt(wtsz{k}, :) * single(tsin(:,idx,k)) ./ sum(roiwt(wtsz{k}, :),2); %summed fluorescence in each roi, normalized by total intensity
                 end
             end
-
-            %%%% OPTIONALLY PROCESS ROI TIMESERIES IN VARIOUS WAYS %%%%
-
-            if degdtr
-                tsout{k} = detrend(tsout{k}, degdtr); %detrending (remove baseline trend); degdtr is degree of polynomial fit
-            end
-
-            if ~isempty(wavp)
-                tsout{k} = wavflt(tsout{k}, t=t, srate=srate, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
-            end
-
-            tsout{k} = tsnorm(tsout{k}, normpost, sper, memthr); %second normalization, optional
-
-            if channorm
-                tsout{k} = nrmchan(tsout{k}, t=t, srate=srate, pthgifpre=pthpre, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
-            end
-
         else
-
-            tsout{k} = nan; %if there were no good pixels/rois for channel k
-
+            if ~isempty(goodinds) && ~all(goodinds(:,:,k))
+                tsout{k} = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
+            else
+                tsout{k} = roiwt(wtsz{k},:) * single(tsin(:,:,k)) ./ sum(roiwt(wtsz{k},:),2); %summed fluorescence in each roi, normalized by total intensity
+            end
         end
+
+        %%%% OPTIONALLY PROCESS ROI TIMESERIES IN VARIOUS WAYS %%%%
+
+        if degdtr
+            tsout{k} = detrend(tsout{k}, degdtr); %detrending (remove baseline trend); degdtr is degree of polynomial fit
+        end
+
+        if ~isempty(wavp)
+            tsout{k} = wavflt(tsout{k}, t=t, sper=sper, wavp=wavp, doplt=0); %wavelet bandpass filtering (within range wavp)
+        end
+
+        tsout{k} = tsnorm(tsout{k}, normpost, sper, memthr); %second normalization, optional
+
+        if channorm
+            tsout{k} = nrmchan(tsout{k}, t=t, sper=sper, mincoh=mincoh); %2-channel normalization based on wavelet coherence, work in progress
+        end
+
+    else
+
+        tsout{k} = nan; %if there were no good pixels/rois for channel k
+
     end
 end
+
+
+if ~cellout
+    tsout = cell2mat(tsout);
+    roimask = cell2mat(roimask);
+end
+
+
+
+%%%% PLOTTING %%%%
 
 
 if doplt

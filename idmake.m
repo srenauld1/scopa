@@ -1,29 +1,38 @@
 function id = idmake(pthstacks)
 
+% derive some identifiers using expected stack filename patterns for scopa and flyg; output in struct
+
 arguments
-    pthstacks
+    pthstacks %full path to stacks will fill all fields; if you just input stack filename, path fields will be empty; if you just input recdate_fly_trial, only those fields will be derived
 end
 
-if ~iscell(pthstacks)
+if ~isempty(pthstacks) && ~iscell(pthstacks)
     pthstacks = {pthstacks};
 end
 
+id = [];
+
 for k = 1:numel(pthstacks)
 
-    pthstacktmp = pthstacks{k};
+    pthstack = pthstacks{k};
 
-    [pthstackdir, fnin, ~] = fileparts(pthstacktmp);
-    pthstackdir = [pthstackdir filesep];
+    [pthstackdir, fn, ext] = fileparts(pthstack);
+    if ~isempty(pthstackdir)
+        pthstackdir = [pthstackdir filesep];
+    end
 
-    spl = strjoin(strsplit(fnin, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
+    spl = strjoin(strsplit(fn, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
     spl = strsplit(spl, '_'); %then separate by underscore
 
+    if numel(spl)<3
+        error("not enough of the filename was specified to derive id data")
+    end
     recdate = spl{1};
     fly = spl{2};
 
-    if contains(fnin, 'trial_') && contains(fnin, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
+    if contains(fn, 'trial_') && contains(fn, '-') %if it's a flyg-pattern raw file, trialnum and suffix need to be read differently
         trial = num2str(str2double(spl{find(strcmp(spl, 'trial'))+1}));
-        suffix = 'raw';
+        suffix = 'o';
     else
         trial = spl{3};
         if numel(spl)>3
@@ -37,34 +46,36 @@ for k = 1:numel(pthstacks)
     flynum = str2double(fly);
     trialnum = str2double(trial);
 
-
-
-    datefly_hyphen = [recdate '-' fly];
     recid = [recdate '_' fly '_' trial];
     if isempty(suffix)
         stackid = '';
-        pthstacktmp = ''; %since we don't know suffix, you must haver passed in pthrec, so make pthstack empty
+        pthstack = ''; %since we don't know suffix, you must have passed in pthrec, so make pthstack empty
+        pthpre = '';
+        pthrec = '';
     else
         if strcmp(suffix(end), '_')
             suffix = suffix(1:end-1);
         end
         stackid = [recdate '_' fly '_' trial '_' suffix];
+        pthpre = [pthstackdir stackid '_'];
+        pthrec = [pthstackdir recid];
     end
 
     id(k).recdate = recdate;
     id(k).fly = fly;
     id(k).trial = trial;
     id(k).suffix = suffix;
+    id(k).ext = ext;
 
     id(k).recdatenum = recdatenum;
     id(k).flynum = flynum;
     id(k).trialnum = trialnum;
     id(k).recid = recid;
     id(k).stackid = stackid;
-    id(k).datefly_hyphen = datefly_hyphen; %for some flyg files
 
     id(k).pthstackdir = pthstackdir;
-    id(k).pthstack = pthstacktmp;
-    id(k).pthrec = [pthstackdir recid];
+    id(k).pthstack = pthstack;
+    id(k).pthpre = pthpre;
+    id(k).pthrec = pthrec;
 
 end

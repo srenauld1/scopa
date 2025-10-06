@@ -4,8 +4,9 @@ arguments
     pthpy = []
     optcm = []
     opt.rgname = 'none'
-    opt.maskname = 'none'
+    opt.mmname = 'none'
 end
+error("need to insert glboropt")
 
 
 if isempty(pthpy)
@@ -15,12 +16,12 @@ if isempty(pthpy)
     end
 end
 if isempty(optcm)
-    fprintf("user did not pass options as argument, using all defaults")
-    tmp = odf('roi.cm', fill=1, unpack=1);
+    fprintf("user did not pass in options as argument, using all defaults")
+    tmp = ofill('roi.cm', rec=1, unpack=1);
     optcm = tmp.cm;
 end
 
-pthscopa = getpathscopa();
+pthscopa = pthscopaget();
 
 try %run python directly from matlab (ie not using system command to control a shell)
     petmp = pyenv;
@@ -45,7 +46,7 @@ try %run python directly from matlab (ie not using system command to control a s
         extract_in_2d=0, ...
         methodex='1', ...
         rgname=rgname, ...
-        maskname=maskname, ...
+        mmname=mmname, ...
         optall=optcm ...
         );
 catch ME %alternative that uses system command

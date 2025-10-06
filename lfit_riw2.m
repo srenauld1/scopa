@@ -82,7 +82,7 @@ numypix = size(stackmnt,1);
 
 if pixfit
     if min(stack(:))<0
-        error(sprintf("stack should be nonnegative ast this point"))
+        error("stack should be nonnegative ast this point")
     end
     resp = stack;
     clear stack
@@ -114,7 +114,7 @@ numsamp = size(resp,2);
 
 %% compute correlation after applying lags
 
-[lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(t, lagsec); %actual lags depend on epoch (samples you're using)
+[lagsec_actual, lagsamp, zero_lag_index, numlag] = lagmake(lagsec, t); %actual lags depend on epoch (samples you're using)
 
 runfit = 1;
 if usesaved
@@ -250,7 +250,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     nanresp = nan(1, numsamp);
     nanstim = nan(1, numsamp);
 
-    tsub = t(it);
+    subt = t(it);
 
     switch sortstyle
         case 'slope' %by correlation
@@ -272,7 +272,7 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
     splitfrac = 1;
     ax = axarr(layout=layout, marginax=marginax, marginfg=marginfg, splitfrac=splitfrac);
 
-    [dms,arat] = pxscreenget();
+    [dms,arat] = screenpx();
 
     szf = 0.75;
     szftmp = figsz(szf);
@@ -284,57 +284,57 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
 
 
     sectorind = 1; spi = 1; widthfac = 4; heightfac = 1;
-    ts1.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts1.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    ts1.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    ts1.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    ts1.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    hold(ts1.hax, 'on');
+    ts1.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts1.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts1.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts1.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts1.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    hold(ts1.ax, 'on');
     % yyaxis left;
-    ts1.hpl = plot(ts1.hax, t, nanresp);
+    ts1.pl = plot(ts1.ax, t, nanresp);
     % yyaxis right;
-    % ts1.hpl2 = plot(ts1.hax, t, stim);
-    % hold(ts2.hax, 'off');
+    % ts1.hpl2 = plot(ts1.ax, t, stim);
+    % hold(ts2.ax, 'off');
     % ts1.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts1.hax.XAxis] = axismod(ts1.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
-    % [ts1.hax.YAxis(2)] = axismod(ts1.hax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
+    [ts1.ax.XAxis] = axismod(ts1.ax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    [ts1.ax.YAxis(1)] = axismod(ts1.ax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+    % [ts1.ax.YAxis(2)] = axismod(ts1.ax.YAxis(2), stim, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='stim',  labeltightfac=0.7);
 
 
     sectorind = 1; spi = 5; widthfac = 4; heightfac = 1;
-    ts2.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts2.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    ts2.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    ts2.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    ts2.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    hold(ts2.hax, 'on');
+    ts2.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts2.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts2.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts2.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts2.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    hold(ts2.ax, 'on');
     % yyaxis left;
-    ts2.hpl = plot(ts2.hax, t, stim1, color=[0.8500    0.3250    0.0980]);
+    ts2.pl = plot(ts2.ax, t, stim1, color=[0.8500    0.3250    0.0980]);
     % yyaxis right;
-    % ts2.hpl2 = plot(ts2.hax, t, stim);
-    % hold(ts2.hax, 'off');
+    % ts2.hpl2 = plot(ts2.ax, t, stim);
+    % hold(ts2.ax, 'off');
     ts2.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts2.hax.XAxis] = axismod(ts2.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
+    [ts2.ax.XAxis] = axismod(ts2.ax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    % [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), stim1, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'fwd. spd.'; '(mm/s)'},  labeltightfac=0, labcol=[0.8500    0.3250    0.0980]);
 
 
     sectorind = 1; spi = 9; widthfac = 4; heightfac = 1;
-    ts3.hax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
-    ts3.hax.InnerPosition(1) = ax(sectorind).x(spi);
-    ts3.hax.InnerPosition(2) = ax(sectorind).y(spi);
-    ts3.hax.InnerPosition(3) = ax(sectorind).w(widthfac);
-    ts3.hax.InnerPosition(4) = ax(sectorind).h(heightfac);
-    hold(ts3.hax, 'on');
+    ts3.ax = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition' );
+    ts3.ax.InnerPosition(1) = ax(sectorind).x(spi);
+    ts3.ax.InnerPosition(2) = ax(sectorind).y(spi);
+    ts3.ax.InnerPosition(3) = ax(sectorind).w(widthfac);
+    ts3.ax.InnerPosition(4) = ax(sectorind).h(heightfac);
+    hold(ts3.ax, 'on');
     % yyaxis left;
-    ts3.hpl = plot(ts3.hax, t, stim2, color=[0.9290    0.6940    0.1250]);
+    ts3.pl = plot(ts3.ax, t, stim2, color=[0.9290    0.6940    0.1250]);
     % yyaxis right;
-    % ts2.hpl2 = plot(ts2.hax, t, stim);
-    % hold(ts2.hax, 'off');
+    % ts2.hpl2 = plot(ts2.ax, t, stim);
+    % hold(ts2.ax, 'off');
     ts3.xln = yline(0, Color=[0 0 0], Alpha=0.3);
-    [ts3.hax.XAxis] = axismod(ts3.hax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
-    % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
-    [ts3.hax.YAxis(1)] = axismod(ts3.hax.YAxis(1), stim2, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'yaw vel.'; '(mm/s)'},  labeltightfac=0, labcol=[0.9290    0.6940    0.1250]);
+    [ts3.ax.XAxis] = axismod(ts3.ax.XAxis, t, xtralimfac=xtralimfac, numtick=numtickx, alignzero=0, label='time (seconds)', labeltightfac=0.7);
+    % [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label='resp',  labeltightfac=0.7);
+    [ts3.ax.YAxis(1)] = axismod(ts3.ax.YAxis(1), stim2, xtralimfac=xtralimfac, numtick=numticky, alignzero=alignzero, label={'yaw vel.'; '(mm/s)'},  labeltightfac=0, labcol=[0.9290    0.6940    0.1250]);
 
 
     %%%%%%%%%%% PLOT %%%%%%%%%%%
@@ -353,21 +353,21 @@ if doplt && ~isempty(stackmnt) && ~isempty(roipx)
                 nanstim(:) = nan;
                 nanresp(1:numel(resplag)) = resplag;
                 nanstim(1:numel(stimlag)) = stimlag;
-                sc.hpl.XData = nanstim;
-                sc.hpl.YData = nanresp;
-                ts2.hpl.YData = nanresp;
+                sc.pl.XData = nanstim;
+                sc.pl.YData = nanresp;
+                ts2.pl.YData = nanresp;
                 ts2.hpl2.YData = nanstim;
-                ts4.hpl.YData = nanresp(it);
+                ts4.pl.YData = nanresp(it);
                 ts4.hpl2.YData = nanstim(it);
             else
-                sc.hpl.YData = resp(k,:);
-                ts1.hpl.YData = resp(k,:);
-                ts4.hpl.YData = resp(k,it);
+                sc.pl.YData = resp(k,:);
+                ts1.pl.YData = resp(k,:);
+                ts4.pl.YData = resp(k,it);
             end
 
             if ~yconst
-                % [ts2.hax.YAxis(1)] = axismod(ts2.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
-                [ts1.hax.YAxis(1)] = axismod(ts1.hax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
+                % [ts2.ax.YAxis(1)] = axismod(ts2.ax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label='resp',  labeltightfac=0);
+                [ts1.ax.YAxis(1)] = axismod(ts1.ax.YAxis(1), resp(k,:), xtralimfac=xtralimfac, numtick=numticky, alignzero=0, label={'resp.'; '(f)'},  labeltightfac=0, labcol=[0    0.4470    0.7410]);
             end
 
 

@@ -2,17 +2,17 @@ import os
 import glob
 import numpy as np
 from mdsisv import mdsisv, convert_md_file
-from helpers import rename_files, mat2tif, ordinal
+from helpers import rename_original_scanimage_files, mat2tif, ordinal
 from natsort import natsorted
 import re
 from itertools import product
 import collections
 from pathlib import Path
 import ast
-from pthmakepy import getpathscopa
+from pthmake import pthscopaget
 
 
-def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substring, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
+def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind, file_matching_style, pth_fldr_fnind, fnind_fn_prefix, 
                  do_copyfiles, do_register, do_denoise, dnraw, do_stitch, do_remove, do_crop_only, do_extract, do_a2p, use_background_subtracted, use_denoised, use_scannoise_removed, 
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
@@ -24,20 +24,20 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
     
     if first_noncopy_job or do_copyfiles!=0:
         if file_matching_style=='any': #find all possible combinations 
-            filepatspec_all = list(product(recdate, fly, trial, folder_substring)) 
+            filepatspec_all = list(product(recdate, fly, trial, substr)) 
         elif file_matching_style=='each': #else corresponding elements 
-            maxspec = np.max((len(recdate), len(fly), len(trial), len(folder_substring)))
+            maxspec = np.max((len(recdate), len(fly), len(trial), len(substr)))
             if len(recdate)==1:
                 recdate = recdate*maxspec
             if len(fly)==1:
                 fly = fly*maxspec
             if len(trial)==1:
                 trial = trial*maxspec
-            if len(folder_substring)==1:
-                folder_substring = folder_substring*maxspec
-            if not(len(recdate) == len(fly) == len(trial) == len(folder_substring)):
-                raise Exception("\n\n\n recdate, fly, trial, and folder_substring must all be same length or length 1 for file_matching_style 'each'")
-            filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, folder_substring)] 
+            if len(substr)==1:
+                substr = substr*maxspec
+            if not(len(recdate) == len(fly) == len(trial) == len(substr)):
+                raise Exception("\n\n\n recdate, fly, trial, and substr must all be same length or length 1 for file_matching_style 'each'")
+            filepatspec_all = [(w, x, y, z) for w, x, y, z in zip(recdate, fly, trial, substr)] 
     else:
         with open(pth_fnind) as f1:
             print("\n\n\nSINCE THIS IS A JOB INITIATED BY pl.sh, BUT NOT THE FIRST JOB, WILL READ FILENAME SPECIFIERS FOR PREVIOUSLY FOUND FILES FROM THIS FILE: \n" + pth_fnind)
@@ -45,20 +45,21 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             for line in f1:
                 filepatspec_all.append(ast.literal_eval(line))
 
-    ######### FIND FILES #########
+    ######### FIND FILES (INPUT FILES FOR DIFFERENT PARTS OF PIPELINE) #########
 
     pth_allfiles = []
     for filepatspec in filepatspec_all: #loop over all file pattern combos 
 
-        fn_suffix_scopa = '_raw' #find files matching scopa output pattern (do_register scopa suffix is 'raw', below is flyg suffix for do_register)
+        suffixchar_raw = 'o'
+        fn_suffix_scopa = '_' + suffixchar_raw #find files matching scopa output pattern (do_register scopa suffix for input file is 'o' (output ir 'or'), below is flyg suffix for do_register)
         if do_denoise and not dnraw or do_stitch and not dnraw or do_extract or do_crop_only or do_remove or do_a2p:
-            fn_suffix_scopa = '_cmrg' 
+            fn_suffix_scopa = fn_suffix_scopa + 'r' 
             if use_background_subtracted:
-                fn_suffix_scopa = '_bksb' + fn_suffix_scopa
-            if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have dcdn if it's run
-                fn_suffix_scopa = fn_suffix_scopa + '_dcdn'
+                fn_suffix_scopa = '_' + suffixchar_raw + 'br'
+            if use_denoised and (do_extract or do_crop_only or do_remove or do_a2p): #don't let this affect do_stitch since it must have 'd' if it's run
+                fn_suffix_scopa = fn_suffix_scopa + 'd'
             if use_scannoise_removed and (do_extract or do_crop_only or do_a2p):
-                fn_suffix_scopa = fn_suffix_scopa + '_nosn'
+                fn_suffix_scopa = fn_suffix_scopa + 's'
         if use_scannoise_removed and do_extract:
             fn_suffix_scopa = fn_suffix_scopa + '_.mat'  #this is the only time only a mat is available when a tif is required (besides carls_old_project)
         else:
@@ -137,7 +138,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             recindstr = "BECAUSE OF VALUE(S) in jobind, WILL OPERATE ON FILE(S) FROM THIS LIST WITH THE FOLLOWING (ZERO-INDEXED) INDICES (IF FILES EXIST AT THESE INDICES): \n" + '%s' % ', '.join(map(str, jobind))
 
     print("\n\n\nAFTER SEARCHING RECURSIVELY FOR FILES WITHIN THE FOLLOWING DIRECTORY: \n" + pth_allrec + '\n' + \
-          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, folder_substring, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
+          "MATCHING ANY OF THE FOLLOWING FILENAME SPECIFIER COMBOS (recdate, fly, trial, substr, where * is wildcard): \n" + '%s' % '\n'.join(map(str, filepatspec_all)) + '\n' + \
             "AND HAVING ANY OF THE THE FOLLOWING SUFFIXES: \n" + '%s' % '\n'.join(map(str, fn_suffixes_all)) + '\n' + \
                 search_result_string + '\n' + recindstr)
 
@@ -194,7 +195,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
             if pth_daq:
                 pth_daq = pth_daq[0]
 
-            pthscopa = getpathscopa()
+            pthscopa = pthscopaget()
             pth_opt_pattern = pthscopa + 'opt_*_*_*_.txt' # copy all opt files from server to O2 
             pth_opt = glob.glob(pth_opt_pattern)
                 
@@ -212,7 +213,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, folder_substrin
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
-                    [pth_readfile, fname] = rename_files(pth_readfile, fname, fn_prefix, fldr)
+                    [pth_readfile, fname] = rename_original_scanimage_files(pth_readfile, fname, fn_prefix, fldr, suffixchar_raw)
             
             mat_file_shape = None
             if int(datestr_found)>20230101:

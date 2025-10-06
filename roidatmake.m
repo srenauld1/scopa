@@ -1,28 +1,40 @@
-function roidat = roidatmake(stack, roimask, rg, mm, pthstack)
+function roidat = roidatmake(stack, roimask, ts, rg, mm, pthstack)
 
 arguments
     stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
     roimask
+    ts
     rg = []
     mm = []
     pthstack = []
 end
 
-if ~iscell(roimask)
+if iscell(roimask)
+    if isequal(sum(~cellfun(@isempty, roimask)), 0)
+        error("roimask cannot be empty")
+    end
+else
+    if isempty(roimask)
+        error("roimask cannot be empty");
+    end
     roimask = {roimask};
 end
+if ~iscell(ts)
+    ts = {ts};
+end
 if size(stack,4)>1
-    stackmnt = mean(stack,4);
+    stackmnt = stacktype(mean(stack,4), class(stack)); %this is faster and uses less ram than using 'native' option in mean
 else
     stackmnt = stack;
 end
+if isempty(mm)
+    mm = {[], []};
+end
+
 
 numchan = size(stackmnt,5);
-roidat = cell(numchan, 1);
 for c = 1:numchan
-    if ~isempty(roimask{c})
-        roidat{c} = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, c, rg, mm{c}, pthstack); %this creates a temporary variable for one channel of stackmnt, but stackmnt should never be very large since t has been averaged, so keeping it this way for simplicity
-    end
+    roidat(c) = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, ts{c}, rg, mm(c), pthstack, c); %this creates a temporary variable for one channel of stackmnt, but stackmnt should never be very large since t has been averaged, so keeping it this way for simplicity
 end
 
 
@@ -30,9 +42,13 @@ end
 
 
 
-function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, chan, rg, mm, pthstack)
+function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, ts_onechan, rg, mm, pthstack, chan)
 
-roiwt = roiwtmake(stackmnt_onechan, roimask_onechan);
+if isequal(mm, {[]}) %if mm is empty when entering roidatmake, set to awkward empty cell, fix that here 
+    mm = [];
+end
+
+roiwt = roiwtmake(roimask_onechan);
 numroi = size(roiwt,1);
 roicen = find_roi_centroids(roimask_onechan);
 
@@ -80,6 +96,8 @@ roidat.chan = chan;
 roidat.numroi = numroi;
 roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
 roidat.roiwt = roiwt; %boolean mask vector of each roi
+roidat.mask = roimask_onechan; %boolean mask vector of each roi
+roidat.ts = ts_onechan; %boolean mask vector of each roi
 roidat.roicen = roicen;
 roidat.mask_allroi = mask_allroi; %boolean mask of all rois
 roidat.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to

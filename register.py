@@ -54,16 +54,16 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     md = check_aborted_stack(md, pthmd, stack, stackisvol)
 
-    tzcyx, numchan, hasfb = stackshape(stack, md)
+    tzcyx, numchan, hasfb, md = stackshape(stack, md, pthmd, force_match=1) #tzcyx, numchan, hasfb = stackshape(stack, md) --- IGNORE ---
 
     chanrm, chan_primary, methodrg = parse_methodrg(methodrg, numchan)
     
     stack, stack_secondary, two_channel_reg, chan_primary, chan_secondary, chanstr_primary, chanstr_secondary = stackchan(stack, md, pthmd, chanrm, chan_primary)
 
     if bglenpx:
-        pth_tif_write = pth_prefix + chanstr_primary + '_bksb_cmrg_.tif' #match pattern in filefind (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_obr_.tif' #match pattern in filefind (make this more reliable)
     else:
-        pth_tif_write = pth_prefix + chanstr_primary + '_cmrg_.tif'#match pattern in filefind (make this more reliable)
+        pth_tif_write = pth_prefix + chanstr_primary + '_or_.tif' #match pattern in filefind (make this more reliable)
     pth_tif_write_allchan = pth_tif_write.replace(chanstr_primary, '') #this is same as pth_tif_write if two_channel_reg==0
 
     pth_tif_write_tmp = pth_tif_write[:-4] + 'tmp_.tif'
@@ -102,10 +102,10 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
     if makeplots:
         #im_montage(stack[10,:,:,:], vmin=mnmv, vmax=np.max(stack))
-        plot_gif(stack, pth_tif_read[:-4] + 'raw.gif', indsz = slice(4,5,1), indst = slice(0, 100, 1))  #view stack before registration, can pass xyzt indices, otherwise will do all indices for each 
+        plot_gif(stack, pth_tif_read[:-4] + 'o.gif', indsz = slice(4,5,1), indst = slice(0, 100, 1))  #view stack before registration, can pass in xyzt indices, otherwise will do all indices for each 
         if two_channel_reg:
             #im_montage(stack_secondary[10,:,:,:], vmin=mnmv, vmax=np.max(stack)) #view montage to check registration
-            plot_gif(stack_secondary, pth_tif_read[:-4] + chanstr_secondary + '.gif', indsz = slice(3,4,1), indst = slice(0, 100, 1))  #view stack before registration, can pass xyzt indices, otherwise will do all indices for each 
+            plot_gif(stack_secondary, pth_tif_read[:-4] + chanstr_secondary + '.gif', indsz = slice(3,4,1), indst = slice(0, 100, 1))  #view stack before registration, can pass in xyzt indices, otherwise will do all indices for each 
    
    
     ########################## BACKGROUND SUBTRACTION ##########################
@@ -198,8 +198,8 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
 
 
         os.remove(pth_tif_write_tmp)   
-        if register_presmoothed: #apply shifts learned from smoothed movie to the raw movie (if you don't want smoothed movie ultimately)
-            tmp = mc.apply_shifts_movie(pth_tif_write_presmothed_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
+        if register_presmoothed: #apply shifts learned from smoothed movie to the original movie (if you don't want smoothed movie ultimately)
+            tmp = mc.apply_shifts_movie(pth_tif_write_presmothed_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass in nd array to save_memmap below
             input_for_save_memmap_primary = [tmp] #update name so presmoothed gets saved but not presmoothed 
         else:
             input_for_save_memmap_primary = mc.mmap_file #name this input_for_save_memmap caiman's save_memmap can take memmap file or ndarray as argument
@@ -207,9 +207,9 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
         os.remove(mc.mmap_file[0]) #remove the mmap file in F order      
         
         if two_channel_reg:
-            tmp = mc.apply_shifts_movie(pth_tif_write_secondary_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass nd array to save_memmap below
+            tmp = mc.apply_shifts_movie(pth_tif_write_secondary_tmp[countz], save_memmap=False, order='F') #for some reason cannot save_memmap=True here, so must pass in nd array to save_memmap below
             os.remove(pth_tif_write_secondary_tmp[countz])
-            input_for_save_memmap_secondary = [tmp] #so must pass nd array to save_memmap below
+            input_for_save_memmap_secondary = [tmp] #so must pass in nd array to save_memmap below
             memmap2stackwrite(iz, input_for_save_memmap_secondary, pth_tif_write_secondary, register_in_2d, mc, dview)
 
 
@@ -223,12 +223,12 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
                 stack_allchan[:,:,:,:,chan_primary-1] = stitchrg(pth_tif_write, md['dims']) #output is all slices, txyz
                 stack_allchan[:,:,:,:,chan_secondary-1] = stitchrg(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
                 if makeplots:
-                    plot_gif(stack_allchan[:,:,:,:,chan_primary-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
-                    plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_primary-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
             else:
                 stack_allchan = stitchrg(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
                 if makeplots:
-                    plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass xyzt indices, otherwise will do all indices for each 
+                    plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
                     #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
             
             if clipinterp:
@@ -279,7 +279,7 @@ def parse_methodrg(methodrg, numchan):
         methodrg = methodrg[0]
     
     if methodrg!='first' and methodrg!='second' and numchan==1:
-        print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to '1' TO OPERATE ON THE ONLY CHANNEL PRESENT")
+        print("WARNING, methodrg is " + methodrg + ", WHICH REQUIRES TWO CHANNELS, BUT ONLY ONE CHANNEL IS PRESENT; CHANGING methodrg to 'first' TO OPERATE ON THE ONLY CHANNEL PRESENT")
         methodrg = 'first'
 
     chan_primary = None #irrelevant unless methodrg denotes 2-channel registration 
@@ -326,11 +326,11 @@ def write_registered_stack(stack, pth_tif_write):
 
     stack_shape = stack.shape
     print(stack_shape)
-    if len(stack.shape)==3: #transpose into tzyx, collapse t and z (if z exists) 
+    if len(stack.shape)==3: #transpose into tyx
         stack = np.transpose(stack, (0, 2, 1)).reshape(stack_shape[0], stack_shape[2], stack_shape[1])
-    elif len(stack.shape)==4:
+    elif len(stack.shape)==4:#transpose into tzyx, collapse t and z
         stack = np.transpose(stack, (0, 3, 2, 1)).reshape(stack_shape[0] * stack_shape[3], stack_shape[2], stack_shape[1])
-    elif len(stack.shape)==5:
+    elif len(stack.shape)==5:#transpose into tzcyx, collapse t and z and c
         stack = np.transpose(stack, (0, 3, 4, 2, 1)).reshape(stack_shape[0] * stack_shape[3] * stack_shape[4], stack_shape[2], stack_shape[1])
     imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
 

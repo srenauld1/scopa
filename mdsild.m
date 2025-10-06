@@ -1,28 +1,32 @@
-function md = mdsild(pthstack, pthpy)
+function md = mdsild(pth, opt)
 
 arguments
-    pthstack = []
-    pthpy = []
+    pth = [] %path to metadata file ('*mdsi_.txt') or path to stack
+    opt.pthpy = []
+    opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
+opt = glboropt(opt);
+pthpy = opt.pthpy;
+doflyg = opt.doflyg;
 
-if isempty(pthstack)
-    pthstack = glb('pthstack');
-    if isempty(pthstack)
-        error("you must either pass argument pthstack or set glb('pthstack')")
+if isempty(pth)
+    if isempty(glb('pthstack'))
+        error("must pass in nonempty name-value argument 'pth', or set glb('pthstack')")
+    else
+        fprintf("WARNING, RETRIEVING METADATA FOR STACK LISTED IN glb('pthstack') BECAUSE NAME-VALUE ARGUMENT 'pth' IS EMPTY" + newline)
     end
+    pth = glb('pthstack');
 end
-
-id = idmake(pthstack); %just in case id info gets used below
+id = idmake(pth); 
 pthmd = [id.pthrec '_mdsi_.txt'];
-
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
-    fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast (from within mdsisv_mat), and if that fils, using python function mdsisv, and if that fails, calling mdsisv_pymat" + newline)
+    fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast (from within mdsisv.m), and if that fils, using python function mdsisv, and if that fails, calling mdsisv_pymat" + newline)
     pthrawpt = [id.pthrec '_raw_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)
-        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trialnum ) '_*.tif'];
+        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
         pthraw = rdir(pthrawpt);
     end
     if isempty(pthraw)
@@ -32,18 +36,11 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
 
     try
 
-        mdsisv_mat(pthraw)
+        mdsisv(pthraw)
     
     catch
 
-        if isempty(pthpy)
-            pthpy = glb('pthpy');
-            if isempty(pthpy)
-                error("metadata file doesn't exist, and parsing with tifreadfast failed, and you have not set glb('pthpy'), and you didn't pass in argument pthpy, so you cannot try mdsisv.py" + newline)
-            end
-        end
-
-        pthscopa = getpathscopa();
+        pthscopa = pthscopaget();
 
         try %run python directly from matlab (ie not using system command to control a shell)
             petmp = pyenv;
@@ -73,7 +70,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
 
 end
 
-md = structld(pthmd);
+md = structld(pthmd, dosort=0);
 
 md.sz = [md.ypix md.xpix md.numslice md.numvol];
 
@@ -114,6 +111,19 @@ end
 
 md.widyxz = [md.ywid, md.xwid, md.zwid];
 md.sper = 1/md.volrate;
+
+
+if doflyg
+    pthmd_flyg_pat = [pthstackdir id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+    pthmd_flyg = rdir(pthmd_flyg_pat);
+    if isempty(pthmd_flyg)
+        pthmd_flyg = [];
+    else
+        pthmd_flyg = pthmd_flyg.name;
+    end
+    [md.expMetadata, md.trialMetadata, md.patternMetadata, md.fictracMetadata, md.fmd] = mdflygld(pthmd_flyg, pth);
+end
+
 
 md = structsort(md, vectype='row');
 

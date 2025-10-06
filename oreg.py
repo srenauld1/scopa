@@ -18,7 +18,7 @@ def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, 
     ### USER CAN MODIFY OPTIONS IN THIS SECTION ###
 
     # a few options that should probably never change
-    pw_rigid = False #false applies rigid motion correction, true applies nonrigid motion correction; for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
+    pw_rigid = True #false applies rigid motion correction, true applies nonrigid motion correction; for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
     use_highpass_filter = False #this invokes gSig_filt (makes it not None); caiman says this is for 1p data (data with large background fluctuations); so this should be False in general
     nonneg_movie = True #true because scopa makes the stack nonnegative before registration; putting it up top to make that clear
     use_cuda = False # flag for using a GPU; for now this is always false, maybe determine if gpu exists in future; registration is not slow enough for me to care though
@@ -60,14 +60,14 @@ def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, 
 
 
     #a few options that are only relevant for nonrigid registration (if pw_rigid=True), which may not ever be necessary for fly brains (??)
-    max_deviation_rigid = 3 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
+    max_deviation_rigid = 20 #only relevant if pw_rigid==True, this is max amount patches can deviate from whole fov rigid shifts 
     upsample_factor_grid = 4 #only relevant if pw_rigid==True, default 4, use for merging patches if pw_rigid==True; not the same as upsample factor in register translation, whichy is just set to 10 by default, for subpixel shift
     if register_in_2d:
         strides = (24, 24) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch stride (ie start a new patch for pw-rigid motion correction every stride pixels)
         overlaps = (12, 12) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch overlap (ie  overlap between patches, ie size of patch is strides+overlaps)
     else:  #since 3d registration is most appropriate for cube voxels (or close) xy resolution must generally decrease to maintain acceptable volume rate, which means some of these options with pixel units should be different in 2d than 3d (besides just omitting the 3rd (z) element for 2d); for example, max_shifts 4 may seem small in a 2d brain that is yxz size (128,256,10), but not in a 3d brain that is yxz size (24,64,16) (both with similar volume rates)
-        strides = (12, 12, 12) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch stride (ie start a new patch for pw-rigid motion correction every stride pixels) 
-        overlaps = (8, 8, 8) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch overlap (ie  overlap between patches, ie size of patch is strides+overlaps)
+        strides = (100, 100, 3) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch stride (ie start a new patch for pw-rigid motion correction every stride pixels) 
+        overlaps = (50, 50, 1) #unit pixels; ignored if pw_rigid==False, otherwise this is piecewise patch overlap (ie  overlap between patches, ie size of patch is strides+overlaps)
 
 
     #an option that is only relevant if you want to apply highpass filter to images, which caiman does not recommend for 2p data  
@@ -95,8 +95,8 @@ def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, 
     # if not register_in_2d:
     #     if np.ptp(dxy)>np.min(dxy):
     #         raise Exception("you are trying to do 3d registration on a stack with at least one voxel width that is at least double the smallest dimension's voxel width (most likely, z width is greater than x and y); consider 2d registration instead; but if you want to proceed with 3d registration, comment this exception and run again")
-    if pw_rigid==True:
-        raise Exception("you are trying to run non-rigid registration with pw_rigid=True; the options in scopa have not been optimized for nonrigid registration; it may work well, but it is not well tested")
+    # if pw_rigid==True:
+    #     raise Exception("you are trying to run non-rigid registration with pw_rigid=True; the options in scopa have not been optimized for nonrigid registration; it may work well, but it is not well tested; comment this exception and run again if you want to proceed")
     if (is3D or pw_rigid) and shifts_opencv:
         raise Exception("shifts_opencv is True, but so is is3D or pw_rigid; make is3D and pw_rigid false to use shifts_opencv true; caiman automatically changes shifts_opencv for you, but this exception is meant to make it clear what settings are actually being used; so if you don't like this exception, you can remove it and nothing will change")
 

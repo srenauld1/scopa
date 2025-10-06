@@ -1,8 +1,9 @@
 function o = oset_fb8c(o)
 
+o.mn.do = ["sld", "daq", "roi"];
+
 rgname = {'fb8c'}; 
 
-o.mn.doroi = 1; 
 
 for m = 1:numel(rgname) 
 
@@ -16,7 +17,7 @@ for m = 1:numel(rgname)
         o.roi.nrm.post = {'rsc000100'};
     end
 
-    o = odf(o, 'roi', rgname{m});
+    o = ofill(o, 'roi', rgname{m});
 
 end
 

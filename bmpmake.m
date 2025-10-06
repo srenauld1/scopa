@@ -1,31 +1,29 @@
-function bmp = bmpmake(opt, depv, indv, pthstack, imrate, epochts, opt2)
+function bmp = bmpmake(opt, depv, indv, pthstack, opt2)
 
+%depv (roi,time), or empty if using opt to define depv via tsget 
+%indv (roi,time), or empty if using opt to define indv via tsget 
 
 arguments
     opt = []
     depv = []
     indv = []
     pthstack = []
-    imrate = []
-    epochts = []
+    opt2.srate = []
+    opt2.epochts = []
     opt2.doplt = []
 end
+opt2 = glboropt(opt2);
+srate = opt2.srate;
+epochts = opt2.epochts;
 doplt = opt2.doplt;
 
-[opt, pthstack, doplt] = fset('bmp', opt, pthstack, doplt);
+[opt, doplt, pthstack] = fset('bmp', opt, doplt, pthstack);
 
-if isempty(imrate)
-    md = glb('md');
-    imrate = md.volrate;
-    if isempty(imrate)
-        error("must pass in imrate or set glb('md'), from which you can derive md.imrate")
-    end
+if isempty(srate)
+    error("must pass in name-value argument srate or set glb('srate')")
 end
 if isempty(epochts)
-    epochts = glb('epochts');
-    if isempty(epochts)
-        error("must pass in epochts or set glb('epochts')")
-    end
+    error("must pass in epochts or set glb('epochts')")
 end
 
 %% set up indv/depv
@@ -34,18 +32,23 @@ if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(o
     error("if domtype is 'f', indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 if strcmp(opt.domtype, 'm')
-    indv = []; 
-    opt.indv = []; 
+    % indv = []; 
+    % opt.indv = []; 
     if ~isequal(isempty(depv), ~isempty(opt.depv.tg))
         error("if domtype is 'm', depv must be empty or nonempty, with opt.depv the inverse; indv and opt.indv will be set to empty and ignored")
     end
 end
 
+if isempty(indv) && isempty(depv)
+    dotsget = 1;
+end
+
+clear tsget %clear persistent variables within tsget (just in case)
 its = 0;
 while true
     its = its+1;
 
-    if isempty(indv) && isempty(depv) %if indv/depv are defined in the options struct, instead of passed in as arguments
+    if dotsget %if indv/depv are defined in the options struct, instead of passed in as arguments
         [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
         varid = vdat.varid;
         last = vdat.last;
@@ -56,7 +59,7 @@ while true
         pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
     end
 
-    bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt);
+    bmp = bmpmake2(depv, indv, opt, varid, pthbmp, srate, epochts, doplt);
 
     if last
         break
@@ -65,9 +68,8 @@ end
 
 end
 
-function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, imrate, epochts, doplt)
+function bmp = bmpmake2(depv, indv, opt, varid, pthbmp, srate, epochts, doplt)
 
-chan = opt.chan;
 mthd = opt.mthd;
 omitnan = opt.omitnan;
 scope = opt.scope;
@@ -79,8 +81,6 @@ maxangrs = opt.maxangrs;
 slopelensec = opt.slopelensec;
 slopeord = opt.slopeord;
 smlensec = opt.smlensec;
-
-pthpre = erase(pthbmp, '.mat');
 
 try
 
@@ -113,7 +113,7 @@ catch ME
 
     halfcent = floor(numseg / 2); %make it floor in case odd, code below is not written for odd, won't matter for anything but plotting, and this will only happen if there's a lot of clusters, so won't matter much
 
-    sper = 1/imrate;
+    sper = 1/srate;
 
     %% define domain (functionally or morphologically)
 
@@ -126,7 +126,7 @@ catch ME
 
     if strcmp(domtype, 'f') %functional domain (each roi's preferred angle derived from fit) 
 
-        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, imrate, epochts, doplt=doplt, ld=1, numsyn=0, histinc=0);
+        bmp = mdlmake(opt.mdl, indv, depv, pthbmp, srate, epochts, doplt=doplt, ld=1, numsyn=0, histinc=0);
 
         angpref = bmp.ft.indvpf_mean_allval(:)'; %row vector of preferred angle;
 
@@ -191,14 +191,14 @@ catch ME
             resptmp = reshape(resptmp, size(respcltmp(centinds,:)));
     end
 
-    domain = domaintmp(centinds);
+    domain = vec(domaintmp(centinds));
 
     switch mthd
 
         case 'pva' %regular pva, use if you want to not weight by magnitude (pva angle will be pulled toward largest response, regardless of sign, ie furthest from negative infinity)
 
-            mu = circ_mean(domain, resptmp, 2);
-            rho = circ_var(domain, resptmp, [], 2);
+            mu = circ_mean(domain, resptmp);
+            rho = circ_var(domain, resptmp, []);
 
         case 'pvas' %"pva signed", use if you want to weight by magnitude (eg large magnitude negative responses can pull pva angle toward them)
 
@@ -220,7 +220,7 @@ catch ME
             ft = fittype('a*exp(k*cos(x-u))+c','options',fo);
 
             for k = 1:numsamp
-                [f, gof] = fit(domain', resptmp(:,k), ft, MaxIter=20000, MaxFunEvals=20000);
+                [f, gof] = fit(domain, resptmp(:,k), ft, MaxIter=20000, MaxFunEvals=20000);
                 % rho2(k) = gof.adjrsquare;
                 rho2(k) = gof.adjrsquare;
                 mu(k) = f.u;
@@ -235,16 +235,16 @@ catch ME
     rho = rho';
 
     if smlensec
-        mu = tssm('circular', mu, smlensec, sper);
+        mu = tssm('radians', mu, smlensec, sper);
         rho = tssm('normal', rho, smlensec, sper);
     end
 
-    bumpvel = tsdv('circular', mu, slopelensec, slopeord, sper);
+    bumpvel = tsdv('radians', mu, slopelensec, slopeord, sper);
     offset = circ_dist_nan(indv.', mu);
 
-    [~, ii] = mink(abs(domain -mu), 2, 2); %find indexes corresponding to bump position in each time point
-    i2 = ii' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
-    ampmu = mean(resptmp(i2), 1, 'omitmissing')'; %extract amplitude at mu position
+    [~, k] = mink(abs(domain'-mu), numcirc, 2); %find indexes corresponding to bump position in each time point
+    k = k' + size(resptmp, 1) * [0 : size(resptmp, 2)-1 ]; %find the linear index into the peak of each column (time point) value.
+    ampmu = mean(resptmp(k), 1, 'omitmissing')'; %extract amplitude at mu position (mean of each circle, if multiple)
     amppeak = max(resptmp, [], 1, 'omitmissing')'; %extract max amplitude at each time point
     ampmean = mean(resptmp, 1, 'omitmissing')'; %find the amp, which is the mean dff in the whole mask
 
@@ -281,6 +281,8 @@ end
 %% plots
 
 if doplt
+
+    pthpre = erase(pthbmp, '.mat');
 
     error("bmpmake plots need to be rewritten")
 

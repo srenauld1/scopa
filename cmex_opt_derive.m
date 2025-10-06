@@ -40,7 +40,7 @@ else
     end
 
     if total_vox_ex>=prod(dims_spatial_ex) %reset rf and stride if it turns out the patch is same size as fov or bigger
-        error(sprintf("total number voxels in patch is greater than total num voxels in rgname (or full fov, if rgname is 'none'); originally this reverted patch to empty, but this means accurate patch options cannot be set in oset, in the matlab part of the pipeline, because oset occurs before loading stacks, and this exception catches a stack dependent quantity"))
+        error("total number voxels in patch is greater than total num voxels in rgname (or full fov, if rgname is 'none'); originally this reverted patch to empty, but this means accurate patch options cannot be set in oset, in the matlab part of the pipeline, because oset occurs before loading stacks, and this exception catches a stack dependent quantity")
         % total_vox_ex = prod(dims_spatial_ex);
         % opt.rf = []; % setting rf to none will run CNMF on the whole FOV
         % opt.stride = [];

@@ -2,13 +2,21 @@ function fig2gif(hfg, framecount, pthgif, ncol)
 
 arguments
     hfg
-    framecount
+    framecount = 1
     pthgif = '';
     ncol = 128
 end
 
+
+persistent pthtmp
+if framecount==1
+    pthtmp = [];
+end
+if isempty(pthtmp)
+    pthtmp = pthauto(suffix='.gif', usetime=1);
+end
 if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
+    pthgif = pthtmp;
 end
 
 frame = getframe(hfg);

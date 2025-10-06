@@ -1,22 +1,24 @@
 function odel(opt)
 
 arguments
+    opt.pthpar = []
+    opt.obin_ided = []
     opt.fig = 0
 end
+opt = glboropt(opt);
+pthpar = opt.pthpar;
+obin_ided = opt.obin_ided;
+fig = opt.fig;
 
-pthparent = glb('pthparent');
-
-
-
-if opt.fig
+if fig
 
     inf = "figure";
 
-    allvbin = {'gif', 'fig'};
+    allobin = {'gif', 'fig'};
 
     tmp2 = [];
-    for k = 1:numel(allvbin)
-        tmp = [pthparent '**' filesep '*.' allvbin{k}];
+    for k = 1:numel(allobin)
+        tmp = [pthpar '**' filesep '*.' allobin{k}];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end
@@ -35,28 +37,27 @@ else
     % delete all options files; run this to restart optid/varid numbering
 
     inf = "option";
-    pthscopa = glb('pthscopa');
-    user = glb('user');
-    if isempty(user)
-        error("you have not set glb('user')")
+    pthscopa = pthscopaget;
+    scopausername = userdatfile('scopausername');
+    if isempty(scopausername)
+        error("you have not set glb('scopausername')")
     end
-    ided_vbin = glb('ided_vbin');
-    if isempty(ided_vbin)
-        error("ided_vbin must be defined in glb")
+    if isempty(obin_ided)
+        error("obin_ided must be defined in glb or passed in as name-value argument")
     end
-    if isstring(ided_vbin)
-        ided_vbin = convertStringsToChars(ided_vbin);
+    if isstring(obin_ided)
+        obin_ided = convertStringsToChars(obin_ided);
     end
 
-    allvbin = [ided_vbin {'var', 'rg', 'mm'}];
+    allobin = [obin_ided {'var', 'rg', 'mm'}];
 
 
     tmp2 = [];
-    for k = 1:numel(allvbin)
-        tmp = [pthscopa 'opt_' allvbin{k} '_' user '_*_.txt'];
+    for k = 1:numel(allobin)
+        tmp = [pthscopa 'opt_' allobin{k} '_' scopausername '_*_.txt'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
-        tmp = [pthparent '**' filesep '*_' allvbin{k} '_.mat'];
+        tmp = [pthpar '**' filesep '*_' allobin{k} '_.mat'];
         tmp = rdir(tmp);
         tmp2 = vertcat(tmp2, tmp);
     end

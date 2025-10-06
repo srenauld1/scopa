@@ -92,7 +92,7 @@ for j = 1:numel(allposx)
         % allintxgood{count} = allintx{j}*ball_radius;
         % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{count} = tsdv('circular', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
+        allvelx{count} = tsdv('radians', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
         cumvelxtmp = cumsum(allvelx{count});
         cumvelx(count) = cumvelxtmp(end);
 
@@ -104,7 +104,7 @@ for j = 1:numel(allposx)
         cumvelxthreshtmp = cumsum(allvelxthresh{count});
         cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{count} = tsdv('circular', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
+        allvely{count} = tsdv('radians', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
         cumvelytmp = cumsum(allvely{count});
         cumvely(count) = cumvelytmp(end);
 
@@ -221,7 +221,7 @@ marginfg = 0.05;
 ax = axarr(layout, marginax=marginax, marginfg=marginfg);
 
 
-[dms,arat] = pxscreenget();
+[dms,arat] = screenpx();
 
 szftmp = figsz(szf);
 hfg = figure( 'Units', 'Pixels', 'Color', 'white', 'visible', gifvis, 'WindowStyle', 'normal');
@@ -230,7 +230,7 @@ hfg.Position = [0 0 szftmp];
 haxmain = axes( 'Position', [0, 0, 1, 1], 'XColor', 'none', 'YColor', 'none', 'XLim', [0, 1], 'YLim', [0, 1] ) ;
 htx = text( haxmain, 0.5, 0.99, '', 'FontSize', fontmedium, 'HorizontalAlignment', 'center', 'VerticalAlignment', 'top', 'FontWeight', 'bold' );
 
-sector_ind = 1;
+idxsect = 1;
 for axcount = 1:numax
 
     hax{axcount} = axes( 'Parent', hfg, 'Units', 'Normalized', 'PositionConstraint', 'InnerPosition');
@@ -239,18 +239,18 @@ for axcount = 1:numax
         subplot_pos_ind = 2;
         widthfac = 2;
         heightfac = 2;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_pos_ind);
-        hax{axcount}.InnerPosition(3) = ax(sector_ind).h(widthfac);
-        hax{axcount}.InnerPosition(4) = ax(sector_ind).h(heightfac);
+        hax{axcount}.InnerPosition(1) = ax(idxsect).colmaj.x(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(idxsect).colmaj.y(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(idxsect).h(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(idxsect).h(heightfac);
     else
         subplot_pos_ind = axcount+1;
         widthfac = 4;
         heightfac = 1;
-        hax{axcount}.InnerPosition(1) = ax(sector_ind).colmaj.x(subplot_pos_ind);
-        hax{axcount}.InnerPosition(2) = ax(sector_ind).colmaj.y(subplot_pos_ind);
-        hax{axcount}.InnerPosition(3) = ax(sector_ind).colmaj.w(widthfac);
-        hax{axcount}.InnerPosition(4) = ax(sector_ind).colmaj.h(heightfac);
+        hax{axcount}.InnerPosition(1) = ax(idxsect).colmaj.x(subplot_pos_ind);
+        hax{axcount}.InnerPosition(2) = ax(idxsect).colmaj.y(subplot_pos_ind);
+        hax{axcount}.InnerPosition(3) = ax(idxsect).colmaj.w(widthfac);
+        hax{axcount}.InnerPosition(4) = ax(idxsect).colmaj.h(heightfac);
     end
 
     hold(hax{axcount}, 'on')

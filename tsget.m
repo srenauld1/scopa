@@ -1,9 +1,12 @@
 function [datout, tsout] = tsget(its, tg, opt)
 
+% find variable(s)
+% takes input options, finds their optid(s) in their opt files, finds files with those optid, loads variables from those files, assembles them according to input options, tags variable set with its own id (varid) and writes that id to opt_var file
+
 %var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
 
 arguments (Input)
-    its
+    its %index of found variable combos; [] or 'all' for all; otherwise, scalar number
 end
 arguments (Repeating, Input)
     tg
@@ -11,8 +14,10 @@ end
 arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
-    opt.user = []
-    opt.pthparent = []
+    opt.scopausername = []
+    opt.usegit = []
+    opt.pthpar = []
+    opt.obin_ided = []
 end
 arguments (Output)
     datout
@@ -21,51 +26,56 @@ arguments (Repeating, Output)
     tsout
 end
 
+opt = glboropt(opt);
 dm = opt.dm;
-user = opt.user;
-pthparent = opt.pthparent;
+scopausername = opt.scopausername;
+usegit = opt.usegit;
+pthpar = opt.pthpar;
+obin_ided = opt.obin_ided;
 
 numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
 tsout = cell(1, numvarin);
 persistent dattmp
 persistent tsouttmp
 
-pthscopa = getpathscopa();
-pthvar = [pthscopa 'opt_var_' user '_*_.txt'];
+
+if isempty(dm)
+    dm = 'it';
+end
+if isempty(scopausername)
+    error("you must pass in scopausername or set glb('scopausername')")
+end
+if isempty(pthpar)
+    error("you must pass in pthpar or set glb('pthpar')")
+end
+if isempty(obin_ided)
+    error("obin_ided are not defined in glb, using default defined in tsget, but you should define them in glb")
+end
+if isstring(obin_ided)
+    obin_ided = convertStringsToChars(obin_ided);
+end
+
+pthscopa = pthscopaget();
+pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
 
-    dattmp = cell(numvarin,1);
-    tsouttmp = cell(numvarin,1);
-
-    if isempty(dm)
-        dm = 'it';
-    end
-    if isempty(user)
-        user = glb('user');
-        if isempty(user)
-            error("you must pass in user or set glb('user')")
-        end
-    end
-    if isempty(pthparent)
-        pthparent = glb('pthparent');
-        if isempty(pthparent)
-            error("you must pass in pthparent or set glb('pthparent')")
-        end
-    end
+    dattmp_hold = cell(numvarin,1); %use hold tmp variable, don't assign variable until end of this if clause 
+    tsouttmp_hold = cell(numvarin,1);  %use hold tmp variable, don't assign variable until end of this if clause 
 
     for m = 1:numvarin %loop over number of repeated tg inputs
         if ~isempty(tg{m})
-            [tsouttmp{m}, dattmp{m}] = tsget2(tg{m}, dm, pthparent, user, pthscopa);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
         end
     end
 
-    datflat = cellflat(dattmp);
+    datflat = cellflat(dattmp_hold);
+    datflat = [datflat{:}];
     cnt = 0;
     for k = 1:numel(datflat)
-        if ~isempty(datflat{k})
+        if ~isempty(datflat(k))
             cnt = cnt+1;
-            md = mdsild(datflat{k}.pth);
+            md = mdsild(datflat(k).pth);
             if cnt==1
                 vrtmp = md.volrate;
                 eptmp = glb('epochts');
@@ -76,6 +86,9 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a
             end
         end
     end
+
+    tsouttmp = tsouttmp_hold;
+    dattmp = dattmp_hold;
 
 end
 
@@ -118,19 +131,20 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
             cnt = 0;
             for m = 1:numel(tsouttmp) %loop over number vars in combo, previously was 1:size(iv,2)
                 if ~isempty(tsouttmp{m})
-                    tsout{m,k} = tsouttmp{m}{iv(k,m)};
+                    tsout{m,kcnt} = tsouttmp{m}{iv(k,m)};
                     cnt = cnt+1;
                     if cnt==1 %when writing datcombo, just omit empty (rather than writing an empty)
                         datcombo = dattmp{m}{iv(k,cnt)};
                     else
-                        datcombo(cnt) = dattmp{m}{iv(k,cnt)};
+                        newinds = cnt:cnt+numel(dattmp{m}{iv(k,cnt)})-1;
+                        datcombo(newinds) = dattmp{m}{iv(k,cnt)};
                     end
                 else
-                    tsout{m,k} = [];
+                    tsout{m,kcnt} = [];
                 end
             end
 
-            [~, varid] = structfile(pthvar, s=datcombo, useprefix=1);
+            [~, varid] = structfile(pthvar, s=datcombo, usegit=usegit, dupe=0, dosort=1);
             if size(iv,2)==1
                 pthc = datcombo.pth;
             else
@@ -141,11 +155,12 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
             if ~endsWith(pthc, filesep)
                 pthc = [pthc filesep];
             end
+            datout(kcnt).vdat = datcombo;
+            datout(kcnt).varid = varid;
+            datout(kcnt).pthc = pthc;
+            datout(kcnt).last = last;
         end
-        datout(kcnt).vdat = datcombo;
-        datout(kcnt).varid = varid;
-        datout(kcnt).pthc = pthc;
-        datout(kcnt).last = last;
+
     end
 
 else %if all empty
@@ -162,7 +177,7 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthparent, user, pthscopa)
+function [tsout, dat] = tsget2(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
 if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
     tg = tg.tg; %since the input to this function is also named tg
@@ -175,7 +190,7 @@ tsout = cell(numtg,1);
 dattmp = cell(numtg,1);
 group = cell(numtg,1);
 for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthparent, user, pthscopa);
+    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
 end
 
 
@@ -239,7 +254,7 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthparent, user, pthscopa)
+function [tsout, dat, group] = tsget3(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
 
 if isfield(tg, 'optid') && ~isempty(tg.optid)
@@ -325,15 +340,6 @@ else
     group2 = [];
 end
 
-
-ided_vbin = glb('ided_vbin');
-if isempty(ided_vbin)
-    error("ided_vbin are not defined in glb, using default defined in tsget, but you should define them in glb")
-end
-if isstring(ided_vbin)
-    ided_vbin = convertStringsToChars(ided_vbin);
-end
-
 if ~isscalar(tg)
     error("INPUT STRUCT TO tsget MUST BE SCALAR")
 end
@@ -346,45 +352,49 @@ end
 
 
 nonemptyinds = [];
-ided_vbin_in_tg = ided_vbin(isfield(tg, ided_vbin));
-for k = 1:numel(ided_vbin_in_tg)
-    if ~isempty(tg.(ided_vbin_in_tg{k}))
+obin_ided_in_tg = obin_ided(isfield(tg, obin_ided));
+for k = 1:numel(obin_ided_in_tg)
+    if ~isempty(tg.(obin_ided_in_tg{k}))
         nonemptyinds = [nonemptyinds k];
     end
 end
 
-if isscalar(ided_vbin_in_tg)
-    vbin = cell2mat(ided_vbin_in_tg(1));
-elseif numel(ided_vbin_in_tg)>1
+if isscalar(obin_ided_in_tg)
+    obin = cell2mat(obin_ided_in_tg(1));
+elseif numel(obin_ided_in_tg)>1
     if isscalar(nonemptyinds)
-        vbin = cell2mat(ided_vbin_in_tg(nonemptyinds));
+        obin = cell2mat(obin_ided_in_tg(nonemptyinds));
     else
-        error("vbin can be empty if there is only one; if there are multiple, they must all be empty except one")
+        error("obin can be empty if there is only one; if there are multiple, they must all be empty except one")
     end
-elseif isempty(ided_vbin_in_tg)
-    error("there are no vbin in tg")
+elseif isempty(obin_ided_in_tg)
+    error("there are no obin in tg")
 end
 
-if isequal(tg.(vbin), '*')
-    tg.(vbin) = []; %now that you've distinguished the vbin from other potentially empty vbin, you can set it to empty if it was star, since star is meant to be empty
+if isequal(tg.(obin), '*')
+    tg.(obin) = []; %now that you've distinguished the obin from other potentially empty obin, you can set it to empty if it was star, since star is meant to be empty
 end
 
 
 if isempty(cell2mat(optid))
-    tgopt.(vbin) = tg.(vbin);
-    if isempty(tgopt.(vbin))
+    tgopt.(obin) = tg.(obin);
+    if isempty(tgopt.(obin))
         tgopt = [];
     end
-    tgopt = odf(tgopt, vbin, fill=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
-    tgopt = oid(tgopt, getonly=1);
-    if ~isempty(tgopt.(vbin))
-        optid = transpose(fieldnames(tgopt.(vbin))); %make it row vector, although here i don't think it matters
+    try
+        tgopt = ofill(tgopt, obin, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
+    catch ME
+        error("you must have made an invalid options struct for tsget (tg) because ofill failed with this message: " + ME.message + newline);
+    end
+    tgopt = oid(tgopt, getonly=1, usegit=usegit);
+    if ~isempty(tgopt.(obin))
+        optid = transpose(fieldnames(tgopt.(obin))); %make it row vector, although here i don't think it matters
     else
         fprintf("no variable found" + newline)
     end
 else
-    if ~isempty(tg.(vbin))
-        error("vbin substruct and optid cannot both exist in tg")
+    if ~isempty(tg.(obin))
+        error("obin substruct and optid cannot both exist in tg")
     end
 end
 
@@ -392,8 +402,8 @@ end
 
 if isfield(tg, 'var')
     if isempty(cell2mat(varid))
-        pthvarpat = [pthscopa 'opt_var_' user '_*_.txt'];
-        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, useprefix=1);
+        pthvarpat = [pthscopa 'opt_var_' scopausername '_.txt'];
+        [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=usegit, dupe=0, dosort=1);
     else
         error("var substruct and varid cannot both exist in tg")
     end
@@ -409,8 +419,8 @@ for w = 1:numel(varid)
     varid_tmp = varid{w};
     for k = 1:numel(optid)
         optid_tmp = optid{k};
-        fnpat = ['*' varid_tmp optid_tmp '_' vbin '_.mat'];
-        pthpat = fullfile(pthparent, '**', fnpat);
+        fnpat = ['*' varid_tmp optid_tmp '_' obin '_.mat'];
+        pthpat = fullfile(pthpar, '**', fnpat);
         pthtmpall = rdir(pthpat);
         pthtmp = cell(numel(pthtmpall),1);
         for m = 1:numel(pthtmpall)
@@ -422,29 +432,31 @@ for w = 1:numel(varid)
         end
         pthtmp = pthtmp(~cellfun(@isempty, pthtmp));
         if isempty(cell2mat(pthtmp))
-            fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + vbin + "'; you may have created it and then deleted it; skipping this optid" + newline)
+            fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + obin + "'; you may have created it and then deleted it; skipping this optid" + newline)
         else
             if numel(pthtmp)>1
-                error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (cmrg, dcdn, etc); need to make this fixible; for now just rename one" + newline)
+                error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one" + newline)
             end
             pth = pthtmp{1}; %there should only be one here
-            fprintf("loading data file for domain '" + vbin + "', optid '" + optid_tmp + "'" + newline)
+            fprintf("loading data file for domain '" + obin + "', optid '" + optid_tmp + "'" + newline)
             saved_struct = load(pth);
-            if isfield(saved_struct, vbin)
-                saved_struct = saved_struct.(vbin);
-                fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with vbin" + newline)
+            if isfield(saved_struct, obin)
+                saved_struct = saved_struct.(obin);
+                fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with obin" + newline)
             end
             if isempty(cell2mat(vnm))
                 vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty
             end
 
             for f = vnm
-                saved_var = saved_struct.(f{1});
-                if isempty(saved_var)
-                    error("you are trying to load an empty variable; if this is domain 'roi', you may intend to do pixelwise analysis; need to write this option here (load, or point to, a spacetime reshaped stack)")
+                try
+                    saved_var = saved_struct.(f{1});
+                catch
+                    saved_var = saved_struct.dat.(f{1});
                 end
-                itmp.ii = ii;
-                itmp.it = it;
+                if isempty(saved_var)
+                    error("you are trying to load an empty variable; if this is domain 'roi', you may intend these to be pixel rois, which are not created separately from the stack; need to write this option here, where if domain is roi, we load or point to a spacetime reshaped stack")
+                end
 
                 if iscell(saved_var)
                     if isempty(ic)
@@ -452,13 +464,13 @@ for w = 1:numel(varid)
                     end
                     for q = 1:numel(ic)
                         cnt = cnt+1;
-                        tsout{cnt} = vind(saved_var{ic(q)}, dm, itmp);
+                        tsout{cnt} = stackind(saved_var{ic(q)}, dm=dm, ii=ii, it=it);
                         dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     end
                 else
                     if isempty(ic)
                         cnt = cnt+1;
-                        tsout{cnt} = vind(saved_var, dm, itmp);
+                        tsout{cnt} = stackind(saved_var, dm=dm, ii=ii, it=it);
                         dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     else
                         error("ic is not valid for indexing anything but cell array right now")
@@ -546,7 +558,7 @@ tsget recovers timeseries from saved files, using the options used to create the
         optused is a struct containing a subset of the options used to create timeseries, or just the optid assigned to an options set
         since all unique options sets have an optid, optused.optid is sufficient to recover timeseries 
         optused.optid is a char array, which can contain asterisk as wildcard
-        for more control, or if you don't know the optid, pass individual options in optused (in this case you cannot pass optid)
+        for more control, or if you don't know the optid, pass in individual options in optused (in this case you cannot pass in optid)
         optused must be valid given the domain argument
         if any optused are cell arrays, they are expanded and all results are found 
         empty returns all for the given domain

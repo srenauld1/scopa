@@ -39,7 +39,7 @@ if contains(rootDir, 'scopa')
         scopabranch_original = strsplit(scopabranch_original, '/');
         scopabranch_original = strtrim(scopabranch_original{end});
         if ~strcmp(o2_user, 'caw846') && any(strcmp(scopabranch, {scopabranch_original, 'main', 'origin', 'origin/main', 'master', 'origin/master'})) %the original branch name, and other possibilities that are pointless but just in case
-            error(sprintf("scopa branch should be your own, not '" + scopabranch_original + "'"))
+            error("scopa branch should be your own, not '" + scopabranch_original + "'")
         end
         pthpre = [scopapath filesep 'pre' filesep 'bash' filesep];
         pthfile = [pthpre 'pl.sh'];
@@ -69,10 +69,10 @@ if contains(rootDir, 'scopa')
                 [statusout, strout] = system(str)
             end
         else
-            error(sprintf("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: \n" + ...
-                "    '/n/files/Neurobio/wilsonlab/' \n" + ...
-                "    '/n/scratch/users', \n" + ...
-                "set inp.dataroot to contain one of the above directories as prefix \n"))
+            error("to run flyg1-scopa on O2 from local machine, data must in one of the following directories: " + newline + ...
+                "    '/n/files/Neurobio/wilsonlab/'" + newline + ...
+                "    '/n/scratch/users'" + newline +  ...
+                "set inp.dataroot to contain one of the above directories as prefix" + newline)
         end
     end
 

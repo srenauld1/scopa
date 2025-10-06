@@ -57,7 +57,7 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
 
     print("\n\n\nENTERING FUNCTION stitchdn")
 
-    pth_tif_write = pth_tif_read[:-4] + 'dcdn_.tif' #forcing this suffix since stitch is specificaly for denoising (rather than letting it have use_denoised determine)
+    pth_tif_write = pth_tif_read[:-4] + 'd_.tif' #forcing this suffix since stitch is specificaly for denoising (rather than letting it have use_denoised determine)
     
     if os.path.isfile(pth_tif_write):
         print("\n\n\nWARNING, STITCHED DENOISED STACK ALREADY EXISTS - OVERWRITING IT NOW")
@@ -92,12 +92,12 @@ def stitchdn(pth_denoising, fn_prefix, pth_tif_read, md, denoise_volume, epoch_c
     elif chn1_infix_exists and not chn2_infix_exists:
         chanrm = 2
         chan_str_insert = '_chn1'
-        print("\n\n\nSTITCHING CHANNEL 1 BECAUSE chn1 infix exists in the denoising folder but not chn2 infix; you must have denoised only channel 1 of a 2-channel stack (raw or registered)")
+        print("\n\n\nSTITCHING CHANNEL 1 BECAUSE chn1 infix exists in the denoising folder but not chn2 infix; you must have denoised only channel 1 of a 2-channel stack (original or registered)")
         stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
     elif not chn1_infix_exists and chn2_infix_exists:
         chanrm = 1
         chan_str_insert = '_chn2'
-        print("\n\n\nSTITCHING CHANNEL 2 BECAUSE chn2 infix exists in the denoising folder but not chn1 infix; you must have denoised only channel 2 of a 2-channel stack (raw or registered)")
+        print("\n\n\nSTITCHING CHANNEL 2 BECAUSE chn2 infix exists in the denoising folder but not chn1 infix; you must have denoised only channel 2 of a 2-channel stack (original or registered)")
         stack_allchan = stitchdn_onechan(pth_denoising, fn_prefix, pth_tif_read, dims_pre_denoise, denoise_volume, epoch_choose_denoise, chan_str_insert)
     elif not chn1_infix_exists and not chn2_infix_exists:
         print("\n\n\nSTITCHING A SINGLE CHANNEL BECAUSE THERE ARE NO DENOISING FOLDERS WITH CHANNEL INFIXES (chn1 or chn2); EITHER THE RECORDING HAS ONLY ONE CHANNEL, OR YOU DISCARDED A CHANNEL IN THE STACK YOU DENOISED (FOR EXAMPLE, THE REGISTERED STACK)")

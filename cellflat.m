@@ -1,4 +1,5 @@
-function out = cellflat(celllist,level)
+function [out, level] = cellflat(celllist,level,opt)
+
 % Flatten nested cell arrays. 
 % 
 % out = CELLFLAT(celllist) searches every cell element in cellist and put them on
@@ -35,16 +36,32 @@ function out = cellflat(celllist,level)
 % Date: 4/15/2015
 % Copyright 2015, Yung-Yeh Chang, Ph.D.
 % See Also: cell
+
+arguments
+    celllist
+    level = []
+    opt.str = 0 %1 to allow string arrays also
+end
+str = opt.str;
+
 %% Error checking
-validateattributes(celllist,{'cell'},{},mfilename,'',1);
-if nargin < 2
+
+if str
+    validateattributes(celllist,{'cell', 'string'},{},mfilename,'',1);
+else
+    validateattributes(celllist,{'cell'},{},mfilename,'',1);
+end
+if isempty(level)
     level = -1; % Defalut, all levels, deepest possible
-elseif nargin == 2
+else
     validateattributes(level,{'double'},{'scalar','>=',-1,'integer'},mfilename,'',2);
 end
+
 %% Output
+
 countlevel(level); % Set counter
 out = m_cellflat(celllist,level); % Flatten cell
+
 function out = m_cellflat(celllist,level)
 % Recursive function that flattens cell up to 'level' levels.
 %  [out] = M_CELLFALT(celllist,level) runs recursively to seach and promote

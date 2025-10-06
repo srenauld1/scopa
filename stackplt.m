@@ -26,12 +26,14 @@ arguments
     opt.ic = []; %pmt indices (red or green channel
     opt.ik = []; %rgb color channel indices
     opt.doui = 0;
-    opt.stackjust = 'center' %how to justify stack image; center, minimize, none
-    opt.marginfg = 0.05;
-    opt.marginax = 0.01;
+    opt.dool = 0;
+    opt.stackjust = 'mid' %how to justify stack image; center, minimize, none
+    opt.marginfg = 0.05; %margins for figure (not each axis), see axarr for docs 
+    opt.marginax = 0.01; %margins for axis (not each axis), see axarr for docs 
     opt.fontsz = 10;
     opt.dosave = 1 %whether to write to gif
 end
+opt = glboropt(opt);
 pthgif = opt.pthgif;
 gifvis = opt.gifvis;
 roipx = opt.roipx;
@@ -54,31 +56,29 @@ it = opt.it;
 ic = opt.ic;
 ik = opt.ik;
 doui = opt.doui;
+dool = opt.dool;
 stackjust = opt.stackjust;
 marginfg = opt.marginfg;
 marginax = opt.marginax;
 fontsz = opt.fontsz;
 dosave = opt.dosave;
 
-clear roiolmake %to clear the persistent variable within
-
 if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1);
 end
-
-if ~exist('dmstackdf', 'var') || isempty(dmstackdf)
-    dmstackdf = glb('dmstackdf');
-    if isempty(dmstackdf)
-        fprintf("using dmstackdf yxztck" + newline)
-        dmstackdf = 'yxztck';
-    end
+if isempty(dmplt)
+    dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
+end
+if isempty(dmstack)
+    dmstack = 'yxztck';
 end
 
-
-dimlabels = vec(num2cell(dmstackdf));
-maxnumdims = numel(dmstackdf);
+dmstackmax = 'yxztck'; %all dimensions allowed in stack; order is irrelevant
+maxnumdims = numel(dmstackmax);
+dimlabelsmax = vec(num2cell(dmstackmax));
+dimlabels = vec(num2cell(dmstack));
 max_num_inds_to_print = 10;
-max_num_im_per_frame = 60;
+max_num_im_per_frame = 64;
 max_num_gif_frames = 2000;
 
 if iscell(stack) && isscalar(stack)
@@ -94,50 +94,47 @@ end
 if strcmp(cmap, 'rgb') && size(stack, ndims(stack))~=3
     error("last dimension must be length 3 if cmap argument is 'rgb'")
 end
-if ~isempty(dmstack) && ( ~ischar(dmstack) || ~isequal(numel(erase(dmstack, {'(', ')'})), numel(unique(erase(dmstack, {'(', ')'})))) || any(~ismember(unique(dmstack), [dmstackdf '()'])) )
-    error("dmstack must a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
+if ~isempty(dmstack) && ( ~ischar(dmstack) || ~isequal(numel(erase(dmstack, {'(', ')'})), numel(unique(erase(dmstack, {'(', ')'})))) || any(~ismember(unique(dmstack), [dmstackmax '()'])) )
+    error("dmstack must a char vector, without repeats, and can only contain the following characters: " + [dmstackmax '()'])
 end
-if ~isempty(dmplt) && ( ~ischar(dmplt) || ~isequal(numel(erase(dmplt, {'(', ')'})), numel(unique(erase(dmplt, {'(', ')'})))) || any(~ismember(unique(dmplt), [dmstackdf '()'])) )
-    error("dmstack must be a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
+if ~isempty(dmplt) && ( ~ischar(dmplt) || ~isequal(numel(erase(dmplt, {'(', ')'})), numel(unique(erase(dmplt, {'(', ')'})))) || any(~ismember(unique(dmplt), [dmstackmax '()'])) )
+    error("dmplt must be a char vector, without repeats, and can only contain the following characters: " + [dmstackmax '()'])
 end
 if iscell(stack) && ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
     error("all stacks (each cell element) must be the same size")
 end
 
 
-%% put stack into default order and apply any input indexing
-
-stack = stackperm(stack, dmstack, dmstackdf);
+%% apply any input indexing
 
 if iscell(stack)
     stack_oneframe = stack{1}(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
-    szdfo = size(stack{1});
+    szdfo = size(stack{1}, 1:numel(dmstackmax));
 else
     stack_oneframe = stack(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
-    szdfo = size(stack);
+    szdfo = size(stack, 1:numel(dmstackmax));
 end
 
-inds.iy = iy;
-inds.ix = ix;
-inds.iz = iz;
-inds.it = it;
-inds.ic = ic;
-inds.ik = ik;
-[stack, index_labels_opt] = vind(stack, dmstackdf, inds); %stack hasd been put into order dmstackdf by stackperm above, so this 
-
+if all(cellfun(@isempty, index_labels))
+    [stack, index_labels_opt] = stackind(stack, dm=dmstack, iy=iy, ix=ix, iz=iz, it=it, ic=ic, ik=ik);
+else
+    index_labels_opt = [];
+    if ~isempty(ix) || ~isempty(iy) || ~isempty(iz) || ~isempty(it) || ~isempty(ic) || ~isempty(ik)
+        error("you cannot pass in index labels, and also pass in any of ix, iy, iz, it, ic, ik")
+    end
+end
 
 %% dmplt (put stack into user-input plot order)
 
-
-if isempty(dmplt)
-    dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
-end
 dmfrtmp = cell2mat(regexp(dmplt, '(\([a-z]*\))', 'match'));
 if isempty(dmfrtmp)
     dm_acrossframes = []; %this is not used in this case, if dmfrtmp is empty, it's just here for clarity
     dm_eachframe = dmplt;
     dmplt_all = dm_eachframe;
 else
+    if ~endsWith(dmplt, dmfrtmp)
+        error("dmplt must end with averaged dimensions (dimensions in parentheses)")
+    end
     dm_acrossframes = erase(dmfrtmp, {'(', ')'});
     dm_eachframe = erase(dmplt, dmfrtmp);
     dmplt_all = [dm_eachframe dm_acrossframes];
@@ -147,10 +144,10 @@ numdim_eachframe = numel(dm_eachframe);
 
 dimorder_notaveraged = zeros(1, numel(dmplt_all));
 for k = 1:numel(dmplt_all)
-    dimorder_notaveraged(k) = strfind(dmstackdf, dmplt_all(k));
+    dimorder_notaveraged(k) = strfind(dmstack, dmplt_all(k));
 end
-dimorder = [dimorder_notaveraged setxor(dimorder_notaveraged, 1:numel(dmstackdf))];
-dimorder_averaged = setxor(1:numel(dimorder_notaveraged), 1:numel(dmstackdf));
+dimorder = [dimorder_notaveraged setdiff(1:numel(dmstack), dimorder_notaveraged)];
+dimorder_averaged = setdiff(1:numel(dmstack), 1:numel(dimorder_notaveraged));
 
 if iscell(stack)
     for k = 1:numel(stack)
@@ -176,7 +173,7 @@ else
     end
 end
 
-if isequal(dm_eachframe(1), 'x') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in initaxim
+if isequal(dm_eachframe(1), 'x')% || isequal(dm_eachframe(1), 'z') %if the first in-frame dimension is x, use normal axis y direction, otherwise use reverse, which is default in axim
     ydir = 'normal';
 else
     ydir = 'reverse';
@@ -251,7 +248,6 @@ end
 %% roipx (roi pixel indices)
 
 if isempty(roipx)
-    dool = 0;
     roi_loop_size = 1;
     if isempty(ir)
         roi_message = ', roi: NaN';
@@ -269,7 +265,7 @@ else
         end
     end
     if ~isempty([ix iy iz])
-        error("cannot pass ix, iy, or it with roipx since stackplt assumes roipx refers to indices into the entire xyz")
+        error("cannot pass in ix, iy, or it with roipx since stackplt assumes roipx refers to indices into the entire xyz")
     end
     if ~iscell(roipx)
         if isvector(roipx)
@@ -310,42 +306,38 @@ numim_per_frame = size(stack,3); %after reshaping, size of 3rd dim is number of 
 numframes = size(stack,4); %after reshaping, size of 4th dim is number gif frames
 
 if numim_per_frame>max_num_gif_frames
-    error(sprintf("you are attempting to plot " + num2str(numframes) + " gif frames, which exceeds the (optional) default max of " + num2str(max_num_gif_frames)))
+    error("you are attempting to plot " + num2str(numframes) + " gif frames, which exceeds the (optional) default max of " + num2str(max_num_gif_frames))
 end
 if numim_per_frame>max_num_im_per_frame
-    error(sprintf("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the (optional) default max of " + num2str(max_num_im_per_frame)))
+    error("you are attempting to plot " + num2str(numim_per_frame) + " images per frame, which exceeds the (optional) default max of " + num2str(max_num_im_per_frame))
 end
 
 
 %% prep titles
 
-if ~isempty(intersect(find(~cellfun(@isempty, index_labels)), find(~cellfun(@isempty, index_labels_opt)))) % any(~cellfun(@isempty, index_labels_opt))
-    error("for at least one stack dimension you defined index_labels and passed a stack index name-value argument (iy,ix,iz,it,ic, or ik); if you pass an index name-value argument, do not pass index_labels for that same dimension")
-else
-    index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
-    missing_dims = numel(index_labels_default)+1:numel(index_labels_opt);
-    index_labels_default(missing_dims) = {nan};
-    nmitmp = ~cellfun(@isempty, index_labels);
-    index_labels_opt(nmitmp) = index_labels(nmitmp); %for each dimension, if opt is empty, assign index_label input (opt will always be length 6)
-    nmitmp = cellfun(@isempty, index_labels_opt);
-    index_labels_opt(nmitmp) = index_labels_default(nmitmp); %for each dimension, assign default if there is no index_label input and no *inds input  (ie if still empty after above)
+
+if ~isempty(index_labels_opt)
     index_labels = index_labels_opt;
 end
-dimlabels = dimlabels(dimorder);
-index_labels = index_labels(dimorder);
+index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
+missing_dims = numel(index_labels_opt)+1:numel(index_labels_default);
+index_labels(missing_dims) = {nan};
+dimlabelsmax(missing_dims)
+
+dimlabels = [dimlabels(dimorder); dimlabelsmax(missing_dims)];
+index_labels = index_labels([dimorder missing_dims]);
 
 
 index_labels_avg = cell(numel(index_labels), 1);
 for k = 1:numel(dimorder_averaged_nontrivial) %averaged dimensions
     il = dimorder_averaged_nontrivial(k);
-    [~, index_labels_avg{il}] = indsmake(index_labels{il}, indsall=index_labels{il}, label_prefix=dimlabels{il}, printmax=max_num_inds_to_print);
+    index_labels_avg{il} = num2lab(index_labels{il}, prefix=[dimlabels{il} ': '], maxn=max_num_inds_to_print);
 end
 
-index_labels_tmp = index_labels(1:numdim_eachframe); %labels that are the same on every frame
-for k = 1:numel(index_labels_tmp)
-    [~, index_labels_tmp{k}] = indsmake(index_labels_tmp{k}, indsall=index_labels_tmp{k}, label_prefix=dimlabels{k}, printmax=max_num_inds_to_print);
+index_labels_framestable = index_labels(1:numdim_eachframe); %labels that are the same on every frame
+for k = 1:numel(index_labels_framestable)
+    index_labels_framestable{k} = num2lab(index_labels{k}, prefix=[dimlabels{k} ': '], maxn=max_num_inds_to_print);
 end
-lab_framestable = index_labels_tmp;
 
 dims_after_permute_changing_across_frames = numdim_eachframe+1:maxnumdims;
 lab_framechange = index_labels(dims_after_permute_changing_across_frames); %labels that can change on each frame
@@ -375,9 +367,9 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         labtmp = cellfun(@(x,y) x(y), lab_framechange, num2cell(subtmp(:)), 'UniformOutput', false); %frame changing part of label
         labtmp = cellfun(@num2str, labtmp, 'UniformOutput', false);
         labtmp = cellfun(@horzcat, dimlabels(dims_after_permute_changing_across_frames), repelem({': '}, size(labtmp,1), 1), labtmp, 'UniformOutput', false); %frame changing part of label
-        titleinfix = cat(1, lab_framestable(:), labtmp(:));
+        titleinfix = cat(1, index_labels_framestable(:), labtmp(:));
         titleinfix(dimorder_averaged_nontrivial) = index_labels_avg(dimorder_averaged_nontrivial); %update index labels for any dimensions that are changing across frames and that have been non-trivially averaged (so that they are stable showing the averaged indices on every gif frame)
-        titleinfix(dimorder_averaged_nontrivial) = insertAfter(titleinfix(dimorder_averaged_nontrivial), ':', '(avg)');
+        titleinfix(dimorder_averaged_nontrivial) = strcat(titleinfix(dimorder_averaged_nontrivial), ' (avg)');
         titleinfix = strjoin(titleinfix, ', ');
         titleinfix = [titleinfix, roinum_title, dr_str];
         if isempty(title_suffix)
@@ -397,8 +389,8 @@ end
 %% init subplots
 
 ax = axarr(stack, marginax=marginax, marginfg=marginfg, stackjust=stackjust);
-h = initfig(fontsz=fontsz, szf=szf);
-h.st = initaxim(h.hfg, ax, stack, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
+h = fg(fontsz=fontsz, szf=szf);
+h = axim(stack, h=h, ax=ax, dool=dool, doui=doui, cmap=cmap, ydir=ydir);
 
 %% plot
 
@@ -406,7 +398,7 @@ cnt = 0;
 for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
     if ~isempty(roipx)
 
-        [imroi, imalpha] = roiolmake(stack_oneframe, roipx{ir(ri)}, col=roicols(ri,:), alp=roialpha); %make an overlay for one roi
+        [imroi, imalpha] = roiolmake(imgray=stack_oneframe, roipx=roipx{ir(ri)}, rgb=roicols(ri,:), a=roialpha); %make an overlay for one roi
 
         sz_framedims_ol = sz_framedims(1:ndims(stack_oneframe));
         dimorder_ol = [dimorder(1:ndims(stack_oneframe)) ndims(stack_oneframe)+1];
@@ -429,30 +421,28 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         for j = 1:numim_per_frame %size of 3rd dim is number of figures (for each input stack) in a single frame (will be singleton if numdim_eachframe==2)
 
             if k==1
-                h.st.hax{j}.CLim = clim_tmp;
+                h.im.ax{j}.CLim = clim_tmp;
             end
 
-            h.st.hpl{j}.CData = stack(:,:,j,k);
+            h.im.pl{j}.CData = stack(:,:,j,k);
             
             if ~isempty(roipx) %if there are roi variables
                 frameol = mod(k-1, szolz)+1;
-                h.st.hol{j}.CData = squeeze(imroi(:,:,j,frameol,:)); %squeeze to make it 3d (2d plus color channel)
-                h.st.hol{j}.AlphaData = imalpha(:,:,j,frameol);
+                h.im.ol{j}.CData = squeeze(imroi(:,:,j,frameol,:)); %squeeze to make it 3d (2d plus color channel)
+                h.im.ol{j}.AlphaData = imalpha(:,:,j,frameol);
             end
 
         end
 
-        h.httl.String = titlenew{cnt};
+        h.ttl.String = titlenew{cnt};
 
         if dosave
-            fig2gif(h.hfg, cnt, pthgif, numcolorsgif) %save each frame to gif
+            fig2gif(h.fg, cnt, pthgif, numcolorsgif) %save each frame to gif
         end
 
     end
 
 end
-
-clear roiolmake %to clear the persistent variable within
 
 
 end

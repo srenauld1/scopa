@@ -18,7 +18,10 @@ arguments
     opt.szf = 1
     opt.pthgif = []
     opt.dogif = 1
+    opt.iso = 0;
+    opt.widyxz = [];
 end
+opt = glboropt(opt);
 t = opt.t;
 epochts = opt.epochts;
 pthstack = opt.pthstack;
@@ -35,25 +38,25 @@ svtype = opt.svtype;
 szf = opt.szf;
 pthgif = opt.pthgif;
 dogif = opt.dogif;
+iso = opt.iso;
+widyxz = opt.widyxz;
 
 maxnumframes = 500;
 
+if iso && isempty(widyxz)
+    error("must pass in widyxz if iso is true")
+end
 
 if isempty(pthstack)
-    pthstack = glb('pthstack');
+    error("you must set name-value argument pthstack or glb('pthstack')")
 end
 if isempty(t)
-    t = glb('t');
-    if isempty(t)
-        error("must pass in t or set glb('t')")
-    end
+    error("you must set name-value argument t or glb('t')")
 end
 if isempty(epochts)
-    epochts = glb('epochts');
-    if isempty(epochts)
-        error("must pass in epochts or set glb('epochts')")
-    end
+    error("you must set name-value argument epochts or glb('epochts')")
 end
+
 
 if ~isempty(svtype) && isempty(pthgif)
     error("")
@@ -71,17 +74,19 @@ if ~isempty(it)
     if ~isempty(its)
         error("its and it cannot both be nonempty")
     end
-    its = t2samp(t, it);
+    its = t2i(it, t);
+    if isempty(its)
+        error("none of your requested t indices exist")
+    end
 end
-
 
 if isempty(its)
     its = 1:size(stack,4);
 end
-its = indsmake(its, indsall=size(stack,4));
+its = vecsub(its, superset=1:size(stack,4));
 if numel(its)>maxnumframes
     its = its(1:maxnumframes);
-    fprintf("you have requested a volume with more than 500 frames, just plotting the first 200 frames of the set; if you want you can change maxnumframes (hard coded in stack3)")
+    fprintf("you have requested more than 500 frames, just plotting the first 200 frames of the set; you can change it, its, or maxnumframes" + newline)
 end
 
 if isempty(cmap)
@@ -113,6 +118,9 @@ if ~isequal(its, 1:size(stack,4))
     stack = stack(:,:,:,its);
 end
 
+if iso
+    [stack, upfac] = stackiso(stack, widyxz);
+end
 
 sz = size(stack);
 
@@ -189,6 +197,18 @@ vsh(1).GradientOpacityValue = 0.9;
 vsh(1).Colormap = cmap;
 vsh(1).Alphamap = 1;
 
+pause(0.3)
+if size(stack,5)>1
+    %or don't use vsh(2) and instead use vsh(1).OverlayData = stack(:,:,:,:,2):
+    vsh(2) = volshow(stack(:,:,:,1,2), Parent=vwr);
+    vsh(2).RenderingStyle=style;
+    vsh(2).OverlayRenderingStyle="GradientOverlay";
+    vsh(1).GradientOpacityValue=0.1;
+    vsh(1).Colormap=cmap;
+    vsh(2).Alphamap=0.1;
+end
+
+
 % vwr.CropRegion = [5 5 5; 20 20 20];
 
 switch recid
@@ -201,16 +221,9 @@ switch recid
     case {'20250316_1_1'}
         vwr.CameraPosition = [60.9303   93.0271   10.0094]; %20250209, 20250221_1_2
         vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167   -8.7669]; %20250221_1_2
-end
-
-if size(stack,5)>1
-    %or don't use vsh(2) and instead use vsh(1).OverlayData = stack(:,:,:,:,2):
-    vsh(2) = volshow(stack(:,:,:,1,2), Parent=vwr);
-    vsh(2).RenderingStyle=style;
-    vsh(2).OverlayRenderingStyle="GradientOverlay";
-    vsh(1).GradientOpacityValue=0.1;
-    vsh(1).Colormap=cmap;
-    vsh(2).Alphamap=0.1;
+    case {'20240729_1_1'}
+        vwr.CameraPosition = [137.0422   68.1293   81.2709]; 
+        % vwr.ClippingPlanes = [-0.0034    0.9999   -0.0167   -8.7669]; %20250221_1_2
 end
 
 
@@ -249,12 +262,14 @@ for k = 1:size(stack,4)
         end
     end
 
+
+        
     if dogif
         fig2gif(hfg, k, pthgif)
     end
 
 end
 
-close(vwr.Parent)
+% close(vwr.Parent)
 
 end

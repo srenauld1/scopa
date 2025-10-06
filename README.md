@@ -44,6 +44,30 @@ the environment is called deepcad, and the deepcad repository (where changes you
      /n/data1/hms/neurobio/wilson/miniforge3/envs/deepcad/lib/python3.9/site-packages/deepcad
 
 
+############################## RUNNING pl.sh ######################################
+
+# see pl.py and README.md for more details 
+
+# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2  #
+
+# pl.sh runs the entire preprocessing pipeline by specifying params for pl.py
+# run as ./pl.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
+# CURRENTLY YOU CANNOT SUBMIT JOBS WITH PL WHILE ANOTHER SET OF JOBS SUBMITTED BY PL IS RUNNING 
+# pl.py is called from sbatch file pl.sbatch, which is itself called below,
+# pl.sbatch is called in different way, depending on user input
+# pl.sbatch can run multiple times in parallel if jobind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
+# each sbatch file below is called in a 3-iteration for loop, the first iteration (when do_copyfiles=1) copies files required for whatever job is running from storage server to scratch on O2, the second (when do_copyfiles=0) operates on them, the third (when do_copyfiles=2) copies new files back to the storage server  
+# using do_copyfiles requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
+
+# pl.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
+
+# note bash variables below are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
+# bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
+
+# emails sent to user for all tasks, all job states, to avoid clutter, you can configure your email to store all slurm emails in a slurm folder 
+
+# variables with names in all capital letters are passed into pipeline_init, where they overwrite default values of their lowercase counterparts in default_params_batch.py
+
 
 ############################## GENERAL ######################################
 
@@ -100,7 +124,7 @@ do_copyfiles occurs inside pl.py for two reasons:
 
 ############################## INPUT ######################################
 
-input to whole pipeline (ie input to register.py) is raw tif output by scan image, saved with flyg formatting, or scopa formatting
+input to whole pipeline (ie input to register.py) is original tif output by scan image, saved with flyg formatting, or scopa formatting
 
 this is flyg formatting
         20230627-3_D05_syt7f_018_syt7f_194418_trial_001_00001.tif
@@ -125,10 +149,10 @@ and for example, the following is valid input file on O2 (if you're not using do
 ############################## INTERACTIVE VS BATCH MODE ######################################
 
 for running the pipeline in interactive mode . . . 
-        entry point is pl.py for 'pre' pipeline (input raw imaging tif)
+        entry point is pl.py for 'pre' pipeline (input original imaging tif)
                 you can run on your local machine (e.g. in vscode), or on O2Portal (e.g., in vscode)
                 adjust input params in file oset.py
-        entry point is a2p.m for 'post' pipeline (input raw imaging tif, or output files from 'pre')
+        entry point is a2p.m for 'post' pipeline (input original imaging tif, or output files from 'pre')
                 you can run on your local machine (in matlab), or on O2Portal (in matlab)
         if you install 3rd-party libraries (like caiman or deepcad) as conda environments, rather than dev mode 
                 install, you can still step through the code during debugging in vscode if you add this line to file 
@@ -150,7 +174,7 @@ for running the pipeline in batch (non-interactive) mode . . .
         pl.sh and has a simple layout that can be extended/adpated 
         call it by typing pl.sh in the O2 command line 
 
-also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined rgname (or they're all 'fullfov') then it will run through all found files, whether in interactive mode or batch mode
+also note the term "interactive mode" can be misleading, because you can still run a batch, automated, for example if you use wildcards in your file specifiers, and you've already defined rgname (or they're all 'none') then it will run through all found files, whether in interactive mode or batch mode
 
 
 ############################## INTERACTIVE ON O2 ######################################
@@ -165,10 +189,8 @@ launch.json can be found in the vscode file explorer, in scopa/vscode; it is a h
 for caiman registration or source extraction:
         
         Additional modules to be preloaded:
-                python/3.10.11
-
-        leave Slurm Custom Arguments blank
-
+                gcc/14.2.0 python/3.13.1
+                
         Custom Environment (drag text area to enlarge):
                 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
                 conda activate caiman
@@ -177,11 +199,9 @@ for caiman registration or source extraction:
 for deepcad denoising; if you want to step into deepcad code during VSCode debugging, make "justMyCode": false in launch.json; in VS code be sure to select set interpreter at workspace level, and choose deepcad (if you're using the shared wilson environment, which is named deepcad):
 
         Additional modules to be preloaded:
-                gcc/9.2.0 python/3.9.14 cuda/11.7
+                gcc/14.2.0 python/3.13.1 cuda/12.8
 
-        leave Slurm Custom Arguments blank
-
-        Custom Environment (drag text area to enlarge):
+        Slurm Custom Arguments:
                 eval "$(/n/data1/hms/neurobio/wilson/miniforge3/bin/conda shell.bash hook)"
                 conda activate deepcad
 
@@ -201,7 +221,7 @@ there are two main sub-pipelines:
 
 'pre': 
 
-in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS code on O2 portal), or pl.sh in batch mode (run ./pl.sh on O2 command line . . . pl.sh calls pl.py), 'pre' preprocesses imaging data, takes raw imaging data as only input, has the following modules:
+in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS code on O2 portal), or pl.sh in batch mode (run ./pl.sh on O2 command line . . . pl.sh calls pl.py), 'pre' preprocesses imaging data, takes original imaging data as only input, has the following modules:
                 --registration (caiman Normcorre), with line-by-line background subtraction and temporal 
                         smoothing submodules to deal with noisy recordings, prior to registration 
                 --denoising (deepcadrt), with "best model" selection
@@ -209,8 +229,8 @@ in folder pre, mostly python, entrypoint is pl.py in interactive mode (run VS co
                 --source extraction (caiman cnmf)
 'post': 
 
-in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data and/or on output of 'pre', and also optional stimulus and behavior data, has the following modules:
-                --plotting output from 'pre' pipeline as gif (compare raw, registered, denoised in one figure)
+in folder post, mostly matlab, entrypoint is a2p.m, operates on original imaging data and/or on output of 'pre', and also optional stimulus and behavior data, has the following modules:
+                --plotting output from 'pre' pipeline as gif (compare original, registered, denoised in one figure)
                 --basic statistical metrics for output from 'pre' pipeline 
                 --morphological roi extraction (manual drawing or automated, or an interaction)
                 --caiman functioal roi loading and selection, and optional clustering according to morphological rois 
@@ -240,7 +260,7 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on raw imaging data
 --input to register (and, thus, whole pipeline) are the tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
 --input filename must be the following format:
 
- metadata is read from these raw tif files in mdsisv.py
+ metadata is read from these original tif files in mdsisv.py
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 
@@ -248,7 +268,7 @@ https://github.com/flatironinstitute/CaImAn/blob/main
 
 --denoise.py, called from pipeline init when do_denoise==1
 --deepcad denoising requires a gpu; you can run denoising jobs on O2 to use O2 GPUs
---the denoising requires input tif stack; should be run on motion corrected stack (suffix cmrg_.tif)
+--the denoising requires input tif stack; should be run on motion corrected stack (suffix or_.tif)
 --denoising folder is separate from data folder because it can get big (if multiple epochs are used to denoise)
 --see additional documentation in denoise.py
 https://github.com/cabooster/DeepCAD-RT
@@ -258,12 +278,12 @@ https://github.com/cabooster/DeepCAD-RT
 
 --extract.py, called from pipeline init when do_extract==1
 https://github.com/flatironinstitute/CaImAn/blob/main
---extraction requires either the motion correction output tif (suffix cmrg_.tif), or the denoising output tif (suffix cmrg_dcdn_.tif), depending on whether use_denoised is true of false
+--extraction requires either the motion correction output tif (suffix or_.tif), or the denoising output tif (suffix rd_.tif), depending on whether use_denoised is true of false
  --extraction can operate on 4d xyzt data (planar_extraction = False), or 3d data xyt (planar_extraction = True), where extraction operates on each z plane of the 4d data independently
  --extraction requires either the motion correction output tif, or the denoising output tif (depending on whether use_denoised is true of false)
---if rgname is not ['fullfov'], interactive plots prompt user to define rgname by setting rg 
+--if rgname is not ['none'], interactive plots prompt user to define rgname by setting rg 
  rgname is a cuboid or rectangular subset of the FOV on which extraction is run (on subsequent runs, these are loaded automatically, but will error if there are multiple different rg with the same rgname name) 
- --you can specify rgname 'fullfov' to use the whole FOV and skip drawing  
+ --you can specify rgname 'none' to use the whole FOV and skip drawing  
  --user can define multiple rgname
 --so, here, rgname is meant to separately run extraction on regions requiring different extraction params, and/or to run the extraction faster (ie if all extraction_regions amount to less data than the full fov)  
 --then, analysis of more precisely defined brain regions is done in 'post', where regions can be further split into arbitrary 2d, 3d, or 4d shapes
@@ -277,8 +297,8 @@ https://github.com/flatironinstitute/CaImAn/blob/main
  some output files of this pipeline are saved as uint16 (not int16), since the data is nonnegative after processing
  in all stages of the pipeline. int16 or uint16 data is converted to float32 when read in, then operated on
 
- register outputs registered tif, suffix cmrg_.tif (if background subtraction is used, suffix bksb_cmrg_.tif)
- denoise outputs denoised tif, suffix cmrg_dcdn_.tif (if background subtraction is used, suffix bksb_cmrg_dcdn_.tif)
+ register outputs registered tif, suffix or_.tif (if background subtraction is used, suffix br_.tif)
+ denoise outputs denoised tif, suffix rd_.tif (if background subtraction is used, suffix obrd_.tif)
  extract outputs mat files, suffix rois_.mat (different mat file for each extraction param set)
 
 ############################## CROPPING SESSION ######################################
@@ -324,7 +344,7 @@ entrypoint is a2p.m
 
 #note scannoiserm should ideally only occur prior to
 #caiman roi extraction, but this pipeline allows the user to run scannoiserm afterwards 
-#(need to fix this so the user has the option to use nosn suffix stack for roi extraction)
+#(need to fix this so the user has the option to use s suffix stack for roi extraction)
 
 #rval documentation The algorithm also measures the reliability of the spatial mask by comparing the filters in A
 #with the average of the movies over samples where exceptional events happen, after  removing (if possible)

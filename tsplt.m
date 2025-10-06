@@ -2,7 +2,7 @@ function [hfg, hax] = tsplt(ts, opt)
 
 % plot one or more timeseries on one figure; if 2 or more timeseries, first goes onto one axis, the rest go onto the other (allowing them to have different length x)
 % option to sequentially display over one or more segments of x (if xseg>1), optionally saving each segment as frame of gif
-% option to pass existing figure handle and add axes to that, in which case figure will not save within this function
+% option to pass in existing figure handle and add axes to that, in which case figure will not save within this function
 
 arguments (Repeating)
     ts
@@ -27,7 +27,7 @@ arguments
     opt.titlein {mustBeText} = '' %title
     opt.pthgif {mustBeText} = '' %figure save path
     opt.gifvis {mustBeText} = 'on'
-    opt.hfg = [] %can pass figure handle to add to existing figure
+    opt.hfg = [] %can pass in figure handle to add to existing figure
     opt.axpos = []; %axis position
 end
 xall = opt.xall;
@@ -104,12 +104,12 @@ if isempty(xall)
             if tsp
                 y{k} = transpose(ts{2+2*(k-1)});
                 % if size(x{k},1)~=size(y{k},1)
-                %     error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
+                %     error("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension")
                 % end
             else
                 y{k} = ts{2+2*(k-1)};
                 if size(x{k},2)~=size(y{k},2)
-                    error(sprintf("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension"))
+                    error("name-value argument xall is empty or not used, so positional arguments are interpreted as repeating xy pairs; " + newline + "each pair must match in size of 2nd dimension, but x and y in xy pair number " + num2str(k) + " do not match in size of their 2nd dimension")
                 end
             end
         end
@@ -151,13 +151,13 @@ if isempty(pthgif)
     pthgif = pthauto(suffix='.gif', usetime=1, usefun=1);
 end
 if ~isempty(axpos) && isempty(hfg)
-    error("must not pass axpos without hfg")
+    error("must not pass in axpos without hfg")
 end
 if isempty(axpos)
     if isempty(hfg)
         axpos = [0.1300 0.1100 0.7750 0.8150];
     else
-        error("must pass axpos if you pass hfg")
+        error("must pass in axpos if you pass in hfg")
     end
 end
 
@@ -180,6 +180,9 @@ if isempty(hfg)
 else
     dosave = 1; %1 for now but eventually 0 here; not set up to save outside this function because of the loop, but that would be better
 end
+
+x = cellfun(@single, x, 'UniformOutput', false);
+y = cellfun(@single, y, 'UniformOutput', false);
 
 %% INERPOLATE TIMESERIES ONTO SAME RANGE
 
@@ -241,7 +244,7 @@ if num_xy_pairs>maxnumts
     error("number timeseries (x-y pairs, counted after applying all input arguments) exceeds maxnumts")
 end
 if any(size(xseg, 1)>=cellfun(@numel, x)/minsampperseg)
-    error(sprintf("you've requested an xseg that will only show " + num2str(minsampperseg) + " true samples (not interpolated samples) on each frame; if that's really what you want, change minsampperseg (default, or as name-value argument)"))
+    error("you have requested an xseg that will only show " + num2str(minsampperseg) + " true samples (not interpolated samples) on each frame; if that is really what you want, change minsampperseg default, or as name-value argument")
 end
 
 
@@ -265,7 +268,7 @@ if ~isempty(ix)
             idx = x{k}>ix(1) & x{k}<ix(2);
         else
             if x_is_index
-                idx = indsmake(ix, indsall=numel(x{1})); %in this situation all x should be same length, so just reference x{1} (right??)
+                idx = vecsub(ix, superset=1:numel(x{1})); %in this situation all x should be same length, so just reference x{1} (right??)
             else
                 error("since x is not just an index, ix must be 2-element vector representing min and max x indices to plot")
             end
@@ -329,29 +332,35 @@ for fi = 1:size(xseg, 1)
     for k2 = 1:maxnumplt
         for k = 1:numel(x)
 
-            if k2<=size(y{k},1)
+            if k2<=size(y{k},1) 
 
                 if k2==1
                     if tsp
-                        hpl{k} = plot(hax, 1:numel(y{k}(1,:)), y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+                        hpl{k} = plot(hax, 1:numel(y{k}(1,:)), y{k}(1,:), Color=col{k}, LineStyle=lst{k}); 
                     else
-                        hpl{k} = plot(hax, x{k}, y{k}(1,:), Color=col{k}, LineStyle=lst{k}); %cell expansion of ts for any number of xy pairs
+                        hpl{k} = plot(hax, x{k}, y{k}(1,:), Color=col{k}, LineStyle=lst{k}); 
                     end
                     if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
-                        hsc{k} = scatter(hax, xmark{k}{1}, ymark{k}{1}, 'filled', MarkerFaceColor=col2{1}, Marker=mkr{1}); %cell expansion of ts for any number of xy pairs
+                        for k3 = 1:numel(ymark{k})
+                            hsc{k} = scatter(hax, xmark{k}{k3}, ymark{k}{k3}, 'filled', MarkerFaceColor=col2{k3}, Marker=mkr{k3});
+                        end
                     end
                     if ~isempty(cell2mat(cellflat(xln))) && ~isempty(xln{k})
-                        hln{k} = xline(hax, xln{k}{1}, Color=col2{1}); %cell expansion of ts for any number of xy pairs
+                        hln{k} = xline(hax, xln{k}{1}, Color=col2{1});
                     end
                     hax.XLim = [x{k}(1) x{k}(end)];
                     xlmcurr = hax.XLim; %change x lim on subsequent frames (if there are any)
                 else
                     hpl{k}.YData = y{k}(k2,:);
                     if ~isempty(cell2mat(cellflat(xmark))) && ~isempty(xmark{k})
-                        hsc{k}.YData = ymark{k}{k2};
+                        for k3 = 1:numel(ymark{k})
+                            hsc{k}.YData = ymark{k}{k3};
+                        end
                     end
                     if ~isempty(cell2mat(cellflat(xln))) && ~isempty(xln{k})
-                        hln{k}.Value = xln{k}{k2};
+                        for k3 = 1:numel(xln{k})
+                            hln{k}.Value = xln{k}{k3};
+                        end
                     end
                 end
 
@@ -447,15 +456,15 @@ end
 
 yfeat = [];
 for k = 1:num_xy_pairs
-    if ~isempty(cell2mat(cellflat(xfeat{k}))) && ~isempty(xfeat{k})
+    if ~isempty(xfeat{k}) && ~isempty(cell2mat(cellflat(xfeat{k}))) 
         if isscalar(xfeat{k})
             if ~tsp
                 xfeat{k} = repelem(xfeat{k}, size(y{k},1));
             end
         else
-            if ~isequal(numel(xfeat{k}), size(y{k},1))
-                error("xmark must have same number of outer cells as xy pairs")
-            end
+            % if ~isequal(numel(xfeat{k}), size(y{k},1))
+            %     error("xmark must have same number of outer cells as xy pairs")
+            % end
         end
         for m = 1:numel(xfeat{k})
             if tsp
@@ -463,11 +472,13 @@ for k = 1:num_xy_pairs
                 xref = xref(1:end-1);
                 tmp = interp1(xref, x{k}, xfeat{k}{m}(idx), 'linear', 'extrap'); %match mark to input x
                 xfeat{k} = num2cell(tmp);
-                yfeat{k}{m} = interp1(x{k}, y{k}(:,m), xfeat{k}{m}, 'nearest'); %then find corresponding y
+                % why did we use m to index into y ever, like this: yfeat{k}{m} = interp1(x{k}, y{k}(:,m), xfeat{k}{m}, 'nearest'); %then find corresponding y
+                yfeat{k}{m} = interp1(x{k}, y{k}, xfeat{k}{m}, 'nearest'); %then find corresponding y
             else
                 tmp = interp1(x{k}, x{k}, xfeat{k}{m}, 'nearest'); %match mark to input x
                 xfeat{k}{m} = tmp(~isnan(tmp));
-                yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
+                % why did we use m to index into y ever, like this: yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}(m,:)), xfeat{k}{m}, 'nearest')); %then find corresponding y
+                yfeat{k}{m} = transpose(interp1(x{k}, transpose(y{k}), xfeat{k}{m}, 'nearest')); %then find corresponding y
             end
         end
     end

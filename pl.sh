@@ -1,38 +1,18 @@
 #!/bin/bash
 
-# see pl.py and README.md for more details 
-
-# TO USE pl.sh, CLONE SCOPA REPO INTO YOUR HOME DIRECTORY ON O2  #
-
-# pl.sh runs the entire preprocessing pipeline by specifying params for pl.py
-# run as ./pl.sh and it will not be submitted to the scheduler itself, but will submit jobs to the scheduler
-# CURRENTLY YOU CANNOT SUBMIT JOBS WITH PL WHILE ANOTHER SET OF JOBS SUBMITTED BY PL IS RUNNING 
-# pl.py is called from sbatch file pl.sbatch, which is itself called below,
-# pl.sbatch is called in different way, depending on user input
-# pl.sbatch can run multiple times in parallel if jobind has more than one element (those indices are used to select recordings for analysis, ie embarrassingly parallel)
-# each sbatch file below is called in a 3-iteration for loop, the first iteration (when do_copyfiles=1) copies files required for whatever job is running from storage server to scratch on O2, the second (when do_copyfiles=0) operates on them, the third (when do_copyfiles=2) copies new files back to the storage server  
-# using do_copyfiles requires access to the transfer job partition (write rchelp@hms.harvard.edu to request access), without access the copying is skipped (so you must manually move files to O2)
-
-# pl.sh pipeline is separated into tasks that require different time/memory resources, to make analysis more efficient
-
-# note bash variables below are strings; variables that are passed to python code have single quotes (this is both functional and stylistic, this code is written to handle those single quotes, and changing them can cause error), variables that are only used in bash code are not in quotes (for most or maybe all of these variables, this is just a matter of style)
-# bash variables that are created by us are in lowercase, unless they are exported to another sbatch file (to distinguish them from environmental and internal variables, which are capitalized)
-
-# emails sent to user for all tasks, all job states, to avoid clutter, you can configure your email to store all slurm emails in a slurm folder 
-
-# variables with names in all capital letters are passed into pipeline_init, where they overwrite default values of their lowercase counterparts in default_params_batch.py
+#see readme.md for docs
 
 ############ SET PARAMS THAT DETERMINE WHICH JOBS ARE RUN, WHETHER TO AUTOMATE FILE TRANSFER, AND WHETHER TO USE PARALLELIZATION ############
 
-do_register=0 #0 or 1, no space after =, caiman normcorre registration (python)
+do_register=1 #0 or 1, no space after =, caiman normcorre registration (python)
 do_denoise=0 #0 or 1, no space after =, deepcad denoise (python), ARE ADJACENT YOUR FRAMES VERY SIMILAR (SUFFICIENT T RES)?
-do_stitch=1 #0 or 1, no space after =, stitch denoised z slices into stack (suffix dcdn_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
+do_stitch=0 #0 or 1, no space after =, stitch denoised z slices into stack (suffix od_.tif) matching original stack size; must run do_stitch this if USE_DENOISED=(1) for any subsequent jobs in pipeline (e.g. do_remove, do_extract, do_a2p)
 do_remove=0 #0 or 1, no space after =, remove scan noise (matlab)
 do_extract=0 #0 or 1, no space after =, caiman source extraction (python)
 do_a2p=0 #0 or 1, no space after =, first-order analysis of imaging and stimulus/behavior data (matlab)
 
 do_copyfiles_sequence=(1 0 2) #set to (1 0 2) (ie copy in, no copy, copy out) to copy only required files from storage server to O2, then compute on those files (creating new files), then copy new contents back to storage server (requires access to O2 "transfer job partition", must request access at rchelp@hms.harvard.edu), set to (0) to skip all copying and just copy manually
-jobind=( 0 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6)
+jobind=( 0-2 ) #zero-indexed, unlike many of the bash arrays here, nonsequential syntax for jobind uses commas, like this ( 0,2,7 ), and sequential syntax uses dash, like this ( 0-2 ) . . . indices for parallel runs (using slurm job array), specifies which recording to analyse from list of those matching file specifiers below . . . right now only available paralellization is by recording tif identified with date_fly_trial and folder substring, and each parallel job will have only one jobind; if this bash variable can be turned into a list of vectors, then pl will paralellize along non-scalar jobarray inds, like doing two parallel jobs, 0-3 at the same time as 4-6); note found files are natural sorted by full path, not just filename, so a file in a shallower directory will come before a file in a deeper directory, even if the filename is "larger" in a numerical sense 
 
 do_autoallocate=0 #do_autoallocate=1 uses transfer partition to look into server and find size of stack in raw scanimage tif, but doesn't copy anything; stack size determines all resource requests; do_autoallocate=0 uses resources set by user below
 fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a previous pl run (e.g. if there was an error partway through), you can supply the FNIND_FN_PREFIX of that run here (but txt files with prefix fnind_fn_prefix_override must still be present in scopa/fnind), leave empty to let pl assign a new FNIND_FN_PREFIX
@@ -41,7 +21,7 @@ fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a pre
 
 #set input args common to all sbatch jobs below (job-specific arguments are specified within each sbatch file)
 #matches filenames with pattern RECDATES_FLY_TRIAL_suffix.tif (where suffix is automatically determined by stage of pipeline) or RECDATES_FLY_*_TRIAL_*_*.tif ( * is wildcard)
-#matches within folders containing FOLDER_SUBSTRING ( * is wildcard)
+#matches within folders containing SUBSTR ( * is wildcard)
 #matching file can be anywhere in directory tree under directory superfolder_name_compute (or superfolder_name_storage if copying to O2)
 
 #BASH LISTS BELOW MUST BE SPACE-DELIMITED, ENCLOSED BY PARENTHESES, AND IF QUOTED, USING SINGLE-QUOTES (all this prevents asterisk * from causing problems) 
@@ -49,11 +29,11 @@ fnind_fn_prefix_override='' #if you want to use a file/jobind mapping from a pre
 FOLDER_WITH_ALL_RECORDINGS_ON_STORAGE_AND_COMPUTE_FILESYSTEMS=('stacks')
 PTH_STORAGE_PREFIX=('/n/files/Neurobio/wilsonlab/wienecke/') 
 
-RECDATE=('20250329')
-FLY=('3')
+RECDATE=('202508*')
+FLY=('*')
 TRIAL=('*')
-FOLDER_SUBSTRING=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing FOLDER_SUBSTRING 
-FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, FOLDER_SUBSTRING, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
+SUBSTR=('*') #in case RECDATE, FLY, and TRIAL is not specific enough, can also match only within folders containing SUBSTR 
+FILE_MATCHING_STYLE=('any') #'any' will match any combination of elements from RECDATE, FLY, TRIAL, SUBSTR, 'each' will  match corresponding elements (must all be equal length, or length 1 in which case element is copied to match length of whichever has length greater than 1)
 
 
 ############ SET PARAMS FOR ANALYSIS ############
@@ -66,25 +46,25 @@ BGLENPX=(0) #must be even and nonzero, will run line-by-line background subtract
 MAX_SHIFTS_PRC=(15 15 15) #xyz percentages; 0 will be made 1 pixel; unit percentage of FOV in each dimension xyz (converted to pixels in oreg.py; rounds to nearest pixel); max possible shifts (in patch if piecewise, or whole fov if not); z ignored if register_in_2d=1; shifts are computed using a subregion of fov with outermost max_shifts removed (for template and image); this way, in case the fov drifts, the correlation (used to compute shifts) uses a constant region of image (as long as brain doesn't drift more than max_shifts); if your image drifts a lot, max_shifts has to be large, which means a small region of fov is getting correlated with template, which makes it harder to get correct shifts, especially if snr is low; so set this as small as possible to accommodate drift (the extent to which minimizing max_shifts matters depends on snr, assuming it is large enough to accommodate drift)
 SMLENPX_MCP=(0 0 0) #gaussian xyz smoothing window length (pixels) in register (registration shifts computed with smoothed data, but shifts applied to nonsmoothed data), so fft-based shifting can still fail if image is so noisy that signal cannot be reconstructed in frequency domain; 0 0 0 to skip
 CLIPINTERP=(1) #clip intensity to remain in original data range (interpolation can smear the histogram, sometimes significantly, which can reduce data contrast, ie dff); applied per frame; this happens by default in the original normcorre for matlab, but not in caiman version
-REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, folder_substring) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
+REGISTRATION_TEMPLATE_GROUP_ID=('') #empty string to skip; list of space-delimited strings, each formatted recdate_fly_trial_folderSubstring; for each string, use brackets to designate which single trial is used as template, while all trials matching string with chars inside brackets replaced with wildcard * are registered to that template; e.g.  '202406[01]_[1]_[1]_[60312]' will register all trials matching 202406*_*_*_* (if they are also matched to above file specifiers, recdate, fly, trial, substr) to a template created from raw tif matching **/*312*/**/20240601_1_1*tif (or **/*312*/**/20240601_1_*trial_001*tif for flyg filename format); recordings requested above that do not match any REGISTRATION_TEMPLATE_GROUP_ID just get registered in the default way (without a template); strings cannot have overlapping matches (within brackets, or outside); template must match recording in xyz size; template is median of 5 frames, which are each mean of 10 frames, equidistant across entire stack; code will sleep (with messages) for up to 300 seconds while waiting for template to be created (in case being created in parallel job)  
 
-DNRAW=(1) #denoise raw (unregistered) stacl
-CHAN_DN=('all') #'all', '1', or '2'; refers to the index in the output stack from registration (suffix *cmrg_.tif), so if you discarded channel 1 in registration the output cmrg will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_cmrg*.tif exists)
+DNRAW=(0) #denoise original (unregistered) stack
+CHAN_DN=('all') #'all', '1', or '2'; refers to the index in the output stack from registration (suffix or_.tif), so if you discarded channel 1 in registration the output or will have one channel, and if you want to denoise that one channel (which is channel 2), set chan_dn to 1 (not 2), or you can just set to 'all' and it will work always; also 2 will error if there was only one channel to begin with (ie no *chn2_or*.tif exists)
 DENOISE_VOLUME=(1) #0 or 1, train on multiple z slices, or one z slice at a time
 DENOISE_SLICE_INDEX=('all') #'all' for all z slices, or list of z indices for subset
 NUM_EPOCHS_DENOISE=(10) #how many training epochs (training is continuous across epochs, but model is saved after each to allow denoising (testing) to apply to model at different states of training)
-EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix dcdn (in stc, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing dcdn stack if you run on same data more than once 
+EPOCH_CHOOSE_DENOISE=$(seq -s ' ' $NUM_EPOCHS_DENOISE) #syntax is EPOCH_CHOOSE_DENOISE=$(seq  -s ' ' $NUM_EPOCHS_DENOISE) for all epochs (1 to NUM_EPOCHS_DENOISE), or EPOCH_CHOOSE_DENOISE=(2 3 7) for a subset (here, 2, 3, and 7), or EPOCH_CHOOSE_DENOISE=(2) for one epoch; denoising epoch used going forward in the pipeline, chosen epoch's z slices stitched into stack and saved as tif with suffix od (in stc, called by do_stich); one-indexed; must exist, ie must be one of epochs_choose in denoise.py; if single number, will use that epoch, if multiple, will choose best epoch automatically (see denoise_score.py); will overwrite existing od stack if you run on same data more than once 
 
-USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *bksb_cmrg_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix *cmrg_.tif) for any job after registration; if it doesn't exist, won't error
-USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *cmrg_dcdn_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix *cmrg_.tif); if it doesn't exist, won't error
+USE_BACKGROUND_SUBTRACTED=(0) #1 to use the background-subtracted, registered stack (suffix *br_.tif) for any job after registration, 0 to use the registered stack (without background subtraction, suffix or_.tif) for any job after registration; if it doesn't exist, won't error
+USE_DENOISED=(1) #1 to use the registered, denoised stack for any job after registration and/or denoising (suffix *rd_.tif), 0 to use the registered stack (without denoising) for any job after registration and/or denoising (suffix or_.tif); if it doesn't exist, won't error
 
 STOPBAND_RSC=(10 20) #stopband frequency indices; for now just set emperically at [10 20] (removing 10th-20th frequencies); keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
 SMLENSEC_RSC=(0) #seconds, gaussian temporal smoothing window length in scannoiserm (only used if do_remove=1); to better bandlimit scan noise before filtering
-USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise removed (suffix 'nosn_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
+USE_SCANNOISE_REMOVED=(0) #1 to use the stack (a mat file) with scan noise removed (suffix 's_.mat', output from do_remove), for any job after do_remove, 0 to not use it; if it doesn't exist, won't error
 
 METHODEX=('seed21py') #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 EXTRACT_IN_2D=(1)
-RGNAME=('fullfov')
+RGNAME=('none')
 
 USE_CLUSTER=(1) #to speed up caiman code; registration is fast enough (less than an hour) for our normal recordings; consider using cluster if your recording is very long (>30000 frames, for example) or very high res (>512,512,20, for example); running O2 non-interactive jobs, use cluster_backend='multiprocessing' (automatically set in pl.py); i haven't gotten cluster_backend='ipyparallel' to work for that case, and haven't tried for other cases
 
@@ -105,7 +85,7 @@ if [ "$do_autoallocate" == 0 ]; then
 
     cpu_per_task_register=3
     mem_per_cpu_register=25G
-    time_register=0:40:00
+    time_register=0:50:00
 
     cpu_per_task_stitch=1
     mem_per_cpu_stitch=20G
@@ -126,14 +106,14 @@ if [ "$do_autoallocate" == 0 ]; then
     ############ SET PARAMS FOR DENOISING RESOURCE REQUEST (THIS INCLUDES GPU) ############
 
     cpu_per_task_denoise=1
-    mem_per_cpu_denoise=18G
+    mem_per_cpu_denoise=12G
 
-    gpustr=rtx6000_24 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
+    gpustr=a100_80 #shorthand name of gpu to use; suggested gpu is rtx6000_24, or a100_80 for large stacks; current options are a100_80, a100_40_mig, v100_32, a100_40, rtx6000_24, m40_12, v100_16 (there are others on O2, but this list covers large and small on the major gpu partitions)
 
     if [ "$gpustr" == a100_80 ]; then 
         gpu_to_use=a100:1,vram:80G  #fastest on gpu_quad (double precision)
         gpu_partition=gpu_quad 
-        time_denoise=5:00:00
+        time_denoise=2:30:00
     elif [ "$gpustr" == a100_40_mig ]; then 
         gpu_to_use=a100.mig:1,vram:40G  #mig on gpu_quad (probably double precision)
         gpu_partition=gpu_quad 
@@ -149,7 +129,7 @@ if [ "$do_autoallocate" == 0 ]; then
     elif [ "$gpustr" == rtx6000_24 ]; then 
         gpu_to_use=rtx6000:1,vram:24G #2nd-lowest vram on gpu_requeue (single precision)
         gpu_partition=gpu_requeue
-        time_denoise=8:30:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
+        time_denoise=5:30:00 #for stack size (128,256,15,3047), tested time 5.5 hours, train 5 epochs with 10K patches, test 5 epochs, 
     elif [ "$gpustr" == m40_12 ]; then 
         gpu_to_use=teslaM40:1,vram:12G #lowest vram on gpu_requeue (probably double precision), there's also one on gpu partition (also 24 gb, double precision), where it's the 2nd fastest, but running on gpu_requeue is preferred method on scopa
         gpu_partition=gpu_requeue
@@ -200,7 +180,7 @@ pars["PTH_STORAGE_PREFIX"]="${PTH_STORAGE_PREFIX[@]}"
 pars["RECDATE"]="${RECDATE[@]}"
 pars["FLY"]="${FLY[@]}"
 pars["TRIAL"]="${TRIAL[@]}"
-pars["FOLDER_SUBSTRING"]="${FOLDER_SUBSTRING[@]}"
+pars["SUBSTR"]="${SUBSTR[@]}"
 pars["FILE_MATCHING_STYLE"]="${FILE_MATCHING_STYLE[@]}"
 pars["SCOPATMPLT"]="${SCOPATMPLT[@]}"
 pars["CLIP"]="${CLIP[@]}"
@@ -358,7 +338,7 @@ for JOBNM in "${jobnm_seq[@]}"; do
                 fi
             fi
 
-            #run the sbatch file, using export to pass args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
+            #run the sbatch file, using export to pass in args, and specifying slurm directives, including job array indices, use parsable to output the job id for dependencies downstream
             arr_id_out=$(sbatch --parsable \
             --export=DO_COPYFILES="$DO_COPYFILES",FIRST_NONCOPY_JOB="$FIRST_NONCOPY_JOB",PTH_PARSFILE="$PTH_PARSFILE",SCOPADIR="$SCOPADIR",JOBNM="$JOBNM" \
             --array=[$jobind_tmp] \

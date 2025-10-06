@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 def im_montage(images, vmin=None, vmax=None):
 
-    # if you don't pass vmin and vmax each subfigure will be normalized to its own min/max
+    # if you don't pass in vmin and vmax each subfigure will be normalized to its own min/max
 
     numim = images.shape[-1]
     

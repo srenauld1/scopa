@@ -65,7 +65,7 @@ if domm
     else
         oneroi = 0;
     end
-    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, rgname=rgname, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, maskname=opt.mm.maskname);
+    [roimaskman_allchan, roiwt, roicen, num_roim] = roidraw(stack, pthpre=pthpre, rgname=rgname, oneroi=oneroi, chan=opt.mm.chan, chancp=opt.mm.chancp, mmname=opt.mm.mmname);
 else
     if ~maskinput
         roimaskman_allchan = cell(numchan,1); %make it empty if you didn't draw or pass in mask

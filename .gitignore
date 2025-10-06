@@ -1,3 +1,4 @@
 slurm-*.out
 *.gpulog
 dependencies/@TIFFStack/private/tifflib.mexw64
+userdat.txt

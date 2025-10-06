@@ -32,8 +32,8 @@ outmax = [];
 function [out, h, out_all, nonlinear_transformation_all, nlparams_all] = testfun(func, x, B,A,K,V,M,Q,C, doplt, filename_save, xlimin, ylimin)
 
 if doplt
-    h = initfig(szf=1);
-    h.hax = axes(parent=h.hfg);
+    h = fg(szf=1);
+    h.ax = axes(parent=h.fg);
 end
 
 switch func
@@ -60,7 +60,7 @@ switch func
                                     if doplt
 
                                         [xs, idx] = sort(x);
-                                        hpl = plot(h.hax, xs, out(idx)); %sorting prevents an odd plotting error
+                                        hpl = plot(h.ax, xs, out(idx)); %sorting prevents an odd plotting error
                                         if exist('xlimin', 'var') && ~isempty(xlimin)
                                             xlim(xlimin)
                                         end
@@ -69,7 +69,7 @@ switch func
                                         end
                                         axis square
 
-                                        h.htx.String = [...
+                                        h.tx.String = [...
                                             ' B: ' num2str(round(B(bi), 2)), ...
                                             ' A: ' num2str(round(A(ai), 2)), ...
                                             ' K: ' num2str(round(K(ki), 2)), ...
@@ -80,7 +80,7 @@ switch func
                                             ];
 
 
-                                        fig2gif(h.hfg, cnt, filename_save)
+                                        fig2gif(h.fg, cnt, filename_save)
 
 
                                     end
@@ -137,7 +137,7 @@ switch func
 
 
                             [xs, idx] = sort(x);
-                            hpl = plot(h.hax, xs, out(idx)); %sorting prevents an odd plotting error
+                            hpl = plot(h.ax, xs, out(idx)); %sorting prevents an odd plotting error
                             yline(0, 'k')
                             if exist('xlimin', 'var') && ~isempty(xlimin)
                                 xlim(xlimin)
@@ -149,7 +149,7 @@ switch func
                             end
                             axis square
 
-                            h.htx.String = [...
+                            h.tx.String = [...
 
                             ' V: ' num2str(round(V(vi), 2)), ...
                             ' M: ' num2str(round(M(mi), 2)), ...
@@ -165,7 +165,7 @@ switch func
                             [mu2, rho2, var2] = circmnvar(x, out', 0);
                             mu3 = deg2rad(weighted_circular_mean(rad2deg(x), out')); % "true circular mean"??
                             rho3 = deg2rad(weighted_circular_std(rad2deg(x), out)); % "true circular std"??
-                            hold(h.hax, 'on')
+                            hold(h.ax, 'on')
 
                             rhox = [mu-rho2/2, mu+rho2/2];
                             rho2x = [mu2-rho2/2, mu2+rho2/2];
@@ -175,22 +175,22 @@ switch func
                             frac = range(out)*marksep;
                             midytmp = repelem(midy, numel(rhox));
 
-                            plot(h.hax, rhox, midytmp, 'b');
-                            plot(h.hax, rho2x, midytmp+frac, 'r');
+                            plot(h.ax, rhox, midytmp, 'b');
+                            plot(h.ax, rho2x, midytmp+frac, 'r');
                             % try
-                            %     plot(h.hax, rho3x, midytmp+frac*2, 'g');
+                            %     plot(h.ax, rho3x, midytmp+frac*2, 'g');
                             % catch
-                            %     plot(h.hax, nan, nan, 'g');
+                            %     plot(h.ax, nan, nan, 'g');
                             % end
 
-                            scatter(h.hax, mu, midytmp, 'b', 'filled');
-                            scatter(h.hax, mu2, midytmp+frac, 'r', 'filled');
-                            % scatter(h.hax, mu3, midytmp+frac*2, 'g', 'filled');
+                            scatter(h.ax, mu, midytmp, 'b', 'filled');
+                            scatter(h.ax, mu2, midytmp+frac, 'r', 'filled');
+                            % scatter(h.ax, mu3, midytmp+frac*2, 'g', 'filled');
 
                             title({mat2str([mu, mu2, mu3]); mat2str([rho, rho2, rho3]); mat2str([sel, var2])})
-                            hold(h.hax, 'off')
+                            hold(h.ax, 'off')
 
-                            fig2gif(h.hfg, cnt, filename_save)
+                            fig2gif(h.fg, cnt, filename_save)
 
 
                         end
