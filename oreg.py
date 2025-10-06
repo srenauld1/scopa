@@ -18,7 +18,7 @@ def oreg(md, register_in_2d, min_mov, stack_shape_space, max_shifts_prc = None, 
     ### USER CAN MODIFY OPTIONS IN THIS SECTION ###
 
     # a few options that should probably never change
-    pw_rigid = True #false applies rigid motion correction, true applies nonrigid motion correction; for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
+    pw_rigid = False #false applies rigid motion correction, true applies nonrigid motion correction; for tiny fly brains i'm guessing nonrigid is not necessary and invites artifact, so i always leave false, but i've not noticed a difference in tests with my data yet 
     use_highpass_filter = False #this invokes gSig_filt (makes it not None); caiman says this is for 1p data (data with large background fluctuations); so this should be False in general
     nonneg_movie = True #true because scopa makes the stack nonnegative before registration; putting it up top to make that clear
     use_cuda = False # flag for using a GPU; for now this is always false, maybe determine if gpu exists in future; registration is not slow enough for me to care though
