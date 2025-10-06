@@ -1,0 +1,27 @@
+
+clearvars
+close all
+clc
+
+stackid = '20250716_2*';
+
+o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
+o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
+o.daq.slopeord = 2; % order of polynomial used to fit local slope
+o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
+o.daq.slopeord_supp = 2; 
+
+o.roi.domm = 1;
+o.roi.mm.mmname = {'none'};
+o.roi.nrm.post = {'dff008000'};
+
+o = ofill(o);
+
+pth = stackfind(stackid=stackid);
+
+daq = daqld(o.daq, pthstack=pth);
+[daq(m).px, daq(m).py] = ficpath(vfang, 'radians/second', vsang, 'radians/second', daq(m).vy, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
+
+s = stackld(pth);
+
+roi = roimake(o.roi, s=s);

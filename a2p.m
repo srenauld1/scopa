@@ -48,7 +48,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack, pthstack=s.pth, md=s.md); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(o.roi.(m{1}), s=s); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
