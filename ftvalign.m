@@ -1,4 +1,4 @@
-function ftvdsrs = ftvalign(rsinds, numvol, imrate, numpkthr, smlenpx, numpx, smlensec, ftrate, doplt, opt)
+function ftvdsrs = ftvalign(opt)
 
 % NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
@@ -28,28 +28,37 @@ function ftvdsrs = ftvalign(rsinds, numvol, imrate, numpkthr, smlenpx, numpx, sm
 % and because the fictrac video is currently only used for visualization
 
 arguments
-    rsinds %resampling indices (e.g. if they were on the daq)
-    numvol = [] %number of imaging volumes
-    imrate = [] %imaging rate (average,approximate)
-    numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-    smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-    numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
-    smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
-    doplt = [] %0 skips plots, 1 plots and saves, 2 saves but does not display
+    opt.rsinds = [] %resampling indices (e.g. if they were on the daq)
+    opt.numvol = [] %number of imaging volumes
+    opt.imrate = [] %imaging rate, volrate if volumetric, framerate if not (average,approximate can work too)
+    opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+    opt.smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+    opt.numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+    opt.smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
+    opt.ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
     opt.pthstack = [] %can pass in path to stack and derive defaults for all the other paths
     opt.pth_vid char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     opt.pth_vidrs char = [] %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead 
     opt.pth_vidlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     opt.pth_log char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
+    opt.doplt = []; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
+rsinds = opt.rsinds;
+numvol = opt.numvol;
+imrate = opt.imrate;
+numpkthr = opt.numpkthr;
+smlenpx = opt.smlenpx;
+numpx = opt.numpx;
+smlensec = opt.smlensec;
+ftrate = opt.ftrate;
 pthstack = opt.pthstack;
 pth_vid = opt.pth_vid;
 pth_vidrs = opt.pth_vidrs;
 pth_dat = opt.pth_dat;
 pth_vidlog = opt.pth_vidlog;
 pth_log = opt.pth_log;
+doplt = opt.doplt;
 
 if isempty(doplt)
     doplt = any(strcmp('ftv', glb('plt')));
@@ -62,9 +71,10 @@ elseif doplt==2
 end
 
 if isempty(pthstack)
-    if isempty(pth_vid) 
+    if isempty(pth_vid)
         error("if pth_vid is empty, pthstack must be nonempty")
     end
+else
     id = idmake(pthstack);
 end
 
@@ -103,7 +113,7 @@ if isempty(pth_vidlog)
 end
 
 if isempty(pth_vid)
-    pth_ftvid_pat = [id.pthstackdir id.recid '_FTV_DS_.mat']; %downsampled ft video (downsampled in register.py)
+    pth_ftvid_pat = [id.pthstackdir id.recid '_ftvds_.mat']; %downsampled ft video (downsampled in register.py)
     pth_vid = rdir(pth_ftvid_pat);
     if isempty(pth_vid)
         error("cannot find fictrac video (pth_vid) using default pattern derived from pthstack")
@@ -155,10 +165,9 @@ catch
 
     if isempty(rsinds)
 
-
         if isempty(ftrate)
             if isempty(pth_dat)
-                error("must pass in ftrate or pth_dat or pthstacks to derive ftrate")
+                error("must pass in ftrate or pth_dat or pthstack to derive ftrate (if you got this error, pthstack or pth_dat may not exist)")
             end
             ftdat = read_fictrac_dat(pth_dat);
             ftrate = 1e9/median(ftdat.deltaTimestamp);
@@ -174,7 +183,7 @@ catch
         ftvds = reshape(ftvds, [], size(ftvds, 3));
         ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
         ftvid_meanframe = imgaussfilt(ftvid_meanframe,smlenpx);
-        % ftvid_meanframe(25:end,:) = 0; %hack
+        ftvid_meanframe(round(size(ftvid_meanframe)/4):end,:) = 0; %hack, top quarter of frame
         [~,mxi] = sort(ftvid_meanframe(:), 'descend');
 
         % ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));

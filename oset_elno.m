@@ -8,7 +8,7 @@ rgname = {'el', 'no'}; %use 'none' to skip prompt to define substack (will enter
 %%%% BMP %%%%
 
 bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vy';
+bmpindv.tg.vnm = 'vh';
 
 o.bmp.indv = bmpindv;
 

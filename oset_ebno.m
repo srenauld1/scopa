@@ -41,7 +41,7 @@ mdlindv.tg.bmp = ['*'];
 mdlindv.tg.vnm = 'vel';
 mdlindv.tg.group2 = '1';
 mdlindv.tg(2).daq = ['*'];
-mdlindv.tg(2).vnm = 'byv';
+mdlindv.tg(2).vnm = 'bvy';
 
 o.mdl.indv = mdlindv;
 

@@ -1,11 +1,9 @@
 
 clearvars
-clear glb
-clear ofill
 close all
 clc
 
-stackid = '20250116*'; %format is recdate_fly_trial_suffix, or end with * to make all subsequent *
+stackid = '20250716_2*';
 
 o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
 o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
@@ -20,10 +18,9 @@ o.roi.nrm.post = {'dff008000'};
 o = ofill(o);
 
 pth = stackfind(stackid=stackid);
-id = idmake(pth);
-glb(pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
 daq = daqld(o.daq, pthstack=pth);
+[daq(m).px, daq(m).py] = ficpath(vfang, 'radians/second', vsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
 
 s = stackld(pth);
 

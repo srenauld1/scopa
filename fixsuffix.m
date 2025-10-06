@@ -4,6 +4,7 @@ clear all
 close all
 clc
 
+testrun = 0; %set to 1 to test the file renaming; set to 0 to actually rename
 
 renm = { ... %do it in this order, staerting with longest suffixes (most compounded), to simplify the string replacement below (since we are removing some underscores), otherwise you need regexp (example below, commented out)
     '_bksb_cmrg_dcdn_nosn_: _obrds_', ...
@@ -17,8 +18,11 @@ renm = { ... %do it in this order, staerting with longest suffixes (most compoun
     '_nosn_: _os_', ...
     };
 
-pthpar = pthparget;
+pthpar = pthparget();
 
+cnt = 0;
+pthold = {};
+pthnew = {};
 for q = 1:numel(renm)
     nmtmp = strsplit(renm{q}, ':');
     if numel(nmtmp)~=2
@@ -29,57 +33,20 @@ for q = 1:numel(renm)
 
     pthpat = [pthpar '**/*' nmold '*'];
     pth = rdir(pthpat);
-    pthnew = cell(numel(pth),1);
     for k = 1:numel(pth)
-        pthnew{k} = strrep(pth(k).name, nmold, nmnew);
-        movefile(pth(k).name, pthnew{k})
+        if ~ismember(pth(k).name, pthold)
+            cnt = cnt+1;
+            pthold{cnt} = pth(k).name;
+            pthnew{cnt} = strrep(pthold{cnt}, nmold, nmnew);
+            if ~testrun
+                movefile(pthold{cnt}, pthnew{cnt})
+            end
+        end
     end
 end
 
-
-% renm = { ...
-%     'raw: o' ...
-%     'cmrg: r', ...
-%     'dcdn: d', ...
-%     'bksb: b', ...
-%     'nosn: s', ...
-%     };
-% 
-% pthpat = '/Users/wienecke/stacks/**/*';
-%
-% pthtmp = rdir(pthpat);
-% pthold = cell(numel(pthtmp),1);
-% pthnew = cell(numel(pthtmp),1);
-% for k = 1:numel(pthtmp)
-%     pthold{k} = pthtmp(k).name;
-%     [pp, fn, ext] = fileparts(pthold{k});
-%     fnprefix = strsplit(fn, '_');
-%     fnprefix = strjoin(fnprefix(1:3), '_');
-%     tmp = regexp(fn, '^\d+_\d+_\d+_(.)*_$', 'tokens');
-%     if ~isempty(cellflat(tmp))
-%         if ~isscalar(cellflat(tmp))
-%             error
-%         end
-% 
-%         tmp = ['_' tmp{1}{1}];
-%         for q = 1:numel(renm)
-%             nmtmp = strsplit(renm{q}, ':');
-%             if numel(nmtmp)~=2
-%                 error
-%             end
-%             nmold = strtrim(nmtmp{1});
-%             nmnew = strtrim(nmtmp{2});
-%             if ~isempty(strfind(tmp, ['_' nmold]))
-%                 fuk=2
-%             end
-%             tmp = strrep(tmp, ['_' nmold], nmnew);
-%         end
-% 
-%         if ~contains(tmp, 'o')
-%             tmp = ['o' tmp];
-%         end
-%         fnnew = [fnprefix '_' tmp '_'];
-%         pthnew{k} = [pp, filesep, fnnew, ext];
-%         % movefile(pth{k}, pthnew{k})
-%     end
-% end
+if testrun
+    for k = 1:numel(pthold)
+        fprintf(string(pthold{k}) + newline + string(pthnew{k}) + newline + newline)
+    end
+end

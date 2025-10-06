@@ -110,7 +110,7 @@ end
 if getonly && update
     warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
 end
-if startsWith(pth, ['~' filesep])
+if startsWith(pth, '~')
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
 end
 if ~isempty(s) && ~isstruct(s)

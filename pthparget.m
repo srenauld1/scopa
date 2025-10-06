@@ -29,12 +29,7 @@ if isempty(loc)
         loc = o2;
     end
 end
-if startsWith(loc, ['~' filesep])
-    hm = [getenv('HOME') filesep];
-    loc = regexprep(loc, ['^~' filesep], hm);
-end
-loc = strrep(loc, '/', filesep);
-loc = strrep(loc, '\', filesep);
+loc = pthfldformat(loc); %format path to folder
 if endsWith(loc, filesep)
     loc = loc(1:end-1);
 end

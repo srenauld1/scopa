@@ -544,7 +544,7 @@ each domain has a different set of available timeseries
     mdl: pred
     bmp: respcl, mu, rho, ampmean, amppeak, ampmu, vel, offset
     fmf: every feature id (like CON_51)
-    daq: t, bf, bfv, bs, bsv, by, byv, vy, vyv, vyvnom
+    daq: t, bf, bvf, bs, bvs, by, bvy, vh, vvy, vvynom
 
 tsget recovers timeseries from saved files, using the options used to create the timeseries, or various identifiers  
 

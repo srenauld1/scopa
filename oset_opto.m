@@ -13,7 +13,7 @@ o.daq.slopelensec = .3;
 o.bmp.domtype = 'm';
 
 bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vy';
+bmpindv.tg.vnm = 'vh';
 % bmpindv.tg.optid = 'a8';
 
 o.bmp.indv = bmpindv;

@@ -50,7 +50,7 @@ def ftvdownsample(pth_ftvid, pth_prefix, makeplots):
     ftvds = ftvds[:frcnt,:,:] #in case hack_vid_length, crop to last written frame
     print("fictrac video has been downsampled and converted to grayscale; new size is: \n" + str(ftvds.shape))
 
-    pth_ftvid_ds = pth_prefix + '_FTV_DS_.mat'
+    pth_ftvid_ds = pth_prefix + '_ftvds_.mat'
     sio.savemat(pth_ftvid_ds, {'ftvds':ftvds}) #save for matlab part of pipeline 
 
     print("saved downsampled, grayscale fictrac video to this mat file: \n" + pth_ftvid_ds)
