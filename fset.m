@@ -16,7 +16,7 @@ end
 
 if isempty(opt)
     fprintf("user did not pass in options as argument, using all defaults for obin '" + obin + "'")
-    opt = ofill(obin, nest=1, unpack=1);
+    opt = ofill(obin, rec=1, unpack=1);
 end
 
 if nargin>=4

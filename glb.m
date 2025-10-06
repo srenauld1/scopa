@@ -206,9 +206,6 @@ else
                     if ~isempty(gset) && ~isscalar(gset) %make sure before you change gset
                         error("glb struct cannot be nonscalar right now")
                     end
-                    if isempty(inp{k+1})
-                        gset = setfield(gset, sind{:}, 1); %if setting to empty, must create field with nonempty dummy value first
-                    end
                     gset = setfield(gset, sind{:}, inp{k+1});
                 end
             else

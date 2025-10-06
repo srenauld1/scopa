@@ -382,7 +382,7 @@ if isempty(cell2mat(optid))
         tgopt = [];
     end
     try
-        tgopt = ofill(tgopt, obin, nest=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
+        tgopt = ofill(tgopt, obin, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
     catch ME
         error("you must have made an invalid options struct for tsget (tg) because ofill failed with this message: " + ME.message + newline);
     end

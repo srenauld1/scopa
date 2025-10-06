@@ -1,0 +1,32 @@
+{
+  "z1": {
+    "id": "20221120_1_1_t5",
+    "recdatenum": 2.022112E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "t5",
+    "y": [26,118],
+    "x": [155,239],
+    "z": [1,1],
+    "t": [1,5869],
+    "c": [1,1]
+  },
+  "z2": {
+    "id": "20221120_1_1_tm",
+    "recdatenum": 2.022112E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "tm",
+    "y": [20,120],
+    "x": [58,120],
+    "z": [1,1],
+    "t": [1,5869],
+    "c": [1,1]
+  },
+  "md": {
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z",
+    "autonm": 1,
+    "maketime": "2025100309230261"
+  }
+}

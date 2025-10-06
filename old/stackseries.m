@@ -35,7 +35,7 @@ doplt = opt2.doplt;
 
 if isempty(opt)
     fprintf("user did not pass in options as argument, using all defaults")
-    opt = ofill('spr', nest=1, unpack=1);
+    opt = ofill('spr', rec=1, unpack=1);
 end
 if isfield(opt, 'sld')
     optsld = opt.sld;

@@ -45,7 +45,8 @@ for m = 1:numel(rgname)
         o.roi.doma = 0;
     end
     o.roi.nrm.post = 'dff015020';
-    o = ofill(o, 'roi', rgname{m});
+    o = ofill(o, 'roi');
+    % o = ofill(o, 'roi', rgname{m});
 
 end
 

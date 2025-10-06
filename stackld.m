@@ -80,7 +80,7 @@ end
 if endsWith(pthstack, '.mat')
     try
         load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack)
-        if opt_mismatch(optin, opt, pth, sz, chan)
+        if opt_mismatch(pthstack, optin, opt, pth, sz, chan)
             error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT (ie YOU HAVE A MAT FILE ALREADY SAVED THAT USE A DIFFERENT SET OF OPTIONS); DELETE OR RENAME THAT MAT FILE, OR LOAD THAT FILE BY USING THE SAME OPTIONS LISTED IN s.opt IN FILE: " + pthstack)
         end
         fprintf("loading mat file containing stack" + newline)
@@ -376,7 +376,7 @@ end
 
 end
 
-function mismatch = opt_mismatch(optnew, optold, pth, sz, chan)
+function mismatch = opt_mismatch(pthstack, optnew, optold, pth, sz, chan)
 
 % if mat already exists, error if current options do not match (and are not functionally equivalent to) options previously used to convert tif to mat; 
 % comparing options individually, rather than simply ~isequal(optnew, optold),  because some options can change after input, and also some don't matter functionally; also make sure path matches

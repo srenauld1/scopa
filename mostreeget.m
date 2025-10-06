@@ -1,0 +1,59 @@
+function [mostree, mostree_open, mostree_top] = mostreeget(o, du)
+
+%{
+
+derive mostree (and related) from du (unnested default o struct) and a nested version of du (could be d, could be a subset of d) 
+mostree: compact representation of the field arrangement in o
+mostree_open: verbose representation of the field arrangement in o (for example, for mostree element "roi.mdl", mostree_open will have elements "roi" and "roi.mdl")
+mostree_top: fields at the top level of o, ie fieldnames(o)
+
+%}
+
+arguments
+    o struct % options struct to derive mostree from; if empty struct, all outputs will be empty
+    du struct % unnested default options struct (du, defined in odf.m, which is the unnested version of d, also defined in odf.m) 
+end
+
+delimflat = '__';
+
+fn_du = fieldnames(du);
+
+oflat = structflat(o, delim=delimflat);
+fn_oflat = fieldnames(oflat);
+
+options = fn_oflat; %options only, not mos
+while true
+    options_tmp = options;
+    options = regexprep(options, strcat('^', fn_du, delimflat), ''); %remove contiguous sequence of mos at the beginning (will not remove mos preceded by a mosc)
+    if isequal(options, options_tmp) %once all not-mos have been removed, break from the loop
+        break
+    end
+end
+
+fn_oflat_mos_only = cell(1, numel(options));
+for k = 1:numel(options) %use this in loop because we are removing mos_not for each fn_optin_flat (don't want removal across indices)
+    fn_oflat_mos_only{k} = regexprep(fn_oflat{k}, strcat(delimflat, options{k}, '$'), ''); %keep only the mos
+end
+fn_oflat_mos_only = unique(fn_oflat_mos_only);
+
+mostree_open = strrep(fn_oflat_mos_only, delimflat, '.');
+for k = 1:numel(fn_oflat_mos_only)
+    tmp = strsplit(fn_oflat_mos_only{k}, delimflat);
+    for q = 1:numel(tmp)
+        mostree_open = cat(2, mostree_open, {strjoin(tmp(1:q), '.')});
+    end
+end
+mostree_open = unique(mostree_open);
+mostree_open = convertCharsToStrings(mostree_open);
+mostree_open = sort(vec(mostree_open));
+
+mostree = string([]);
+q = 0;
+for k = 1:numel(mostree_open)
+    if isequal(sum(startsWith(mostree_open, mostree_open{k})), 1)
+        q = q+1;
+        mostree(q) = mostree_open(k);
+    end
+end
+
+mostree_top = fieldnames(o);

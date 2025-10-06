@@ -129,13 +129,7 @@ for k = 1:numel(idtmp)
 
     end
 
-    o(k) = ofill(opttmp, nest=1);
-
-    o(k).mn.scopausername = userdatfile('scopausername');
-    o(k).mn.usegit = usegit;
-
-    o(k).id = idtmp(k); %put id (stack info) into options struct
-
+    o(k) = ofill(opttmp, finish=1);
 
 end
 
@@ -143,30 +137,27 @@ end
 %%%% now set some globals (in glb) %%%%
 
 glb( ...
-    pthscopa=pthscopaget, ...
-    optiddf=o(1).mn.optiddf, ...
-    onest=o(1).mn.onest, ...
-    dmstackdf=o(1).mn.dmstackdf, ...
-    xyscreen=screenpx, ...
-    delimflat=o(1).mn.delimflat, ...
-    plt=o(1).mn.plt, ...
-    pthpy=o(1).mn.pthpy, ...
-    scopausername=o(1).mn.scopausername, ...
-    usegit=o(1).mn.usegit, ...
-    pthpar=pthparget, ...
-    copybindf='none', ...
-    optinert="foolman" ...
+    plt=[""], ... %string array listing modules that get plots (empty string for none by default); all would be plt=["daq", "sld", "ftv", "roi", "bmp", "mdl"]
+    optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names) 
+    dmstackdf='yxztck', ... %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+    delimflat='__', ... %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent 
+    usegit=usegit, ...
+    pthscopa=pthscopaget(), ... %path to scopa
+    pthpy=userdatfile('pthpy'), ... %path to python executable, in case user calls some python code from a2p (caiman registration or roi extraction, for example)
+    scopausername=userdatfile('scopausername'), ... %username; must be alphabetic char vector; used in options filenames, and to route to correct oset_* files
+    xyscreen=screenpx(), ... %screen dimensions in pixels
+    pthpar=pthparget() ... %path to parent folder containing all stacks (function stackfind function searches for stacks recursively within pthpar) 
     )
-% copybindf=o(1).mn.copybindf,
-% suffixchars=o(1).spec.suffixchars,
-% rgnamedf=o(1).roi.rgname,
-% pltvis=o(1).mn.pltvis,
 
 %%%% FINALIZE/ORGANIZE OPTIONS STRUCT AND DERIVE optids %%%%
 
 o = structsort(o, vectype='row'); %recursively order alphabetically
 
 o = oid(o, usegit=usegit); %assign ids to options sets
+
+for k = 1:numel(idtmp)
+    o(k).id = idtmp(k); %put id (stack info) into options struct
+end
 
 oflat = structflat(o, delim=o(1).mn.delimflat, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
 

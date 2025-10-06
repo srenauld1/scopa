@@ -41,7 +41,7 @@ should empty optid be part of each struct in defaults? or only added after oid, 
 change names for tsget group
 tsget defaults are never filled in on purpose, but is that right?
 make daqld ftv have a dotfv, just like roimake
-consider making default nested opts rather than using onest; for example, d.roi.cm = [], etc
+consider making default nested opts rather than using otree; for example, d.roi.cm = [], etc
 optid for stackseries, since it affects the rois
 no roeason to make daq a table in daqld then convert to struct, just m,ake struct from start
 in tsget there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one

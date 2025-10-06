@@ -23,8 +23,18 @@ try
     obin_ided = opt2.obin_ided;
     delimflat = opt2.delimflat;
 
+    pthscopa = pthscopaget();
+    pthopt = [pthscopa 'optdf.txt'];
+
+    if isfile(pthopt)
+        dall = structld(pthopt, nocells=1, dosort=0);
+        otree = dall.otree;
+    else
+        error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
+    end
+
     if isempty(obin_ided)
-        % obin_ided = glb('onest');
+        % obin_ided = glb('otree');
         obin_ided = [ "sld", "daq", "roi", "bmp", "mdl", "fmf"];
     end
 
@@ -44,8 +54,6 @@ try
         warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
     end
 
-    pthscopa = pthscopaget();
-
     callstack = dbstack();
     tsgetcall = 0;
     if ismember('tsget', {callstack.name})
@@ -58,7 +66,7 @@ try
 
     if isempty(getfieldns(opt, 'full')) || any(cellfun(@isempty, getfieldns(opt, 'full'))) || any(cell2mat(getfieldns(opt, 'full'))~=1)
         if ~tsgetcall %input struct does not require true 'full' field if oid is called from tsget
-            error("options struct must be 'full'; you may have removed final call to ofill in oset with argument nest=1")
+            error("options struct must be 'full'; you may have removed final call to ofill in oset with argument rec=1")
         end
     end
 
@@ -90,7 +98,7 @@ try
                 fntmp = fieldnames(optdist);
                 for p = 1:numel(fntmp)
 
-                    
+
                     %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
 
                     optdist.(fntmp{p}) = ochk(optdist.(fntmp{p}), obintmp);

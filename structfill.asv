@@ -2,9 +2,7 @@ function sout = structfill(s, sdf)
 
 %{
 
-replace values in struct sdf with values in struct s 
-structs can be nested and nonscalar
-s field arrangement must be subset (or equal to) sdf field arrangement
+replace values in struct sdf listed in struct s; structs can be nested and nonscalar
   if field is in both s and sdf, assign to sout the value in s; 
   if field is only in sdf, assign to sout the value in sdf; 
   if field in s doesn't exist in sdf, error

@@ -2,9 +2,14 @@
 
 %{
 
+in matlab, if user explicitly sets name-value argument to empty when calling a function, the default value in arguments block is not used; 
+the arguments block default value is only used if user doesn't specify the name-value argument in the function call,  
+for example, daqld(pthdaq=[]) does not set pthdaq to its arguments block default value, but daqld() does; 
+so for many name-value arguments in scopa matlab code, where we don't want empty to be a valid value, arguments block often sets temporary default value to empty, then true default is set below arguments block; 
+this way, for example, pthdaq will get default value with daqld() and daqld(pthdaq=[])
 
 %{
-suffix:
+stack suffixes:
     'o': original
     'r': motion corrected
     'd': denoised

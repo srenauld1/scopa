@@ -17,7 +17,7 @@ if isempty(pthpy)
 end
 if isempty(optcm)
     fprintf("user did not pass in options as argument, using all defaults")
-    tmp = ofill('roi.cm', nest=1, unpack=1);
+    tmp = ofill('roi.cm', rec=1, unpack=1);
     optcm = tmp.cm;
 end
 

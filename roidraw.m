@@ -894,10 +894,11 @@ catch ME
     %%%% SAVE %%%%
 
     if ~nosave
-        if chandraw==1 && nc==2 %do this so that 2-channel data gets empty 2nd element if channel 2 has no rois, otherwise 2nd element wouldn't exist, which would mislead user into thinking it's single-channel data
+        if isequal(chandraw, 1) && isequal(nc, 2) %do this so that 2-channel data gets empty 2nd element if channel 2 has no rois, otherwise 2nd element wouldn't exist, which would mislead user into thinking it's single-channel data
             mm(2) = structfun(@(x) [], mm, 'UniformOutput', false);
         end
-        save(pthmm, '-struct', 'mm', '-v7.3', '-mat') %save each channel's mask separately (could do it together instead, either way is fine right?)
+        save(pthmm, 'mm', '-v7.3', '-mat') %save each channel's mask separately (could do it together instead, either way is fine right?)
+        % save(pthmm, '-struct', 'mm', '-v7.3', '-mat') %save each channel's mask separately (could do it together instead, either way is fine right?)
     end
 
 end

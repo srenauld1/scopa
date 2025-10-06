@@ -31,7 +31,7 @@ if ~isempty(stack) && (ndims(stack)<2 || ndims(stack)>maxnumdims)
     error("stack input to roidraw must be empty, or have 2-" + num2str(maxnumdims) + " dimensions")
 end
 if isempty(rgnamedf)
-    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), set a local rgnamedf here; this rgname will not prompt you to create rgname, it will just use the whole fov
+    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), or opt.rgnamedf, it gets set here; this rgname default will not prompt you to create rgname, it will just use the whole fov
 end
 if isempty(rgname)
     rgname = rgnamedf; 

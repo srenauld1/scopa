@@ -13,7 +13,7 @@ arguments
     spec = [] % optional input; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); wildcards * are allowed; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in oset (in struct spec)
 end
 
-close all; clc; clear glb tsget ofill; clearvars -except spec usegit; 
+close all; clc; clear glb tsget ofill; clearvars -except spec usegit;
 
 %% options
 
@@ -22,8 +22,9 @@ oa = oset(spec, usegit=usegit); % set options; oa stands for "o all" (ie options
 for k = 1:numel(oa) % loop over recordings
 
     o = oa(k); %index into options for one recording, o
-    
+
     %% stack
+
 
     for m = transpose(fieldnames(o.sld))
         s = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
@@ -47,7 +48,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if o.mn.doroi
         for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack, pthstack=s.pth, md=s.md); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -83,6 +84,7 @@ for k = 1:numel(oa) % loop over recordings
 
     % pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
 
+
     %% a_* functions (analysis specific to experiment)
 
     if 1
@@ -110,12 +112,22 @@ for k = 1:numel(oa) % loop over recordings
             yconst=1, ...
             slopelensec=0.35, ...
             slopeord=3, ...
-            vt=tpe, ... 
+            vt=tpe, ...
             dozscore=1, ...
             stackrot=[-90,0,0], ...
             stackslice=[])
 
     end
+
+    %%
+
+
+
+
+
+    %%
+
+
 
 end
 
