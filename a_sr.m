@@ -19,12 +19,18 @@ o.roi.nrm.post = {'dff008000'};
 
 o = ofill(o);
 
-pth = stackfind(stackid=stackid);
-id = idmake(pth);
-glb(pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
+pthtmp = stackfind(stackid=stackid);
 
-daq = daqld(o.daq, pthstack=pth);
+for k = 1:numel(pthtmp)
 
-s = stackld(pth);
+    pth = pthtmp{k};
+    id = idmake(pth);
+    glb(pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
-roi = roimake(o.roi, s=s);
+    daq = daqld(o.daq, pthstack=pth);
+
+    s = stackld(pth);
+
+    roi(k) = roimake(o.roi, s=s);
+
+end
