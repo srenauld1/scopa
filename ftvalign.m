@@ -67,6 +67,7 @@ if isempty(pthstack)
     end
     id = idmake(pthstack);
 end
+id = idmake(pthstack);
 
 
 

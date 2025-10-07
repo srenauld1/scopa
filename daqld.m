@@ -451,8 +451,7 @@ try
             try
                 volrate = 1/sper;
                 daq(m).ftv = ftvalign(daq(m).ftcam, numvol, volrate, ...
-                    opt.ftv.numpkthr, opt.ftv.smlenpx, opt.ftv.numpx, opt.ftv.smlensec, ...
-                    pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs);
+                    pthstack = pthstack, pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs);
             catch ME
                 fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
                 daq(m).ftv = [];

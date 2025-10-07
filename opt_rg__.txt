@@ -35,6 +35,30 @@
     "t": [1,5704],
     "c": [1,1]
   },
+  "z4": {
+    "id": "20251001_4_1_none",
+    "recdatenum": 2.0251001E+7,
+    "flynum": 4,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,128],
+    "x": [1,128],
+    "z": [1,5],
+    "t": [1,3302],
+    "c": [1,1]
+  },
+  "z5": {
+    "id": "20251006_2_1_none",
+    "recdatenum": 2.0251006E+7,
+    "flynum": 2,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,128],
+    "x": [1,128],
+    "z": [1,3],
+    "t": [1,4403],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
