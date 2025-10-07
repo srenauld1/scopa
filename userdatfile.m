@@ -10,31 +10,33 @@ note pthscopa is automatically added below (does not rely on user input) to prev
 
 arguments
     field = []
-    opt.pthpar = []
-    opt.pthparo2 = []
-    opt.pthpy = []
-    opt.scopausername = []
-    opt.gittoken = []
-    opt.gitbranch = []
-    opt.gitusername = []
+    opt.pthpar = [] %path to folder containing all stacks
+    opt.pthparo2 = [] %path to folder containing all stacks on o2 
+    opt.pthpy = [] %path to python executable (for running python from matlab)
+    opt.scopausername = [] %your scopa username (to enter your oset_* files)
+    opt.gittoken = [] %your git token (for push/pull etc)
+    opt.gitbranch = [] %your scopa git branch (for push/pull etc)
+    opt.gitusername = [] %your git username (for push/pull etc)
 end
 
-numfields = numel(fieldnames(opt));
 optsin = ~structfun(@isempty, opt);
 
 permission = 'read';
 if isempty(field)
     if any(optsin)
-        if isequal(sum(optsin), numfields)
-            permission = 'write';
-        else
-            error("must pass in all, or no, name-value arguments")
-        end
+        permission = 'write';
     end
 else
     if any(optsin)
         error("cannot pass in any nonempty name-value arguments if positional first argument is also nonempty")
     end
+end
+
+if ~isempty(opt.pthpar)
+    opt.pthpar = pthfldformat(opt.pthpar); %format path to folder 
+end
+if ~isempty(opt.pthparo2)
+    opt.pthparo2 = pthfldformat(opt.pthparo2); %format path to folder 
 end
 
 pthscopa = pthscopaget();
@@ -66,7 +68,13 @@ else
 
     tmp = dbstack;
     if isscalar(tmp) && strcmp(tmp.file, 'userdatfile.m')
-        userdat = opt;
+        if isfile(pthuserdat)
+            userdat = structld(pthuserdat);
+        end
+        fnopt = fieldnames(opt);
+        for k = 1:numel(fnopt)
+            userdat.(fnopt{k}) = opt.(fnopt{k});
+        end
         userdat.pthscopa = pthscopa;  %add this automatically, to avoid accidental mismatch between real location output from pthscopaget, and location set here (if it were user input)
         structsv(userdat, pthuserdat, overwrite=1, readonly=1, dosort=1);
     else

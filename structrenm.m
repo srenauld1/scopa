@@ -79,7 +79,7 @@ for k = 1:numel(renm)
     end
 end
 if numel(unique(cellflat(nmold)))~=numel(cellflat(nmold))
-    error("there are duplicate names in the union of renm oldnames and renm newnames")
+    error("there are duplicate names in renm oldnames")
 end
 if numel(unique(cellflat(nmnew)))~=numel(cellflat(nmnew))
     error("there are duplicate names in renm newnames")

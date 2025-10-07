@@ -19,13 +19,7 @@ if isempty(pthdir)
         error("you must pass in name-value argument 'pthdir' or set glb('pthstackdir')")
     end
 end
-if startsWith(pthdir, ['~' filesep])
-    hm = [getenv('HOME') filesep];
-    pthdir = regexprep(pthdir, ['^~' filesep], hm);
-end
-if ~endsWith(pthdir, filesep)
-    error("pthdir (which is coped from from glb('pthstackdir') if you did not pass in name-value argument pthdir) must end with file separator")
-end
+pthdir = pthfldformat(pthdir);
 if ~isfolder(pthdir)
     error("pthdir '" + pthdir + "' DOES NOT EXIST (OR AT LEAST IS NOT A FOLDER)")
 end

@@ -402,11 +402,11 @@ try
             nrs = numel(vrenm);
             for k = 1:numel(vrenm)
                 renmtmp = strtrim(strsplit(vrenm{k}, '='));
-                nmnew = renmtmp{2};
+                nmnew = renmtmp{1};
                 nmnew = strcat(nmnew, '_supp');
-                nmold = strtrim(strsplit(renmtmp{1}, ','));
+                nmold = strtrim(strsplit(renmtmp{2}, ','));
                 nmold = strcat(nmold, '_supp');
-                vrenm(nrs+k) = strcat(convertCharsToStrings(strjoin(nmold, ', ')), " = ", nmnew);
+                vrenm(nrs+k) = strcat(nmnew, " = ", convertCharsToStrings(strjoin(nmold, ', ')));
             end
         end
         daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
@@ -416,14 +416,16 @@ try
 
             %%%% FLY PATH %%%%
 
-            vfang = daq(m).bfv/(balldia/2); %above these were scaled to mm, so revert
-            vsang = daq(m).bsv/(balldia/2); %above these were scaled to mm, so revert
-            [daq(m).px, daq(m).py] = ficpath(vfang, 'radians/second', vsang, 'radians/second', daq(m).vy, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
+            bvfang = daq(m).bvf/(balldia/2); %above these were scaled to mm, so revert
+            bvsang = daq(m).bvs/(balldia/2); %above these were scaled to mm, so revert
+            [daq(m).px, daq(m).py] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
+            [daq(m).pxb, daq(m).pyb] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).bh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
 
             if supprate
-                vfang_supp = daq(m).bfv_supp/(balldia/2); %above these were scaled to mm, so revert
-                vsang_supp = daq(m).bsv_supp/(balldia/2); %above these were scaled to mm, so revert
-                [daq(m).px_supp, daq(m).py_supp] = ficpath(vfang_supp, 'radians/second', vsang_supp, 'radians/second', daq(m).vy_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
+                bvfang_supp = daq(m).bvf_supp/(balldia/2); %above these were scaled to mm, so revert
+                bvsang_supp = daq(m).bvs_supp/(balldia/2); %above these were scaled to mm, so revert
+                [daq(m).px_supp, daq(m).py_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).vh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
+                [daq(m).pxb_supp, daq(m).pyb_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).bh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
             end
 
 
@@ -440,18 +442,24 @@ try
                     error("unique epochts must equal numepoch")
                 end
             else %if you don't have epochs written to daq, load or derive them here (this is not recommended, better to write them to daq)
-                [daq(m).vy, daq(m).vyv, daq(m).epochts] = epochld(id.recdatenum, daq(m).t, daq(m).vy, daq(m).vyv, md.sper);
+                [daq(m).vh, daq(m).vvy, daq(m).epochts] = epochld(id.recdatenum, daq(m).t, daq(m).vh, daq(m).vvy, md.sper);
             end
 
 
 
             %%%% RESAMPLE FICTRAC VIDEO %%%%
 
-
             try
                 volrate = 1/sper;
-                daq(m).ftv = ftvalign(daq(m).ftcam, numvol, volrate, ...
-                    pthstack = pthstack, pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs);
+                numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+                smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+                numpx = 10;  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+                smlensec = 1;
+                doplt_ftvalign = 1; %show the plots in ftvalign
+                ftrate = []; %fictrac rate, hz, only set this to nonempty (eg, ftrate=60) if you don't have pth_dat to derive more precise estimate
+                daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthstack=pthstack, numvol=numvol, imrate=volrate, ...
+                    numpkthr=numpkthr, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
+                    pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs, doplt=doplt_ftvalign);
             catch ME
                 fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
                 daq(m).ftv = [];
