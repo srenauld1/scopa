@@ -38,6 +38,9 @@ end
 if ~isempty(opt.pthparo2)
     opt.pthparo2 = pthfldformat(opt.pthparo2); %format path to folder 
 end
+if ~isempty(opt.scopausername) && isempty(regexp(opt.scopausername, '^[a-zA-Z]+$', 'once'))
+    error('scopausername (if nonempty) can only contain alphabetic characters')
+end
 
 pthscopa = pthscopaget();
 
@@ -78,7 +81,7 @@ else
         userdat.pthscopa = pthscopa;  %add this automatically, to avoid accidental mismatch between real location output from pthscopaget, and location set here (if it were user input)
         structsv(userdat, pthuserdat, overwrite=1, readonly=1, dosort=1);
     else
-        error("for security, when writing to userdat.txt, you must run userdatfile from command line")
+        error("for security, when writing to userdat.txt, you must run userdatfile from command line (if you did, you may have run userdatfile while paused in debugger mode; stop debugger and run from command line)")
     end
 
 end

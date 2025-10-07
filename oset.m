@@ -107,7 +107,7 @@ for k = 1:numel(idtmp)
 
             elseif contains(idtmp(k).pthstack, {'opto'})
 
-                opttmp = oset_opto();
+                opttmp = oset_opto(["sld", "daq"]);
 
             elseif contains(idtmp(k).pthstack, {'fb8c'})
 

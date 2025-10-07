@@ -2,7 +2,7 @@ function ftvdsrs = ftvalign(opt)
 
 %{
 
-NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO
+NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
 align fictrac video to imaging data using oscillations of the laser on fictrac video
 save and output the aligned, temporally resampled video
@@ -22,13 +22,11 @@ this function only uses fictrac .dat file to estimate approximate fictrac rate
 this function does not use the fictrac .txt file, or .log file,
 but if user passes pth_vidlog and pth_log, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
 currently, this function aligns with precision of +/- one-half imaging sample (if it aligns without error)
-
-todo:
-    since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity,
-    the trough/anti-peak would probably align more precisely (since it is the laser-blanked volume flyback period, which is typically shorter than the laser on period),
-    this would require little change to this code except applying findpeaks to the inverse laser timeseries,
-    precision of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
-    and because the fictrac video is currently only used for visualization, not for analysis
+since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity,
+the trough/anti-peak would probably align more precisely (since it should be less ambiguously  it is the temporally shorter volume flyback period),
+this would require little change to this code except applying findpeaks to the inverse laser timeseries,
+error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
+and because the fictrac video is currently only used for visualization
 
 %}
 
@@ -82,7 +80,6 @@ if isempty(pthstack)
 else
     id = idmake(pthstack);
 end
-id = idmake(pthstack);
 
 
 
@@ -347,11 +344,11 @@ catch
     if doplt
         title_prefix = 'pre resample';
         pthgif = [pth_vid(1:end-4) '.gif'];
-        stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=3i+50, pthgif=pthgif, title_prefix=title_prefix)
+        stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
 
         title_prefix = 'post resample';
         pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-        stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=3i+50, pthgif=pthgif, title_prefix=title_prefix)
+        stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=1:30, pthgif=pthgif, title_prefix=title_prefix)
     end
 
     save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
