@@ -148,9 +148,7 @@ numvol = md.numvol;
 sper = md.sper;
 
 
-try
-
-    if isfile(pth_daqrs)
+    try
 
         load(pth_daqrs, 'daq');
 
@@ -174,9 +172,10 @@ try
             end
         end
 
-    else
 
-        fprintf("processed/resampled daq file '" + pth_daqrs + "' does not exist; making it now" + newline)
+    catch ME
+
+        fprintf("tried loading daqrs file but it failed with this message: " + newline + ME.message + newline + "trying to process daq data now" + newline)
 
         if isempty(pthdaq)
             pth_daq_pat = [id.pthstackdir id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
@@ -494,13 +493,7 @@ try
         % save(pth_daqrs, '-struct', 'daq', '-v7.3', '-mat');
         save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
 
-    end
     
-
-catch ME
-
-    daq = [];
-    fprintf("tried loading/processing daq but it failed with this message: " + newline + ME.message + newline + "continuing without daq data" + newline)
 
 end
 
