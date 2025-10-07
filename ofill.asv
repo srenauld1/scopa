@@ -18,7 +18,9 @@ o: main options struct holding all mos; default version is d
 du: unnested version of d (all mos, no compound mos; some exclusive d-mos are du-mos; for example, cm only appears within roi in d, but is a du-mos)
 
 d-mos, du-mos, optin-mos: mos in d, du, and optin, respectively
-mostree (defined in odf.m) 
+mostree (defined in odf.m) is a a list of all d-mos
+mostreeget derives mos for any input struct
+
 struct du (defined in odf) holds all default options for all modules and submodules in a2p; fields directly below du are input module options 
 struct d (defined in odf) is the nested version of du, with some submodules nested within modules (mostree, also defined in odf, defines this nesting)
 output struct optout holds options used in a2p by all modules
@@ -286,8 +288,8 @@ mosc_previous = uniquearray(cat(2, mosc_previous, mosc)); %must ignore mosc_prev
 
 optout = structsort(optout, vectype='row');
 
-
-if ~all(ismember(fieldnames(optout), mostree))
+mostree = mostreeget(optout, du); %mos in optout
+if ~all(ismember(fieldnames(optout), mostree)) && ~allow_du_mos
     error("rec=1 but there is an mos that is not listed in mostree (in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
 end
 

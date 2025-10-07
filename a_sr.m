@@ -20,6 +20,9 @@ o.roi.nrm.post = {'dff008000'};
 o = ofill(o);
 
 pthtmp = stackfind(stackid=stackid);
+if ~iscell(pthtmp)
+    pthtmp = {pthtmp};
+end
 
 for k = 1:numel(pthtmp)
 

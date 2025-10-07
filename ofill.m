@@ -288,9 +288,9 @@ mosc_previous = uniquearray(cat(2, mosc_previous, mosc)); %must ignore mosc_prev
 
 optout = structsort(optout, vectype='row');
 
-
-if ~all(ismember(fieldnames(optout), mostree))
-    error("rec=1 but there is an mos that is not listed in mostree (in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
+mostree_optout = mostreeget(optout, du); %mos in optout
+if ~all(ismember(mostree_optout, mostree)) && ~allow_du_mos
+    error("there is an optout-mos that is not found in d-mos (ie not listed in mostree, in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
 end
 
 glb(1, mosc=mosc_previous)
