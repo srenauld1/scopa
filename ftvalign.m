@@ -1,31 +1,34 @@
 function ftvdsrs = ftvalign(opt)
 
-% NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
+%{
 
-% align fictrac video to imaging data using oscillations of the laser on fictrac video
-% save and output the aligned, temporally resampled video
+NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO (IF YOU DO, THEN FUNCTION load_daq.m WILL OUTPUT THE ALIGNED FICTRAC FRAMES)
 
-% algorithm:
-% finds brightest 'numpx' pixels in mean-t fictrac video (pixels where the imaging laser is brightest, ie under objective)
-% extracts timeseries from their spatial average
-% smooths timeseries with small gaussian window
-% finds peaks using findpeaks
-%
-% removes peaks at the beginning and end of laser_ts (laser timeseries) if distance to next period is not ceil(ftrate/imrate) or floor(ftrate/imrate) . . . ie crops laser_ts to actual laser oscillation portion only
-% includes half-period before the first peak and after the last (half-period is the average half distance between peaks remaining after cropping)
-% assigns each sample in laser_ts (laser timeseries) the index of its nearest intensity peak using nearest neighbor interpolation, these are putative volume indices in the fictrac video
-% averages fictrac video during each putative volume index
-% saves temporally resampled video
+align fictrac video to imaging data using oscillations of the laser on fictrac video
+save and output the aligned, temporally resampled video
 
-% this function only uses fictrac .dat file to estimate approximate fictrac rate
-% this function does not use the fictrac .txt file, or .log file,
-% but if user passes pth_vidlog and pth_log, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
-% currently, this function should not have an error of more than +/- one-half imaging sample
-% since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity,
-% the trough/anti-peak would probably align more precisely (since it should be less ambiguously  it is the temporally shorter volume flyback period),
-% this would require little change to this code except applying findpeaks to the inverse laser timeseries,
-% error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
-% and because the fictrac video is currently only used for visualization
+algorithm:
+    --finds brightest 'numpx' pixels in mean-t fictrac video (pixels where the imaging laser is brightest, ie under objective)
+    --extracts timeseries from their spatial average
+    --smooths timeseries with small gaussian window
+    --finds peaks using findpeaks
+    --removes peaks at the beginning and end of laser_ts (laser timeseries) if distance to next period is not ceil(ftrate/imrate) or floor(ftrate/imrate) . . . ie crops laser_ts to actual laser oscillation portion only
+    --includes half-period before the first peak and after the last (half-period is the average half distance between peaks remaining after cropping)
+    --assigns each sample in laser_ts (laser timeseries) the index of its nearest intensity peak using nearest neighbor interpolation, these are putative volume indices in the fictrac video
+    --averages fictrac video during each putative volume index
+    --saves temporally resampled video
+
+this function only uses fictrac .dat file to estimate approximate fictrac rate
+this function does not use the fictrac .txt file, or .log file,
+but if user passes pth_vidlog and pth_log, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
+currently, this function should not have an error of more than +/- one-half imaging sample
+since, arbitrarily, the centroid of the imaging sample is considered the peak of the laser intensity,
+the trough/anti-peak would probably align more precisely (since it should be less ambiguously  it is the temporally shorter volume flyback period),
+this would require little change to this code except applying findpeaks to the inverse laser timeseries,
+error of half-imaging sample period seems sufficient though since the scopa pipeline downsamples behavior data to match imaging data, rather upsampling imaging data to match behavior data,
+and because the fictrac video is currently only used for visualization
+
+%}
 
 arguments
     opt.rsinds = [] %resampling indices (e.g. if they were on the daq)
