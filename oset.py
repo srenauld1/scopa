@@ -20,7 +20,11 @@ folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #folder
 pth_storage_prefix = '/Users/sophiarenauld/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
 
 recdate = ['20251006'] #list of strings, as it appears in the directory and original scanimage file filename (with hyphen not underscore for now), '*' for any 
+<<<<<<< Updated upstream
 fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+=======
+fly = ['3'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+>>>>>>> Stashed changes
 trial = ['*'] #list of strings, trial, '*' for any #
 substr = ['*'] #list of strings, match recordings only in paths containing any substring in list; '*' for any
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
