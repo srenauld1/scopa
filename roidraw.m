@@ -275,9 +275,6 @@ superset.z = 1:nz;
 superset.t = 1:nt;
 superset.c = 1:nc;
 
-stackmin = double(min(stack, [], 'all'));
-stackmax = double(max(stack, [], 'all'));
-
 stackmnz = stacktype(mean(stack, strfind(nmdm, 'z')), class(stack));
 stackmnt = stacktype(mean(stack, strfind(nmdm, 't')), class(stack));
 stackmnzt = stacktype(mean(stackmnt, strfind(nmdm, 'z')), class(stack));
@@ -364,6 +361,8 @@ catch ME
 
     for ic = chandraw %some fields are redundant across channels (ie rg and mmname are the same for both channels), but for symmetry, and simpler code downstream, they're written to both channels
 
+        stackmin = double(min(stack(:,:,:,:,ic), [], 'all'));
+        stackmax = double(max(stack(:,:,:,:,ic), [], 'all'));
 
         %%%% INITIALIZE PLOT LOOP VARIABLES, AND PLOT STACK %%%%
 

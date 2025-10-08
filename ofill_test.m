@@ -40,4 +40,4 @@ compare all test cases rec=0 and rec=1
     optin.bmp.roi.mm.mmname = 'fuk';
     mos = {'bmp.mdl', 'mdl'};
     out = ofill(optin, mos);
-    outrec = ofill(optin, mos, rec=1);
+    outrec = ofill(optin, mos, rec=1, finish=1);

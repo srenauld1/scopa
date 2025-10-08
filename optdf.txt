@@ -125,7 +125,7 @@
       ],
       "voltmax": 10,
       "voltmin": 0,
-      "voltminyaw": 0.52359877559829882,
+      "voltminhd": 0.52359877559829882,
       "vradians": [
         "ficTracIntSide",
         "ficTracIntForward",
@@ -430,7 +430,7 @@
       ],
       "voltmax": 10,
       "voltmin": 0,
-      "voltminyaw": 0.52359877559829882,
+      "voltminhd": 0.52359877559829882,
       "vradians": [
         "ficTracIntSide",
         "ficTracIntForward",

@@ -97,7 +97,7 @@ usefbf = opt.usefbf; %use flyback frames when defining resampling inds if useind
 balldia = opt.balldia; % mm, used to convert fictrac variables into mm
 voltmin = opt.voltmin; % daq voltage min; need to find this in metadata
 voltmax = opt.voltmax; % daq voltage max, need to find this in metadata
-voltminyaw = opt.voltminyaw;
+voltminhd = opt.voltminhd;
 vrenm = opt.vrenm; %optional new names for each daq variable
 optid = opt.optid;
 
@@ -335,7 +335,7 @@ sper = md.sper;
                             tmp = seconds(tmp); %convert to seconds, whatever the units
                         end
                         if strcmp(vartype, 'radians')
-                            tmp = wrapToPi(tmp/(voltmax-voltmin)*2*pi+voltminyaw); %put in range -pi to pi, with 0 in front of fly
+                            tmp = wrapToPi(tmp/(voltmax-voltmin)*2*pi+voltminhd); %put in range -pi to pi, with 0 in front of fly
                         end
                         if isequal(vec(unique(tmp)), [0;1])
                             tmp = bin2ind(tmp);

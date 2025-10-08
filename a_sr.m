@@ -12,6 +12,7 @@ o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each da
 o.daq.slopeord = 2; % order of polynomial used to fit local slope
 o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2; 
+o.daq.voltminhd = -pi;  %heading angle (radians) assigned to voltmin and voltmax
 
 o.roi.domm = 1;
 o.roi.mm.mmname = {'none'};

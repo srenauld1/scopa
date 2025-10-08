@@ -61,4 +61,4 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
 end
 
 
-o = ofill(o, do, rm=1); % use rm=1 on the final ofill call to strip o to only 'mos' listed in input 'do'
+o = ofill(o, mosfinal=do); % mosfinal final ofill call to strip o to only 'mos' listed in input 'do'
