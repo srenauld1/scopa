@@ -170,8 +170,10 @@ currkey_isletter = ~isempty(regexp(currkey, '^[A-Za-z]$', 'once'));
 currkey_isvalid = ~isempty(regexp(currkey, sprintf('^%s$|', validkeys{:}), 'once'));
 if isempty(prevkey)
     prevkey_isdigit = 0;
+    prevkey_isletter = 0;
 else
     prevkey_isdigit = ~isempty(regexp(prevkey, '^[0-9]$', 'once'));
+    prevkey_isletter = ~isempty(regexp(prevkey, '^[A-Za-z]$', 'once'));
 end
 
 if currkey_isvalid
@@ -185,8 +187,12 @@ if currkey_isvalid
         digitstr = [digitstr currkey];
         currkey_isvalid = 1;
     elseif strcmpi(currkey, ',')
-        if prevkey_isdigit && ~isequal(hyphen_pressed,1)
-            outp = [outp str2double(digitstr)];
+        if (digits_valid && prevkey_isdigit) || (~digits_valid && prevkey_isletter) && ~isequal(hyphen_pressed,1)
+            if digits_valid
+                outp = [outp str2double(digitstr)];
+            else
+                outp = [outp str2nm(digitstr, validkeys, validkeys_nmprint)];
+            end
             if colon_pressed
                 [outp, ttl_problem, exit_sequence] = colon_op(outp);
             end
@@ -244,12 +250,7 @@ if currkey_isvalid
                 if digits_valid
                     outp = [outp str2double(digitstr)];
                 else
-                    digitstr = validkeys_nmprint(~cellfun(@isempty, cellfun(@(x) regexp(digitstr, sprintf('^%s$|', x)), validkeys, 'UniformOutput', false))); %find which of validkeys currkey matches, and grab the corresponding nmprint (name for printing in figure)
-                    if numel(digitstr)~=1
-                        error("only one element from validkeys should match currkey")
-                    end
-                    digitstr = digitstr{1};
-                    outp = [outp digitstr];
+                    outp = [outp str2nm(digitstr, validkeys, validkeys_nmprint)];
                 end
                 digitstr = [];
                 if colon_pressed
@@ -416,3 +417,14 @@ if ~isempty(x)
 end
 
 end
+
+function str = str2nm(str, validkeys, validkeys_nmprint)
+
+str = validkeys_nmprint(~cellfun(@isempty, cellfun(@(x) regexp(str, sprintf('^%s$|', x)), validkeys, 'UniformOutput', false))); %find which of validkeys currkey matches, and grab the corresponding nmprint (name for printing in figure)
+if numel(str)~=1
+    error("one and only one element from validkeys should match currkey (you may have zero matches, or more than one match, and you may have forgotten to use a comma to separate elements)")
+end
+str = str{1};
+
+end
+

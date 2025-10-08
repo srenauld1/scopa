@@ -14,7 +14,8 @@ o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampl
 o.daq.slopeord_supp = 2; 
 
 o.roi.domm = 1;
-o.roi.mm.mmname = {'none'};
+o.roi.rgname = {'fool'};
+o.roi.mm.mmname = {'new2'};
 o.roi.nrm.post = {'dff008000'};
 
 o = ofill(o);

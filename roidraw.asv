@@ -483,7 +483,7 @@ catch ME
                             [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                         else %if multiple axes, on first click zoomflag=1 and we "zoom into" clicked axes; on second click drawflag=1 and we begin drawing
                             zoomflag = 1;
-                            iznew = iz(imselected);
+                            iznew = imselected;
                         end
                     end
                 end
@@ -969,11 +969,7 @@ if any(dmmean) %we display the mean of stack dimensions corresponding to nonzero
             stacktmp = stacktype(mean(stack(idxstr{:}), find(dmmean)), class(stack));
         end
     end
-    if ismember(strfind(nmdm, 'z'), find(dmmean))
-        stack_oneframe = stacktmp(:,:,:,1); %if we averaged z, don't index with iz; we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
-    else
-        stack_oneframe = stacktmp(:,:,iz,1); %if we didn't average z, index with izwe take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
-    end
+    stack_oneframe = stacktmp(:,:,:,1); %we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
 else
     stacktmp = stack;
     stack_oneframe = stack(:,:,iz,1); %we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz

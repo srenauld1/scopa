@@ -47,6 +47,18 @@
     "t": [1,36381],
     "c": [1,1]
   },
+  "z5": {
+    "id": "20250920_1_1_none",
+    "recdatenum": 2.025092E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,30],
+    "x": [1,128],
+    "z": [1,23],
+    "t": [1,45932],
+    "c": [1,1]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",
