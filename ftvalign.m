@@ -184,6 +184,9 @@ catch
 
         if isempty(topkp)
             ftvid_cntr_t = reshape(mean(ftvds,2), szvd(1), szvd(2));
+            if ~isempty(smlenpx)
+                ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+            end
             figure;
             imagesc(ftvid_cntr_t)
             title("draw freestyle roi where the laser oscillation is likely to be strongest")
@@ -196,12 +199,16 @@ catch
             switch cntr_method
                 case 'mean'
                     ftvid_cntr_t = reshape(mean(ftvds,2), szvd(1), szvd(2));
-                    ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    if ~isempty(smlenpx)
+                        ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    end
                     ftvid_cntr_t(round(size(ftvid_cntr_t,1)*(1-topkp)):end,:) = 0; %hack, zero out bottom (1-topkp) fraction of frame
                     [~,mxi] = sort(ftvid_cntr_t(:), 'descend');
                 case 'var'
                     ftvid_cntr_t = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
-                    ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    if ~isempty(smlenpx)
+                        ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    end
                     ftvid_cntr_t(round(size(ftvid_cntr_t,1)*(1-topkp)):end,:) = 0; %hack, zero out bottom (1-topkp) fraction of frame
                     [~,mxi] = sort(ftvid_cntr_t(:), 'descend');
             end

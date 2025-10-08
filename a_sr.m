@@ -32,7 +32,7 @@ for k = 1:numel(pthtmp)
     id = idmake(s.pth);
     glb(1, pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
-    daq = daqld(o.daq, pthstack=s.pth);
+    daq(k) = daqld(o.daq, pthstack=s.pth);
 
     roi(k) = roimake(o.roi, s=s);
 

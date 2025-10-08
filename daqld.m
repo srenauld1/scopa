@@ -446,13 +446,14 @@ catch ME
         try
             volrate = 1/sper;
             numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-            smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-            numpx = 10;  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+            topkp = [];   % keep empty to draw where laser is brightest; fraction of vertical top of fictrac video frames to consider when finding brightest numpx pixels (pedestal at bottom can sometimes be brightest part of image, so this can exclude that); if empty, user prompted to draw roi
+            smlenpx = []; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+            numpx = [];  %keep empty is topkp is empty, since roi you draw will determine numpx; after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
             smlensec = 1;
             doplt_ftvalign = 1; %show the plots in ftvalign
             ftrate = []; %fictrac rate, hz, only set this to nonempty (eg, ftrate=60) if you don't have pth_dat to derive more precise estimate
             daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthstack=pthstack, numvol=numvol, imrate=volrate, ...
-                numpkthr=numpkthr, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
+                numpkthr=numpkthr, topkp=topkp, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
                 pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs, doplt=doplt_ftvalign);
         catch ME
             fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
