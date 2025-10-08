@@ -322,7 +322,6 @@ end
 index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
 missing_dims = numel(index_labels_opt)+1:numel(index_labels_default);
 index_labels(missing_dims) = {nan};
-dimlabelsmax(missing_dims)
 
 dimlabels = [dimlabels(dimorder); dimlabelsmax(missing_dims)];
 index_labels = index_labels([dimorder missing_dims]);

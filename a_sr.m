@@ -5,7 +5,7 @@ clear ofill
 close all
 clc
 
-stackid = '20250920_1_1_ord'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
+stackid = '20251007*'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
 
 o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
 o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
@@ -29,7 +29,7 @@ for k = 1:numel(pthtmp)
     s = stackld(pthtmp{k});
     
     id = idmake(s.pth);
-    glb(pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
+    glb(1, pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
     daq = daqld(o.daq, pthstack=s.pth);
 

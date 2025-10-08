@@ -50,8 +50,7 @@ idtmp = idmake(pthstacks);
 
 for k = 1:numel(idtmp)
 
-    clear ofill %clear persistent variables in ofill on each loop
-    opttmp = [];  %if we don't enter any oset_* file below, empty opttmp will invoke all default options when passed into ofill
+    clear ofill %clear persistent variables in ofill for each stack
 
     switch userdatfile('scopausername')
 
@@ -59,7 +58,7 @@ for k = 1:numel(idtmp)
 
             if contains(idtmp(k).pthstack, {''}) %empty string means every recording
 
-                opttmp = oset_wenyi();
+                o(k) = oset_wenyi();
 
             end
 
@@ -67,7 +66,7 @@ for k = 1:numel(idtmp)
 
             if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                opttmp = oset_jingxuan();
+                o(k) = oset_jingxuan();
 
             end
 
@@ -75,7 +74,7 @@ for k = 1:numel(idtmp)
 
             if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                opttmp = oset_yunzhi();
+                o(k) = oset_yunzhi();
 
             end
 
@@ -83,7 +82,7 @@ for k = 1:numel(idtmp)
 
             if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
 
-                opttmp = oset_sophia();
+                o(k) = oset_sophia();
 
             end
 
@@ -91,45 +90,43 @@ for k = 1:numel(idtmp)
 
             if contains(idtmp(k).pthstack, {'ebganoo'})
 
-                opttmp = oset_ebgano();
+                o(k) = oset_ebgano();
 
             elseif contains(idtmp(k).pthstack, {'ganopb'})
 
-                opttmp = oset_ganopb();
+                o(k) = oset_ganopb();
 
             elseif contains(idtmp(k).pthstack, {'elno'})
 
-                opttmp = oset_elno();
+                o(k) = oset_elno();
 
             elseif contains(idtmp(k).pthstack, {'ebno'})
 
-                opttmp = oset_ebno();
+                o(k) = oset_ebno();
 
             elseif contains(idtmp(k).pthstack, {'opto'})
 
-                opttmp = oset_opto(["sld", "daq"]);
+                o(k) = oset_opto();
 
             elseif contains(idtmp(k).pthstack, {'fb8c'})
 
-                opttmp = oset_fb8c();
+                o(k) = oset_fb8c();
 
             elseif contains(idtmp(k).pthstack, {'mito'})
 
-                opttmp = oset_mito();
+                o(k) = oset_mito();
 
             elseif contains(idtmp(k).pthstack, {'312'})
 
-                opttmp = oset_312();
+                o(k) = oset_312();
 
             elseif contains(idtmp(k).pthstack, {'f91g'})
 
-                opttmp = oset_t5();
+                o(k) = oset_t5();
 
             end
 
     end
-
-    o(k) = ofill(opttmp, finish=1);
 
 end
 

@@ -417,12 +417,23 @@ if any(cell2mat(cellfun(@(x) ~isequal(numel(x), numel(unique(x))), spl, UniformO
     error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as an mos; repeated names are currently not allowed")
 end
 
+%% derive mostrees
+
+[mostree_derived, mostree_open, mostree_top] = mostreeget(d, du); 
+if ~isequal(mostree, mostree_derived)
+    error("mostree and mostree_d (derived mostree from mostreeget) do not match")
+end
+
 %% write to file
 
 fprintf("writing default options to: " + pthopt + newline)
 dall.d = d;
 dall.du = du;
 dall.mostree = mostree;
+dall.mostree_open = mostree_open;
+dall.mostree_top = mostree_top;
+
+
 structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
 
 

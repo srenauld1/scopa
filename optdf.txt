@@ -608,5 +608,33 @@
     "roi.nrm",
     "roi.qc",
     "sld"
+  ],
+  "mostree_open": [
+    "bmp",
+    "bmp.mdl",
+    "bmp.mdl.opg",
+    "bmp.mdl.opl",
+    "bmp.roi",
+    "bmp.roi.mm",
+    "daq",
+    "fmf",
+    "mdl",
+    "mdl.opg",
+    "mdl.opl",
+    "roi",
+    "roi.cm",
+    "roi.ma",
+    "roi.mm",
+    "roi.nrm",
+    "roi.qc",
+    "sld"
+  ],
+  "mostree_top": [
+    "bmp",
+    "daq",
+    "fmf",
+    "mdl",
+    "roi",
+    "sld"
   ]
 }
