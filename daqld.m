@@ -83,7 +83,6 @@ end
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
 vradians = opt.vradians; %list circular daq variables you want to process
-vdegrees = opt.vdegrees; %list circular daq variables you want to process
 vcategorical = opt.vcategorical; %list categorical daq variables you want to process
 tomm = opt.tomm; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
 useinds = opt.useinds; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
@@ -108,9 +107,6 @@ if ~isstring(vnormal)
 end
 if ~isstring(vradians)
     vradians = string(vradians); %could also convert to char here
-end
-if ~isstring(vdegrees)
-    vdegrees = string(vdegrees); %could also convert to char here
 end
 if ~isstring(vcategorical)
     vcategorical = string(vcategorical); %could also convert to char here
@@ -188,7 +184,6 @@ sper = md.sper;
 
         daqvars.normal = vnormal;
         daqvars.radians = vradians;
-        daqvars.degrees = vdegrees;
         daqvars.categorical = vcategorical;
 
         if round(slopelensec/sper)<slopeord+1

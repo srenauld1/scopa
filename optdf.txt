@@ -130,22 +130,24 @@
         "ficTracIntSide",
         "ficTracIntForward",
         "ficTracYaw",
+        "ficTracHd",
         "ficTracHeading",
         "g4panels",
-        "g4yaw"
+        "g4yaw",
+        "g4hd"
       ],
       "vrenm": [
         "t = Time, time, T",
         "epochts = epoch",
         "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw",
-        "vvy = g4panels_dv, g4yaw_dv",
+        "vh = g4panels, g4yaw, g4hd",
+        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
         "bf = ficTracIntForward",
         "bvf = ficTracIntForward_dv",
         "bs = ficTracIntSide",
         "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv",
+        "bh = ficTracYaw, ficTracHeading, ficTracHd",
+        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
         "ftcam = ftcam"
       ],
       "vtime": [
@@ -435,22 +437,24 @@
         "ficTracIntSide",
         "ficTracIntForward",
         "ficTracYaw",
+        "ficTracHd",
         "ficTracHeading",
         "g4panels",
-        "g4yaw"
+        "g4yaw",
+        "g4hd"
       ],
       "vrenm": [
         "t = Time, time, T",
         "epochts = epoch",
         "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw",
-        "vvy = g4panels_dv, g4yaw_dv",
+        "vh = g4panels, g4yaw, g4hd",
+        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
         "bf = ficTracIntForward",
         "bvf = ficTracIntForward_dv",
         "bs = ficTracIntSide",
         "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv",
+        "bh = ficTracYaw, ficTracHeading, ficTracHd",
+        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
         "ftcam = ftcam"
       ],
       "vtime": [
