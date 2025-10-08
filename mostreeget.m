@@ -1,4 +1,4 @@
-function [mostree, mostree_open, mostree_top] = mostreeget(o, du)
+function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du)
 
 %{
 
@@ -37,8 +37,9 @@ end
 
 options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg(' delimflat '.*)*$']))); %remove tg 
 invalid_options_o = options_o_no_tg(~ismember(options_o_no_tg, options_du));
+invalid_options_o = invalid_options_o(~ismember(invalid_options_o, fn_du));
 if ~isempty(invalid_options_o)
-    error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}))
+    error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}) + newline)
 end
 
 fn_oflat_mos_only = cell(1, numel(options_o));

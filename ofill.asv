@@ -297,8 +297,13 @@ else %if mosfinal is nonempty
     end
 
     mos_leading = sort(unique(regexprep(mostree_optout_open, '(\.\w*)$', '')), 'descend'); %remove any trailing mos, sort descending (deepest to shallowest)
-    sind = structind(mostree_open{k});
-    all(structfun(@isempty, getfield(optout, sind{:})))
+    for k = 1:numel(mos_leading)
+        sind = structind(mos_leading{k});
+        if all(structfun(@isempty, getfield(optout, sind{:})))
+            fool = 1;
+
+        end
+    end
     optout.finished = 1;
 
 end

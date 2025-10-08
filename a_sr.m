@@ -5,7 +5,7 @@ clear ofill
 close all
 clc
 
-stackid = '20251007*'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
+stackid = '20251006_7_1_or'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
 
 o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
 o.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord

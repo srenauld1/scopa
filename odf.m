@@ -394,7 +394,7 @@ if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vvynom", "vh", "vvy", "bf", "bv
     error("you cannot change new names for the daq in du.daq.vrenm if you're running a2p")
 end
 
-%% rec 
+%% d (nested version of du, nested according to mostree)
 
 d = struct;
 for k = 1:numel(mostree)
@@ -414,14 +414,18 @@ d_flat = structflat(d, delim=delimflat);
 fn_d_flat = fieldnames(d_flat);
 spl = cellfun(@(x) strsplit(x, delimflat), fn_d_flat, UniformOutput=false);
 if any(cell2mat(cellfun(@(x) ~isequal(numel(x), numel(unique(x))), spl, UniformOutput=false)))
-    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as an mos; repeated names are currently not allowed")
+    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as a mos; repeated names are currently not allowed")
 end
 
 %% derive mostrees
 
-[mostree_derived, mostree_open, mostree_top] = mostreeget(d, du); 
+[mostree_derived, mostree_open, mostree_top, options_d] = mostreeget(d, du); 
 if ~isequal(mostree, mostree_derived)
     error("mostree and mostree_d (derived mostree from mostreeget) do not match")
+end
+options_invalid = options_d(ismember(options_d, fnd));
+if ~isempty(options_invalid)
+    error("the following options have the same names as mos (not allowed): " + newline + sprintf('%s\n', options_invalid{:}))
 end
 
 %% write to file

@@ -30,6 +30,8 @@ o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 
+o = ofill(o);
+
 rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently

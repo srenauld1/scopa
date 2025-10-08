@@ -195,9 +195,18 @@ end
 
 function optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal)
 
+
 persistent mosc_previous
 if isempty(mosc_previous)
     mosc_previous = {};
+end
+
+if isfield(optin, 'finished')
+    if isequal(optin.finished, 1)
+        error("you cannot call ofill on an options struct that is 'finished' (has field named 'finished', which will always take value of 1, if field exists)")
+    else
+        error("the value of field 'finished' is not 1; the only valid value is 1")
+    end
 end
 
 if isempty(mosfinal)
@@ -296,9 +305,15 @@ else %if mosfinal is nonempty
         end
     end
 
-    sind = structind(mostree_open{k});
-    all(structfun(@isempty, getfield(optout, sind{:})))
-    optout.finished = 1;
+    mos_open_descend = sort(mostree_open, 'descend'); %sort descending (deepest to shallowest) 
+    for k = 1:numel(mos_open_descend)
+        sind = structind(mos_open_descend{k});
+        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isempty, getfield(optout, sind{:})))
+            optout = setfield(optout, sind{:}, []); %set to empty any mos containing nothing but other empty mos
+        end
+    end
+
+    optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and tsget)
 
 end
 

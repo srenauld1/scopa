@@ -203,6 +203,12 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
             pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
             if pth_ftvid:
                 pth_ftvid = pth_ftvid[0]
+            else: #try alt pattern name
+                fn_pattern_ftvid = fldr + 'FicTracData/fictrac-dbg-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.avi'
+                pth_ftvid = glob.glob(fn_pattern_ftvid, recursive=True)
+                if pth_ftvid:
+                    pth_ftvid = pth_ftvid[0]
+
             
             fn_pattern_ftdat = fldr + 'FicTracData/fictrac-' + datestr_found + '*_trial_' + trialstr_found.zfill(3) + '.dat'
             pth_ftdat = glob.glob(fn_pattern_ftdat, recursive=True)
