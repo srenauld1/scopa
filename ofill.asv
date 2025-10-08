@@ -283,10 +283,10 @@ if isempty(mosfinal)
 
 else %if mosfinal is nonempty
 
+    optout = optin;
     if any(~ismember(mosfinal, mostree_top))
         error("all mos in mosfinal must be top-level mos")
     end
-
     [~, mostree_optout_open, ~] = mostreeget(optout, du); %mos in optout; call mostreeget a second time for optout because it may have been modified after first time
     mostree_optout_open_keep = mostree_optout_open(~cellfun(@isempty, regexp(mostree_optout_open, ['^(' sprintf('%s|', mosfinal{:}) ')(\..*)*$'])));
     for k = 1:numel(mostree_open)
@@ -295,6 +295,10 @@ else %if mosfinal is nonempty
             optout = setfield(optout, sind{:}, []); %set any missing mos to empty when mosfinal is nonempty
         end
     end
+
+    mos_leading = sort(unique(regexprep(mostree_optout_open, '(\.\w*)$', '')), 'descend'); %remove any trailing mos, sort descending (deepest to shallowest)
+    sind = structind(mostree_open{k});
+    all(structfun(@isempty, getfield(optout, sind{:})))
     optout.finished = 1;
 
 end

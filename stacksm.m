@@ -12,7 +12,7 @@ can prevent ram from exceeding input ram
 arguments
     stack
     opt.method = 'gaussian' %smoothing method for smoothdata function; can be sequence of multiple (cell array of char vectors)
-    opt.smlenpx = [] % length-3 vector, xyz smoothing window size
+    opt.smlenpx = [] % length-3 vector, yxz smoothing window size
     opt.smlensec = [] % scalar, seconds to smooth (does not have to be integer)
     opt.imrate = [] %imaging rate, only required if smlensec is nonempty; can be approximate (just determines window size from smlensec)
     opt.memthr = 1e9 %memory threshold; if stack size (in bytes) exceeds memthr, we operate on stack in batches to prevent RAM crash; 1e9 is 1 gb; operate in batches to prevent ram from exceeding input stack size (since smoothdata converts from integer data inside function)

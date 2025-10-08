@@ -295,6 +295,9 @@ else %if mosfinal is nonempty
             optout = setfield(optout, sind{:}, []); %set any missing mos to empty when mosfinal is nonempty
         end
     end
+
+    sind = structind(mostree_open{k});
+    all(structfun(@isempty, getfield(optout, sind{:})))
     optout.finished = 1;
 
 end
