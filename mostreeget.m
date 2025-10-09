@@ -1,4 +1,4 @@
-function [mostree, mostree_open, mostree_top] = mostreeget(o, du)
+function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du)
 
 %{
 
@@ -21,18 +21,30 @@ fn_du = fieldnames(du);
 oflat = structflat(o, delim=delimflat);
 fn_oflat = fieldnames(oflat);
 
-options = fn_oflat; %options only, not mos
+options_o = fn_oflat; %options only, not mos
 while true
-    options_tmp = options;
-    options = regexprep(options, strcat('^', fn_du, delimflat), ''); %remove contiguous sequence of mos at the beginning (will not remove mos preceded by a mosc)
-    if isequal(options, options_tmp) %once all not-mos have been removed, break from the loop
+    options_tmp = options_o;
+    options_o = regexprep(options_o, strcat('^', fn_du, delimflat), ''); %remove contiguous sequence of mos at the beginning (will not remove mos preceded by a mosc)
+    if isequal(options_o, options_tmp) %once all not-mos have been removed, break from the loop
         break
     end
 end
 
-fn_oflat_mos_only = cell(1, numel(options));
-for k = 1:numel(options) %use this in loop because we are removing mos_not for each fn_optin_flat (don't want removal across indices)
-    fn_oflat_mos_only{k} = regexprep(fn_oflat{k}, strcat(delimflat, options{k}, '$'), ''); %keep only the mos
+options_du = {};
+for k = 1:numel(fn_du)
+    options_du = cat(1, options_du, fieldnames(du.(fn_du{k})));
+end
+
+options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg(' delimflat '.*)*$']))); %remove tg 
+invalid_options_o = options_o_no_tg(~ismember(options_o_no_tg, options_du));
+invalid_options_o = invalid_options_o(~ismember(invalid_options_o, fn_du));
+if ~isempty(invalid_options_o)
+    error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}) + newline)
+end
+
+fn_oflat_mos_only = cell(1, numel(options_o));
+for k = 1:numel(options_o) %use this in loop because we are removing mos_not for each fn_optin_flat (don't want removal across indices)
+    fn_oflat_mos_only{k} = regexprep(fn_oflat{k}, strcat(delimflat, options_o{k}, '$'), ''); %keep only the mos
 end
 fn_oflat_mos_only = unique(fn_oflat_mos_only);
 

@@ -29,7 +29,7 @@ mostree = [  %in sort order; in compound mos, each is filled as in du below (ie 
 
 du.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
 du.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
+du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHd", "ficTracHeading", "g4panels", "g4yaw", "g4hd"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 du.daq.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 du.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 du.daq.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
@@ -44,19 +44,19 @@ du.daq.usefbf = 1; % whether to include flyback frames when resampling with volu
 du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 du.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 du.daq.voltmax = 10; % daq voltage max, need to find this in metadata
-du.daq.voltminyaw = 1/12 * 2*pi; %yaw position assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
+du.daq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
 du.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
     "t = Time, time, T";
     "epochts = epoch";
     "vvynom = g4vel, g4velnom";
-    "vh = g4panels, g4yaw";
-    "vvy = g4panels_dv, g4yaw_dv";
+    "vh = g4panels, g4yaw, g4hd";
+    "vvy = g4panels_dv, g4yaw_dv, g4hd_dv";
     "bf = ficTracIntForward";
     "bvf = ficTracIntForward_dv";
     "bs = ficTracIntSide";
     "bvs = ficTracIntSide_dv";
-    "bh = ficTracYaw, ficTracHeading";
-    "bvy = ficTracYaw_dv, ficTracHeading_dv";
+    "bh = ficTracYaw, ficTracHeading, ficTracHd";
+    "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv";
     "ftcam = ftcam"]; 
 
 %% sld (stackld: load/process stack from tif / save to mat )
@@ -394,7 +394,7 @@ if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vvynom", "vh", "vvy", "bf", "bv
     error("you cannot change new names for the daq in du.daq.vrenm if you're running a2p")
 end
 
-%% rec 
+%% d (nested version of du, nested according to mostree)
 
 d = struct;
 for k = 1:numel(mostree)
@@ -414,7 +414,18 @@ d_flat = structflat(d, delim=delimflat);
 fn_d_flat = fieldnames(d_flat);
 spl = cellfun(@(x) strsplit(x, delimflat), fn_d_flat, UniformOutput=false);
 if any(cell2mat(cellfun(@(x) ~isequal(numel(x), numel(unique(x))), spl, UniformOutput=false)))
-    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as an mos; repeated names are currently not allowed")
+    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as a mos; repeated names are currently not allowed")
+end
+
+%% derive mostrees
+
+[mostree_derived, mostree_open, mostree_top, options_d] = mostreeget(d, du); 
+if ~isequal(mostree, mostree_derived)
+    error("mostree and mostree_d (derived mostree from mostreeget) do not match")
+end
+options_invalid = options_d(ismember(options_d, fnd));
+if ~isempty(options_invalid)
+    error("the following options have the same names as mos (not allowed): " + newline + sprintf('%s\n', options_invalid{:}))
 end
 
 %% write to file
@@ -423,6 +434,10 @@ fprintf("writing default options to: " + pthopt + newline)
 dall.d = d;
 dall.du = du;
 dall.mostree = mostree;
+dall.mostree_open = mostree_open;
+dall.mostree_top = mostree_top;
+
+
 structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
 
 

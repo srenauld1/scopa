@@ -37,6 +37,7 @@ arguments
     opt.numvol = [] %number of imaging volumes
     opt.imrate = [] %imaging rate, volrate if volumetric, framerate if not (average,approximate can work too)
     opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+    opt.topkp = 0.5; % fraction of vertical top of fictrac video frames to consider when finding brightest numpx pixels (pedestal at bottom can sometimes be brightest part of image, so this can exclude that); if empty, user is prompted to choose roi
     opt.smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     opt.numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
     opt.smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
@@ -44,15 +45,16 @@ arguments
     opt.pthstack = [] %can pass in path to stack and derive defaults for all the other paths
     opt.pth_vid char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     opt.pth_vidrs char = [] %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
-    opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead 
+    opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
     opt.pth_vidlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     opt.pth_log char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
-    opt.doplt = []; %0 skips plots, 1 plots and saves, 2 saves but does not display
+    opt.doplt = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
 rsinds = opt.rsinds;
 numvol = opt.numvol;
 imrate = opt.imrate;
 numpkthr = opt.numpkthr;
+topkp = opt.topkp;
 smlenpx = opt.smlenpx;
 numpx = opt.numpx;
 smlensec = opt.smlensec;
@@ -65,16 +67,9 @@ pth_vidlog = opt.pth_vidlog;
 pth_log = opt.pth_log;
 doplt = opt.doplt;
 
-if isempty(doplt)
-    doplt = any(strcmp('ftv', glb('plt')));
+if ~ismember(isempty(topkp) + isempty(numpx), [0,2])
+    error("numpx and topkp must both be empty or nonempty")
 end
-
-if doplt==1
-    gifvis = 'on';
-elseif doplt==2
-    gifvis = 'off';
-end
-
 if isempty(pthstack)
     if isempty(pth_vid)
         error("if pth_vid is empty, pthstack must be nonempty")
@@ -153,8 +148,8 @@ catch
 
     if pth_log
         try
-            [pthtmp, ~, ~] = fileparts(pth_log);
-            pth_log_parsed = [pthtmp filesep 'FT_LOG_PARSED_.mat'];
+            [pthtmp, fnlog, ~] = fileparts(pth_log);
+            pth_log_parsed = [pthtmp filesep fnlog '_parsed_.mat'];
             load(pth_log_parsed, 'log_timestamps', 'log_framecounts')
         catch
             [log_timestamps, log_framecounts] = parse_fictrac_log(pth_log, pth_log_parsed, ftvl(end)); %outputs: vlts (vid log
@@ -187,16 +182,38 @@ catch
 
         szvd = size(ftvds);
         ftvds = reshape(ftvds, [], size(ftvds, 3));
-        ftvid_meanframe = reshape(mean(ftvds,2), szvd(1), szvd(2));
-        ftvid_meanframe = imgaussfilt(ftvid_meanframe,smlenpx);
-        ftvid_meanframe(round(size(ftvid_meanframe)/4):end,:) = 0; %hack, top quarter of frame
-        [~,mxi] = sort(ftvid_meanframe(:), 'descend');
 
-        % ftvid_varframe = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
-        % ftvid_varframe(25:end,:) = 0; %hack
-        % ftvid_varframe = imgaussfilt(ftvid_varframe,smlenpx);
-        % [~,mxi] = sort(ftvid_varframe(:), 'descend');
-
+        if isempty(topkp)
+            ftvid_cntr_t = reshape(mean(ftvds,2), szvd(1), szvd(2));
+            if ~isempty(smlenpx)
+                ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+            end
+            figure;
+            imagesc(ftvid_cntr_t)
+            title("draw freestyle roi where the laser oscillation is likely to be strongest")
+            cntr_roi = drawfreehand('Color','r');
+            roimsk = createMask(cntr_roi);
+            mxi = find(roimsk);
+            numpx = numel(mxi);
+        else
+            cntr_method = 'mean'; %mean or var
+            switch cntr_method
+                case 'mean'
+                    ftvid_cntr_t = reshape(mean(ftvds,2), szvd(1), szvd(2));
+                    if ~isempty(smlenpx)
+                        ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    end
+                    ftvid_cntr_t(round(size(ftvid_cntr_t,1)*(1-topkp)):end,:) = 0; %hack, zero out bottom (1-topkp) fraction of frame
+                    [~,mxi] = sort(ftvid_cntr_t(:), 'descend');
+                case 'var'
+                    ftvid_cntr_t = reshape(var(single(ftvds),[],2), szvd(1), szvd(2));
+                    if ~isempty(smlenpx)
+                        ftvid_cntr_t = imgaussfilt(ftvid_cntr_t,smlenpx);
+                    end
+                    ftvid_cntr_t(round(size(ftvid_cntr_t,1)*(1-topkp)):end,:) = 0; %hack, zero out bottom (1-topkp) fraction of frame
+                    [~,mxi] = sort(ftvid_cntr_t(:), 'descend');
+            end
+        end
         laser_ts = mean(ftvds(mxi,:)); %laser_ts shows, purportedly, laser timeseries of oscillations in the brightest numbrightpix pixels in the spatially smoothed, mean-t image
         % laser_ts = laser_ts - mean(laser_ts);
         % laser_ts = rescale(laser_ts);
@@ -205,10 +222,9 @@ catch
         ftvds = reshape(ftvds, szvd);
 
         if doplt
-            hfg = figure( 'Units', 'Normalized', 'Color', 'white', 'visible', gifvis);
+            hfg = figure( 'Units', 'Normalized', 'Color', 'white');
             hax = axes('Parent', hfg);
-            imagesc(hax, ftvid_meanframe); hold on;
-            % imagesc(hax, ftvid_varframe); hold on;
+            imagesc(hax, ftvid_cntr_t); hold on;
             [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpx)); %plot with image to confirm these are good pixels for extracting laser timeseries
             scatter(mxc,mxr,5,'red','filled')
             pth_gif = [pth_vid '_mean_t_im_.gif'];

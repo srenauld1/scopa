@@ -69,11 +69,11 @@ end
 if isempty(dmplt)
     dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
 end
-if isempty(dmstack)
-    dmstack = 'yxztck';
-end
-
 dmstackmax = 'yxztck'; %all dimensions allowed in stack; order is irrelevant
+if isempty(dmstack)
+    dmstack = dmstackmax;
+end
+dmstack = [dmstack dmstackmax(~ismember(dmstackmax, dmstack))];
 maxnumdims = numel(dmstackmax);
 dimlabelsmax = vec(num2cell(dmstackmax));
 dimlabels = vec(num2cell(dmstack));
@@ -322,7 +322,6 @@ end
 index_labels_default = arrayfun(@(x) 1:x(end), szdfo, 'UniformOutput', false);
 missing_dims = numel(index_labels_opt)+1:numel(index_labels_default);
 index_labels(missing_dims) = {nan};
-dimlabelsmax(missing_dims)
 
 dimlabels = [dimlabels(dimorder); dimlabelsmax(missing_dims)];
 index_labels = index_labels([dimorder missing_dims]);

@@ -69,7 +69,7 @@ pth_ftvidrs = opt2.pth_ftvidrs;
 doplt = opt2.doplt;
 
 if ~isempty(pthstack) && ~isempty(pthdaq)
-    error("only pass in pthstack or pthdaq, but not both (to be safe to avoid conflicts); pthstack is better to pass in, if convenient, because it allows you to derive metadata (*mdsi_.txt) in case thaqt file doesn't exist")
+    error("only pass in pthstack or pthdaq, but not both (to be safe to avoid conflicts); pthstack is better to pass in, if convenient, because it allows you to derive metadata (*mdsi_.txt) in case that file doesn't exist")
 end
 
 if ~isempty(pthstack)
@@ -83,7 +83,6 @@ end
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
 vradians = opt.vradians; %list circular daq variables you want to process
-vdegrees = opt.vdegrees; %list circular daq variables you want to process
 vcategorical = opt.vcategorical; %list categorical daq variables you want to process
 tomm = opt.tomm; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
 useinds = opt.useinds; %'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
@@ -97,7 +96,7 @@ usefbf = opt.usefbf; %use flyback frames when defining resampling inds if useind
 balldia = opt.balldia; % mm, used to convert fictrac variables into mm
 voltmin = opt.voltmin; % daq voltage min; need to find this in metadata
 voltmax = opt.voltmax; % daq voltage max, need to find this in metadata
-voltminyaw = opt.voltminyaw;
+voltminhd = opt.voltminhd;
 vrenm = opt.vrenm; %optional new names for each daq variable
 optid = opt.optid;
 
@@ -108,9 +107,6 @@ if ~isstring(vnormal)
 end
 if ~isstring(vradians)
     vradians = string(vradians); %could also convert to char here
-end
-if ~isstring(vdegrees)
-    vdegrees = string(vdegrees); %could also convert to char here
 end
 if ~isstring(vcategorical)
     vcategorical = string(vcategorical); %could also convert to char here
@@ -124,7 +120,7 @@ elseif ~isempty(pthdaq)
     id = idmake(pthdaq);
     pt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '*.mat'];
     pthdaq = rdir(pt);
-    if isscalar(pthdaq) 
+    if isscalar(pthdaq)
         pthdaq = pthdaq.name;
     else
         error("pthdaq does not exist, or there are multiple matches")
@@ -148,352 +144,352 @@ numvol = md.numvol;
 sper = md.sper;
 
 
-    try
-
-        load(pth_daqrs, 'daq');
-
-        if any(~isfield(daq, {'md', 'optid', 'recid', 'maketime_optfile_daq'}))
-            error("daq struct must contain fields 'md', 'optid', 'recid', 'maketime_optfile_daq'; you may have loaded an old daq struct")
-        end
-        if ~isequal(daq.maketime_optfile_daq, glb('maketime_daq'))
-            error("daq id is derived from an optid file different from original")
-        end
-        if ~isequal(daq.md, md) || ~isequal(daq.recid, id.recid)
-            error("md, or opt, or recid in saved/loaded daq file does not match current/expected")
-        end
-        if ~isfield(daq, 'opt') %doing this check separately from above because added opt to saved variables later than others
-            for m = 1:numel(daq)
-                daq(m).opt = opt;
-            end
-            save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
-        else
-            if ~isequal(daq.opt, opt)
-                error("opt saved/loaded from daq file does not match input opt")
-            end
-        end
-
-
-    catch ME
-
-        fprintf("tried loading daqrs file but it failed with this message: " + newline + ME.message + newline + "trying to process daq data now" + newline)
-
-        if isempty(pthdaq)
-            pth_daq_pat = [id.pthstackdir id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
-            pthdaq = rdir(pth_daq_pat);
-            if isempty(pthdaq)
-                error("no daq file matching this pattern: " + pth_daq_pat)
-            end
-            pthdaq = pthdaq.name;
-        end
-
-        daqvars.normal = vnormal;
-        daqvars.radians = vradians;
-        daqvars.degrees = vdegrees;
-        daqvars.categorical = vcategorical;
-
-        if round(slopelensec/sper)<slopeord+1
-            error("slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error is (slopeord+1)*sper; for this recording that is: " + num2str( (slopeord+1)*sper))
-        end
-
-        %%%% LOAD DAQ DATA %%%%
-
-        load(pthdaq, 'trialData', 'outputData')
-        trialData = timetable2table(trialData);
-        varnames = trialData.Properties.VariableNames;
-        vtime = vtime(ismember(vtime, varnames));
-        if isempty(vtime)
-            error("none of your listed vtime are variables the raw daq; you need a time variable")
-        end
-
-        if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing final flyback frames (if they exist)
-            fprintf("cropping daq data because runbg is true" + newline)
-            firstsamp = find(trialData.frameClock, 1, 'first');
-            lastsamp = find(trialData.frameClock, 1, 'last');
-            if strcmp(idxreg, 'start')
-                starttime = trialData.(vtime)(firstsamp);
-            elseif strcmp(idxreg, 'end')
-                starttime = trialData.(vtime)(firstsamp-1);
-            elseif strcmp(idxreg, 'center')
-                starttime = (trialData.(vtime)(firstsamp) + trialData.(vtime)(firstsamp-1) ) / 2;
-            end
-            trialData = trialData(firstsamp:lastsamp, :);
-        else
-            starttime = trialData.(vtime)(1);
-        end
-
-        daqrate = 1/seconds(median(diff(trialData.(vtime))));
-        if daqrate<1/sper*2.5
-            error("daq sampling rate is too slow for resampling into imaging rate")
-        end
-        if daqrate<supprate*2.5
-            error("daq sampling rate is too slow for resampling into supp rate")
-        end
-
-
-        %%%% DEFINE INDICES FOR DOWNSAMPLING %%%%
-
-        %%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
-
-
-        if strcmp(useinds, 'none')
-            daqidx.frame = []; %frame inds are not used outside function daqidxmake, although could be in the same way as slice or volume indices
-            daqidx.slice = [];
-            daqidx.vol = [];
-            fprintf("user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
-        else
-            if any(strcmp(varnames, 'frameClock')) %cannot run daqidxmake without frameClock
-                daqidx = daqidxmake(trialData.frameClock, trialData.(vtime), usefbl=usefbl, usefbf=usefbf, numvol=numvol, numslice=numslice, numslice_withflyback=numslice_withflyback, doplt=doplt, pthfig=[pthpre varname '_dv_supp_.gif']);
-            else
-                error("user requested a value for useinds that requires frameClock, but frameClock is not on daq; when frameClock is not on daq, useinds='none' is the only option")
-            end
-        end
-
-        %%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
-
-        if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
-            daqidx.vol = [];
-        end
-        if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
-            daqidx.slice = [];
-        end
-        if isnumeric(useinds)
-            if any(~ismember(useinds(useinds~=0), daqidx.slice))
-                error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
-            end
-            if all(useinds==0) %useinds=0 is same as useinds='vol'
-                daqidx.slice = [];
-            else
-                daqidx.slice(~ismember(daqidx.slice, useinds)) = 0;
-            end
-            if ~ismember(0, useinds)
-                daqidx.vol = [];
-            end
-        end
-        if isempty(daqidx.vol)
-            include_volume_resample = 0;
-        else
-            include_volume_resample = 1;
-        end
-        if strcmp(useinds, 'none')
-            include_volume_approx_resample = 1;
-        else
-            include_volume_approx_resample = 0;
-        end
-
-
-
-        %%%% MAKE/SAVE RESAMPLED DAQ DATA %%%%
-
-        daq = table();
-
-        sliceinds_unique = unique(daqidx.slice(daqidx.slice~=0));
-        num_unique_sliceinds = numel(sliceinds_unique);
-        num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
-        useinds_save = cell(num_resamples, 1);
-        for si = 1:num_resamples
-
-            newrow = table();
-
-            if strcmp(useinds, 'none')
-                rsinds = [];
-                useinds_save{si} = {'none'};
-            else
-                if si<num_unique_sliceinds+1
-                    rsinds_tmp = bin2ind(daqidx.slice==sliceinds_unique(si)); %each slice
-                    useinds_save{si} = {['slice' num2str(sliceinds_unique(si))]};
-                else
-                    rsinds_tmp = daqidx.vol;
-                    useinds_save{si} = {'volume'};
-                end
-
-                riu = unique(rsinds_tmp(rsinds_tmp~=0),'stable'); %index of each resampling register (frame or volume)
-                rsinds = cell(numel(riu), 1);
-                tic
-                parfor k = 1:numel(riu)
-                    rsinds{k} = find(rsinds_tmp==riu(k)); %do this once, before operating on variable, since this is the slow part; we use find because a boolean array holding all inds would be way too large, and this let's us find all inds once, and reuse them for all daq variables; if you only have one daq variable, this may be slightly inefficient, but with multiple daq variables this becomes much more efficient
-                end
-                toc
-
-            end
-
-            fn = fieldnames(daqvars);
-            for fni = 1:numel(fn)
-                vartype = fn{fni};
-                for ii = 1:numel(daqvars.(vartype))
-                    varname = daqvars.(vartype){ii};
-                    if strcmp(varname, vtime)
-                        trialData.(varname) = trialData.(varname)-starttime; %zero imaging starttime in case daq ran in the background
-                    end
-                    if ~strcmp(varnames, varname)
-                        fprintf("warning, daq does not have variable named '" + varname + "', skipping it" + newline)
-                    else
-
-
-                        tmp = trialData.(varname);
-
-                        if isduration(tmp)
-                            tmp = seconds(tmp); %convert to seconds, whatever the units
-                        end
-                        if strcmp(vartype, 'radians')
-                            tmp = wrapToPi(tmp/(voltmax-voltmin)*2*pi+voltminyaw); %put in range -pi to pi, with 0 in front of fly
-                        end
-                        if isequal(vec(unique(tmp)), [0;1])
-                            tmp = bin2ind(tmp);
-                        end
-
-                        tmp_supp = [];
-                        tmpdv_supp = [];
-                        if supprate %resample into supplemental rate (allowing a second resampling rate, in addition to the default resampling into imaging rate,  
-                            numvol_supp = round(numvol*sper*supprate);
-                            sper_supp = 1/supprate;
-                            tmp_supp = tsrs(vartype, tmp, numvol_supp); %resample into supplemental rate
-                            tmpdv_supp = tsdv(vartype, tmp_supp, slopelensec_supp, slopeord_supp, sper_supp); %find local slope (velocity for some vars)
-                        end
-
-                        tmp = tsrs(vartype, tmp, numvol, rsinds); %resample into imaging rate
-                        tmpdv = tsdv(vartype, tmp, slopelensec, slopeord, sper); %find local slope (velocity for some vars)
-
-
-                        if doplt
-                            tsplt([], tmp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_.gif'])
-                            tsplt([], tmpdv, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_dv_.gif'])
-                            tsplt([], tmp_supp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname 'supp_.gif'])
-                            tsplt([], tmpdv_supp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_dv_supp_.gif'])
-                        end
-
-                        if any(strcmp(daqvars.(vartype){ii}, tomm))
-                            tmp = unwrap(tmp);  %unwrap circular
-                            tmp_supp = unwrap(tmp_supp);  %unwrap circular
-                            tmp = tmp - tmp(1); %zero
-                            if ~isempty(tmp_supp)
-                                tmp_supp = tmp_supp - tmp_supp(1); %zero
-                            end
-                            tmp = tmp*balldia/2; %convert from radians to mm
-                            tmpdv = tmpdv*balldia/2; %convert to mm
-                            tmp_supp = tmp_supp*balldia/2; %convert from radians to mm
-                            tmpdv_supp = tmpdv_supp*balldia/2; %convert to mm
-                        end
-
-                        if strcmp(varname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
-                            tmp(1) = 0;
-                        end
-
-                        newrow.(varname) = {tmp(:)}; %put column vector in cell, then table, for variable sizes
-                        newrow.([varname '_dv']) = {tmpdv(:)}; %put column vector in cell, then table, for variable sizes
-                        newrow.([varname '_supp']) = {tmp_supp(:)}; %put column vector in cell, then table, for variable sizes
-                        newrow.([varname '_dv_supp']) = {tmpdv_supp(:)}; %put column vector in cell, then table, for variable sizes
-
-
-                    end
-                end
-            end
-
-            daq = [daq; newrow];
-
-        end
-
-
-        daq = table2struct(daq);
-
-        %%%% RENAME %%%%
-
-        if supprate %if supprate, include supp in renaming string
-            nrs = numel(vrenm);
-            for k = 1:numel(vrenm)
-                renmtmp = strtrim(strsplit(vrenm{k}, '='));
-                nmnew = renmtmp{1};
-                nmnew = strcat(nmnew, '_supp');
-                nmold = strtrim(strsplit(renmtmp{2}, ','));
-                nmold = strcat(nmold, '_supp');
-                vrenm(nrs+k) = strcat(nmnew, " = ", convertCharsToStrings(strjoin(nmold, ', ')));
-            end
-        end
-        daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
-
-
-        for m = 1:numel(daq) %in case you used multiple registers with daqidx, daq struct will be nonscalar
-
-            %%%% FLY PATH %%%%
-
-            bvfang = daq(m).bvf/(balldia/2); %above these were scaled to mm, so revert
-            bvsang = daq(m).bvs/(balldia/2); %above these were scaled to mm, so revert
-            [daq(m).px, daq(m).py] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
-            [daq(m).pxb, daq(m).pyb] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).bh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
-
-            if supprate
-                bvfang_supp = daq(m).bvf_supp/(balldia/2); %above these were scaled to mm, so revert
-                bvsang_supp = daq(m).bvs_supp/(balldia/2); %above these were scaled to mm, so revert
-                [daq(m).px_supp, daq(m).py_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).vh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
-                [daq(m).pxb_supp, daq(m).pyb_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).bh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
-            end
-
-
-            %%%% EPOCHS (ADJUST FROM DAQ, OR DERIVE FROM  %%%%
-
-            if ~isempty(daq(m).epochts)
-                [hc, hce, bin] = histcounts(daq(m).epochts);
-                numepoch_alt = numel(unique(bin)); %will this always be the same as numel(pkx); if so this is a simpler way to do it?
-                hc = [min(hc) hc min(hc)]; %hack to include the endpoints of histcounts as peaks
-                [~, pkx] = findpeaks(hc);
-                numepoch = numel(pkx);
-                daq(m).epochts = discretize(daq(m).epochts, numepoch);
-                if numel(unique(daq(m).epochts))~=numepoch
-                    error("unique epochts must equal numepoch")
-                end
-            else %if you don't have epochs written to daq, load or derive them here (this is not recommended, better to write them to daq)
-                [daq(m).vh, daq(m).vvy, daq(m).epochts] = epochld(id.recdatenum, daq(m).t, daq(m).vh, daq(m).vvy, md.sper);
-            end
-
-
-
-            %%%% RESAMPLE FICTRAC VIDEO %%%%
-
-            try
-                volrate = 1/sper;
-                numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
-                smlenpx = 2; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
-                numpx = 10;  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
-                smlensec = 1;
-                doplt_ftvalign = 1; %show the plots in ftvalign
-                ftrate = []; %fictrac rate, hz, only set this to nonempty (eg, ftrate=60) if you don't have pth_dat to derive more precise estimate
-                daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthstack=pthstack, numvol=numvol, imrate=volrate, ...
-                    numpkthr=numpkthr, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
-                    pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs, doplt=doplt_ftvalign);
-            catch ME
-                fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
-                daq(m).ftv = [];
-            end
-
-
-            %%%% RECORD SOME METADATA %%%%
-
-            daq(m).md = md; %save metadata in case it changes
-            daq(m).useinds = useinds_save{m};
-            daq(m).opt = opt;
-            daq(m).optid = optid;
-            daq(m).recid = id.recid;
-            daq(m).maketime_optfile_daq = glb('maketime_daq');
-
-        end
-
-
-        %%%% MAKE ALL VECTORS ROW VECTORS %%%%
-
-        fn = fieldnames(daq);
+try
+
+    load(pth_daqrs, 'daq');
+
+    if any(~isfield(daq, {'md', 'optid', 'recid', 'maketime_optfile_daq'}))
+        error("daq struct must contain fields 'md', 'optid', 'recid', 'maketime_optfile_daq'; you may have loaded an old daq struct")
+    end
+    if ~isequal(daq.maketime_optfile_daq, glb('maketime_daq'))
+        error("daq id is derived from an optid file different from original")
+    end
+    if ~isequal(daq.md, md) || ~isequal(daq.recid, id.recid)
+        error("md, or opt, or recid in saved/loaded daq file does not match current/expected")
+    end
+    if ~isfield(daq, 'opt') %doing this check separately from above because added opt to saved variables later than others
         for m = 1:numel(daq)
-            for k = 1:numel(fn)
-                if isvector(daq(m).(fn{k}))
-                    daq(m).(fn{k}) = daq(m).(fn{k})(:)';
+            daq(m).opt = opt;
+        end
+        save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
+    else
+        if ~isequal(daq.opt, opt)
+            error("opt saved/loaded from daq file does not match input opt")
+        end
+    end
+
+
+catch ME
+
+    fprintf("tried loading daqrs file but it failed with this message: " + newline + ME.message + newline + "trying to process daq data now" + newline)
+
+    if isempty(pthdaq)
+        pth_daq_pat = [id.pthstackdir id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+        pthdaq = rdir(pth_daq_pat);
+        if isempty(pthdaq)
+            error("no daq file matching this pattern: " + pth_daq_pat)
+        end
+        pthdaq = pthdaq.name;
+    end
+
+    daqvars.normal = vnormal;
+    daqvars.radians = vradians;
+    daqvars.categorical = vcategorical;
+
+    if round(slopelensec/sper)<slopeord+1
+        error("slopelensec is too short given slopeord and sample rate, and will cause error in tsdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error is (slopeord+1)*sper; for this recording that is: " + num2str( (slopeord+1)*sper))
+    end
+
+    %%%% LOAD DAQ DATA %%%%
+
+    load(pthdaq, 'trialData', 'outputData')
+    trialData = timetable2table(trialData);
+    varnames = trialData.Properties.VariableNames;
+    vtime = vtime(ismember(vtime, varnames));
+    if isempty(vtime)
+        error("none of your listed vtime are variables the raw daq; you need a time variable")
+    end
+
+    if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing final flyback frames (if they exist)
+        fprintf("cropping daq data because runbg is true" + newline)
+        firstsamp = find(trialData.frameClock, 1, 'first');
+        lastsamp = find(trialData.frameClock, 1, 'last');
+        if strcmp(idxreg, 'start')
+            starttime = trialData.(vtime)(firstsamp);
+        elseif strcmp(idxreg, 'end')
+            starttime = trialData.(vtime)(firstsamp-1);
+        elseif strcmp(idxreg, 'center')
+            starttime = (trialData.(vtime)(firstsamp) + trialData.(vtime)(firstsamp-1) ) / 2;
+        end
+        trialData = trialData(firstsamp:lastsamp, :);
+    else
+        starttime = trialData.(vtime)(1);
+    end
+
+    daqrate = 1/seconds(median(diff(trialData.(vtime))));
+    if daqrate<1/sper*2.5
+        error("daq sampling rate is too slow for resampling into imaging rate")
+    end
+    if daqrate<supprate*2.5
+        error("daq sampling rate is too slow for resampling into supp rate")
+    end
+
+
+    %%%% DEFINE INDICES FOR DOWNSAMPLING %%%%
+
+    %%%%%%%%% extract slice and volume indices from scanimage clocks %%%%%%%%%
+
+
+    if strcmp(useinds, 'none')
+        daqidx.frame = []; %frame inds are not used outside function daqidxmake, although could be in the same way as slice or volume indices
+        daqidx.slice = [];
+        daqidx.vol = [];
+        fprintf("user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
+    else
+        if any(strcmp(varnames, 'frameClock')) %cannot run daqidxmake without frameClock
+            daqidx = daqidxmake(trialData.frameClock, trialData.(vtime), usefbl=usefbl, usefbf=usefbf, numvol=numvol, numslice=numslice, numslice_withflyback=numslice_withflyback, doplt=doplt, pthfig=[pthpre varname '_dv_supp_.gif']);
+        else
+            error("user requested a value for useinds that requires frameClock, but frameClock is not on daq; when frameClock is not on daq, useinds='none' is the only option")
+        end
+    end
+
+    %%%%%%%%% filter slice inds and volume inds according to useinds %%%%%%%%%
+
+    if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
+        daqidx.vol = [];
+    end
+    if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
+        daqidx.slice = [];
+    end
+    if isnumeric(useinds)
+        if any(~ismember(useinds(useinds~=0), daqidx.slice))
+            error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
+        end
+        if all(useinds==0) %useinds=0 is same as useinds='vol'
+            daqidx.slice = [];
+        else
+            daqidx.slice(~ismember(daqidx.slice, useinds)) = 0;
+        end
+        if ~ismember(0, useinds)
+            daqidx.vol = [];
+        end
+    end
+    if isempty(daqidx.vol)
+        include_volume_resample = 0;
+    else
+        include_volume_resample = 1;
+    end
+    if strcmp(useinds, 'none')
+        include_volume_approx_resample = 1;
+    else
+        include_volume_approx_resample = 0;
+    end
+
+
+
+    %%%% MAKE/SAVE RESAMPLED DAQ DATA %%%%
+
+    daq = table();
+
+    sliceinds_unique = unique(daqidx.slice(daqidx.slice~=0));
+    num_unique_sliceinds = numel(sliceinds_unique);
+    num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
+    useinds_save = cell(num_resamples, 1);
+    for si = 1:num_resamples
+
+        newrow = table();
+
+        if strcmp(useinds, 'none')
+            rsinds = [];
+            useinds_save{si} = {'none'};
+        else
+            if si<num_unique_sliceinds+1
+                rsinds_tmp = bin2ind(daqidx.slice==sliceinds_unique(si)); %each slice
+                useinds_save{si} = {['slice' num2str(sliceinds_unique(si))]};
+            else
+                rsinds_tmp = daqidx.vol;
+                useinds_save{si} = {'volume'};
+            end
+
+            riu = unique(rsinds_tmp(rsinds_tmp~=0),'stable'); %index of each resampling register (frame or volume)
+            rsinds = cell(numel(riu), 1);
+            tic
+            parfor k = 1:numel(riu)
+                rsinds{k} = find(rsinds_tmp==riu(k)); %do this once, before operating on variable, since this is the slow part; we use find because a boolean array holding all inds would be way too large, and this let's us find all inds once, and reuse them for all daq variables; if you only have one daq variable, this may be slightly inefficient, but with multiple daq variables this becomes much more efficient
+            end
+            toc
+
+        end
+
+        fn = fieldnames(daqvars);
+        for fni = 1:numel(fn)
+            vartype = fn{fni};
+            for ii = 1:numel(daqvars.(vartype))
+                varname = daqvars.(vartype){ii};
+                if strcmp(varname, vtime)
+                    trialData.(varname) = trialData.(varname)-starttime; %zero imaging starttime in case daq ran in the background
+                end
+                if ~strcmp(varnames, varname)
+                    fprintf("warning, daq does not have variable named '" + varname + "', skipping it" + newline)
+                else
+
+
+                    tmp = trialData.(varname);
+
+                    if isduration(tmp)
+                        tmp = seconds(tmp); %convert to seconds, whatever the units
+                    end
+                    if strcmp(vartype, 'radians')
+                        tmp = wrapToPi(tmp/(voltmax-voltmin)*2*pi+voltminhd); %put in range -pi to pi, with 0 in front of fly
+                    end
+                    if isequal(vec(unique(tmp)), [0;1])
+                        tmp = bin2ind(tmp);
+                    end
+
+                    tmp_supp = [];
+                    tmpdv_supp = [];
+                    if supprate %resample into supplemental rate (allowing a second resampling rate, in addition to the default resampling into imaging rate,
+                        numvol_supp = round(numvol*sper*supprate);
+                        sper_supp = 1/supprate;
+                        tmp_supp = tsrs(vartype, tmp, numvol_supp); %resample into supplemental rate
+                        tmpdv_supp = tsdv(vartype, tmp_supp, slopelensec_supp, slopeord_supp, sper_supp); %find local slope (velocity for some vars)
+                    end
+
+                    tmp = tsrs(vartype, tmp, numvol, rsinds); %resample into imaging rate
+                    tmpdv = tsdv(vartype, tmp, slopelensec, slopeord, sper); %find local slope (velocity for some vars)
+
+
+                    if doplt
+                        tsplt([], tmp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_.gif'])
+                        tsplt([], tmpdv, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_dv_.gif'])
+                        tsplt([], tmp_supp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname 'supp_.gif'])
+                        tsplt([], tmpdv_supp, [], trialData.(varname), xseg=20, titlein=varname, pthgif=[pthpre varname '_dv_supp_.gif'])
+                    end
+
+                    if any(strcmp(daqvars.(vartype){ii}, tomm))
+                        tmp = unwrap(tmp);  %unwrap circular
+                        tmp_supp = unwrap(tmp_supp);  %unwrap circular
+                        tmp = tmp - tmp(1); %zero
+                        if ~isempty(tmp_supp)
+                            tmp_supp = tmp_supp - tmp_supp(1); %zero
+                        end
+                        tmp = tmp*balldia/2; %convert from radians to mm
+                        tmpdv = tmpdv*balldia/2; %convert to mm
+                        tmp_supp = tmp_supp*balldia/2; %convert from radians to mm
+                        tmpdv_supp = tmpdv_supp*balldia/2; %convert to mm
+                    end
+
+                    if strcmp(varname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
+                        tmp(1) = 0;
+                    end
+
+                    newrow.(varname) = {tmp(:)}; %put column vector in cell, then table, for variable sizes
+                    newrow.([varname '_dv']) = {tmpdv(:)}; %put column vector in cell, then table, for variable sizes
+                    newrow.([varname '_supp']) = {tmp_supp(:)}; %put column vector in cell, then table, for variable sizes
+                    newrow.([varname '_dv_supp']) = {tmpdv_supp(:)}; %put column vector in cell, then table, for variable sizes
+
+
                 end
             end
         end
 
-        %%%% SAVE %%%%
+        daq = [daq; newrow];
 
-        % save(pth_daqrs, '-struct', 'daq', '-v7.3', '-mat');
-        save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
+    end
 
-    
+
+    daq = table2struct(daq);
+
+    %%%% RENAME %%%%
+
+    if supprate %if supprate, include supp in renaming string
+        nrs = numel(vrenm);
+        for k = 1:numel(vrenm)
+            renmtmp = strtrim(strsplit(vrenm{k}, '='));
+            nmnew = renmtmp{1};
+            nmnew = strcat(nmnew, '_supp');
+            nmold = strtrim(strsplit(renmtmp{2}, ','));
+            nmold = strcat(nmold, '_supp');
+            vrenm(nrs+k) = strcat(nmnew, " = ", convertCharsToStrings(strjoin(nmold, ', ')));
+        end
+    end
+    daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
+
+
+    for m = 1:numel(daq) %in case you used multiple registers with daqidx, daq struct will be nonscalar
+
+        %%%% FLY PATH %%%%
+
+        bvfang = daq(m).bvf/(balldia/2); %above these were scaled to mm, so revert
+        bvsang = daq(m).bvs/(balldia/2); %above these were scaled to mm, so revert
+        [daq(m).px, daq(m).py] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters'); %flat path according to visual stim heading
+        [daq(m).pxb, daq(m).pyb] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).bh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters'); %flat path according to ball heading
+
+        if supprate
+            bvfang_supp = daq(m).bvf_supp/(balldia/2); %above these were scaled to mm, so revert
+            bvsang_supp = daq(m).bvs_supp/(balldia/2); %above these were scaled to mm, so revert
+            [daq(m).px_supp, daq(m).py_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).vh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters'); %flat path according to visual stim heading (supp rate)
+            [daq(m).pxb_supp, daq(m).pyb_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).bh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters'); %flat path according to ball heading (supp rate)
+        end
+
+
+        %%%% EPOCHS (ADJUST FROM DAQ, OR DERIVE FROM  %%%%
+
+        if ~isempty(daq(m).epochts)
+            [hc, hce, bin] = histcounts(daq(m).epochts);
+            numepoch_alt = numel(unique(bin)); %will this always be the same as numel(pkx); if so this is a simpler way to do it?
+            hc = [min(hc) hc min(hc)]; %hack to include the endpoints of histcounts as peaks
+            [~, pkx] = findpeaks(hc);
+            numepoch = numel(pkx);
+            daq(m).epochts = discretize(daq(m).epochts, numepoch);
+            if numel(unique(daq(m).epochts))~=numepoch
+                error("unique epochts must equal numepoch")
+            end
+        else %if you don't have epochs written to daq, load or derive them here (this is not recommended, better to write them to daq)
+            [daq(m).vh, daq(m).vvy, daq(m).epochts] = epochld(id.recdatenum, daq(m).t, daq(m).vh, daq(m).vvy, md.sper);
+        end
+
+
+
+        %%%% RESAMPLE FICTRAC VIDEO %%%%
+
+        try
+            volrate = 1/sper;
+            numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
+            topkp = [];   % keep empty to draw where laser is brightest; fraction of vertical top of fictrac video frames to consider when finding brightest numpx pixels (pedestal at bottom can sometimes be brightest part of image, so this can exclude that); if empty, user prompted to draw roi
+            smlenpx = []; %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
+            numpx = [];  %keep empty is topkp is empty, since roi you draw will determine numpx; after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
+            smlensec = 1;
+            doplt_ftvalign = 1; %show the plots in ftvalign
+            ftrate = []; %fictrac rate, hz, only set this to nonempty (eg, ftrate=60) if you don't have pth_dat to derive more precise estimate
+            daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthstack=pthstack, numvol=numvol, imrate=volrate, ...
+                numpkthr=numpkthr, topkp=topkp, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
+                pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs, doplt=doplt_ftvalign);
+        catch ME
+            fprintf("could not resample fictrac video; this is the error: " + ME.message + newline)
+            daq(m).ftv = [];
+        end
+
+
+        %%%% RECORD SOME METADATA %%%%
+
+        daq(m).md = md; %save metadata in case it changes
+        daq(m).useinds = useinds_save{m};
+        daq(m).opt = opt;
+        daq(m).optid = optid;
+        daq(m).recid = id.recid;
+        daq(m).maketime_optfile_daq = glb('maketime_daq');
+
+    end
+
+
+    %%%% MAKE ALL VECTORS ROW VECTORS %%%%
+
+    fn = fieldnames(daq);
+    for m = 1:numel(daq)
+        for k = 1:numel(fn)
+            if isvector(daq(m).(fn{k}))
+                daq(m).(fn{k}) = daq(m).(fn{k})(:)';
+            end
+        end
+    end
+
+    %%%% SAVE %%%%
+
+    % save(pth_daqrs, '-struct', 'daq', '-v7.3', '-mat');
+    save(pth_daqrs, 'daq', '-v7.3', '-mat'); %cannot save as struct because it can be nonscalar
+
+
 
 end
 

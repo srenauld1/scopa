@@ -180,18 +180,23 @@ else
                             if iscellnested(inp{k+1})
                                 strtmp = 'a nested cell that will not be printed here';
                             else
-                                strtmp = ['{' cell2charv(tmpcl) '}'];
+                                strtmp = sprintf( '%s, ', tmpcl{:} );
+                                strtmp = strtmp(1:end-2);
                             end
                         else
-                            if numel(inp{k+1})>60
+                            if ndims(inp{k+1})>2 || numel(inp{k+1})>30
                                 strtmp = 'an array that is too long to be printed here';
                             else
                                 strtmp = mat2str(inp{k+1});
                             end
                         end
                     else
-                        if iscellnested(inp{k+1})
-                            strtmp = 'a nested cell that will not be printed here';
+                        if iscell(inp{k+1})
+                            if iscellnested(inp{k+1})
+                                strtmp = 'a nested cell that will not be printed here';
+                            else
+                                strtmp = strcat('{', inp{k+1}, '}');
+                            end
                         else
                             strtmp = inp{k+1};
                         end
@@ -206,8 +211,6 @@ else
                     elseif isstruct(strtmp)
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to the following struct: " + newline)
                         structprint(strtmp, 'structname', char(inp{k}))
-                    elseif iscell(strtmp)
-                        fprintf(msgstart + " global variable '" + char(inp{k}) + "' to {" + strtmp + "}" + newline)
                     else
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to " + strtmp + newline)
                     end

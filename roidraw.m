@@ -233,6 +233,7 @@ keydict_slash = {  ... %callback keydict for using s-switch (via function 'cb_ar
     {'slash', 'slash', 'init'}, ...
     {'return', 'return', 'finish'}, ...
     {'escape', 'escape', 'exit'}, ...
+    {',', ',', 'element delim'}, ...
     {'z', 'z', 'z mean'}, ...
     {'t', 't', 't mean'}, ...
     };
@@ -273,9 +274,6 @@ superset.x = 1:nx;
 superset.z = 1:nz;
 superset.t = 1:nt;
 superset.c = 1:nc;
-
-stackmin = double(min(stack, [], 'all'));
-stackmax = double(max(stack, [], 'all'));
 
 stackmnz = stacktype(mean(stack, strfind(nmdm, 'z')), class(stack));
 stackmnt = stacktype(mean(stack, strfind(nmdm, 't')), class(stack));
@@ -363,6 +361,8 @@ catch ME
 
     for ic = chandraw %some fields are redundant across channels (ie rg and mmname are the same for both channels), but for symmetry, and simpler code downstream, they're written to both channels
 
+        stackmin = double(min(stack(:,:,:,:,ic), [], 'all'));
+        stackmax = double(max(stack(:,:,:,:,ic), [], 'all'));
 
         %%%% INITIALIZE PLOT LOOP VARIABLES, AND PLOT STACK %%%%
 
@@ -396,7 +396,7 @@ catch ME
         imselectkeys = {'shift', 'control'}; %hold down control with image click to select entire image as roi, hold down shift with image click to select range (from nearest selected whole image, if any, otherwise same as control)
         cbflag = flagset({'backspace', 'c', 'e', 's', 'slash', 't', 'z'}, [0,1], init=1, me=1); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
 
-        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
 
         ttli = struct('drawing', 1, 'showing', 2, 'buttons', 3, 'switches', 4, 'howto', 5, 'action', 6);
         ttli.sv = [ttli.buttons, ttli.switches, ttli.howto]; %title line indices that get removed/restored when draw tool is opened/closed
@@ -446,13 +446,13 @@ catch ME
 
             idxt = mod((idxt+tshift)-1, numel(it))+1; %increment t;
             it_tmp = it(idxt);
-            if size(stacktmp,4)>1 && ~isequal(it_tmp, it_tmp_prev) % if current t changed, show the change
-                if size(stacktmp,3)>1
+            if size(stacktmp,strfind(nmdm, 't'))>1 && ~isequal(it_tmp, it_tmp_prev) % if shown stack is not t-mean, and if current t changed, show the change
+                if size(stacktmp,strfind(nmdm, 'z'))>1 %if shown stack is not z-mean, update each axis with iz, and t change
                     for k = 1:numel(h.im.pl)
                         h.im.pl{k}.CData = stacktmp(:,:,iz(k),it_tmp);
                     end
-                else
-                    h.im.pl{k}.CData = stacktmp(:,:,:,it_tmp);
+                else %if shown stack is z-mean, update single axis with t change
+                    h.im.pl{1}.CData = stacktmp(:,:,:,it_tmp);
                 end
                 h.ttl.String{2} = regexprep(h.ttl.String{2}, '(t:.*\[).*(\])', ['$1' num2str(it_tmp) '$2']);
                 it_tmp_prev = it_tmp;
@@ -482,7 +482,7 @@ catch ME
                             [h.ttl.String, ttl_sv] = titlechange('drawstart', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z);
                         else %if multiple axes, on first click zoomflag=1 and we "zoom into" clicked axes; on second click drawflag=1 and we begin drawing
                             zoomflag = 1;
-                            iznew = imselected;
+                            iznew = iz(imselected);
                         end
                     end
                 end
@@ -708,7 +708,7 @@ catch ME
                     it = itnew;
                     dmmean(strfind(nmdm, 't')) = 0;
                 end
-                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
                 roi_on_mean_z_dummy = 0; %irrelevant here
                 [h.ttl.String, ttl_sv] = titlechange('newz', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z_dummy);
                 iznew = [];
@@ -943,33 +943,41 @@ end
 end
 
 
-function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, nc, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
+function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
+
+%output stacktmp is for updating t-display, it is not necessarily what is shown in the figure (eg if z is subset)
 
 if any(dmmean) %we display the mean of stack dimensions corresponding to nonzero elements in vector dmmean
-    if isequal(iz, 1:nz) && isequal(it, 1:nt) && isequal(ic, 1:nc)
-        if isequal(find(dmmean),strfind(nmdm, 'z'))
-            stacktmp = stackmnz;
-        elseif isequal(find(dmmean),strfind(nmdm, 't'))
-            stacktmp = stackmnt;
-        elseif isequal(find(dmmean),find(ismember(nmdm, 'zt'))) %find(ismember()) for multiple char
-            stacktmp = stackmnzt;
-        end
+    if isequal(find(dmmean),strfind(nmdm, 'z')) && isequal(iz, 1:nz)
+        stacktmp = stackmnz;
+    elseif isequal(find(dmmean),strfind(nmdm, 't')) && isequal(it, 1:nt)
+        stacktmp = stackmnt;
+    elseif isequal(find(dmmean),find(ismember(nmdm, 'zt'))) && isequal(iz, 1:nz) && isequal(it, 1:nt) %find(ismember()) for multiple char
+        stacktmp = stackmnzt;
     else
-        idxstr = repmat({':'}, 1, 5); %do it this way in case we are only indexing with averaged dimensions, indexing with all elements of unchanged dimensions is costly
-        if isequal(find(dmmean),strfind(nmdm, 'z'))
+        idxstr = repmat({':'}, 1, 5); %do it this way in case we are only indexing with averaged dimensions, indexing with all elements of unchanged dimensions is slow
+        if ismember(strfind(nmdm, 'z'), find(dmmean)) && ~isequal(iz, 1:nz)
             idxstr{strfind(nmdm, 'z')} = iz;
-        elseif isequal(find(dmmean),strfind(nmdm, 't'))
-            idxstr{strfind(nmdm, 't')} = it;
-        elseif isequal(find(dmmean),find(ismember(nmdm, 'c'))) %find(ismember()) for multiple char
-            idxstr{strfind(nmdm, 'c')} = ic;
         end
-        stacktmp = stacktype(mean(stack(idxstr{:}), find(dmmean)), class(stack));
+        if ismember(strfind(nmdm, 't'), find(dmmean)) && ~isequal(it, 1:nt)
+            idxstr{strfind(nmdm, 't')} = it;
+        end
+        if ismember(strfind(nmdm, 'z'), find(dmmean)) && ismember(strfind(nmdm, 't'), find(dmmean)) && ~isequal(iz, 1:nz) && isequal(it, 1:nt)
+            stacktmp = stacktype(mean(stackmnt(idxstr{:}), find(dmmean)), class(stack));
+        else
+            stacktmp = stacktype(mean(stack(idxstr{:}), find(dmmean)), class(stack));
+        end
     end
-    stack_oneframe = stacktmp(:,:,:,1);
+    if ismember(strfind(nmdm, 'z'), find(dmmean))
+        stack_oneframe = stacktmp(:,:,:,1); %if we averaged z, don't index with iz; we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+    else
+        stack_oneframe = stacktmp(:,:,iz,1); %if we didn't average z, index with izwe take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+    end
 else
     stacktmp = stack;
-    stack_oneframe = stack(:,:,iz,1); %do this first, in case stacktmp is average; we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+    stack_oneframe = stack(:,:,iz,1); %we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
 end
+
 
 changeaxes = 0; %only change the axes if number of z slices to show has changed
 if isempty(h) || ( ~dmmean(strfind(nmdm, 'z')) && ~isequal(numel(iz), numel(h.im.ax)) ) || ( dmmean(strfind(nmdm, 'z')) && ~isscalar(h.im.ax) )
