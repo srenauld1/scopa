@@ -412,14 +412,14 @@ catch ME
 
         bvfang = daq(m).bvf/(balldia/2); %above these were scaled to mm, so revert
         bvsang = daq(m).bvs/(balldia/2); %above these were scaled to mm, so revert
-        [daq(m).px, daq(m).py] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
-        [daq(m).pxb, daq(m).pyb] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).bh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters');
+        [daq(m).px, daq(m).py] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).vh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters'); %flat path according to visual stim heading
+        [daq(m).pxb, daq(m).pyb] = ficpath(bvfang, 'radians/second', bvsang, 'radians/second', daq(m).bh, 'radians', daq(m).t, 'seconds', balldia, 'millimeters'); %flat path according to ball heading
 
         if supprate
             bvfang_supp = daq(m).bvf_supp/(balldia/2); %above these were scaled to mm, so revert
             bvsang_supp = daq(m).bvs_supp/(balldia/2); %above these were scaled to mm, so revert
-            [daq(m).px_supp, daq(m).py_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).vh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
-            [daq(m).pxb_supp, daq(m).pyb_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).bh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters');
+            [daq(m).px_supp, daq(m).py_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).vh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters'); %flat path according to visual stim heading (supp rate)
+            [daq(m).pxb_supp, daq(m).pyb_supp] = ficpath(bvfang_supp, 'radians/second', bvsang_supp, 'radians/second', daq(m).bh_supp, 'radians', daq(m).t_supp, 'seconds', balldia, 'millimeters'); %flat path according to ball heading (supp rate)
         end
 
 

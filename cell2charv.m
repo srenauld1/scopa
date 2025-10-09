@@ -3,8 +3,7 @@ function y = cell2charv(x, opt)
 %{
 
 convert input cell to char vector, each element delimited by delim 
-numeric, char, and string classes all become char in output
-structs
+numeric, char, and string classes (within cell) all become char in output
 
 %}
 
