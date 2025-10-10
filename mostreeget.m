@@ -1,4 +1,4 @@
-function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du)
+function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du, mosc)
 
 %{
 
@@ -12,11 +12,13 @@ mostree_top: fields at the top level of o, ie fieldnames(o)
 arguments
     o struct % options struct to derive mostree from; if empty struct, all outputs will be empty
     du struct % unnested default options struct (du, defined in odf.m, which is the unnested version of d, also defined in odf.m) 
+    mosc = [] %optional list of mosc (to prevent error identifying options vs mos)
 end
 
 delimflat = '__';
 
 fn_du = fieldnames(du);
+mos_and_mosc = cat(1, fn_du(:), mosc(:));
 
 oflat = structflat(o, delim=delimflat);
 fn_oflat = fieldnames(oflat);
@@ -24,7 +26,7 @@ fn_oflat = fieldnames(oflat);
 options_o = fn_oflat; %options only, not mos
 while true
     options_tmp = options_o;
-    options_o = regexprep(options_o, strcat('^', fn_du, delimflat), ''); %remove contiguous sequence of mos at the beginning (will not remove mos preceded by a mosc)
+    options_o = regexprep(options_o, strcat('^', mos_and_mosc, delimflat), ''); %remove contiguous sequence of mos and/or mosc at the beginning (will not remove mos PRECEDED by a mosc, does this ever happen?)
     if isequal(options_o, options_tmp) %once all not-mos have been removed, break from the loop
         break
     end

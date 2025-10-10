@@ -14,9 +14,9 @@ if isempty(pthopt)
     pthopt = [pthscopa 'optdf.txt'];
 end
 
-%% mostree (all moss and compound mos currently supported in options struct o; oset ensures all mostree are populated in o; note some moss only appear nested within others (e.g. 'mm' only exists within 'roi'), but defaults for nested mos can still be retrieved using ofill, for example ofill('mm', unpack=1)
+%% mostree (all moss and polymos currently supported in options struct o; oset ensures all mostree are populated in o; note some moss only appear nested within others (e.g. 'mm' only exists within 'roi'), but defaults for nested mos can still be retrieved using ofill, for example ofill('mm', unpack=1)
 
-mostree = [  %in sort order; in compound mos, each is filled as in du below (ie roi.mm means roi gets filled, and mm gets filled below roi), as opposed to roi having nothing below but mm
+mostree = [  %in sort order; in polymos, each is filled as in du below (ie roi.mm means roi gets filled, and mm gets filled below roi), as opposed to roi having nothing below but mm
     "bmp.mdl.opg", "bmp.mdl.opl", "bmp.roi.mm", ...
     "daq", ...
     "fmf", ...
@@ -402,7 +402,7 @@ for k = 1:numel(mostree)
     for q = 1:numel(spl)
         sind = structind(strjoin(spl(1:q), '.'));
         try
-            getfield(d, sind{:}); %to avoid overwriting sibling fields, only setfield below if field (mos) does not already exist (use getfield rather than dynamic name because it can be a compound mos); this also removes need for sorting mostree before this loop
+            getfield(d, sind{:}); %to avoid overwriting sibling fields, only setfield below if field (mos) does not already exist (use getfield rather than dynamic name because it can be a polymos); this also removes need for sorting mostree before this loop
         catch
             d = setfield(d, sind{:}, du.(spl{q})); %set deepest to the unnested mos from du
         end

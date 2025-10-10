@@ -180,7 +180,11 @@ else
                             if iscellnested(inp{k+1})
                                 strtmp = 'a nested cell that will not be printed here';
                             else
-                                strtmp = ['{' cell2charv(tmpcl) '}'];
+                                if all(cellfun(@(x) ischar(x) | isstring(x) | isnumeric(x), tmpcl))
+                                    strtmp = ['{' cell2charv(tmpcl) '}'];
+                                else
+                                    strtmp = 'a cell with at least element that is neither char, string, or numeric, so will not br printed here';
+                                end
                             end
                         else
                             if numel(inp{k+1})>60
