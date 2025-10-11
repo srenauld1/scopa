@@ -78,10 +78,6 @@
       "numcirc": 1,
       "omitnan": 1,
       "roi": {
-        "docm": 0,
-        "doma": 0,
-        "domm": 0,
-        "doqc": 0,
         "mm": {
           "chanstr": "all",
           "mmname": "none"
@@ -282,10 +278,6 @@
         "update_background_components": true,
         "use_cnn": 0
       },
-      "docm": 0,
-      "doma": 0,
-      "domm": 0,
-      "doqc": 0,
       "ma": {
         "celsz": 8,
         "chan": 1,
@@ -573,10 +565,6 @@
       "minroisz": 5
     },
     "roi": {
-      "docm": 0,
-      "doma": 0,
-      "domm": 0,
-      "doqc": 0,
       "rgname": "none",
       "s": {
         "tg": []

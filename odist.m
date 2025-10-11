@@ -1,33 +1,33 @@
-function optout = odist(optin, obin, opt2)
+function optout = odist(optin, mos, opt2)
 
-% odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each copybin, ie each), but odist in python just gives 'any' (not 'each') functionality
-% optin can be a obin, or a higher struct containing the obin (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this)
+% odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each mosc, ie each), but odist in python just gives 'any' (not 'each') functionality
+% optin can be a mos, or a higher struct containing the mos (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this)
 
 arguments
     optin
-    obin
+    mos
     opt2.delimflat = []
 end
 opt2 = glboropt(opt2);
 delimflat = opt2.delimflat;
 
-if isfield(optin, obin)
-    optin = optin.(obin);
+if isfield(optin, mos)
+    optin = optin.(mos);
 end
 fn = fieldnames(optin);
 
 optout = struct;
 for k = 1:numel(fn)
-    copybintmp = fn{k};
-    copybinstruct = optin.(copybintmp);
-    optflat = structflat(copybinstruct, delim=delimflat); % prefix=copybintmp);
+    mosctmp = fn{k};
+    moscstruct = optin.(mosctmp);
+    optflat = structflat(moscstruct, delim=delimflat); % prefix=mosctmp);
     fnflat = fieldnames(optflat);
 
     % if any(~cellfun(@isempty, regexp(fnflat,[delimflat '(\d+)' delimflat])))
     %     error("cannot use nonscalar structs in o")
     % end
 
-    fnnew = [copybintmp '_' num2str(1)];
+    fnnew = [mosctmp '_' num2str(1)];
     tmp = [];
     tmp.(fnnew) = struct;
 
@@ -45,7 +45,7 @@ for k = 1:numel(fn)
         end
         combos = combinations(optflatcex{:});
         for m = 1:size(combos,1)
-            fnnew = [copybintmp '_' num2str(m)];
+            fnnew = [mosctmp '_' num2str(m)];
             for mm = 1:numel(fnflatex)
                 tmp.(fnnew).(fnflatex{mm}) = combos{m,mm}{1};
             end
@@ -57,7 +57,7 @@ for k = 1:numel(fn)
     for m = 1:numel(fnflat)
         if ~expandinds(m)
             for p = 1:optidnums
-                fnnew = [copybintmp '_' num2str(p)];
+                fnnew = [mosctmp '_' num2str(p)];
                 if iscell(optflat.(fnflat{m}))
                     tmp.(fnnew).(fnflat{m}) = optflat.(fnflat{m}){1}; %since singleton, take it out of cell
                 else

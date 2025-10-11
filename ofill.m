@@ -361,8 +361,6 @@ if isempty(mosfinal)
         mos_all = unique(cat(1, mos_all, mos{k})); %keep record of mos just operated on in persistent variable
     end
 
-    glb(1, mosc=mosc_all);
-
 else %if mosfinal is nonempty
 
     optout = optin;
@@ -406,6 +404,10 @@ else %if mosfinal is nonempty
     end
 
     optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and tsget)
+
+    glb(mosc=mosc_all, mostree=mostree, mostree_o=mostree_optout_open);
+
+    clear mos_all mosc_all
 
 end
 

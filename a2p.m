@@ -25,7 +25,6 @@ for k = 1:numel(oa) % loop over recordings
 
     %% stack
 
-
     for m = transpose(fieldnames(o.sld))
         s = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
     end
@@ -33,6 +32,7 @@ for k = 1:numel(oa) % loop over recordings
     o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case it was tif going in to stackld
     glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
     glb(1, md=s.md, srate=s.md.volrate, t=s.md.sper:s.md.sper:s.md.numvol*s.md.sper, epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
+
 
     %% daq
 
@@ -46,37 +46,29 @@ for k = 1:numel(oa) % loop over recordings
 
     %% rois
 
-    if o.mn.doroi
-        for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(o.roi.(m{1}), s=s); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
-        end
+    for m = transpose(fieldnames(o.roi))
+        roi.(m{1}) = roimake(o.roi.(m{1}), s=s); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
     end
 
 
     %% bump
 
-    if o.mn.dobmp
-        for m = transpose(fieldnames(o.bmp))
-            bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %extract head direction bump
-        end
+    for m = transpose(fieldnames(o.bmp))
+        bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %extract head direction bump
     end
 
 
     %% flymax
 
-    if o.mn.dofmf
-        for m = transpose(fieldnames(o.fmf))
-            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
-        end
+    for m = transpose(fieldnames(o.fmf))
+        [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
     end
 
 
     %% models
 
-    if o.mn.domdl
-        for m = transpose(fieldnames(o.mdl))
-            mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=1);
-        end
+    for m = transpose(fieldnames(o.mdl))
+        mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=1);
     end
 
 
@@ -118,15 +110,6 @@ for k = 1:numel(oa) % loop over recordings
             stackslice=[])
 
     end
-
-    %%
-
-
-
-
-
-    %%
-
 
 
 end

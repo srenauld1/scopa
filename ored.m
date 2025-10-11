@@ -1,64 +1,20 @@
-function [opt, tmpinert] = ored(opt, obin, opt2)
+function opt = ored(opt, mos)
 
 %{
-ored ("options reduce") removes options that have no effect on the data (like plotting options),
-and also removes redundancy (since options can depend on each other)
-also checks for problems (like invalid values (problem checking should have its own function eventually)
+ored ("options reduce") removes redundancy (since options can depend on each other)
 ored is called before assigning id (optid) to an options set (using structfile in oid)
 %}
 
 arguments
     opt
-    obin
-    opt2.delimflat = []
-    opt2.optinert = []
-end
-opt2 = glboropt(opt2);
-delimflat = opt2.delimflat;
-optinert = opt2.optinert;
-
-if isempty(optinert)
-    error("optinert must be defined in glb")
-end
-if isfield(opt, obin)
-    error("you passed opt with substruct " + obin + " but should pass in that substruct itself")
+    mos
 end
 
-opt = structflat(opt, delim=delimflat);
-fnoflat = fieldnames(opt);
-expr_inert = [strcat('^', optinert, delimflat), strcat(delimflat, optinert, delimflat), strcat(delimflat, optinert, '$'), strcat('^', optinert, '$')]; %all possible positions of inert obin in the flattened names
-index_inert = zeros(numel(fnoflat), 1, 'logical');
-index_inert_struct = zeros(numel(fnoflat), 1, 'logical');
-for k = 1:numel(expr_inert)
-    mtchtmp = ~cellfun(@isempty, regexp(fnoflat, expr_inert{k}));
-    index_inert = index_inert | mtchtmp;
-    if endsWith(expr_inert{k}, delimflat)
-        index_inert_struct = index_inert_struct | mtchtmp;
-    end
+if isfield(opt, mos)
+    error("you passed opt with substruct " + mos + " but should pass in that substruct itself")
 end
 
-opt = struct2cell(opt);
-
-tmpinert = opt(index_inert);
-fninert = fnoflat(index_inert);
-tmpinert = cell2struct(tmpinert, fninert);
-
-dupes = [];
-for k = 1:numel(optinert)
-    fnoflat(index_inert_struct) = regexprep(fnoflat(index_inert_struct), [optinert{k} '.*'], optinert{k});
-    [~, w] = unique( fnoflat, 'stable' );
-    tmp = setdiff( 1:numel(fnoflat), w );
-    dupes = [dupes; tmp(:)];
-end
-
-opt(index_inert) = {[]};
-% opt(index_inert_struct) = {struct('tg', [])}; %insert empty tg field for json to write empty tg properly (hack needs top be fixed)
-opt(dupes) = [];
-fnoflat(dupes) = [];
-opt = cell2struct(opt, fnoflat);
-opt = structunflat(opt, delim=delimflat);
-
-switch obin %further specialized reduction by obin
+switch mos %further specialized reduction by mos
     case 'roi'
         opt = ored_roi(opt);
     case 'bmp'
@@ -76,23 +32,7 @@ function opt = ored_roi(opt)
 
 two_channel_ex = 1; %hard coding for now, soon, parse methodex
 
-%% remove large submodules if they don't have do true
-
-
-if opt.domm==0 && isfield(opt, 'mm')
-    opt.mm = struct; %rmfield(opt, 'mm');
-end
-if opt.doma==0 && isfield(opt, 'ma')
-    opt.ma = struct; %rmfield(opt, 'ma');
-end
-if opt.doqc==0 && isfield(opt, 'qc')
-    opt.qc = struct; %rmfield(opt, 'qc');
-end
-if opt.docm==0 && isfield(opt, 'cm')
-    opt.cm = struct; %rmfield(opt, 'cm');
-end
-
-if opt.nrm.channorm==0
+if ~isempty(opt.nrm) && opt.nrm.channorm==0
     opt.nrm.mincoh = []; %rmfield(opt.nrm, 'mincoh');
 end
 
@@ -203,8 +143,8 @@ function opt = ored_bmp(opt)
 
 %reduce bmp options to minimal functional set
 
-if strcmp(opt.domtype, 'm') && isfield(opt, 'mdl') %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
-    opt.mdl = struct; %rmfield(opt, 'mdl');
+if strcmp(opt.domtype, 'm') && ~isempty(opt.mdl) %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
+    opt.mdl = []; %rmfield(opt, 'mdl');
     opt.numangrs = [];
     opt.maxangrs = [];
 end

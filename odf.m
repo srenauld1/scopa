@@ -79,10 +79,6 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 
 du.roi.s = struct('tg', []);
 du.roi.rgname = 'none'; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
-du.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
-du.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
-du.roi.docm = 0; %do caiman extract.py; if true, load caiman rois with rgname in filename
-du.roi.doqc = 0; %do quality control (remove bad rois)
 
 %% mm (roidraw: mm = "morphological manual")
 
