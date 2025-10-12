@@ -7,7 +7,6 @@ arguments (Input)
     rgname = [] %short name for region (rg, the stack after cropping); if empty, default rgname is 'none'
     opt.pthstack = [] %path to stack
     opt.scopausername = []
-    opt.rgnamedf = []
     opt.usegit = []
 end
 
@@ -19,19 +18,16 @@ end
 opt = glboropt(opt);
 pthstack = opt.pthstack;
 scopausername = opt.scopausername;
-rgnamedf = opt.rgnamedf;
 usegit = opt.usegit;
 
 maxnumdims = 5;
+rgnamedf = 'none';
 
 if isempty(pthstack)
     error("name-value argument pthstack or glb('pthstack') must be nonempty")
 end
 if ~isempty(stack) && (ndims(stack)<2 || ndims(stack)>maxnumdims)
     error("stack input to roidraw must be empty, or have 2-" + num2str(maxnumdims) + " dimensions")
-end
-if isempty(rgnamedf)
-    rgnamedf = 'none'; %if you haven't set the global, glb('rgnamedf'), or opt.rgnamedf, it gets set here; this rgname default will not prompt you to create rgname, it will just use the whole fov
 end
 if isempty(rgname)
     rgname = rgnamedf; 

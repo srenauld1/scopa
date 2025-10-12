@@ -5,6 +5,7 @@ function roi = roimake(opt, opt2)
 arguments
     opt = [] %roimake options output by oset.m, if empty, all defaults loaded by fset below 
     opt2.s = []; %struct output from stackld (contains stack, md, pthstack, and other fields)
+    opt2.pthstack = []; %in case you don't have s, can pass in pthstack and stackld below will derive s (using all default options to stackld)
     opt2.t = [] %only required nonempty if channorm~=0 in roits
     opt2.pthpy = [] %only required to run caiman from matlab (roi.docm=1)
     opt2.doplt = [] %1 to do plots 
@@ -13,6 +14,7 @@ arguments
 end
 opt2 = glboropt(opt2);
 s = opt2.s;
+pthstack = opt2.pthstack;
 t = opt2.t;
 pthpy = opt2.pthpy;
 doplt = opt2.doplt;
@@ -21,6 +23,24 @@ roimask = opt2.roimask;
 
 if isempty(usegit)
     usegit = 0;
+end
+if isempty(pthstack)
+    if ~isempty(s)
+        pthstack = s.pth;
+    end
+else
+    if ~isempty(s)
+        error("s and pthstack cannot both be nonempty")
+    end
+end
+
+[opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
+
+if isempty(s)
+    if isempty(pthstack)
+        error("if name-value argument stack is empty, name-value argument pthstack must be nonempty")
+    end
+    s = stackld(ofill('sld', unpack=1), pthstack);
 end
 
 pthstack = s.pth;
@@ -31,9 +51,6 @@ if isempty(t)
     t = linspace(0,s.md.volrate*s.md.numvol-1/s.md.volrate,s.md.numvol);
 end
 s = [];
-
-[opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
-
 
 pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
 
@@ -49,7 +66,7 @@ roitscm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
-    if ~isempty(opt.mm)
+    if opt.domm
         mmname = opt.mm.mmname;
         if iscell(mmname)
             mmname = cell2mat(mmname);
@@ -243,8 +260,8 @@ if doplt && ~maskin
 
 end
 
-% if isempty(opt.ma) && strcmp(roisrt, morph_long_axis)
-%     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because ma is empty" + newline)
+% if ~doma && strcmp(roisrt, morph_long_axis)
+%     fprintf("WARNING, cannot implement roisrt 'morph_long_axis' because doma is false" + newline)
 % end
 
 

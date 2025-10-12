@@ -15,15 +15,6 @@ end
 
 function o = ochk_roi(o)
 
-if o.doma==1
-    if o.ma.numroi<1
-        error("o.mm.numroi must be greater than 0")
-    end
-end
-
-if isempty(o.rgname)
-    error("rgname is empty, but by this point an empty rgname should have been set to rgnamedf in structfill");
-end
 
 end
 

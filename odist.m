@@ -23,7 +23,7 @@ for k = 1:numel(fn)
     optflat = structflat(moscstruct, delim=delimflat); % prefix=mosctmp);
     fnflat = fieldnames(optflat);
 
-    % if any(~cellfun(@isempty, regexp(fnflat,[delimflat '(\d+)' delimflat])))
+    % if any(~cellfun(@  , regexp(fnflat,[delimflat '(\d+)' delimflat])))
     %     error("cannot use nonscalar structs in o")
     % end
 

@@ -37,7 +37,7 @@ if ~isempty(opt.nrm) && opt.nrm.channorm==0
 end
 
 
-if opt.docm==1 %unfortunately, a complex reduction scheme is required for caiman options, since there are many interactions
+if ~isempty(opt.cm) %unfortunately, a complex reduction scheme is required for caiman options, since there are many interactions
 
     if any(structfun(@(x) any(strcmp(x, '*')),opt.cm))
         error("need to fix caiman ored for wild")

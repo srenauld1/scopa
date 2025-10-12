@@ -1,4 +1,4 @@
-function o = oid(o, mos, opt)
+function o = oid(o, opt)
 
 % python oex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
 % this function starts at distribute, and derive and check require data, so only happen in python, not here
@@ -6,7 +6,6 @@ function o = oid(o, mos, opt)
 
 arguments
     o %options struct
-    mos = [] %mos to recover id (and expand)
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
     opt.scopausername = []
     opt.usegit = []
@@ -21,16 +20,16 @@ try
     usegit = opt.usegit;
     delimflat = opt.delimflat;
 
+    pthopt = [pthscopaget() 'optdf.txt'];
+    dall = structld(pthopt, nocells=1, dosort=0);
+    mostree = dall.mostree;
+
     if isempty(usegit)
         error("must set name-value argument usegit or glb('usegit')")
     end
-    if isempty(mos)
-        mos = fieldnames(o);
-        mos = mos(~strcmp(mos, 'finished'));
-    end
-    if ~iscell(mos)
-        mos = {mos};
-    end
+    mos = fieldnames(o);
+    mos = mos(~strcmp(mos, 'finished'));
+
     if getonly
         fprintf("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     end
@@ -45,10 +44,8 @@ try
         error("tsget should call oid with getonly=1")
     end
 
-    if isempty(getfieldns(o, 'finished')) || any(cellfun(@isempty, getfieldns(o, 'finished'))) || any(~isequal(cell2mat(getfieldns(o, 'finished')),1))
-        if ~tsgetcall %input struct does not require true 'finished' field if oid is called from tsget
-            error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
-        end
+    if ~tsgetcall && ( isempty(getfieldns(o, 'finished')) || any(cellfun(@isempty, getfieldns(o, 'finished'))) || any(~isequal(cell2mat(getfieldns(o, 'finished')),1)) ) %input struct does not require true 'finished' field if oid is called from tsget
+        error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
     end
 
     for k = 1:numel(mos)
@@ -57,9 +54,9 @@ try
 
             if ~isempty(o(q).(mos{k}))
 
-                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY) %%%%%%%%
+                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
-                opttmp2 = moscset(o(q), mos{k}, tsgetcall=tsgetcall);
+                opttmp2 = moscset(o(q), mos{k}, mostree, tsgetcall=tsgetcall);
 
                 %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 

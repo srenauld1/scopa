@@ -78,11 +78,11 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
 du.roi.s = struct('tg', []);
-du.roi.rgname = 'none'; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
+du.roi.rgname = []; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
 
 %% mm (roidraw: mm = "morphological manual")
 
-du.mm.mmname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
+du.mm.mmname = []; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
 du.mm.chanstr = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels (whether 1 or 2 channel), '1cp' copies what is drawn on channel 1 onto channel 2; '2cp' copies what is drawn on channel 2 onto channel 1 
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
@@ -196,7 +196,7 @@ du.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morpholog
 %% nrm (roits: extract and/or normalize roi timeseries)
 
 % options for extraction/normalization of roi signals
-% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
+% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.nrmstr
 % all normalizations are applied to individual vector timeseries
 % normalization strings are listed below; they can be combined arbitrarily; if combined, they are applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
     % 'f': no normalization
@@ -206,8 +206,7 @@ du.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morpholog
     % 'nn': nonnegative (subtract min)
     % 'box': box-cox
 
-du.nrm.pre = 'f'; %must have at least one string, compsed of syllables above; % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
-du.nrm.post = 'f'; %must have at least one string, compsed of syllables above; postcluster normalization is applied after clustering (ie to each roi)
+du.nrm.nrmstr = []; % (nrmstr means "norm string"); char vector; empty is no normalization, gets assigned nrmstr='f'; nrmstr must be compsed of syllables above; normalization is applied to each roi
 du.nrm.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
 du.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
 du.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)

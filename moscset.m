@@ -1,4 +1,4 @@
-function optout = moscset(o, mos, opt)
+function optout = moscset(o, mos, mostree, opt)
 
 %{
 --put a mos from the options struct into a mosc
@@ -15,6 +15,7 @@ function optout = moscset(o, mos, opt)
 arguments
     o
     mos
+    mostree
     opt.tsgetcall = [] %if tsgetcall, o will never be in a mosc (since it is default options for specified mos, filled, with wildcards), and mostree will need to be grabed from glb
 end
 opt = glboropt(opt);
@@ -24,14 +25,14 @@ moscdf = 'none'; %in case neither opt.moscdf nor glb('moscdf') were set
 
 if tsgetcall
     mosc = {};
-    mostree = glb('mostree'); %maybe don't put mostree anywhere but glb? right now it's also in main oa struct, but we don't have access to that when this function is called from oid>tsget
 else
     mosc = glb('mosc');
-    mosc = mosc(:,2);
-    mostree = glb('mostree'); %o.mn.mostree;
+    if ~isempty(mosc)
+        mosc = mosc(:,2);
+    end
 end
 
-mostree = mostree(contains(mostree, mos) & ~cellfun(@(x) isequal(x,mos), mostree)); %remove mostree not in this mos, and mostree that match mos itself
+mostree = mostree(startsWith(mostree, mos) & ~cellfun(@(x) isequal(x,mos), mostree)); %remove mostree not in this mos, and mostree that match mos itself
 mostree = erase(mostree, [mos '.']);
 for k = 1:numel(mostree)
     tmp = strsplit(mostree{k}, '.');
@@ -52,16 +53,13 @@ for k = numel(o):-1:1
 
     fn = fieldnames(o(k));
     fndf = fieldnames(ofill(mos, unpack=1));
-    fn_invalid = fn(~ismember(fn, fndf) & ~ismember(fn, mosc) & ~ismember(fn, mostree) & ~structfun(@isempty, o(k)));
+    fn_invalid = fn(~ismember(fn, fndf) & ~ismember(fn, mosc) & ~ismember(fn, mostree) & ~structfun(@isemptyall, o(k)));
 
-    if any(ismember(fn, mosc) & ~structfun(@isstruct, o(k)))
-        error("mosc must be struct, but there is a mosc that is not a struct")
-    end
-    if any(ismember(fn, mostree) & ~structfun(@isstruct, o(k)))
-        error("mostree must be struct, but there is a mostree that is not a struct")
-    end
     if ~isempty(fn_invalid) %if there are any fields that are not default, and are not structs, and are not empty, you may have the wrong mos
         error("you must have passed in the wrong mos because there are nonempty fields that are neither default options nor mosc nor nested mos (mostree)")
+    end
+    if any(ismember(fn, mosc) & ~structfun(@isstruct, o(k)))
+        error("mosc must be struct, but there is a mosc that is not a struct")
     end
 
     if all(ismember(fn, mosc)) %if all fields are mosc

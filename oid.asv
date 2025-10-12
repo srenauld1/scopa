@@ -6,7 +6,6 @@ function o = oid(o, mos, opt)
 
 arguments
     o %options struct
-    mos = [] %mos to recover id (and expand)
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
     opt.scopausername = []
     opt.usegit = []
@@ -20,6 +19,22 @@ try
     scopausername = opt.scopausername;
     usegit = opt.usegit;
     delimflat = opt.delimflat;
+
+pthopt = [pthscopaget() 'optdf.txt'];
+
+if isempty(d) && isempty(du) && isempty(mostree)
+    odf(pthopt); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
+    if isfile(pthopt)
+        dall = structld(pthopt, nocells=1, dosort=0);
+        d = dall.d;
+        du = dall.du;
+        mostree = dall.mostree;
+        mostree_open = dall.mostree_open;
+        mostree_top = dall.mostree_top;
+    else
+        error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
+    end
+end
 
     if isempty(usegit)
         error("must set name-value argument usegit or glb('usegit')")
@@ -45,10 +60,8 @@ try
         error("tsget should call oid with getonly=1")
     end
 
-    if isempty(getfieldns(o, 'finished')) || any(cellfun(@isempty, getfieldns(o, 'finished'))) || any(~isequal(cell2mat(getfieldns(o, 'finished')),1))
-        if ~tsgetcall %input struct does not require true 'finished' field if oid is called from tsget
-            error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
-        end
+    if ~tsgetcall && ( isempty(getfieldns(o, 'finished')) || any(cellfun(@isempty, getfieldns(o, 'finished'))) || any(~isequal(cell2mat(getfieldns(o, 'finished')),1)) ) %input struct does not require true 'finished' field if oid is called from tsget
+        error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
     end
 
     for k = 1:numel(mos)
@@ -57,7 +70,7 @@ try
 
             if ~isempty(o(q).(mos{k}))
 
-                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY) %%%%%%%%
+                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
                 opttmp2 = moscset(o(q), mos{k}, tsgetcall=tsgetcall);
 
@@ -84,10 +97,10 @@ try
 
                     pthoptpat = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
 
-                    [~, ~, optout] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+                    [opttmp, optid, ~] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
 
-                    %%%%%%%% PUT NON FUNCTIONAL mos BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (mos) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
+                    %%%%%%%% ACCUMULATE  %%%%%%%%
 
 
                     if tsgetcall && ~iscell(opttmp)

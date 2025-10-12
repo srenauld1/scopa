@@ -244,147 +244,162 @@ mostree_du = fieldnames(du); %mostree_du is the same as all non-polymos in mostr
 if ~isemptyall(mosc) && any(ismember(mosc{2}, mostree_du))
     error("mosc cannot have same names as any mos")
 end
+if any(~ismember(mosfinal, mostree_top))
+    error("all mos in mosfinal must be top-level mos")
+end
 
-if isempty(mosfinal)
 
-    if isemptyall(optin) && isempty(mos)
+if isemptyall(optin) && isempty(mos)
 
-        mos = mostree_top; %set mos here in case mosc is nonempty, simplifies setting mosc below
-        for k = 1:numel(mos)
-            if rec
-                optout.(mos{k}) = d.(mos{k}); % optout is just d if no optin or input mos and rec=1
-            else
-                optout.(mos{k}) = du.(mos{k}); % optout is just top-level d-mos if no optin or input mos and rec=0
+    mos = mostree_top; %set mos here in case mosc is nonempty, simplifies setting mosc below
+    for k = 1:numel(mos)
+        if rec
+            optout.(mos{k}) = d.(mos{k}); % optout is just d if no optin or input mos and rec=1
+        else
+            optout.(mos{k}) = du.(mos{k}); % optout is just top-level d-mos if no optin or input mos and rec=0
+        end
+    end
+
+else
+
+    if ~isempty(mosfinal)
+        fn_optin = fieldnames(optin);
+        optin = rmfield(optin, fn_optin(~ismember(fn_optin, mosfinal)));
+    end
+
+    optin_save = optin; %save it before removing any mosc, in case we have to 'return'
+
+    for k = 1:size(mosc_all,1) %first remove mosc from optin
+        sind = structind(mosc_all{k,1}); %the parent of the mosc is in the first cell of mosc_all
+        tmp = getfield(optin, sind{:}); %get that parent from optin
+        tmp = rmfield(tmp, mosc_all{k,2}); %remove the mosc from the parent (mosc alone is in second cell of mosc_all)
+        optin = setfield(optin, sind{:}, tmp); %set optin with mosc removed (below it will be put into optout)
+    end
+
+    allow_du_mos = 0;
+    if isemptyall(optin)
+        optin = struct;
+        allow_du_mos = 1;
+    end
+
+    [~, mostree_optin_open, ~] = mostreeget(optin, du); %optin-mos
+
+    if isempty(mos)
+        mos = mostree_optin_open;
+        mos_skip = mos(ismember(mos, mos_all));
+
+        mos = unique(cat(1, mos(:), mosfinal(:)));
+
+        if ~isempty(mos_skip)
+            fprintf("you have already operated on the following mos that were found in optin: " + newline + sprintf('%s\n', mos_skip{:}) + "they will be skipped in this call to ofill" + newline + "if you want to operate on them again, you must pass them in as input mos (or the mos part of mosc)" + newline)
+            mos = mos(~ismember(mos, mos_all));
+            if isempty(mos)
+                fprintf("there are no remaining mos to operate on; exiting ofill without change to input" + newline)
+                optout = optin_save;
+                return
             end
         end
-
     else
+        mos_skip = setdiff(mostree_optin_open, mos); %optin-mos that aren't in input mos
+    end
 
-        optin_save = optin; %save it before removing any mosc, in case we have to 'return'
+    optout = struct;
+    for k = 1:numel(mos_skip) % create mos_optin_only in optout and set to their values in optin (otherwise structfill will error)
+        sind = structind(mos_skip{k});
+        tmp = getfield(optin, sind{:});
+        optout = setfield(optout, sind{:}, tmp);
+    end
 
-        for k = 1:size(mosc_all,1) %first remove mosc from optin
-            sind = structind(mosc_all{k,1}); %the parent of the mosc is in the first cell of mosc_all
-            tmp = getfield(optin, sind{:}); %get that parent from optin
-            tmp = rmfield(tmp, mosc_all{k,2}); %remove the mosc from the parent (mosc alone is in second cell of mosc_all)
-            optin = setfield(optin, sind{:}, tmp); %set optin with mosc removed (below it will be put into optout)
-        end
-
-        allow_du_mos = 0;
-        if isemptyall(optin)
-            optin = struct;
-            allow_du_mos = 1;
-        end
-
-        [~, mostree_optin_open, ~] = mostreeget(optin, du); %optin-mos
-
-        if isempty(mos)
-            mos = mostree_optin_open;
-            mos_skip = mos(ismember(mos, mos_all));
-            if ~isempty(mos_skip)
-                fprintf("you have already operated on the following mos that were found in optin: " + newline + sprintf('%s\n', mos_skip{:}) + "they will be skipped in this call to ofill" + newline + "if you want to operate on them again, you must pass them in as input mos (or the mos part of mosc)" + newline)
-                mos = mos(~ismember(mos, mos_all));
-                if isempty(mos)
-                    fprintf("there are no remaining mos to operate on; exiting ofill without change to input" + newline)
-                    optout = optin_save;
-                    return
-                end
+    for k = 1:numel(mos) % create mos in optout and set to their values in default structs (d, or du if allow_du_mos)
+        sind = structind(mos{k});
+        if ismember(mos{k}, mostree_open)
+            if rec
+                tmp = getfield(d, sind{:});
+            else
+                tmp = du.(sind{end});
+            end
+        elseif ismember(mos{k}, mostree_du)
+            if allow_du_mos
+                tmp = getfield(du, sind{:}); %rec is irrelevant in this case
+            else
+                error(mos{k} + " is a submos in mostree (defined in odf.m), but you can only pass in submos as mos argument to ofill if argument optin is empty")
             end
         else
-            mos_skip = setdiff(mostree_optin_open, mos); %optin-mos that aren't in input mos
+            error(mos{k} + " is not listed in mostree (defined in odf.m), either as mos, submos, or polymos")
         end
+        optout = setfield(optout, sind{:}, tmp);
+    end
+    [~, mostree_optout_open, ~] = mostreeget(optout, du); %mos in optout
 
-        optout = struct;
-        for k = 1:numel(mos_skip) % create mos_optin_only in optout and set to their values in optin (otherwise structfill will error)
-            sind = structind(mos_skip{k});
+    mos_return = mos_skip(~cellfun(@isempty, regexp(mos_skip, ['^(' sprintf('%s|', mos{:}) ')\..*$'], 'forceCellOutput'))); %check if any mos just filled is a parent of a mos_optin_only filled earlier, if so, it got overwritten with defaults, so return to original value
+    for k = 1:numel(mos_return)
+        if ~ismember(mos_return{k}, mostree_optout_open)
+            sind = structind(mos_return{k});
             tmp = getfield(optin, sind{:});
             optout = setfield(optout, sind{:}, tmp);
         end
-
-        for k = 1:numel(mos) % create mos in optout and set to their values in default structs (d, or du if allow_du_mos)
-            sind = structind(mos{k});
-            if ismember(mos{k}, mostree_open)
-                if rec
-                    tmp = getfield(d, sind{:});
-                else
-                    tmp = du.(sind{end});
-                end
-            elseif ismember(mos{k}, mostree_du)
-                if allow_du_mos
-                    tmp = getfield(du, sind{:}); %rec is irrelevant in this case
-                else
-                    error(mos{k} + " is a submos in mostree (defined in odf.m), but you can only pass in submos as mos argument to ofill if argument optin is empty")
-                end
-            else
-                error(mos{k} + " is not listed in mostree (defined in odf.m), either as mos, submos, or polymos")
-            end
-            optout = setfield(optout, sind{:}, tmp);
-        end
-        [~, mostree_optout_open, ~] = mostreeget(optout, du); %mos in optout
-
-        mos_return = mos_skip(~cellfun(@isempty, regexp(mos_skip, ['^(' sprintf('%s|', mos{:}) ')\..*$']))); %check if any mos just filled is a parent of a mos_optin_only filled earlier, if so, it got overwritten with defaults, so return to original value
-        for k = 1:numel(mos_return)
-            if ~ismember(mos_return{k}, mostree_optout_open)
-                sind = structind(mos_return{k});
-                tmp = getfield(optin, sind{:});
-                optout = setfield(optout, sind{:}, tmp);
-            end
-        end
-
-        optout = structfill(optin, optout);
-
     end
 
-    mostree_optout = mostreeget(optout, du); %call this a second time because optout could have changed
-    if ~all(ismember(mostree_optout, mostree_open)) && ~allow_du_mos
-        error("there is an optout-mos that is not found in d-mos (ie not listed in mostree, in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
+    optout = structfill(optin, optout);
+
+end
+
+mostree_optout = mostreeget(optout, du); %call this a second time because optout could have changed
+if ~all(ismember(mostree_optout, mostree_open)) && ~allow_du_mos
+    error("there is an optout-mos that is not found in d-mos (ie not listed in mostree, in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
+end
+
+if ~isempty(mosc) %save any current mosc to persistent variable . . .
+    sind = structind(mosc{1}); %the parent of the mosc is in the first cell of mosc_all
+    tmp = getfield(optout, sind{:}); %get that parent from optin
+    mosc_all = cat(1, mosc_all, { mosc{1}, mosc{2}, tmp }); %keep record of mos above the mosc and the mosc alone and the mosc struct, all in persistent variable (adding current to previous); save all of these for convenience, since they get used later
+    mos = regexprep(mos, ['^(' mosc{1} ')(\..*)*$'], ['$1' '.' mosc{2} '$2']); %add mosc into any mos it applies to, so record of mos in persistent variable shows mosc there
+end
+
+for k = 1:size(mosc_all,1) %apply any mosc (current and previous, since both are now in mosc_all . . .
+    sind_compound = structind([mosc_all{k,1} '.' mosc_all{k,2}]); % then make struct index for mos.mosc (the full "path" to the mosc, using first and second sub-cell from mosc_all) . . .
+    optout = setfield(optout, sind_compound{:},  mosc_all{k,3}); % now set mosc
+    sind_mos = structind(mosc_all{k,1});
+    tmp_mos_new = getfield(optout, sind_mos{:}); % get mos again, after setting mosc . . .
+    mosc_not = fieldnames(tmp_mos_new);
+    mosc_not = mosc_not(~ismember(mosc_not, mosc_all(:,2)));
+    tmp_mos_new = rmfield(tmp_mos_new, mosc_not); %remove all non-mosc fields
+    optout = setfield(optout, sind_mos{:}, tmp_mos_new); % now set mosc
+end
+
+for k = 1:numel(mos)
+    mos_all = unique(cat(1, mos_all, mos{k})); %keep record of mos just operated on in persistent variable
+end
+
+if ~isempty(mosfinal)
+
+    mosc_all_names = {};
+    if ~isempty(mosc_all)
+        mosc_all_names = mosc_all(:,2);
     end
 
-    if ~isempty(mosc) %save any current mosc to persistent variable . . .
-        sind = structind(mosc{1}); %the parent of the mosc is in the first cell of mosc_all
-        tmp = getfield(optout, sind{:}); %get that parent from optin
-        mosc_all = cat(1, mosc_all, { mosc{1}, mosc{2}, tmp }); %keep record of mos above the mosc and the mosc alone and the mosc struct, all in persistent variable (adding current to previous); save all of these for convenience, since they get used later
-        mos = regexprep(mos, ['^(' mosc{1} ')(\..*)*$'], ['$1' '.' mosc{2} '$2']); %add mosc into any mos it applies to, so record of mos in persistent variable shows mosc there 
-    end
+    omixcheck(optout, mosc_all_names);
 
-    for k = 1:size(mosc_all,1) %apply any mosc (current and previous, since both are now in mosc_all . . .
-        sind_compound = structind([mosc_all{k,1} '.' mosc_all{k,2}]); % then make struct index for mos.mosc (the full "path" to the mosc, using first and second sub-cell from mosc_all) . . .
-        optout = setfield(optout, sind_compound{:},  mosc_all{k,3}); % now set mosc
-        sind_mos = structind(mosc_all{k,1});
-        tmp_mos_new = getfield(optout, sind_mos{:}); % get mos again, after setting mosc . . .
-        mosc_not = fieldnames(tmp_mos_new);
-        mosc_not = mosc_not(~ismember(mosc_not, mosc_all(:,2)));
-        tmp_mos_new = rmfield(tmp_mos_new, mosc_not); %remove all non-mosc fields
-        optout = setfield(optout, sind_mos{:}, tmp_mos_new); % now set mosc
-    end
-
-    for k = 1:numel(mos)
-        mos_all = unique(cat(1, mos_all, mos{k})); %keep record of mos just operated on in persistent variable
-    end
-
-else %if mosfinal is nonempty
-
-    optout = optin;
-    if any(~ismember(mosfinal, mostree_top))
-        error("all mos in mosfinal must be top-level mos")
-    end
-    omixcheck(optout, mosc_all(:,2));
-
-    [~, mostree_optout_open, ~] = mostreeget(optout, du, mosc_all(:,2)); %call this a third time because optout could have changed again
+    [~, mostree_optout_open, ~] = mostreeget(optout, du, mosc_all_names); %call this a third time because optout could have changed again
     mostree_optout_open_keep = mostree_optout_open(~cellfun(@isempty, regexp(mostree_optout_open, ['^(' sprintf('%s|', mosfinal{:}) ')(\..*)*$']))); %keep mostree_optout_open that begin with mosfinal (since mosfinal are required to be from mostree_top)
 
-    mostree_open_with_mosc = {}; %create mostree_optout_open with all mosc inserted
-    for k = 1:numel(mostree_open)
-        spl = strsplit(mostree_open{k}, '.');
-        mos_parent_above_mosc = strjoin(spl(1:end-1), '.');
-        mosc_curr = mosc_all(ismember(strcat(mos_parent_above_mosc, '.', mosc_all(:,2)), mostree_optout_open),2);
-        if ~isempty(mosc_curr)
-            tmp = mostree_open(startsWith(mostree_open, mos_parent_above_mosc)); %only the current mos
-            tmp_w_mosc = {};
-            for q = 1:numel(mosc_curr)
-                tmp_w_mosc = unique(cat(2, tmp_w_mosc, regexprep(tmp, ['^(' mos_parent_above_mosc ')(\..*)*$'], ['$1' '.' mosc_curr{q} '$2']))); %put in the mosc
+    if isempty(mosc_all)
+        mostree_open_with_mosc = mostree_open;
+    else
+        mostree_open_with_mosc = {}; %create mostree_optout_open with all mosc inserted
+        for k = 1:numel(mostree_open)
+            spl = strsplit(mostree_open{k}, '.');
+            mos_parent_above_mosc = strjoin(spl(1:end-1), '.');
+            mosc_curr = mosc_all_names(ismember(strcat(mos_parent_above_mosc, '.', mosc_all_names), mostree_optout_open));
+            if ~isempty(mosc_curr)
+                tmp = mostree_open(startsWith(mostree_open, mos_parent_above_mosc)); %only the current mos
+                tmp_w_mosc = {};
+                for q = 1:numel(mosc_curr)
+                    tmp_w_mosc = unique(cat(2, tmp_w_mosc, regexprep(tmp, ['^(' mos_parent_above_mosc ')(\..*)*$'], ['$1' '.' mosc_curr{q} '$2']))); %put in the mosc
+                end
+                mostree_open_with_mosc = mostree_open(cellfun(@isempty, regexp(mostree_open, ['^' mos_parent_above_mosc '(?:\..*)*$']))); %remove the old mos that needs updating with mosc
+                mostree_open_with_mosc = cat(2, mostree_open_with_mosc, tmp_w_mosc);
             end
-            mostree_open_with_mosc = mostree_open(cellfun(@isempty, regexp(mostree_open, ['^' mos_parent_above_mosc '(?:\..*)*$']))); %remove the old mos that needs updating with mosc
-            mostree_open_with_mosc = cat(2, mostree_open_with_mosc, tmp_w_mosc);
         end
     end
 
@@ -398,7 +413,7 @@ else %if mosfinal is nonempty
     mostree_open_with_mosc_descend = sort(mostree_open_with_mosc, 'descend'); %sort descending (deepest to shallowest)
     for k = 1:numel(mostree_open_with_mosc_descend)
         sind = structind(mostree_open_with_mosc_descend{k});
-        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isempty, getfield(optout, sind{:})))
+        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isemptyall, getfield(optout, sind{:})))
             optout = setfield(optout, sind{:}, []); %set to empty any mos containing nothing but other empty mos
         end
     end

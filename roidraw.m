@@ -323,7 +323,7 @@ try
         end
         fnsuffix = ['_' rgname '_' mmname '_mm'];
         pthmm = [id.pthrec, fnsuffix, '_.mat'];
-        mm = load(pthmm);
+        load(pthmm, 'mm');
     end
 
     for ic = chandraw

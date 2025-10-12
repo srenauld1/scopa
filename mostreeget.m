@@ -12,7 +12,7 @@ mostree_top: fields at the top level of o, ie fieldnames(o)
 arguments
     o struct % options struct to derive mostree from; if empty struct, all outputs will be empty
     du struct % unnested default options struct (du, defined in odf.m, which is the unnested version of d, also defined in odf.m) 
-    mosc = [] %optional list of mosc (to prevent error identifying options vs mos)
+    mosc = [] % if o contains mosc, pass in list of those mosc (to prevent error identifying options vs mos)
 end
 
 delimflat = '__';

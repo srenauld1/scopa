@@ -21,7 +21,7 @@ usegit = opt.usegit;
 
 clear ofill
 
-%%%% MAKE SURE userdat.txt HAS BEEN SET %%%%
+%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST pthpar) %%%%
 
 userdatfile()
 
@@ -30,7 +30,7 @@ userdatfile()
 
 if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
     spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
-    spec.stackid = {'20250930_3*'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
+    spec.stackid = {'20251006_7_1_or'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
     spec.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
     spec.fly = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
     spec.trial = {''}; %cell ara2ray of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
@@ -106,7 +106,7 @@ for k = 1:numel(idtmp)
 
             elseif contains(idtmp(k).pthstack, {'opto'})
 
-                o(k) = oset_opto();
+                o(k) = oset_test();
 
             elseif contains(idtmp(k).pthstack, {'fb8c'})
 
@@ -156,7 +156,7 @@ for k = 1:numel(idtmp)
     o(k).id = idtmp(k); %put id (stack info) into options struct
 end
 
-oflat = structflat(o, delim=o(1).mn.delimflat, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
+oflat = structflat(o, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
 
 
 end

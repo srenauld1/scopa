@@ -1,11 +1,9 @@
 function [tsout, roimask] = roits(tsin, roimask, opt)
 
 %{
-
 compute roi timeseries, with various normalization options, given stack and roimasks
 tsout is 2-element cell for 2-channel data (even if only one channel has rois, ie if roimask is cell with one empty element), each cell is size(roi,time); 
 for single-channel data, tsout is not cell, it is just matrix size (roi,time)
-
 %}
 
 arguments
@@ -63,7 +61,7 @@ if iscell(roimask)
         cellout = 1;
     end
     if numel(roimask)>1 && numchan==1
-        error("roimask must be cell with numchan elements")
+        error("if numchan==1, roimask must be cell with numchan elements")
     end
 else
     if numchan>1
@@ -105,7 +103,6 @@ end
 
 %%%% EXTRACT RESPONSES FOR EACH ROI %%%%
 
-tsout = cell(1, numchan);
 for k = 1:numchan
     tsout{k} = [];
     if any(goodinds(:,:,k)) %some caiman runs (with bad params) will output all nans
