@@ -1,0 +1,22 @@
+% create animations from 2d slices of a 3d movie;
+% b - (m,n,p,q) array for 3d greyscale movie of q frames;
+% d - string that selects which 2d slices to animate:
+%     ':,:,k' selects all xy slices at z=k;
+%     ':,k,:' selects all xz slices at y=k;
+%     'k,:,:' selects all yz slices at x=k;
+% c - if not [], (m,n,p,q) array for another 3d greyscale movie of q frames;
+% v - (1,q) array of movie frame structures, one for each slice of b; 
+%     if c not [], the slices of c are shown to the right of the slices of b;
+%     v is also written to an avi file named to reflect the selection d;
+function v = sliceStack( b, d, c )
+    dd = string(d);
+    v = eval( "squeeze(b(" + dd + ",:))" );
+    if ~isempty(c)
+        w = eval( "squeeze(c(" + dd + ",:))" );
+        i = size(w);
+        [ ~, i ] = min( i(1:2) );
+        v = cat( i, v, 0*v+prctile(v,80,'all'), w );
+    end
+    dd = replace( dd, ":", "-" );
+    v = makemovie( v, [], [], "ca"+dd+"rl" );
+end
