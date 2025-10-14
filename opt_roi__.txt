@@ -1,4 +1,18 @@
 {
+  "a1": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "eb"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "eb",
+    "s": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025101415452410",
