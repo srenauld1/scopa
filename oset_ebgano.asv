@@ -36,19 +36,22 @@ o = ofill(o);
 for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
     o.roi.rgname = rgname{m};
-
+    
     % o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{m}, 'eb')
         o.roi.mm.mmname = 'eb';
+        o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = {32, 64};
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 1.5;
     elseif any(strcmp(rgname{m}, {'gal', 'gar'}))
+        o.roi.doma = 0; %do automated morph rois
         o.roi.mm.mmname = {'dorsal', 'ventral'};
     elseif any(strcmp(rgname{m}, 'no'))
+        o.roi.doma = 0; %do automated morph rois
         o.roi.mm.mmname = {'left', 'right'};
     end
 

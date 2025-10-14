@@ -1,4 +1,4 @@
-function o = oid(o, mos, opt)
+function o = oid(o, opt)
 
 % python oex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
 % this function starts at distribute, and derive and check require data, so only happen in python, not here
@@ -20,32 +20,16 @@ try
     usegit = opt.usegit;
     delimflat = opt.delimflat;
 
-pthopt = [pthscopaget() 'optdf.txt'];
-
-if isempty(d) && isempty(du) && isempty(mostree)
-    odf(pthopt); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
-    if isfile(pthopt)
-        dall = structld(pthopt, nocells=1, dosort=0);
-        d = dall.d;
-        du = dall.du;
-        mostree = dall.mostree;
-        mostree_open = dall.mostree_open;
-        mostree_top = dall.mostree_top;
-    else
-        error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
-    end
-end
+    pthopt = [pthscopaget() 'optdf.txt'];
+    dall = structld(pthopt, nocells=1, dosort=0);
+    mostree = dall.mostree;
 
     if isempty(usegit)
         error("must set name-value argument usegit or glb('usegit')")
     end
-    if isempty(mos)
-        mos = fieldnames(o);
-        mos = mos(~strcmp(mos, 'finished'));
-    end
-    if ~iscell(mos)
-        mos = {mos};
-    end
+    mos = fieldnames(o);
+    mos = mos(~strcmp(mos, 'finished'));
+
     if getonly
         fprintf("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     end
@@ -66,66 +50,63 @@ end
 
     for k = 1:numel(mos)
 
-        for q = 1:numel(o) %in case nonscalar
+        if ~isempty(o.(mos{k}))
 
-            if ~isempty(o(q).(mos{k}))
+            %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
-                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
+            opttmp2 = moscset(o, mos{k}, mostree, tsgetcall=tsgetcall);
 
-                opttmp2 = moscset(o(q), mos{k}, tsgetcall=tsgetcall);
+            %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-                %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
+            optdist = odist(opttmp2, mos{k}, delimflat=delimflat); %optdist substructs (fields) are temporary names assigned during distribution
 
-                optdist = odist(opttmp2, mos{k}, delimflat=delimflat); %optdist substructs (fields) are temporary names assigned during distribution
-
-                optout = [];
-                fntmp = fieldnames(optdist);
-                for m = 1:numel(fntmp)
+            optout = [];
+            fntmp = fieldnames(optdist);
+            for q = 1:numel(fntmp)
 
 
-                    %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
+                %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
 
-                    optdist.(fntmp{m}) = ochk(optdist.(fntmp{m}), mos{k});
-
-
-                    %%%%%%%% REDUCE OPTIONS %%%%%%%%
-
-                    optred = ored(optdist.(fntmp{m}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file (if it wasn't already)
+                optdist.(fntmp{q}) = ochk(optdist.(fntmp{q}), mos{k});
 
 
-                    %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
+                %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-                    pthoptpat = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
-
-                    [opttmp, optid, ~] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+                optred = ored(optdist.(fntmp{q}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file (if it wasn't already)
 
 
-                    %%%%%%%% ACCUMULATE  %%%%%%%%
+                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
+
+                pthoptpat = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
+
+                [opttmp, optid, ~] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
 
-                    if tsgetcall && ~iscell(opttmp)
-                        opttmp = {opttmp};
-                        optid = {optid};
-                    end
+                %%%%%%%% ACCUMULATE  %%%%%%%%
 
-                    if iscell(opttmp)
-                        if ~tsgetcall
-                            error("opttmp cannot be cell if tsgetcall")
-                        end
-                        for p = 1:numel(opttmp)
-                            if ~isempty(opttmp{p})
-                                optout.(optid{p}) = opttmp{p};
-                            end
-                        end
-                    else
-                        optout.(optid) = opttmp;
-                    end
 
+                if tsgetcall && ~iscell(opttmp)
+                    opttmp = {opttmp};
+                    optid = {optid};
                 end
 
-                o(q).(mos{k}) = optout;
+                if iscell(opttmp)
+                    if ~tsgetcall
+                        error("opttmp cannot be cell if tsgetcall")
+                    end
+                    for p = 1:numel(opttmp)
+                        if ~isempty(opttmp{p})
+                            optout.(optid{p}) = opttmp{p};
+                        end
+                    end
+                else
+                    optout.(optid) = opttmp;
+                end
 
             end
+
+            o.(mos{k}) = optout;
+
         end
 
     end

@@ -1,4 +1,4 @@
-function optout = odist(optin, mos, opt2)
+function optout = odist(optin, mos)
 
 % odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each mosc, ie each), but odist in python just gives 'any' (not 'each') functionality
 % optin can be a mos, or a higher struct containing the mos (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this)
@@ -6,10 +6,9 @@ function optout = odist(optin, mos, opt2)
 arguments
     optin
     mos
-    opt2.delimflat = []
 end
-opt2 = glboropt(opt2);
-delimflat = opt2.delimflat;
+
+delimflat = '__';
 
 if isfield(optin, mos)
     optin = optin.(mos);

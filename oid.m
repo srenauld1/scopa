@@ -9,7 +9,6 @@ arguments
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
     opt.scopausername = []
     opt.usegit = []
-    opt.delimflat = []
 end
 
 try
@@ -18,98 +17,94 @@ try
     getonly = opt.getonly;
     scopausername = opt.scopausername;
     usegit = opt.usegit;
-    delimflat = opt.delimflat;
 
-    pthopt = [pthscopaget() 'optdf.txt'];
-    dall = structld(pthopt, nocells=1, dosort=0);
+    pthoptdf = [pthscopaget() 'optdf.txt'];
+    dall = structld(pthoptdf, nocells=1, dosort=0);
     mostree = dall.mostree;
-
-    if isempty(usegit)
-        error("must set name-value argument usegit or glb('usegit')")
-    end
-    mos = fieldnames(o);
-    mos = mos(~strcmp(mos, 'finished'));
-
-    if getonly
-        fprintf("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
-    end
 
     callstack = dbstack();
     tsgetcall = 0;
     if ismember('tsget', {callstack.name})
         tsgetcall = 1;
     end
-
     if tsgetcall && ~getonly
         error("tsget should call oid with getonly=1")
     end
-
-    if ~tsgetcall && ( isempty(getfieldns(o, 'finished')) || any(cellfun(@isempty, getfieldns(o, 'finished'))) || any(~isequal(cell2mat(getfieldns(o, 'finished')),1)) ) %input struct does not require true 'finished' field if oid is called from tsget
+    if ~tsgetcall && ( ~isfield(o, 'finished') || ~isequal(o.finished, 1) ) %input struct does not require true 'finished' field if oid is called from tsget
         error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
     end
+    if ~isscalar(o) || ~isstruct(o)
+        error("o must be scalar struct")
+    end
+    if isempty(usegit)
+        error("must set name-value argument usegit or glb('usegit')")
+    end
+    if getonly
+        fprintf("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
+    end
+    
+
+    mos = fieldnames(o);
+    mos = mos(~strcmp(mos, 'finished'));
 
     for k = 1:numel(mos)
 
-        for q = 1:numel(o) %in case nonscalar
+        if ~isempty(o.(mos{k}))
 
-            if ~isempty(o(q).(mos{k}))
+            %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
-                %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
-
-                opttmp2 = moscset(o(q), mos{k}, mostree, tsgetcall=tsgetcall);
-
-                %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
-
-                optdist = odist(opttmp2, mos{k}, delimflat=delimflat); %optdist substructs (fields) are temporary names assigned during distribution
-
-                optout = [];
-                fntmp = fieldnames(optdist);
-                for m = 1:numel(fntmp)
+            opttmp2 = moscset(o, mos{k}, mostree, tsgetcall=tsgetcall);
 
 
-                    %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
+            %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-                    optdist.(fntmp{m}) = ochk(optdist.(fntmp{m}), mos{k});
+            optdist = odist(opttmp2, mos{k}); %optdist substructs (fields) are temporary names assigned during distribution
 
-
-                    %%%%%%%% REDUCE OPTIONS %%%%%%%%
-
-                    optred = ored(optdist.(fntmp{m}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file (if it wasn't already)
-
-
-                    %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
-
-                    pthoptpat = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
-
-                    [opttmp, optid, ~] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+            optout = [];
+            fntmp = fieldnames(optdist);
+            for q = 1:numel(fntmp)
 
 
-                    %%%%%%%% ACCUMULATE  %%%%%%%%
+                %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
+
+                optdist.(fntmp{q}) = ochk(optdist.(fntmp{q}), mos{k});
 
 
-                    if tsgetcall && ~iscell(opttmp)
-                        opttmp = {opttmp};
-                        optid = {optid};
-                    end
+                %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-                    if iscell(opttmp)
-                        if ~tsgetcall
-                            error("opttmp cannot be cell if tsgetcall")
-                        end
-                        for p = 1:numel(opttmp)
-                            if ~isempty(opttmp{p})
-                                optout.(optid{p}) = opttmp{p};
-                            end
-                        end
-                    else
-                        optout.(optid) = opttmp;
-                    end
+                optred = ored(optdist.(fntmp{q}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file (if it wasn't already)
 
+
+                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
+
+                pthoptmos = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
+                [opttmp, optid, ~] = structfile(pthoptmos, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+
+
+                %%%%%%%% ACCUMULATE  %%%%%%%%
+
+                if tsgetcall && ~iscell(opttmp)
+                    opttmp = {opttmp};
+                    optid = {optid};
                 end
 
-                o(q).(mos{k}) = optout;
+                if iscell(opttmp)
+                    if ~tsgetcall
+                        error("opttmp cannot be cell if tsgetcall")
+                    end
+                    for m = 1:numel(opttmp)
+                        if ~isempty(opttmp{m})
+                            optout.(optid{m}) = opttmp{m};
+                        end
+                    end
+                else
+                    optout.(optid) = opttmp;
+                end
 
             end
+
+            o.(mos{k}) = optout;
+
         end
 
     end

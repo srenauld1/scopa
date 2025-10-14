@@ -21,12 +21,13 @@ usegit = opt.usegit;
 
 clear ofill
 
-%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST pthpar) %%%%
+
+%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST FIELD pthpar) %%%%
 
 userdatfile()
 
-%%%% RECORDING SPECIFIERS (USED TO FIND RECORDINGS IF THERE IS NO INPUT TO a2p) %%%%
 
+%%%% RECORDING SPECIFIERS (USED TO FIND RECORDINGS IF THERE IS NO INPUT TO a2p) %%%%
 
 if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
     spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
@@ -39,7 +40,7 @@ if isempty(spec) %if you're running a2p without input arguments (ie if optional 
     spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffix; 'each' for matched indices of each of these specifiers (length 1 will be repeated to match anything longer)
     spec.pthpar = userdatfile('pthpar'); %read pthpar from userdatfile
 elseif istextall(spec)
-    spectmp.pth = spec; 
+    spectmp.pth = spec;
     spec = spectmp;
 end
 
@@ -47,88 +48,63 @@ specpairs = struct2pairs(spec);
 pthstacks = stackfind(specpairs{:}, err=1); % find stacks using spec; error if none found (err=1)
 idtmp = idmake(pthstacks);
 
+
 %%%% LOOP OVER FOUND STACKS IN idtmp, SETTING OPTIONS (IN oset_* FILES) SPECIFIC TO RECORDING AND SCOPAUSERNAME %%%%
 
 for k = 1:numel(idtmp)
-
     clear ofill %clear persistent variables in ofill for each stack
-
     switch userdatfile('scopausername')
-
-        case 'wz'
-
-            if contains(idtmp(k).pthstack, {''}) %empty string means every recording
-
-                o(k) = oset_wenyi();
-
-            end
-
-        case 'jf'
-
-            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
-
-                o(k) = oset_jingxuan();
-
-            end
-
-        case 'yz'
-
-            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
-
-                o(k) = oset_yunzhi();
-
-            end
-
-        case 'sr'
-
-            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
-
-                o(k) = oset_sophia();
-
-            end
-
         case 'cw'
-
-            if contains(idtmp(k).pthstack, {'ebganoo'})
-
+            if contains(idtmp(k).pthstack, {'ebgano'})
                 o(k) = oset_ebgano();
-
             elseif contains(idtmp(k).pthstack, {'ganopb'})
-
                 o(k) = oset_ganopb();
-
             elseif contains(idtmp(k).pthstack, {'elno'})
-
                 o(k) = oset_elno();
-
             elseif contains(idtmp(k).pthstack, {'ebno'})
-
                 o(k) = oset_ebno();
-
             elseif contains(idtmp(k).pthstack, {'opto'})
-
                 o(k) = oset_test();
-
             elseif contains(idtmp(k).pthstack, {'fb8c'})
-
                 o(k) = oset_fb8c();
-
             elseif contains(idtmp(k).pthstack, {'mito'})
-
                 o(k) = oset_mito();
-
             elseif contains(idtmp(k).pthstack, {'312'})
-
                 o(k) = oset_312();
-
             elseif contains(idtmp(k).pthstack, {'f91g'})
-
                 o(k) = oset_t5();
-
             end
-
+        case 'wz'
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                o(k) = oset_wenyi();
+            end
+        case 'jf'
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                o(k) = oset_jingxuan();
+            end
+        case 'yz'
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                o(k) = oset_yunzhi();
+            end
+        case 'sr'
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                o(k) = oset_sophia();
+            end
     end
 
+    if ~all(structfun(@isempty, o(k)))
+        o(k) = oid(o(k), usegit=usegit); %assign ids to options sets
+    end
+
+end
+
+for k = numel(o):-1:1
+    if ~all(structfun(@isempty, o(k)))
+        o(k).id = idtmp(k); % put id into options struct
+    else
+        o(k) = []; %remove o for stacks that were found by stackfind but didn't enter oset_* file (ie didn't meet oset criteria above)
+        idtmp(k) = []; %also remove idtmp
+    end
 end
 
 
@@ -136,28 +112,17 @@ end
 
 glb( ...
     plt=[""], ... %string array listing modules that get plots (empty string for none by default); all would be plt=["daq", "sld", "ftv", "roi", "bmp", "mdl"]
-    optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names) 
+    optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
     dmstackdf='yxztck', ... %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
-    delimflat='__', ... %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent 
-    usegit=usegit, ... %use git to sync with remote 
+    delimflat='__', ... %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent
+    usegit=usegit, ... %use git to sync with remote
     pthscopa=pthscopaget(), ... %path to scopa
     pthpy=userdatfile('pthpy'), ... %path to python executable, in case user calls some python code from a2p (caiman registration or roi extraction, for example)
     scopausername=userdatfile('scopausername'), ... %username; must be alphabetic char vector; used in options filenames, and to route to correct oset_* files
     xyscreen=screenpx(), ... %screen dimensions in pixels
-    pthpar=pthparget() ... %path to parent folder containing all stacks (function stackfind function searches for stacks recursively within pthpar) 
+    pthpar=pthparget() ... %path to parent folder containing all stacks (function stackfind function searches for stacks recursively within pthpar)
     )
 
-%%%% FINALIZE/ORGANIZE OPTIONS STRUCT AND DERIVE optids %%%%
-
-o = structsort(o, vectype='row'); %recursively order alphabetically
-
-o = oid(o, usegit=usegit); %assign ids to options sets
-
-for k = 1:numel(idtmp)
-    o(k).id = idtmp(k); %put id (stack info) into options struct
-end
-
-oflat = structflat(o, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
 
 
 end
