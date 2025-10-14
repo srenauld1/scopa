@@ -18,10 +18,6 @@ try
     scopausername = opt.scopausername;
     usegit = opt.usegit;
 
-    pthoptdf = [pthscopaget() 'optdf.txt'];
-    dall = structld(pthoptdf, nocells=1, dosort=0);
-    mostree = dall.mostree;
-
     callstack = dbstack();
     tsgetcall = 0;
     if ismember('tsget', {callstack.name})
@@ -53,7 +49,7 @@ try
 
             %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
-            opttmp2 = moscset(o, mos{k}, mostree, tsgetcall=tsgetcall);
+            opttmp2 = moscset(o, mos{k});
 
 
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%

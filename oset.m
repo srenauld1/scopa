@@ -51,59 +51,63 @@ idtmp = idmake(pthstacks);
 
 %%%% LOOP OVER FOUND STACKS IN idtmp, SETTING OPTIONS (IN oset_* FILES) SPECIFIC TO RECORDING AND SCOPAUSERNAME %%%%
 
-for k = 1:numel(idtmp)
+for k = numel(idtmp): -1 : 1 %backwards for deletion below
     clear ofill %clear persistent variables in ofill for each stack
+    otmp = [];
     switch userdatfile('scopausername')
         case 'cw'
             if contains(idtmp(k).pthstack, {'ebgano'})
-                o(k) = oset_ebgano();
+                otmp = oset_ebgano();
             elseif contains(idtmp(k).pthstack, {'ganopb'})
-                o(k) = oset_ganopb();
+                otmp = oset_ganopb();
             elseif contains(idtmp(k).pthstack, {'elno'})
-                o(k) = oset_elno();
+                otmp = oset_elno();
             elseif contains(idtmp(k).pthstack, {'ebno'})
-                o(k) = oset_ebno();
+                otmp = oset_ebno();
             elseif contains(idtmp(k).pthstack, {'opto'})
-                o(k) = oset_test();
+                otmp = oset_test();
             elseif contains(idtmp(k).pthstack, {'fb8c'})
-                o(k) = oset_fb8c();
+                otmp = oset_fb8c();
             elseif contains(idtmp(k).pthstack, {'mito'})
-                o(k) = oset_mito();
+                otmp = oset_mito();
             elseif contains(idtmp(k).pthstack, {'312'})
-                o(k) = oset_312();
+                otmp = oset_312();
             elseif contains(idtmp(k).pthstack, {'f91g'})
-                o(k) = oset_t5();
+                otmp = oset_t5();
             end
         case 'wz'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_wenyi();
+                otmp = oset_wenyi();
             end
         case 'jf'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_jingxuan();
+                otmp = oset_jingxuan();
             end
         case 'yz'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_yunzhi();
+                otmp = oset_yunzhi();
             end
         case 'sr'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_sophia();
+                otmp = oset_sophia();
             end
     end
 
-    if ~all(structfun(@isempty, o(k)))
-        o(k) = oid(o(k), usegit=usegit); %assign ids to options sets
+    if ~isempty(otmp)
+        o(k) = oid(otmp, usegit=usegit); %assign ids to options sets
     end
 
 end
 
-for k = numel(o):-1:1
-    if ~all(structfun(@isempty, o(k)))
-        o(k).id = idtmp(k); % put id into options struct
+if ~exist('o', 'var')
+    error("o does not exist; found stacks must not have met criteria for entering oset_* file above")
+end
+
+for k = numel(o) : -1 : 1
+    if all(structfun(@isempty, o(k)))
+        o(k) = [];
     else
-        o(k) = []; %remove o for stacks that were found by stackfind but didn't enter oset_* file (ie didn't meet oset criteria above)
-        idtmp(k) = []; %also remove idtmp
+        o(k).id = idtmp(k); % put id into options struct
     end
 end
 
@@ -122,7 +126,6 @@ glb( ...
     xyscreen=screenpx(), ... %screen dimensions in pixels
     pthpar=pthparget() ... %path to parent folder containing all stacks (function stackfind function searches for stacks recursively within pthpar)
     )
-
 
 
 end

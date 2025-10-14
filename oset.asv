@@ -21,12 +21,13 @@ usegit = opt.usegit;
 
 clear ofill
 
-%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST pthpar) %%%%
+
+%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST FIELD pthpar) %%%%
 
 userdatfile()
 
-%%%% RECORDING SPECIFIERS (USED TO FIND RECORDINGS IF THERE IS NO INPUT TO a2p) %%%%
 
+%%%% RECORDING SPECIFIERS (USED TO FIND RECORDINGS IF THERE IS NO INPUT TO a2p) %%%%
 
 if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
     spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
@@ -47,48 +48,58 @@ specpairs = struct2pairs(spec);
 pthstacks = stackfind(specpairs{:}, err=1); % find stacks using spec; error if none found (err=1)
 idtmp = idmake(pthstacks);
 
+
 %%%% LOOP OVER FOUND STACKS IN idtmp, SETTING OPTIONS (IN oset_* FILES) SPECIFIC TO RECORDING AND SCOPAUSERNAME %%%%
 
+otmp = [];
+q = 0;
 for k = 1:numel(idtmp)
     clear ofill %clear persistent variables in ofill for each stack
     switch userdatfile('scopausername')
         case 'cw'
-            if contains(idtmp(k).pthstack, {'ebganoo'})
-                o(k) = oset_ebgano();
+            if contains(idtmp(k).pthstack, {'ebgano'})
+                otmp = oset_ebgano();
             elseif contains(idtmp(k).pthstack, {'ganopb'})
-                o(k) = oset_ganopb();
+                otmp = oset_ganopb();
             elseif contains(idtmp(k).pthstack, {'elno'})
-                o(k) = oset_elno();
+                otmp = oset_elno();
             elseif contains(idtmp(k).pthstack, {'ebno'})
-                o(k) = oset_ebno();
+                otmp = oset_ebno();
             elseif contains(idtmp(k).pthstack, {'opto'})
-                o(k) = oset_test();
+                otmp = oset_test();
             elseif contains(idtmp(k).pthstack, {'fb8c'})
-                o(k) = oset_fb8c();
+                otmp = oset_fb8c();
             elseif contains(idtmp(k).pthstack, {'mito'})
-                o(k) = oset_mito();
+                otmp = oset_mito();
             elseif contains(idtmp(k).pthstack, {'312'})
-                o(k) = oset_312();
+                otmp = oset_312();
             elseif contains(idtmp(k).pthstack, {'f91g'})
-                o(k) = oset_t5();
+                otmp = oset_t5();
             end
         case 'wz'
-            if contains(idtmp(k).pthstack, {''}) %empty string means every recording
-                o(k) = oset_wenyi();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                otmp = oset_wenyi();
             end
         case 'jf'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_jingxuan();
+                otmp = oset_jingxuan();
             end
         case 'yz'
-            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
-                o(k) = oset_yunzhi();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                otmp = oset_yunzhi();
             end
         case 'sr'
-            if contains(idtmp(k).pthstack, {''}) %empty char for no path filtering
-                o(k) = oset_sophia();
+            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
+                otmp = oset_sophia();
             end
     end
+
+    if ~isempty(otmp)
+        q = q+1;
+        o(q) = oid(otmp, usegit=usegit); %assign ids to options sets
+        o(q).id = idtmp(q); % put id into options struct
+    end
+
 end
 
 
@@ -107,18 +118,10 @@ glb( ...
     pthpar=pthparget() ... %path to parent folder containing all stacks (function stackfind function searches for stacks recursively within pthpar)
     )
 
-%%%% FINALIZE/ORGANIZE OPTIONS STRUCT AND DERIVE optids %%%%
 
-o = structsort(o, vectype='row'); %recursively order alphabetically
-
-o = oid(o, usegit=usegit); %assign ids to options sets
-
-for k = 1:numel(idtmp)
-    o(k).id = idtmp(k); %put id (stack info) into options struct
+if ~exist('o', 'var')
+    error("o does not exi")
 end
-
-oflat = structflat(o, prefix='o'); %flatten struct for user to see options struct organization more easily; prefix used to make valid fieldnames in case o is nonscalar
-
 
 end
 

@@ -46,8 +46,12 @@ else
         if isfield(sout, fin2)
             if isstruct(s.(fin2))
                 fntmp = fieldnames(s.(fin2));
-                if all(ismember(fntmp, 'tg')) %isfield(s.(fn_sin{u}), 'tg')%if it's struct tg, don't update anything within
-                    sout.(fin2) = s.(fin2);
+                if any(ismember(fntmp, 'tg')) %copy everything user set within struct tg (since default tg is always empty) 
+                    if all(ismember(fntmp, 'tg'))
+                        sout.(fin2) = s.(fin2);
+                    else
+                        error("struct tg must not have any sibling fields")
+                    end
                 else
                     if isstruct(sout.(fin2))
                         sout.(fin2) = structfill(s.(fin2), sout.(fin2));

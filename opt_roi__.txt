@@ -1,0 +1,140 @@
+{
+  "md": {
+    "autonm": 1,
+    "maketime": "2025101415452410",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "cm": [],
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 1.5
+    },
+    "mm": {
+      "chanstr": "all",
+      "mmname": "eb"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "eb",
+    "s": {
+      "tg": []
+    }
+  },
+  "z2": {
+    "cm": [],
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "torus",
+      "numroi": 64,
+      "roirad": 1.5
+    },
+    "mm": {
+      "chanstr": "all",
+      "mmname": "eb"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "eb",
+    "s": {
+      "tg": []
+    }
+  },
+  "z3": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "dorsal"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "s": {
+      "tg": []
+    }
+  },
+  "z4": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "ventral"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "s": {
+      "tg": []
+    }
+  },
+  "z5": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "dorsal"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "s": {
+      "tg": []
+    }
+  },
+  "z6": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "ventral"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "s": {
+      "tg": []
+    }
+  },
+  "z7": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "left"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "no",
+    "s": {
+      "tg": []
+    }
+  },
+  "z8": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "right"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "no",
+    "s": {
+      "tg": []
+    }
+  }
+}

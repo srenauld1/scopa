@@ -32,19 +32,15 @@ while true
     end
 end
 
-if ~isempty(mosc)
-    fn_invalid_mosc = fn_oflat(~cellfun(@isempty, regexp(fn_oflat, sprintf([delimflat '%s$|'], mosc{:})))); %empty struct mosc (or mosc with same name as option) will be end with [delimflat mosc] in oflat
-    if ~isempty(fn_invalid_mosc)
-        error("mosc must be struct, and cannot be empty struct")
-    end
-end
+    options_o = fn_oflat(regexp(fn_oflat, [mosc{:} '|'])); %remove contiguous sequence of mos and/or mosc at the beginning  
+
 
 options_du = {};
 for k = 1:numel(fn_du)
     options_du = cat(1, options_du, fieldnames(du.(fn_du{k})));
 end
 
-options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg' '(' delimflat '.*)*$']))); %remove tg
+options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg' '(' delimflat '.*)*$']))); %remove tg 
 invalid_options_o = options_o_no_tg(~ismember(options_o_no_tg, cat(1, options_du(:), fn_du(:))));
 if ~isempty(invalid_options_o)
     error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}) + newline)

@@ -249,7 +249,7 @@ if any(~ismember(mosfinal, mostree_top))
 end
 
 
-if isemptyall(optin) && isempty(mos)
+if isemptyall(optin) && isempty(mos) && isempty(mosfinal)
 
     mos = mostree_top; %set mos here in case mosc is nonempty, simplifies setting mosc below
     for k = 1:numel(mos)
@@ -262,7 +262,7 @@ if isemptyall(optin) && isempty(mos)
 
 else
 
-    if ~isempty(mosfinal)
+    if ~isempty(mosfinal) && ~isempty(optin)
         fn_optin = fieldnames(optin);
         optin = rmfield(optin, fn_optin(~ismember(fn_optin, mosfinal)));
     end
@@ -378,10 +378,10 @@ if ~isempty(mosfinal)
         mosc_all_names = mosc_all(:,2);
     end
 
-    omixcheck(optout, mosc_all_names);
+    omixcheck(optout, mosc_all_names, mostree_du);
 
     [~, mostree_optout_open, ~] = mostreeget(optout, du, mosc_all_names); %call this a third time because optout could have changed again
-    mostree_optout_open_keep = mostree_optout_open(~cellfun(@isempty, regexp(mostree_optout_open, ['^(' sprintf('%s|', mosfinal{:}) ')(\..*)*$']))); %keep mostree_optout_open that begin with mosfinal (since mosfinal are required to be from mostree_top)
+    mostree_optout_open_keep = mostree_optout_open(~cellfun(@isempty, regexp(mostree_optout_open, ['^(' sprintf('%s|', mosfinal{:}) ')(\..*)*$'], 'forcecelloutput'))); %keep mostree_optout_open that begin with mosfinal (since mosfinal are required to be from mostree_top)
 
     if isempty(mosc_all)
         mostree_open_with_mosc = mostree_open;
@@ -420,8 +420,6 @@ if ~isempty(mosfinal)
 
     optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and tsget)
 
-    glb(1, mosc=mosc_all, mostree=mostree, mostree_o=mostree_optout_open);
-
     clear mos_all mosc_all
 
 end
@@ -434,7 +432,7 @@ end
 
 
 
-function x = textin_format(x)
+function x = textin_format(x) % format text input to ofill
 
 x = convertStringsToChars(x); %in case it's string
 if isemptyall(x)
@@ -453,15 +451,19 @@ end
 end
 
 
-function omixcheck(o, mosc)
+function omixcheck(o, mosc, mostree_du) %make sure all mos contain options and submos only, or mosc only
 
 fn = fieldnames(o);
+fn = fn(~strcmp(fn, 'tg')); %remove tg
 for k = 1:numel(fn)
     if isstruct(o.(fn{k}))
-        omixcheck(o.(fn{k}), mosc);
+        omixcheck(o.(fn{k}), mosc, mostree_du);
     else
         if any(ismember(fn, mosc)) && ~all(ismember(fn, mosc))
             error("you have a mixture of options and mosc, which is not allowed when mosfinal is nonempty (the final stage of creating options struct)" + newline + "here is the mixture: " + newline + sprintf('%s\n', fn{:}))
+        end
+        if all(ismember(fn, mostree_du))
+            error("at least one mos contains nothing but submos (ie does not contain options); this should not occur")
         end
     end
 end

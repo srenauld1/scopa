@@ -365,6 +365,18 @@ if any(structfun(@iscell, du_flat))
     error("at least one of the default values above is a cell; cells are not allowed to be default values because cells are used in oid.m to distribute options into unique sets")
 end
 
+du_flat_cell = struct2cell(du_flat);
+tg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'tg']));
+fn_tg = fn_du_flat(tg_inds); %fieldnames with tg
+tmp_tg = du_flat_cell(tg_inds); 
+fn_invalid_tg = fn_tg(~endsWith(fn_tg, [delimflat 'tg']));
+if ~isempty(fn_invalid_tg)
+    error("tg fields in du must be empty structs, but at least one is not")
+end
+if any(~cellfun(@isempty, tmp_tg))
+    error("tg fields in du must be empty structs, but at least one is not")
+end
+
 depth = cell2mat(cellfun(@(x) numel(strsplit(x, delimflat)), fn_du_flat, UniformOutput=false));
 fn_invalid_depth = fn_du_flat(depth>2 | depth<2);
 fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'tg']));

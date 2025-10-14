@@ -287,6 +287,9 @@ else
     if isempty(mos)
         mos = mostree_optin_open;
         mos_skip = mos(ismember(mos, mos_all));
+
+        mos = unique(cat(1, mos(:), mosfinal(:)));
+
         if ~isempty(mos_skip)
             fprintf("you have already operated on the following mos that were found in optin: " + newline + sprintf('%s\n', mos_skip{:}) + "they will be skipped in this call to ofill" + newline + "if you want to operate on them again, you must pass them in as input mos (or the mos part of mosc)" + newline)
             mos = mos(~ismember(mos, mos_all));
@@ -328,7 +331,7 @@ else
     end
     [~, mostree_optout_open, ~] = mostreeget(optout, du); %mos in optout
 
-    mos_return = mos_skip(~cellfun(@isempty, regexp(mos_skip, ['^(' sprintf('%s|', mos{:}) ')\..*$']))); %check if any mos just filled is a parent of a mos_optin_only filled earlier, if so, it got overwritten with defaults, so return to original value
+    mos_return = mos_skip(~cellfun(@isempty, regexp(mos_skip, ['^(' sprintf('%s|', mos{:}) ')\..*$'], 'forceCellOutput'))); %check if any mos just filled is a parent of a mos_optin_only filled earlier, if so, it got overwritten with defaults, so return to original value
     for k = 1:numel(mos_return)
         if ~ismember(mos_return{k}, mostree_optout_open)
             sind = structind(mos_return{k});
@@ -410,14 +413,14 @@ if ~isempty(mosfinal)
     mostree_open_with_mosc_descend = sort(mostree_open_with_mosc, 'descend'); %sort descending (deepest to shallowest)
     for k = 1:numel(mostree_open_with_mosc_descend)
         sind = structind(mostree_open_with_mosc_descend{k});
-        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isempty, getfield(optout, sind{:})))
+        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isemptyall, getfield(optout, sind{:})))
             optout = setfield(optout, sind{:}, []); %set to empty any mos containing nothing but other empty mos
         end
     end
 
     optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and tsget)
 
-    glb(mosc=mosc_all, mostree=mostree, mostree_o=mostree_optout_open);
+    glb(1, mosc=mosc_all, mostree=mostree, mostree_o=mostree_optout_open);
 
     clear mos_all mosc_all
 
@@ -451,6 +454,8 @@ end
 
 
 function omixcheck(o, mosc)
+
+%make sure all mos contain options and submos, or mosc only
 
 fn = fieldnames(o);
 for k = 1:numel(fn)

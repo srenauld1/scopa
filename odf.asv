@@ -29,7 +29,7 @@ mostree = [  %in sort order; in polymos, each is filled as in du below (ie roi.m
 
 du.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
 du.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHeading", "g4panels", "g4yaw"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
+du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHd", "ficTracHeading", "g4panels", "g4yaw", "g4hd"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 du.daq.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 du.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 du.daq.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
@@ -44,19 +44,19 @@ du.daq.usefbf = 1; % whether to include flyback frames when resampling with volu
 du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 du.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 du.daq.voltmax = 10; % daq voltage max, need to find this in metadata
-du.daq.voltminhd = 1/12 * 2*pi; %yaw position assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
+du.daq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
 du.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
     "t = Time, time, T";
     "epochts = epoch";
     "vvynom = g4vel, g4velnom";
-    "vh = g4panels, g4yaw";
-    "vvy = g4panels_dv, g4yaw_dv";
+    "vh = g4panels, g4yaw, g4hd";
+    "vvy = g4panels_dv, g4yaw_dv, g4hd_dv";
     "bf = ficTracIntForward";
     "bvf = ficTracIntForward_dv";
     "bs = ficTracIntSide";
     "bvs = ficTracIntSide_dv";
-    "bh = ficTracYaw, ficTracHeading";
-    "bvy = ficTracYaw_dv, ficTracHeading_dv";
+    "bh = ficTracYaw, ficTracHeading, ficTracHd";
+    "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv";
     "ftcam = ftcam"]; 
 
 %% sld (stackld: load/process stack from tif / save to mat )
@@ -78,15 +78,11 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
 du.roi.s = struct('tg', []);
-du.roi.rgname = 'none'; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
-du.roi.domm = 0; %do "morph manual"; if true, draw rois in an interactive plot, and save, (or load if already drawn and saved), if false, skip drawing
-du.roi.doma = 0; %do "morph auto"; if true, automatically segment drawn rois (or if none, full fov)
-du.roi.docm = 0; %do caiman extract.py; if true, load caiman rois with rgname in filename
-du.roi.doqc = 0; %do quality control (remove bad rois)
+du.roi.rgname = []; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
 
 %% mm (roidraw: mm = "morphological manual")
 
-du.mm.mmname = ['none']; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
+du.mm.mmname = []; %empty to skip; string array of names for roi mask(s) drawn on the same rgname
 du.mm.chanstr = ['all']; %'1', '2', 'all', '1cp', '2cp'; '1' draws on first channel (stack index 1 in 5th dimension), '2' draws on second channel (stack index 2 in 5th dimension), 'all' draws on all available channels (whether 1 or 2 channel), '1cp' copies what is drawn on channel 1 onto channel 2; '2cp' copies what is drawn on channel 2 onto channel 1 
 
 %% ma (roimauto: ma = "morphological automated", automated morphological roi extraction, can be applied to drawn rois (or not))
@@ -200,7 +196,7 @@ du.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morpholog
 %% nrm (roits: extract and/or normalize roi timeseries)
 
 % options for extraction/normalization of roi signals
-% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.pre and nrm.post, 
+% standard normalizations (e.g. rescaling, z-scoring, dff, box-cox) are handled by nrm.nrmstr
 % all normalizations are applied to individual vector timeseries
 % normalization strings are listed below; they can be combined arbitrarily; if combined, they are applied left to right order (eg 'nnbox' applies 'nn' then 'box'):
     % 'f': no normalization
@@ -210,8 +206,7 @@ du.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morpholog
     % 'nn': nonnegative (subtract min)
     % 'box': box-cox
 
-du.nrm.pre = 'f'; %must have at least one string, compsed of syllables above; % precluster normalization is applied before clustering (i.e. normalization of each pixel in roi, or subroi within a larger roi)
-du.nrm.post = 'f'; %must have at least one string, compsed of syllables above; postcluster normalization is applied after clustering (ie to each roi)
+du.nrm.nrmstr = []; % (nrmstr means "norm string"); char vector; empty is no normalization, gets assigned nrmstr='f'; nrmstr must be compsed of syllables above; normalization is applied to each roi
 du.nrm.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
 du.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
 du.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
@@ -243,7 +238,7 @@ du.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morp
 
 %% mdlmake (mdlmake: fit model, depv as function of indv)
  
-du.mdl.indv = struct('tg', []);
+du.mdl.indv = struct('tg', 3);
 du.mdl.depv = struct('tg', []);
 du.mdl.epochnum = 1;
 du.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
@@ -370,6 +365,15 @@ if any(structfun(@iscell, du_flat))
     error("at least one of the default values above is a cell; cells are not allowed to be default values because cells are used in oid.m to distribute options into unique sets")
 end
 
+du_flat_cell = struct2cell(du_flat);
+tg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'tg']));
+fn_tg = fn_du_flat(tg_inds); %fieldnames with tg
+tg = du_flat_cell(tg_inds); 
+fn_invalid_tg = fn_tg(~endsWith(fn_tg, [delimflat 'tg']));
+if ~isempty(fn_invalid_tg)
+    error("tg fields in du must be empty structs, but at least one is not")
+end
+
 depth = cell2mat(cellfun(@(x) numel(strsplit(x, delimflat)), fn_du_flat, UniformOutput=false));
 fn_invalid_depth = fn_du_flat(depth>2 | depth<2);
 fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'tg']));
@@ -394,7 +398,7 @@ if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vvynom", "vh", "vvy", "bf", "bv
     error("you cannot change new names for the daq in du.daq.vrenm if you're running a2p")
 end
 
-%% rec 
+%% d (nested version of du, nested according to mostree)
 
 d = struct;
 for k = 1:numel(mostree)
@@ -414,7 +418,18 @@ d_flat = structflat(d, delim=delimflat);
 fn_d_flat = fieldnames(d_flat);
 spl = cellfun(@(x) strsplit(x, delimflat), fn_d_flat, UniformOutput=false);
 if any(cell2mat(cellfun(@(x) ~isequal(numel(x), numel(unique(x))), spl, UniformOutput=false)))
-    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as an mos; repeated names are currently not allowed")
+    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as a mos; repeated names are currently not allowed")
+end
+
+%% derive mostrees
+
+[mostree_derived, mostree_open, mostree_top, options_d] = mostreeget(d, du); 
+if ~isequal(mostree, mostree_derived)
+    error("mostree and mostree_d (derived mostree from mostreeget) do not match")
+end
+options_invalid = options_d(ismember(options_d, fnd));
+if ~isempty(options_invalid)
+    error("the following options have the same names as mos (not allowed): " + newline + sprintf('%s\n', options_invalid{:}))
 end
 
 %% write to file
@@ -423,6 +438,10 @@ fprintf("writing default options to: " + pthopt + newline)
 dall.d = d;
 dall.du = du;
 dall.mostree = mostree;
+dall.mostree_open = mostree_open;
+dall.mostree_top = mostree_top;
+
+
 structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
 
 
