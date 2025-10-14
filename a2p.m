@@ -92,7 +92,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %%%% A_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
+    %%%% a_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
 
     if 1
 
