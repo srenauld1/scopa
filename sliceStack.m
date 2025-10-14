@@ -8,7 +8,7 @@
 % v - (1,q) array of movie frame structures, one for each slice of b; 
 %     if c not [], the slices of c are shown to the right of the slices of b;
 %     v is also written to an avi file named to reflect the selection d;
-function v = sliceStack( b, d, c )
+function v = sliceStack( b, d, c, pf )
     dd = string(d);
     v = eval( "squeeze(b(" + dd + ",:))" );
     if ~isempty(c)
@@ -18,5 +18,6 @@ function v = sliceStack( b, d, c )
         v = cat( i, v, 0*v+prctile(v,80,'all'), w );
     end
     dd = replace( dd, ":", "-" );
-    v = makemovie( v, [], [], "ca"+dd+"rl" );
+    fn = string(pf) + dd;
+    v = makemovie( v, [], [], fn );
 end

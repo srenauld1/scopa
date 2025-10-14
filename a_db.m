@@ -9,6 +9,8 @@ load(pth_glusi, 'stack');
 glusi = stack;
 stack = [];
 
-v = sliceStack( gluno, ':,:,10', glusi );
-% v = sliceStack( gluno, ':,64,:', glusi );
-% v = sliceStack( gluno, '15,:,:', glusi );
+stackplt({gluno, glusi}, it = 100:4:400, pthdir=pthparget)
+
+v = sliceStack( gluno, ':,:,10', glusi, pthparget );
+v = sliceStack( gluno, ':,64,:', glusi, pthparget );
+v = sliceStack( gluno, '15,:,:', glusi, pthparget );

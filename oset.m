@@ -4,8 +4,8 @@ function [o, oflat] = oset(spec, opt)
 
 wrapper for the following functions:
     --stackfind: find imaging stacks
-    --oset_*: set options (can be specific to stack)
-    --oid: give each options set a unique id
+    --oset_*: set options (can be experiment-specific)
+    --oid: assign id to unique options sets
 
 see docs_oset.m for more detail
 
@@ -29,21 +29,21 @@ userdatfile()
 
 
 if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
-    spec.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
-    spec.stackid = {'20251006_7_1_or'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
-    spec.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    spec.fly = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    spec.trial = {''}; %cell ara2ray of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
-    spec.suffix = {''}; %cell array of char (or char vector), can use wildcards, stack filename suffix to use; valid suffixes are defined in odf, d.spec.suffixchar_raw and d.spec.suffixchars; empty will find any (equivalent to '*')
-    spec.substr = {''}; %cell array of char (or char vector), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr); empty will find any (equivalent to '*')
-    spec.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffix; 'each' for matched indices of each of these specifiers (length 1 will be repeated to match anything longer)
-    spec.pthpar = userdatfile('pthpar'); %read pthpar from userdatfile
+    spectmp.pth = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
+    spectmp.stackid = {'20251006_7_1_or'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
+    spectmp.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
+    spectmp.fly = {''}; %cell array of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
+    spectmp.trial = {''}; %cell ara2ray of char (or char vector), can use wildcards; empty will find any (equivalent to '*')
+    spectmp.suffix = {''}; %cell array of char (or char vector), can use wildcards, stack filename suffix to use; valid suffixes are defined in odf, d.spec.suffixchar_raw and d.spec.suffixchars; empty will find any (equivalent to '*')
+    spectmp.substr = {''}; %cell array of char (or char vector), can use wildcards, substring contained in path to stack (e.g. if all recordings from one campaign are in a subfolder with a descriptive name, you could put that name here, and asterisks for recdate, fly, trial, and get all those recordings just with the substr); empty will find any (equivalent to '*')
+    spectmp.match = 'each'; %'any' or 'each'; 'any' for all combinations of recdate, fly, trial, suffix; 'each' for matched indices of each of these specifiers (length 1 will be repeated to match anything longer)
+    spectmp.pthpar = userdatfile('pthpar'); %read pthpar from userdatfile
 elseif istextall(spec)
-    spec.pth = spec;
+    spectmp.pth = spec;
 end
 
-spectmp = struct2pairs(spec);
-pthstacks = stackfind(spectmp{:}, err=1); % find stacks using spec; error if none found (err=1)
+specpairs = struct2pairs(spectmp);
+pthstacks = stackfind(specpairs{:}, err=1); % find stacks using spec; error if none found (err=1)
 idtmp = idmake(pthstacks);
 
 %%%% LOOP OVER FOUND STACKS IN idtmp, SETTING OPTIONS (IN oset_* FILES) SPECIFIC TO RECORDING AND SCOPAUSERNAME %%%%
@@ -131,14 +131,14 @@ for k = 1:numel(idtmp)
 end
 
 
-%%%% now set some globals (in glb) %%%%
+%%%% NOW SET SOME GLOBALS (IN FUNCTION glb) %%%%
 
 glb( ...
     plt=[""], ... %string array listing modules that get plots (empty string for none by default); all would be plt=["daq", "sld", "ftv", "roi", "bmp", "mdl"]
     optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names) 
     dmstackdf='yxztck', ... %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
     delimflat='__', ... %delimiter used to options flatten struct; set here because it's used throughout a2p and it must be consistent to prevent 
-    usegit=usegit, ...
+    usegit=usegit, ... %use git to sync with remote 
     pthscopa=pthscopaget(), ... %path to scopa
     pthpy=userdatfile('pthpy'), ... %path to python executable, in case user calls some python code from a2p (caiman registration or roi extraction, for example)
     scopausername=userdatfile('scopausername'), ... %username; must be alphabetic char vector; used in options filenames, and to route to correct oset_* files

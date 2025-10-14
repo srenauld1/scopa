@@ -1,5 +1,7 @@
 %{
 
+deprecated, don't read this, just read docs at top of ofill.m
+
 ----- o, oset, and ofill ----- 
 
 oset uses function ofill to set options for all major functions in a2p

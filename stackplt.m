@@ -5,6 +5,7 @@ function h = stackplt(stack, opt)
 arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, clim property of image scaled to colormap range; if cmap is 'rgb', image must be rgb
     opt.pthgif char = ''
+    opt.pthdir = [];
     opt.gifvis char = 'on'
     opt.roipx = []
     opt.ir = []
@@ -35,6 +36,7 @@ arguments
 end
 opt = glboropt(opt);
 pthgif = opt.pthgif;
+pthdir = opt.pthdir;
 gifvis = opt.gifvis;
 roipx = opt.roipx;
 ir = opt.ir;
@@ -64,7 +66,7 @@ fontsz = opt.fontsz;
 dosave = opt.dosave;
 
 if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
+    pthgif = pthauto(suffix='.gif', pthdir=pthdir, usetime=1);
 end
 if isempty(dmplt)
     dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt

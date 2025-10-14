@@ -6,16 +6,19 @@ see docs_a2p
 
 %}
 
-function a2p(usegit, spec)
+function a2p(spec, opt)
 
 arguments
-    usegit logical = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
     spec = [] % optional input; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); wildcards * are allowed; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in oset (in struct spec)
+    opt.usegit = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
+    opt.dopltx = 0 % 1 to run pltx
 end
+usegit = opt.usegit;
+dopltx = opt.dopltx;
 
 close all; clc; clear glb tsget ofill; clearvars -except spec usegit;
 
-%% options
+%%%% OPTIONS %%%%
 
 oa = oset(spec, usegit=usegit); % set options; oa stands for "o all" (ie options for all recordings)
 
@@ -24,7 +27,7 @@ for k = 1:numel(oa) % loop over recordings
     o = oa(k); %index into options for one recording, o
 
 
-    %% stack
+    %%%% STACK %%%%
 
     if ~isempty(o.sld)
         for m = transpose(fieldnames(o.sld))
@@ -36,7 +39,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% daq
+    %%%% DAQ %%%%
 
     if ~isempty(o.daq)
         for m = transpose(fieldnames(o.daq))
@@ -46,7 +49,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% rois
+    %%%% ROIS %%%%
 
     if ~isempty(o.roi)
         for m = transpose(fieldnames(o.roi))
@@ -55,7 +58,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% bump
+    %%%% BUMP %%%%
 
     if ~isempty(o.bmp)
         for m = transpose(fieldnames(o.bmp))
@@ -64,7 +67,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% flymax
+    %%%% FLYMAX %%%%
 
     if ~isempty(o.fmf)
         for m = transpose(fieldnames(o.fmf))
@@ -73,7 +76,7 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% models
+    %%%% MODELS %%%%
 
     if ~isempty(o.mdl)
         for m = transpose(fieldnames(o.mdl))
@@ -82,12 +85,14 @@ for k = 1:numel(oa) % loop over recordings
     end
 
 
-    %% interactive plots
+    %%%% PLOTS %%%%
 
-    % pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+    if dopltx
+        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+    end
 
 
-    %% a_* functions (analysis specific to experiment)
+    %%%% A_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
 
     if 1
 

@@ -9,13 +9,13 @@ end
 
 
 persistent pthtmp
-if framecount==1
-    pthtmp = [];
-end
-if isempty(pthtmp)
-    pthtmp = pthauto(suffix='.gif', usetime=1);
-end
 if isempty(pthgif)
+    if framecount==1
+        pthtmp = [];
+    end
+    if isempty(pthtmp)
+        pthtmp = pthauto(suffix='.gif', usetime=1);
+    end
     pthgif = pthtmp;
 end
 
