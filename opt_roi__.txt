@@ -13,6 +13,20 @@
       "tg": []
     }
   },
+  "a2": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "left"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "no",
+    "s": {
+      "tg": []
+    }
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025101415452410",
