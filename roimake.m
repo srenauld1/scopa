@@ -28,7 +28,7 @@ stack = s.stack;
 srate = s.md.volrate;
 widyxz = s.md.widyxz;
 if isempty(t)
-    t = linspace(0,s.md.volrate*s.md.numvol-1/s.md.volrate,s.md.numvol);
+    t = linspace(0,s.md.numvol/s.md.volrate-1/s.md.volrate,s.md.numvol);
 end
 s = [];
 

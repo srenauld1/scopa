@@ -1,6 +1,6 @@
 function o = oset_opto()
 
-do = {'sld', 'daq', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
+do = {'sld', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
 
 o.sld.ic = [1 2];
 
@@ -28,20 +28,20 @@ o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 
-rgname = {'eb', 'no', 'gal', 'gar'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 for k = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
     o.roi.rgname = rgname{k};
 
-    % o.roi.nrm.post = {'z'};
+    %o.roi.nrm.post = {'z'};
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{k}, 'eb')
         o.roi.mm.mmname = 'eb';
-        o.roi.ma.numroi = 32;
-        o.roi.ma.maskmake = 'nonzero';
-        o.roi.ma.maskseg = 'torus';
-        o.roi.ma.roirad = 1.5;
+        % o.roi.ma.numroi = 32;
+        % o.roi.ma.maskmake = 'nonzero';
+        % o.roi.ma.maskseg = 'torus';
+        % o.roi.ma.roirad = 1.5;
     elseif any(strcmp(rgname{k}, {'gal', 'gar'}))
         o.roi.mm.mmname = {'dorsal', 'ventral'};
     elseif any(strcmp(rgname{k}, 'no'))

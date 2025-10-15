@@ -12,7 +12,7 @@ eb = roi.(ieb).dat(1).ts;
 
 pth = stackfind(stackid=[recid '_o']);
 sraw = stackld(pth);
-roiraw = roimake(s=sraw, roimask=roi.(ieb).dat.mask);
+roimake(s, roimask=)
 stim = squeeze(mean(sraw.stack(:,:,:,:,2), [1:3]));
 
 figure; hold on;  plot(nol); hold on; plot(nor); yyaxis right; plot(stim);

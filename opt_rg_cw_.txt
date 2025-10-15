@@ -1367,6 +1367,18 @@
     "t": [1,4402],
     "c": [1,1]
   },
+  "z7": {
+    "id": "20251010_2_1_no",
+    "recdatenum": 2.025101E+7,
+    "flynum": 2,
+    "trialnum": 1,
+    "rgname": "no",
+    "y": [36,47],
+    "x": [47,69],
+    "z": [1,1],
+    "t": [1,25000],
+    "c": [1,2]
+  },
   "md": {
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z",

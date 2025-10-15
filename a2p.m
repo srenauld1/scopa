@@ -35,7 +35,7 @@ for k = 1:numel(oa) % loop over recordings
         end
         o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case it was tif going in to stackld
         glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
-        glb(1, md=s.md, srate=s.md.volrate, t=linspace(0,s.md.volrate*s.md.numvol-1/s.md.volrate,s.md.numvol), epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
+        glb(1, md=s.md, srate=s.md.volrate, t=linspace(0,s.md.numvol/s.md.volrate-1/s.md.volrate,s.md.numvol), epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
     end
 
 
@@ -94,7 +94,9 @@ for k = 1:numel(oa) % loop over recordings
 
     %%%% a_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
 
-    if 1
+    if 0
+
+        a_opto(roi, s.stack, o.id.recid, glb('t') )
 
         epoch = 6;
         bout = 13;

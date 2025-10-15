@@ -40,7 +40,9 @@ end
 
 if isfield(opt, 'optid') && ~isempty(opt.optid)
     optid = opt.optid; %set it aside in case it's the only field, and you have to load opt (which will remove optid)
-    if ~strcmp(optid, optiddf)
+    if strcmp(optid, optiddf)
+
+    else
         if all(strcmp(fieldnames(opt), 'optid')) %if optid is the only option, create the corresponding options
             pthscopa = pthscopaget();
             scopausername = glb('scopausername');

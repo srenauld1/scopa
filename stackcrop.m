@@ -112,7 +112,7 @@ end
 numchan = size(stack,5);
 
 if numchan==2
-    prompt = ['enter channels you want to display for drawing rgname "' rgname '"? press enter only to display the average of all channels, 1 then enter to display only channel 1, or 2 then enter to display only channel 2: '];
+    prompt = ['enter channels you want to display for drawing rgname "' rgname '"? return for all channels, 1+return for channel 1, 2+return for channel 2: '];
     commandwindow();
     icshow = input(sprintf(prompt));
     if icshow
@@ -135,11 +135,11 @@ iz = [min(iz), max(iz)]; %make sure we have bounding box, since rg must be recta
 it = [1,size(stack,4)];
 
 if numchan==2
-    prompt = ['do you want to keep only one channel for rgname "' rgname '"? press enter only to keep all channels, 1 then enter to keep only channel 1, or 2 then enter to keep only channel 2: '];
-    commandwindow();
-    ic = input(sprintf(prompt));
-    if ic
-        ic = [ic,ic];
+    % prompt = ['do you want to keep only one channel for rgname "' rgname '"? press enter only to keep all channels, 1 then enter to keep only channel 1, or 2 then enter to keep only channel 2: '];
+    % commandwindow();
+    % ic = input(sprintf(prompt));
+    if 0%ic
+        ic = [ic,ic]; %if 2 channel, keeping both channels by default (it complicates downstream)
     else
         ic = [1,2];
     end

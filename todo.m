@@ -3,6 +3,7 @@
 %{
 
 
+probably get rid of glb pthstack or deal with when name value conflicts in better way than error
 make function tg check to check tg formatting, put it in ofill 
 
 FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)

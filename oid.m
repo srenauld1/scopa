@@ -90,10 +90,12 @@ try
                     end
                     for m = 1:numel(opttmp)
                         if ~isempty(opttmp{m})
+                            opttmp{m}.optid = optid;
                             optout.(optid{m}) = opttmp{m};
                         end
                     end
                 else
+                    opttmp.optid = optid;
                     optout.(optid) = opttmp;
                 end
 
