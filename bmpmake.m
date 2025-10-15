@@ -56,7 +56,7 @@ while true
     else
         varid = 'z0';
         last = 1;
-        pthbmp = [erase(pthstack, '.mat') varid opt.optid '_bmp_.mat'];
+        pthbmp = [erase(pthstack, {'_.mat', '.mat'}) '_' varid opt.optid '_bmp_.mat'];
     end
 
     bmp = bmpmake2(depv, indv, opt, varid, pthbmp, srate, epochts, doplt);

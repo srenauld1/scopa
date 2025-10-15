@@ -80,9 +80,9 @@
       "roi": {
         "mm": {
           "chanstr": "all",
-          "mmname": []
+          "mmname": "none"
         },
-        "rgname": [],
+        "rgname": "none",
         "s": {
           "tg": []
         }
@@ -291,13 +291,13 @@
       },
       "mm": {
         "chanstr": "all",
-        "mmname": []
+        "mmname": "none"
       },
       "nrm": {
         "channorm": 0,
         "degdtr": 0,
         "mincoh": 0.3,
-        "nrmstr": [],
+        "nrmstr": "f",
         "wavp": []
       },
       "qc": {
@@ -307,7 +307,7 @@
         "minpixperreg": 3,
         "minroisz": 5
       },
-      "rgname": [],
+      "rgname": "none",
       "s": {
         "tg": []
       }
@@ -504,13 +504,13 @@
     },
     "mm": {
       "chanstr": "all",
-      "mmname": []
+      "mmname": "none"
     },
     "nrm": {
       "channorm": 0,
       "degdtr": 0,
       "mincoh": 0.3,
-      "nrmstr": [],
+      "nrmstr": "f",
       "wavp": []
     },
     "opg": {
@@ -563,7 +563,7 @@
       "minroisz": 5
     },
     "roi": {
-      "rgname": [],
+      "rgname": "none",
       "s": {
         "tg": []
       }

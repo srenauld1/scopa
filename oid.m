@@ -7,7 +7,6 @@ function o = oid(o, opt)
 arguments
     o %options struct
     opt.getonly = 0 %get ids only (cannot write to file or create new id)
-    opt.scopausername = []
     opt.usegit = []
 end
 
@@ -15,8 +14,9 @@ try
 
     opt = glboropt(opt); %get some arguments from glb or name-value
     getonly = opt.getonly;
-    scopausername = opt.scopausername;
     usegit = opt.usegit;
+
+    scopausername = userdatfile('scopausername');
 
     callstack = dbstack();
     tsgetcall = 0;

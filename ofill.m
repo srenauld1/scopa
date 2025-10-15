@@ -144,8 +144,8 @@ if ~isempty(mosc)
 end
 
 if ~isempty(mosfinal)
-    if ~isempty(mos) || ~isempty(mosc) || ~isempty(rec) || ~isempty(unpack) || ~isempty(wild)
-        error("if mosfinal is nonempty, you cannot set any other inputs (mos, mosc, rec, unpack, and wild)")
+    if ~isempty(mos) || ~isempty(mosc) || ~isempty(unpack) || ~isempty(wild)
+        error("if mosfinal is nonempty, the only other input you cannot set mos, mosc, unpack, or wild ")
     end
 end
 
@@ -344,12 +344,15 @@ else
 
 end
 
-mostree_optout = mostreeget(optout, du); %call this a second time because optout could have changed
+[mostree_optout, mostree_optout_open, ~] = mostreeget(optout, du); %call this a second time because optout could have changed
 if ~all(ismember(mostree_optout, mostree_open)) && ~allow_du_mos
     error("there is an optout-mos that is not found in d-mos (ie not listed in mostree, in odf.m); you may have created an invalid mos, or placed a nested mos in an invalid location")
 end
 
 if ~isempty(mosc) %save any current mosc to persistent variable . . .
+    if ~all(ismember(mosc{1}, mostree_optout_open))
+        error("mosc first element must be mos in optout (if it weren't it would just be placing all defaults in a mosc, which is pointless; mosc are used to group options, and defaults are already in a group)")
+    end
     sind = structind(mosc{1}); %the parent of the mosc is in the first cell of mosc_all
     tmp = getfield(optout, sind{:}); %get that parent from optin
     mosc_all = cat(1, mosc_all, { mosc{1}, mosc{2}, tmp }); %keep record of mos above the mosc and the mosc alone and the mosc struct, all in persistent variable (adding current to previous); save all of these for convenience, since they get used later

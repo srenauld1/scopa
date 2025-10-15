@@ -216,6 +216,7 @@ nmdm = 'yxztc'; %single-character name for each stack dimension
 fontsz = 10; %in figure title
 maxnumroi = 50; %just for preallocating
 maxnumsubroi = 50; %just for preallocating; max number of discontiguous subrois per roi
+mmnamedf = 'none'; %default mmname if empty
 
 keydict_roishape = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array (see that example for formatting)
     {'s', 's', 'init'}, ...
@@ -319,14 +320,14 @@ try
         error("use this error to skip loading mm since dorg is true and we are not making mm, we are making rg")
     else
         if isempty(mmname)
-            mmname = 'none';
+            mmname = mmnamedf;
         end
         fnsuffix = ['_' rgname '_' mmname '_mm'];
         pthmm = [id.pthrec, fnsuffix, '_.mat'];
         load(pthmm, 'mm');
     end
 
-    for ic = chandraw
+    for ic = 1:numel(mm)
         roimask{ic} = mm(ic).mask;
     end
 
@@ -342,12 +343,6 @@ try
     end
     if ~isequal(mm(1).mmname, mmname) || ~isequal(mm(1).chanstr, chanstr) || ( numel(mm)==2 && ( ~isequal(mm(2).mmname, mmname) || ~isequal(mm(2).chanstr, chanstr) ) )
         error("mm file exists but mmname and/or chanstr do not match for at least one channel")
-    end
-    if all(mm(1).mask==1)
-        fprintf("NOTE MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", mmname: " + mmname + ", channel 1: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
-    end
-    if numel(mm)==2 && all(mm(2).mask==1)
-        fprintf("NOTE MANUAL ROI MASK IS ALL ONES FOR rgname: " + rgname + ", mmname: " + mmname + ", channel 2: " + newline + "YOU PROBABLY CHOSE TO SKIP DRAWING" + newline)
     end
 
 catch ME
@@ -449,10 +444,10 @@ catch ME
             if size(stacktmp,strfind(nmdm, 't'))>1 && ~isequal(it_tmp, it_tmp_prev) % if shown stack is not t-mean, and if current t changed, show the change
                 if size(stacktmp,strfind(nmdm, 'z'))>1 %if shown stack is not z-mean, update each axis with iz, and t change
                     for k = 1:numel(h.im.pl)
-                        h.im.pl{k}.CData = stacktmp(:,:,iz(k),it_tmp);
+                        h.im.pl{k}.CData = stacktmp(:,:,iz(k),it_tmp,ic); %indexing into channel dimension is not too slow when there is also indexing of preceding dimensions, especially the big one (t)
                     end
                 else %if shown stack is z-mean, update single axis with t change
-                    h.im.pl{1}.CData = stacktmp(:,:,:,it_tmp);
+                    h.im.pl{1}.CData = stacktmp(:,:,:,it_tmp,ic); %indexing into channel dimension is not too slow when there is also indexing of preceding dimensions, especially the big one (t)
                 end
                 h.ttl.String{2} = regexprep(h.ttl.String{2}, '(t:.*\[).*(\])', ['$1' num2str(it_tmp) '$2']);
                 it_tmp_prev = it_tmp;
@@ -969,13 +964,13 @@ if any(dmmean) %we display the mean of stack dimensions corresponding to nonzero
         end
     end
     if ismember(strfind(nmdm, 'z'), find(dmmean))
-        stack_oneframe = stacktmp(:,:,:,1); %if we averaged z, don't index with iz; we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+        stack_oneframe = stacktmp(:,:,:,1,ic); %if we averaged z, don't index with iz; we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz; make sure you get the right channel 
     else
-        stack_oneframe = stacktmp(:,:,iz,1); %if we didn't average z, index with izwe take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+        stack_oneframe = stacktmp(:,:,iz,1,ic); %if we didn't average z, index with izwe take one frame because we don't need t for axarr or axim, and this will save time indexing into iz; make sure you get the right channel 
     end
 else
     stacktmp = stack;
-    stack_oneframe = stack(:,:,iz,1); %we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz
+    stack_oneframe = stack(:,:,iz,1,ic); %we take one frame because we don't need t for axarr or axim, and this will save time indexing into iz;make sure you get the right channel 
 end
 
 

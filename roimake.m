@@ -35,7 +35,7 @@ s = [];
 [opt, doplt, pthstack] = fset('roi', opt, doplt, pthstack);
 
 
-pthroi = [erase(pthstack, '.mat') opt.optid '_roi_.mat'];
+pthroi = [erase(pthstack, {'_.mat', '.mat'}) '_' opt.optid '_roi_.mat'];
 
 if ndims(stack)<4 || ndims(stack)>5
     error("stack input to roidraw must have 4-5 dimensions")
@@ -103,7 +103,7 @@ catch ME
 
     %%%% CROP stack TO rg CUBOID %%%%
 
-    if ~maskin
+    if 1%~maskin
         [stack, rg] = stackcrop(stack, opt.rgname, pthstack=pthstack, usegit=usegit);
     end
 

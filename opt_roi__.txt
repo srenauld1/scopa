@@ -192,5 +192,79 @@
     "s": {
       "tg": []
     }
+  },
+  "z10": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "2cp",
+      "mmname": "eb"
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "eb",
+    "s": {
+      "tg": []
+    }
+  },
+  "z11": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "2cp",
+      "mmname": "eb"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "f",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "eb",
+    "s": {
+      "tg": []
+    }
+  },
+  "z12": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "left"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "f",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "no",
+    "s": {
+      "tg": []
+    }
+  },
+  "z13": {
+    "cm": [],
+    "ma": [],
+    "mm": {
+      "chanstr": "all",
+      "mmname": "right"
+    },
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "f",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "no",
+    "s": {
+      "tg": []
+    }
   }
 }

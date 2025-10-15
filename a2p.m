@@ -16,7 +16,7 @@ end
 usegit = opt.usegit;
 dopltx = opt.dopltx;
 
-close all; clc; clear glb tsget ofill; clearvars -except spec usegit;
+close all; clc; clear glb tsget ofill; clearvars -except spec usegit dopltx;
 
 %%%% OPTIONS %%%%
 
@@ -96,7 +96,7 @@ for k = 1:numel(oa) % loop over recordings
 
     if 0
 
-        a_opto(roi, s.stack, o.id.recid, glb('t') )
+        a_opto(roi, s, glb('t') )
 
         epoch = 6;
         bout = 13;

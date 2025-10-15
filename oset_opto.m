@@ -16,8 +16,8 @@ o.bmp.indv = bmpindv;
 
 bmpdepv.tg.roi.rgname = 'eb';
 bmpdepv.tg.roi.mm.mmname = 'eb';
-bmpdepv.tg.roi.ma.maskseg = 'torus';
-bmpdepv.tg.roi.nrm.post = 'f';
+% bmpdepv.tg.roi.ma.maskseg = 'torus';
+% bmpdepv.tg.roi.nrm.post = 'f';
 bmpdepv.tg.vnm = 'ts';
 % bmpdepv.tg.optid = 'a76';
 bmpdepv.tg.group = '1';
@@ -33,11 +33,12 @@ for k = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
 
     o.roi.rgname = rgname{k};
 
-    %o.roi.nrm.post = {'z'};
+    % o.roi.nrm.nrmstr = 'z';
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{k}, 'eb')
         o.roi.mm.mmname = 'eb';
+        o.roi.mm.chanstr = '2cp';
         % o.roi.ma.numroi = 32;
         % o.roi.ma.maskmake = 'nonzero';
         % o.roi.ma.maskseg = 'torus';
