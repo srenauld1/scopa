@@ -997,6 +997,27 @@
     "slopeord": 2,
     "smlensec": 0
   },
+  "a15": {
+    "depv": {
+      "tg": []
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "indv": {
+      "tg": []
+    },
+    "maxangrs": 8,
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": 16,
+    "numcirc": 1,
+    "omitnan": 1,
+    "roi": [],
+    "scope": "all",
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "smlensec": 0
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044584",
