@@ -175,6 +175,21 @@
     "trm": [],
     "zerostack": 1
   },
+  "a12": {
+    "clip": [0,1],
+    "fbrm": 1,
+    "ic": [1,2],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "stackdtype": "uint16",
+    "trm": [],
+    "zerostack": 1
+  },
   "md": {
     "autonm": 1,
     "maketime": "2025030622044502",
