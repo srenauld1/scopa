@@ -29,7 +29,6 @@ arguments
     opt2.pthstack = []
     opt2.doplt = []
 end
-opt2 = glboropt(opt2);
 pthstack = opt2.pthstack;
 doplt = opt2.doplt;
 

@@ -44,8 +44,8 @@ for k = 1:numel(fn_du)
     options_du = cat(1, options_du, fieldnames(du.(fn_du{k})));
 end
 
-options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg' '(' delimflat '.*)*$']))); %remove tg
-invalid_options_o = options_o_no_tg(~ismember(options_o_no_tg, cat(1, options_du(:), fn_du(:))));
+options_o_no_vg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'vg' '(' delimflat '.*)*$']))); %remove vg
+invalid_options_o = options_o_no_vg(~ismember(options_o_no_vg, cat(1, options_du(:), fn_du(:))));
 if ~isempty(invalid_options_o)
     error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}) + newline)
 end

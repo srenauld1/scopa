@@ -45,7 +45,7 @@ arguments (Repeating)
     inp
 end
 arguments
-    opt.err {mustBeMember(opt.err,[0,1]), mustBeNonempty} = 0 %1 to error if trying to read a glb that has not been set
+    opt.err = 0
 end
 err = opt.err;
 
@@ -242,7 +242,7 @@ else
             out = getfield(gset, sind{:});
         catch ME
             if err
-                error("requested global variable '" + inp + "' has not been set in glb, and name-value argument err=1, so this error occurred; if you don't want an error, make err=0, or set glb('" + inp + "')")
+                error(requested variable " + inp " has not been set, and name-value argument err=1, so this error occurred; if you don't want an )
             else
                 out = [];
             end

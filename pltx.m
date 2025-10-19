@@ -46,7 +46,6 @@ arguments
     opt2.stimvid = []
     opt2.doplt = []
 end
-opt2 = glboropt(opt2);
 stack = opt2.stack;
 daq = opt2.daq;
 roi = opt2.roi;

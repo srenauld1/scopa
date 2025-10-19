@@ -11,7 +11,6 @@ arguments
     opt.pthpar = [] %path to folder containing all stacks
     opt.optsld = [] %options for stackld for loading all stacks found; if empty, default are used
 end
-opt = glboropt(opt);
 rgnames = opt.rgnames;
 rot = opt.rot;
 s = opt.s;

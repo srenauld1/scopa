@@ -12,6 +12,10 @@ dorg
     when dorg=1, you are limited to 1 roi (can have multiple subrois), 
     rg will be the bounding box of whatever roi you draw 
 
+USEGIT
+    if you want rg under git version control, usegit=1, otherwise usegit=0 (note if you've set glb('usegit'), usegit must match glb('usegit'), if not, just change glb('usegit') 
+    if usegit=1 and internet connection fails, you will get git error, in this case you can draw rois if you make usegit=0, but note rg will have a different optid than if usegit=1 
+
 OVERVIEW
     draw rois on interactive stack figure
     each roi can be composed of one or more subrois  
@@ -181,6 +185,7 @@ arguments (Input)
     opt.cmap = [] %colormap for showing drawn rois over stack background; empty will use a default colormap
     opt.remove_overlap = 0 %1 to remove overlapping pixels from all rois (so you don't have to press 'o' after every subroi is drawn, but equivalent to that callback applied after every subroi is drawn); 0 will leave any overlapping voxels remaining after exiting drawing figure
     opt.cellout = 0 %1 will output roimask in cell, 0 will not (cellout=0 will error if user creates rois on more than 1 channel)
+    opt.usegit = [] %1 to use git version control of opt file holding all rg
     opt.nosave = 0 %1 to skip saving drawn rois, 0 to save drawn rois
     opt.nodraw = 0 %1 to error and exit if loading roi file fails, 0 to draw if loading fails
     opt.dorg = 0 %flag for drawing rg (region), which is a rectangle or cuboid (when dorg=1, default roishape is rectangle, and mm is neither loaded nor saved); dorg is true when roidraw is called from stackcrop
@@ -195,6 +200,7 @@ roialpha = opt.roialpha;
 cmap = opt.cmap;
 remove_overlap = opt.remove_overlap;
 cellout = opt.cellout;
+usegit = opt.usegit;
 nosave = opt.nosave;
 nodraw = opt.nodraw;
 dorg = opt.dorg;
@@ -230,8 +236,12 @@ keydict_slash = {  ... %callback keydict for using s-switch (via function 'cb_ar
 
 clear cb_array
 
-id = idmake(s.pthstack);
-stackid = insertBefore(id.stackid, '_', '\'); %to print underscores properly
+if ~isempty(pthstack)
+    id = idmake(pthstack);
+    stackid = insertBefore(id.stackid, '_', '\'); %to print underscores properly
+else
+    error("you must pass in name-value argument 'pthstack', or set glb('pthstack')")
+end
 
 callstack = dbstack('-completenames');
 fcnm = [];

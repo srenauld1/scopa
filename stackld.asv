@@ -72,13 +72,15 @@ if isempty(pthstack)
         error("you cancelled stack file selection; you must pass in argument pthstack, or select stack file")
     end
     pthstack = fullfile(loc, fn);
+elseif ~isscalar(string(pthstack))
+    error("pthstack input to stackld must refer to single stack")
 end
 
 optid_sld_suffix = [optid '_sld_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
-mat_stack_exists_already = 0;
+mat_stack_exists_already = 1;
 if isfile(pthstack)
     if endsWith(pthstack, '.mat')
         mat_stack_exists_already = 1;

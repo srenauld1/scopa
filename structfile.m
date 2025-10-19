@@ -47,6 +47,9 @@ depending on input, write struct to and/or read struct from txt file (pth):
                     error: cannot input nonempty nm that doesn't match any name in file if autonm is true
 
 
+output souts is struct version of output sout, where sout is in substruct(s) with name(s) nmout
+    we use substructs rather than nonscalar struct in case sout have different fields
+
 if one match is found, output sout is a struct, and nmout is a char vector 
 if multiple matches are found, output sout and nmout are each a (n,1) cell, where n is number of matches
 
@@ -63,6 +66,8 @@ if s=nonempty and nm=[] and s is not in file, s is written to file with default 
 
 for clarity, all arguments except file path (pth) are name-value arguments 
 
+note: struct sorting does not affect test of equality
+
 TODO: add name-value argument 'renm' for renaming structs in file (modeled after renm argument in daqld)
 
 %}
@@ -72,10 +77,11 @@ arguments
     opt.s = [] % struct to write to file, or get from file
     opt.nm = [] % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
     opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
-    opt.update = 0; % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
-    opt.getonly = 0; % read from file only, skip writing
-    opt.usegit = 1 % use git to sync file pth across filesystems (to prevent conflicting changes)
-    opt.dosort = 0; % 1 to sort struct alphabetically when writing to file (natural sort)
+    opt.update = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
+    opt.getonly = 0 % read from file only, skip writing
+    opt.usegit {mustBeMember(opt.usegit,[0,1,[]])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
+    opt.dosort = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
+    opt.cellout = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
 end
 s = opt.s;
 nm = opt.nm;
@@ -84,31 +90,36 @@ update = opt.update;
 getonly = opt.getonly;
 usegit = opt.usegit;
 dosort = opt.dosort;
+cellout = opt.cellout;
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
+
+if isempty(usegit)
+    usegit = glb('usegit');
+    if isempty(usegit)
+        error("must set name-value argument 'usegit', or glb('usegit')")
+    end
+end
 
 wcpat = '*'; % wildcard character; when searching for structs in file matching s, fields with value wcpat are skipped
 nmprefix_withgit = 'a'; % prefix used when assigning default name to struct if usegit=1
 nmprefix_withoutgit = 'z'; % prefix used when assigning default name to struct if usegit=0
 
-if isempty(usegit)
-    usegit = 1; %if user passes in usegit=[], the default will not get set, so make sure here that it does (this is a general problem that needs fixing)
-end
 if isstruct(s) && isempty(fieldnames(s))
     s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
 end
 if isempty(s)
-    warning("NOTE: setting usegit to false because s is empty (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
+    fprintf("NOTE: setting usegit to false because s is empty (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
 end
 if dupe && update
-    warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+    fprintf("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
 if getonly && dupe
-    warning("NOTE: you have set 'getonly' and 'dupe' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+    fprintf("NOTE: you have set 'getonly' and 'dupe' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
 if getonly && update
-    warning("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs")
+    fprintf("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
 if startsWith(pth, '~')
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
@@ -274,8 +285,8 @@ if isfile(pth)
     end
 
     if isempty(matchind) % if input struct does not match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
-        nmout = nmout2;
-        sout = sout2;
+        nmout = {nmout2};
+        sout = {sout2};
         sfilenew = sfilenew2;
     else %if input struct does match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
         nmout = cell(numel(matchind), 1);
@@ -294,11 +305,8 @@ if isfile(pth)
         else
             sfilenew = [];
         end
-        if isscalar(nmout)
-            nmout = cell2mat(nmout);
-            sout = cell2mat(sout);
-        end
     end
+
 
 else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
 
@@ -325,44 +333,27 @@ else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
             if isempty(s) %we only arrive here if user passed in empty s and empty nm and pth that doesn't exist
                 nmout = [];
             else
-                nmout = [nmprefix '1'];
+                nmout = {[nmprefix '1']};
             end
         else
-            nmout = nm;
+            nmout = {nm};
         end
-        sout = s;
+        sout = {s};
         sfilenew = s;
     end
 
 end
 
-if isempty(sout) && isempty(nmout)
-    souts = [];
-else
-    if iscell(sout)
-        for k = 1:numel(nmout)
-            souts.(nmout{k}) = sout{k};
-        end
-    else
-        souts.(nmout) = sout;
-    end
-end
 
-% fn = fieldnames(souts);
-% for k = 1:numel(fn)
-%     rm = cellfun(@(x) isequal(x, nmprefix_withgit), prefix_derived);
-% 
-% end
-
-%%%%% SET GLOBALS %%%%%
+%%%%% SET MAKETIME %%%%%
 
 [~, flnm, ~] = fileparts(pth);
 flnmsplit = strsplit(flnm, '_');
 if numel(flnmsplit)>1
-    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) %glb('obin_ided') and rg and var
-        obin = flnmsplit{2};
-        if isempty(glb(['maketime_' obin]))
-            glb(['maketime_' obin], maketime_infile); % previously tried to set globals as struct, but currently won't allow updating fields within maketime_infile struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(obin) = maketime_infile; glb(maketime_infile=maketime_glb)
+    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) 
+        mos = flnmsplit{2};
+        if isempty(glb(['maketime_' mos]))
+            glb(['maketime_' mos], maketime_infile); % previously tried to set globals as struct, but currently won't allow updating fields within maketime_infile struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(mos) = maketime_infile; glb(maketime_infile=maketime_glb)
         end
     end
 end
@@ -385,7 +376,7 @@ else
     if doaddon
         sfile.(nmout2) = sfilenew;
     else
-        sfile.(nmout) = sfilenew;
+        sfile.(cell2mat(nmout)) = sfilenew;
     end
     
     sfile.md.nmprefix_withgit = nmprefix_withgit_infile;
@@ -404,6 +395,17 @@ else
         end
     end
 
+end
+
+
+souts = [];
+for k = 1:numel(nmout)
+    souts.(nmout{k}) = sout{k};
+end
+
+if isscalar(nmout) && ~cellout
+    nmout = cell2mat(nmout);
+    sout = cell2mat(sout);
 end
 
 end

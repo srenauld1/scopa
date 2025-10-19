@@ -1,22 +1,21 @@
-function [datout, tsout] = tsget(its, tg, opt)
+function [datout, tsout] = vget(its, vg, opt)
 
 % find variable(s)
 % takes input options, finds their optid(s) in their opt files, finds files with those optid, loads variables from those files, assembles them according to input options, tags variable set with its own id (varid) and writes that id to opt_var file
 
-%var subfield should not just have tg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
+%var subfield should not just have vg options used when creating the first variable, since the vars it returns may not be the same every time (changes to filesystem); so var must refer to specific variable files
 
 arguments (Input)
     its %index of found variable combos; [] or 'all' for all; otherwise, scalar number
 end
 arguments (Repeating, Input)
-    tg
+    vg
 end
 arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
-    opt.scopausername = []
-    opt.usegit = []
     opt.pthpar = []
+    opt.usegit {mustBeMember(opt.usegit,[0,1,[]])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
     opt.obin_ided = []
 end
 arguments (Output)
@@ -26,14 +25,21 @@ arguments (Repeating, Output)
     tsout
 end
 
-opt = glboropt(opt);
 dm = opt.dm;
-scopausername = opt.scopausername;
-usegit = opt.usegit;
 pthpar = opt.pthpar;
+usegit = opt.usegit;
 obin_ided = opt.obin_ided;
 
-numvarin = numel(tg); %number of independent output variables (number of nonempty input arguments to tsget)
+if isempty(usegit)
+    usegit = glb('usegit');
+    if isempty(usegit)
+        error("must set name-value argument 'usegit', or glb('usegit')")
+    end
+end
+
+scopausername = userdatfile('scopausername');
+
+numvarin = numel(vg); %number of independent output variables (number of nonempty input arguments to vget)
 tsout = cell(1, numvarin);
 persistent dattmp
 persistent tsouttmp
@@ -42,14 +48,11 @@ persistent tsouttmp
 if isempty(dm)
     dm = 'it';
 end
-if isempty(scopausername)
-    error("you must pass in scopausername or set glb('scopausername')")
-end
 if isempty(pthpar)
     error("you must pass in pthpar or set glb('pthpar')")
 end
 if isempty(obin_ided)
-    error("obin_ided are not defined in glb, using default defined in tsget, but you should define them in glb")
+    error("obin_ided are not defined in glb, using default defined in vget, but you should define them in glb")
 end
 if isstring(obin_ided)
     obin_ided = convertStringsToChars(obin_ided);
@@ -58,14 +61,14 @@ end
 pthscopa = pthscopaget();
 pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
-if isempty(dattmp) && isempty(tsouttmp) %reset counter if tsget is called from a different location, or a2p starttime has changed
+if isempty(dattmp) && isempty(tsouttmp) %reset counter if vget is called from a different location, or a2p starttime has changed
 
     dattmp_hold = cell(numvarin,1); %use hold tmp variable, don't assign variable until end of this if clause 
     tsouttmp_hold = cell(numvarin,1);  %use hold tmp variable, don't assign variable until end of this if clause 
 
-    for m = 1:numvarin %loop over number of repeated tg inputs
-        if ~isempty(tg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = tsget2(tg{m}, dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
+    for m = 1:numvarin %loop over number of repeated vg inputs
+        if ~isempty(vg{m})
+            [tsouttmp_hold{m}, dattmp_hold{m}] = vget2(vg{m}, dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
         end
     end
 
@@ -97,7 +100,7 @@ last = 0;
 if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
 
     % if any(cellfun(@isempty, cellflat(tsouttmp))) %if any are empty
-    %     error("for all tg input, output must be empty or not") <----this is no longer always required 
+    %     error("for all vg input, output must be empty or not") <----this is no longer always required 
     % end
 
     if numvarin==1
@@ -112,7 +115,7 @@ if any(~cellfun(@isempty, cellflat(tsouttmp))) %if any are nonempty
         end
         iv = [ivc(:) ivr(:)];
     else
-        error("write this for more than 2 tg inputs")
+        error("write this for more than 2 vg inputs")
     end
 
     if its>size(iv,1)
@@ -177,45 +180,45 @@ end
 
 end
 
-function [tsout, dat] = tsget2(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat] = vget2(vg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
-if isstruct(tg) && all(startsWith(fieldnames(tg), 'tg')) && isscalar(tg)
-    tg = tg.tg; %since the input to this function is also named tg
+if isstruct(vg) && all(startsWith(fieldnames(vg), 'vg')) && isscalar(vg)
+    vg = vg.vg; %since the input to this function is also named vg
 else
-    error("each input to tsget must be scalar struct containing field tg, and nothing else")
+    error("each input to vget must be scalar struct containing field vg, and nothing else")
 end
 
-numtg = numel(tg); %number of separate structs used to find variables (all results will be concatenated)
-tsout = cell(numtg,1);
-dattmp = cell(numtg,1);
-group = cell(numtg,1);
-for m = 1:numtg %loop over tg elements
-    [tsout{m}, dattmp{m}, group{m}] = tsget3(tg(m), dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
+numvg = numel(vg); %number of separate structs used to find variables (all results will be concatenated)
+tsout = cell(numvg,1);
+dattmp = cell(numvg,1);
+group = cell(numvg,1);
+for m = 1:numvg %loop over vg elements
+    [tsout{m}, dattmp{m}, group{m}] = vget3(vg(m), dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
 end
 
 
 if all(cellfun(@isempty, cellflat(tsout))) %isempty(cell2mat(vec(cellflat(tsout))))
     group2 = '1';
 else
-    if isempty(getfieldns(tg, 'group2'))
+    if isempty(getfieldns(vg, 'group2'))
         tmp = group;
         if ~isempty(tmp)
             tmp = unique(tmp(~cellfun(@isempty, tmp)));
         end
         if isscalar(tmp)
             group2 = tmp{1};
-            fprintf("group2 is empty, setting default group2 to " + tmp{1} + " since this is the nonempty value of group for all elements of tg" + newline)
+            fprintf("group2 is empty, setting default group2 to " + tmp{1} + " since this is the nonempty value of group for all elements of vg" + newline)
         else
             group2 = '3';
             fprintf("group2 is empty, and not all elements use the same value for groupsetting default group2 '3', nothing will be grouped at the outer level" + newline)
         end
     else
-        tmp = getfieldns(tg, 'group2');
+        tmp = getfieldns(vg, 'group2');
         tmp = unique(tmp(~cellfun(@isempty, tmp)));
         if isscalar(tmp)
             group2 = tmp{1};
         else
-            error("group2 must be equal (or empty) for all elements of tg")
+            error("group2 must be equal (or empty) for all elements of vg")
         end
     end
 end
@@ -254,11 +257,11 @@ end
 end
 
 
-function [tsout, dat, group] = tsget3(tg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat, group] = vget3(vg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
 
 
-if isfield(tg, 'optid') && ~isempty(tg.optid)
-    optid = tg.optid;
+if isfield(vg, 'optid') && ~isempty(vg.optid)
+    optid = vg.optid;
     if isstring(optid)
         optid = convertStringsToChars(optid);
     end
@@ -270,8 +273,8 @@ else
 end
 optid = transpose(optid(:));
 
-if isfield(tg, 'varid') && ~isempty(tg.varid)
-    varid = tg.varid;
+if isfield(vg, 'varid') && ~isempty(vg.varid)
+    varid = vg.varid;
     if isstring(varid)
         varid = convertStringsToChars(varid);
     end
@@ -283,8 +286,8 @@ else
 end
 varid = transpose(varid(:));
 
-if isfield(tg, 'vnm') && ~isempty(tg.vnm)
-    vnm = tg.vnm;
+if isfield(vg, 'vnm') && ~isempty(vg.vnm)
+    vnm = vg.vnm;
     if isstring(vnm)
         vnm = convertStringsToChars(vnm);
     end
@@ -296,26 +299,26 @@ else
 end
 vnm = transpose(vnm(:));
 
-if isfield(tg, 'ii') && ~isempty(tg.ii)
-    ii = tg.ii;
+if isfield(vg, 'ii') && ~isempty(vg.ii)
+    ii = vg.ii;
 else
     ii = [];
 end
 
-if isfield(tg, 'it') && ~isempty(tg.it)
-    it = tg.it;
+if isfield(vg, 'it') && ~isempty(vg.it)
+    it = vg.it;
 else
     it = [];
 end
 
-if isfield(tg, 'ic') && ~isempty(tg.ic)
-    ic = tg.ic;
+if isfield(vg, 'ic') && ~isempty(vg.ic)
+    ic = vg.ic;
 else
     ic = [];
 end
 
-if isfield(tg, 'recid') && ~isempty(tg.recid)
-    recid = tg.recid;
+if isfield(vg, 'recid') && ~isempty(vg.recid)
+    recid = vg.recid;
     if isstring(recid)
         recid = convertStringsToChars(recid);
     end
@@ -326,22 +329,22 @@ else
     recid = {'curr'};
 end
 
-if isfield(tg, 'group') && ~isempty(tg.group)
-    group = tg.group;
+if isfield(vg, 'group') && ~isempty(vg.group)
+    group = vg.group;
 else
     fprintf("group is empty, setting default group '3', all found variables will be considered separate" + newline)
     group = '3';
 end
 
-if isfield(tg, 'group2') && ~isempty(tg.group2)
-    group2 = tg.group2;
+if isfield(vg, 'group2') && ~isempty(vg.group2)
+    group2 = vg.group2;
 else
-    fprintf("group2 is empty, leaving empty for now, to be set in tsget, outside tsget3" + newline)
+    fprintf("group2 is empty, leaving empty for now, to be set in vget, outside vget3" + newline)
     group2 = [];
 end
 
-if ~isscalar(tg)
-    error("INPUT STRUCT TO tsget MUST BE SCALAR")
+if ~isscalar(vg)
+    error("INPUT STRUCT TO vget MUST BE SCALAR")
 end
 
 if strcmp(recid, 'curr')
@@ -352,60 +355,60 @@ end
 
 
 nonemptyinds = [];
-obin_ided_in_tg = obin_ided(isfield(tg, obin_ided));
-for k = 1:numel(obin_ided_in_tg)
-    if ~isempty(tg.(obin_ided_in_tg{k}))
+obin_ided_in_vg = obin_ided(isfield(vg, obin_ided));
+for k = 1:numel(obin_ided_in_vg)
+    if ~isempty(vg.(obin_ided_in_vg{k}))
         nonemptyinds = [nonemptyinds k];
     end
 end
 
-if isscalar(obin_ided_in_tg)
-    obin = cell2mat(obin_ided_in_tg(1));
-elseif numel(obin_ided_in_tg)>1
+if isscalar(obin_ided_in_vg)
+    obin = cell2mat(obin_ided_in_vg(1));
+elseif numel(obin_ided_in_vg)>1
     if isscalar(nonemptyinds)
-        obin = cell2mat(obin_ided_in_tg(nonemptyinds));
+        obin = cell2mat(obin_ided_in_vg(nonemptyinds));
     else
         error("obin can be empty if there is only one; if there are multiple, they must all be empty except one")
     end
-elseif isempty(obin_ided_in_tg)
-    error("there are no obin in tg")
+elseif isempty(obin_ided_in_vg)
+    error("there are no obin in vg")
 end
 
-if isequal(tg.(obin), '*')
-    tg.(obin) = []; %now that you've distinguished the obin from other potentially empty obin, you can set it to empty if it was star, since star is meant to be empty
+if isequal(vg.(obin), '*')
+    vg.(obin) = []; %now that you've distinguished the obin from other potentially empty obin, you can set it to empty if it was star, since star is meant to be empty
 end
 
 
 if isempty(cell2mat(optid))
-    tgopt.(obin) = tg.(obin);
-    if isempty(tgopt.(obin))
-        tgopt = [];
+    vgopt.(obin) = vg.(obin);
+    if isempty(vgopt.(obin))
+        vgopt = [];
     end
     try
-        tgopt = ofill(tgopt, obin, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
+        vgopt = ofill(vgopt, obin, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
     catch ME
-        error("you must have made an invalid options struct for tsget (tg) because ofill failed with this message: " + ME.message + newline);
+        error("you must have made an invalid options struct for vget (vg) because ofill failed with this message: " + ME.message + newline);
     end
-    tgopt = oid(tgopt, getonly=1, usegit=usegit);
-    if ~isempty(tgopt.(obin))
-        optid = transpose(fieldnames(tgopt.(obin))); %make it row vector, although here i don't think it matters
+    vgopt = oid(vgopt, getonly=1, usegit=usegit);
+    if ~isempty(vgopt.(obin))
+        optid = transpose(fieldnames(vgopt.(obin))); %make it row vector, although here i don't think it matters
     else
         fprintf("no variable found" + newline)
     end
 else
-    if ~isempty(tg.(obin))
-        error("obin substruct and optid cannot both exist in tg")
+    if ~isempty(vg.(obin))
+        error("obin substruct and optid cannot both exist in vg")
     end
 end
 
 
 
-if isfield(tg, 'var')
+if isfield(vg, 'var')
     if isempty(cell2mat(varid))
         pthvarpat = [pthscopa 'opt_var_' scopausername '_.txt'];
         [~, varid] = structfile(pthvarpat, s=svar, nm=varid, usegit=usegit, dupe=0, dosort=1);
     else
-        error("var substruct and varid cannot both exist in tg")
+        error("var substruct and varid cannot both exist in vg")
     end
 else
     varid = {''};
@@ -465,13 +468,13 @@ for w = 1:numel(varid)
                     for q = 1:numel(ic)
                         cnt = cnt+1;
                         tsout{cnt} = stackind(saved_var{ic(q)}, dm=dm, ii=ii, it=it);
-                        dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
+                        dattmp{cnt} = vgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     end
                 else
                     if isempty(ic)
                         cnt = cnt+1;
                         tsout{cnt} = stackind(saved_var, dm=dm, ii=ii, it=it);
-                        dattmp{cnt} = tgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
+                        dattmp{cnt} = vgdatmake(pth, optid_tmp, f, ii, it, ic, group, group2);
                     else
                         error("ic is not valid for indexing anything but cell array right now")
                     end
@@ -522,7 +525,7 @@ end
 
 
 
-function dat = tgdatmake(pth, optid, f, ii, it, ic, group, group2)
+function dat = vgdatmake(pth, optid, f, ii, it, ic, group, group2)
 
 dat.pth = pth;
 dat.optid = optid;
@@ -546,7 +549,7 @@ each domain has a different set of available timeseries
     fmf: every feature id (like CON_51)
     daq: t, bf, bvf, bs, bvs, by, bvy, vh, vvy, vvynom
 
-tsget recovers timeseries from saved files, using the options used to create the timeseries, or various identifiers  
+vget recovers timeseries from saved files, using the options used to create the timeseries, or various identifiers  
 
 
 
@@ -570,9 +573,9 @@ tsget recovers timeseries from saved files, using the options used to create the
 
     group
         group determines how output timeseries are arrayed in the 3rd dimension 
-        the 3rd dimenion is the looping dimension in all functions that use tsget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, fmf loops over 3rd dim to extract features from different sets of timeseries)
+        the 3rd dimenion is the looping dimension in all functions that use vget (eg mdlmake loops over 3rd dim to fit seperate models with the same options but different timeseries, pltx loops over the 3rd dimension to present groups of variables, fmf loops over 3rd dim to extract features from different sets of timeseries)
         group can take the following values: 'all', 'domain', 'optused', 'name', 
-        these refer to tsget input arguments, which can each be expanded to return multiple timeseries; 
+        these refer to vget input arguments, which can each be expanded to return multiple timeseries; 
         group determines whether output should be group according to that expansion; 
             all: like the inverse of 'name'; output 1st dimension length matches number of found timeseries and 3rd dimension is singleton; 
             domain: array domain groups along 3rd dimension 

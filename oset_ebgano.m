@@ -3,7 +3,7 @@ function o = oset_ebgano(o)
 
 do = {'sld', 'daq', 'roi', 'bmp'};
 
-rgname = {'eb', 'gal', 'gar', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 o.daq.slopelensec = .49;
 
@@ -11,19 +11,19 @@ o.daq.slopelensec = .49;
 
 o.bmp.domtype = 'm';
 
-bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'by';
-% bmpindv.tg.optid = 'a8';
+bmpindv.vg.daq = ['*'];
+bmpindv.vg.vnm = 'by';
+% bmpindv.vg.optid = 'a8';
 
 o.bmp.indv = bmpindv;
 
-bmpdepv.tg.roi.rgname = 'eb';
-bmpdepv.tg.roi.mm.mmname = 'eb';
-bmpdepv.tg.roi.ma.maskseg = 'torus';
-bmpdepv.tg.roi.nrm.post = 'f';
-bmpdepv.tg.vnm = 'ts';
-% bmpdepv.tg.optid = 'a76';
-bmpdepv.tg.group = '1';
+bmpdepv.vg.roi.rgname = 'eb';
+bmpdepv.vg.roi.mm.mmname = 'eb';
+bmpdepv.vg.roi.ma.maskseg = 'torus';
+bmpdepv.vg.roi.nrm.post = 'f';
+bmpdepv.vg.vnm = 'ts';
+% bmpdepv.vg.optid = 'a76';
+bmpdepv.vg.group = '1';
 
 o.bmp.depv = bmpdepv;
 

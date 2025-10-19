@@ -2,22 +2,22 @@
   "d": {
     "bmp": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "domtype": "m",
       "dorescale": 0,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "maxangrs": 8,
       "mdl": {
         "depv": {
-          "tg": []
+          "vg": []
         },
         "epochmix": 0,
         "epochnum": 1,
         "indv": {
-          "tg": []
+          "vg": []
         },
         "lagsec": 0,
         "lensec": 0,
@@ -77,16 +77,6 @@
       "numangrs": 16,
       "numcirc": 1,
       "omitnan": 1,
-      "roi": {
-        "mm": {
-          "chanstr": "all",
-          "mmname": "none"
-        },
-        "rgname": "none",
-        "s": {
-          "tg": []
-        }
-      },
       "scope": "all",
       "slopelensec": 0.4,
       "slopeord": 2,
@@ -170,12 +160,12 @@
     },
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -309,11 +299,12 @@
       },
       "rgname": "none",
       "s": {
-        "tg": []
+        "vg": []
       }
     },
     "sld": {
       "clip": [0,1],
+      "dtype": "uint16",
       "fbrm": 1,
       "ic": [],
       "it": [],
@@ -322,21 +313,18 @@
       "iz": [],
       "smlenpx": [0,0,0],
       "smlensec": 0,
-      "smmthd": "gaussian",
-      "stackdtype": "uint16",
-      "trm": [],
-      "zerostack": 1
+      "smmthd": "gaussian"
     }
   },
   "du": {
     "bmp": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "domtype": "m",
       "dorescale": 0,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "maxangrs": 8,
       "mthd": "pva",
@@ -483,12 +471,12 @@
     },
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -565,11 +553,12 @@
     "roi": {
       "rgname": "none",
       "s": {
-        "tg": []
+        "vg": []
       }
     },
     "sld": {
       "clip": [0,1],
+      "dtype": "uint16",
       "fbrm": 1,
       "ic": [],
       "it": [],
@@ -578,16 +567,12 @@
       "iz": [],
       "smlenpx": [0,0,0],
       "smlensec": 0,
-      "smmthd": "gaussian",
-      "stackdtype": "uint16",
-      "trm": [],
-      "zerostack": 1
+      "smmthd": "gaussian"
     }
   },
   "mostree": [
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "bmp.roi.mm",
     "daq",
     "fmf",
     "mdl.opg",
@@ -604,8 +589,6 @@
     "bmp.mdl",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "bmp.roi",
-    "bmp.roi.mm",
     "daq",
     "fmf",
     "mdl",

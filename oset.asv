@@ -1,20 +1,42 @@
-function o = oset(spec)
+function o = oset(spec, opt)
 
 %{
 
 oset is a wrapper for the following functions:
+    --glb: set a few global variables in function 'glb'
     --stackfind: find imaging stacks
     --oset_*: set options (can be stack-specific)
         --ofill: called from oset_* files; for any options unspecified in oset_*, ofill fills options struct with defaults (defined in odf.m) for all a2p modules (high-level functions with options under id-control)
             --oid: called from ofill when finalizing options struct; assign id to unique options sets, write to txt file; also distribute each element of any cell-valued options into separate options sets; also check for problems in options struct
 
-**** NB: DO NOT USE CELLS FOR VALUES ASSIGNED TO OPTIONS IN OSET_* FILES, UNLESS YOU INTEND THEM FOR "DISTRIBUTION" IN OID ****
+see docs_oset.m for more detail
+
+**** NB: DO NOT USE CELLS FOR OPTIONS IN OSET_* FILES UNLESS YOU INTEND THEM FOR DISTRIBUTION IN OID ****
 
 %}
 
 arguments
     spec = [] % spec struct (see function stackfind), or char or cell of char specifying full path to stack(s); if the latter, can have wildcards *; if empty, will search for file using spec below;
+    opt.usegit {mustBeMember(opt.err,[0,1]), mustBeNonempty} = 0; %1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
 end
+usegit = opt.usegit;
+
+
+%%%% MAKE SURE userdat.txt HAS BEEN SET (AT LEAST FIELDS scopausername and pthpar) %%%%
+
+userdatfile( ...
+    scopausername='cw', ...
+    pthpar=pthparget() ... %if you don't want to set pthpar, you can let function 'pthparget' prompt 
+    )
+
+
+%%%% SET SOME GLOBALS IN FUNCTION glb %%%%
+
+glb( ...
+    usegit=usegit, ...
+    optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
+    dmstackdf='yxztck' ... %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+    )
 
 %%%% RECORDING SPECIFIERS (USED TO FIND RECORDINGS IF THERE IS NO INPUT TO a2p) %%%%
 

@@ -2,25 +2,25 @@ function o = oset_opto()
 
 do = {'sld', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
 
-o.sld.ic = [1 2];
+o.sld.ic = [1,2];
 
-o.daq.slopelensec = .3;
+o.daq.slopelensec = {.3, 0.5};
 
 o.bmp.domtype = 'm';
 
-bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vh';
-% bmpindv.tg.optid = 'a8';
+bmpindv.vg.daq = ['*'];
+bmpindv.vg.vnm = 'vh';
+% bmpindv.vg.optid = 'a8';
 
 o.bmp.indv = bmpindv;
 
-bmpdepv.tg.roi.rgname = 'eb';
-bmpdepv.tg.roi.mm.mmname = 'eb';
-% bmpdepv.tg.roi.ma.maskseg = 'torus';
-% bmpdepv.tg.roi.nrm.post = 'f';
-bmpdepv.tg.vnm = 'ts';
-% bmpdepv.tg.optid = 'a76';
-bmpdepv.tg.group = '1';
+bmpdepv.vg.roi.rgname = 'eb';
+bmpdepv.vg.roi.mm.mmname = 'eb';
+% bmpdepv.vg.roi.ma.maskseg = 'torus';
+% bmpdepv.vg.roi.nrm.post = 'f';
+bmpdepv.vg.vnm = 'ts';
+% bmpdepv.vg.optid = 'a76';
+bmpdepv.vg.group = '1';
 
 o.bmp.depv = bmpdepv;
 

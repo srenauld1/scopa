@@ -1,12 +1,14 @@
-function roifauto(pthpy, optcm, opt)
+function roifauto(pthpy, opt, opt2)
 
 arguments
     pthpy = []
-    optcm = []
-    opt.rgname = 'none'
-    opt.mmname = 'none'
+    opt = []
+    opt2.rgname = 'none'
+    opt2.mmname = 'none'
 end
-error("need to insert glboropt")
+rgname = opt2.rgname;
+mmname = opt2.mmname;
+
 
 
 if isempty(pthpy)
@@ -15,10 +17,10 @@ if isempty(pthpy)
         error("you have not set glb('pthpy'), and you didn't pass in argument pthpy; you must do one or the other" + newline)
     end
 end
-if isempty(optcm)
+if isempty(opt)
     fprintf("user did not pass in options as argument, using all defaults")
     tmp = ofill('roi.cm', rec=1, unpack=1);
-    optcm = tmp.cm;
+    opt = tmp.cm;
 end
 
 pthscopa = pthscopaget();
@@ -47,7 +49,7 @@ try %run python directly from matlab (ie not using system command to control a s
         methodex='1', ...
         rgname=rgname, ...
         mmname=mmname, ...
-        optall=optcm ...
+        optall=opt ...
         );
 catch ME %alternative that uses system command
     fprintf(ME.message + newline)

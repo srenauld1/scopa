@@ -115,6 +115,9 @@ rec = opt.rec;
 unpack = opt.unpack;
 wild = opt.wild;
 
+usegit = glb('usegit');
+
+
 persistent d
 persistent du
 persistent mostree
@@ -195,10 +198,10 @@ end
 %%%% ofill_scalar (ofill for each struct element, ie stack) %%%%
 
 if isempty(optin)
-    optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal);
+    optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal, usegit);
 else
     for k = numel(optin):-1:1 %in case optout is nonscalar, loop over each element, calling ofill_scalar; backward to preallocate
-        optout(k) = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin(k), mos, mosc, rec, mosfinal);
+        optout(k) = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin(k), mos, mosc, rec, mosfinal, usegit);
     end
 end
 
@@ -220,7 +223,7 @@ end
 
 
 
-function optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal)
+function optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal, usegit)
 
 
 persistent mosc_all
@@ -404,7 +407,7 @@ if ~isempty(mosfinal)
 
     optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and vget)
 
-    optout = oid(optout); %assign ids to options sets
+    optout = oid(optout, usegit=usegit); %assign ids to options sets
 
     clear mosc_all
 

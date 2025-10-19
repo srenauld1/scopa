@@ -3,15 +3,19 @@
 %{
 
 
+consider renaming input 'opt' 'mos' in modules  
+
+write function to delete opt set from opt file and renumber everything? or allow nonsequential nm in structfile??
+need to use better system than the glb('maketime*') checks
 probably get rid of glb pthstack or deal with when name value conflicts in better way than error
-make function tg check to check tg formatting, put it in ofill 
+make function vg check to check vg formatting, put it in ofill 
 
 FIX: EMPTY [], '', {}, WILL INVOKE DEFAULT (ALTHOUGH EMPTY STRING ARRAY [""] WILL NOT INVOKE DEFAULT STRING ARRAY)
 FIX: NONFUNCTIONAL (PLOTTING) OPTIONS ARE CURRENTLY ALL IN SEPARATE OBIN, SO OID EASILY DEALS WITH THEM, BUT CAN THIS ALWAYS BE THE CASE? what about redundant obins that get removed in ored, they aren't returned, is that a problem? should options leaving oset always have same fields?? 
 FIX: ORED NEEDS TO REMOVE NONFUNCTIONAL OBIN AT ANY NESTING 
 when constructing o, you can only append obin or option listed in odf;
 options can be structs themselves, but defaults for all fields have to be defined oin odf
-the only time a struct can appear within an option is struct tg, which has special handling in ofill
+the only time a struct can appear within an option is struct vg, which has special handling in ofill
 
 
 disallow copybins unless user runs them through oid, since they should be temporary bins on way to id??
@@ -35,23 +39,23 @@ make all pthscopa calls glb?
 fix all eval calls, eg in structunflat
 fix order of module inputs, should opt be first, or just first name-value argument?
 remove calls to combos since it relies on a toolbox
-distribution in tsget?? can tg fields be distributed when cells? or is the group field doing that but with less flexibility?
+distribution in vget?? can vg fields be distributed when cells? or is the group field doing that but with less flexibility?
 give mn an ored so that if no do for a module, that obin is empty in  options struct, or just hard code that
 optid not getting assigned for mdl from within bmp
 save opt with each module's save
-make tsget have option to retrieve the index of all found timeseries, so you don't output all of them and then index that, but instead output only the desired combo index 
-use dbstack to prevent some functions from running unless a2p is on stack (like tsget maybe; in general because of reliance on glb)
+make vget have option to retrieve the index of all found timeseries, so you don't output all of them and then index that, but instead output only the desired combo index 
+use dbstack to prevent some functions from running unless a2p is on stack (like vget maybe; in general because of reliance on glb)
 should empty optid be part of each struct in defaults? or only added after oid, as it does now?
-change names for tsget group
-tsget defaults are never filled in on purpose, but is that right?
+change names for vget group
+vget defaults are never filled in on purpose, but is that right?
 make daqld ftv have a dotfv, just like roimake
 consider making default nested opts rather than using otree; for example, d.roi.cm = [], etc
 optid for stackseries, since it affects the rois
 no roeason to make daq a table in daqld then convert to struct, just m,ake struct from start
-in tsget there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one
+in vget there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one
 do i need maketime protection for rg??
 in odf define timeseries fields available to bmp (like mu, rho, amp, etc), the way you did with daq, do this for all main modules 
-tsget is limited to one obin within tg at a time but shouldn't be, what if you want a daq and roi variable as indv
+vget is limited to one obin within vg at a time but shouldn't be, what if you want a daq and roi variable as indv
 make sure optids refer to same file, that the opt file mapping opt to id has not been changed 
 nonfunctional obin in ored/odist etc need to be able to be nested and returned to right spot
 set up default roimake, where opt can be empty) - mean of fov

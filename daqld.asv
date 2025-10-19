@@ -1,4 +1,4 @@
-function daq = daqld(pthdaq, opt, opt2)
+function daq = daqld(opt, opt2)
 
 %{
 resample daq variables from daq sampling into imaging sampling (by volume and/or frame), also find each daq variable's derivative (for some, this is velocity)
@@ -52,46 +52,33 @@ but if you still want to smooth, function tssm handles circular and normal varia
 %}
 
 arguments
-    pthdaq %path to original daq file
-    opt.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
-    opt.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-    opt.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHd", "ficTracHeading", "g4panels", "g4yaw", "g4hd"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error);
-    opt.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error);
-    opt.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error);
-    opt.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
-    opt.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-    opt.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, useinds is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a useinds_supp option)
-    opt.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
-    opt.slopeord = 2; % order of polynomial used to fit local slope
-    opt.slopelensec_supp = 0.4; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
-    opt.slopeord_supp = 2; % same as slopeord but for supplemental resampling rate (supprate, if nonempty)
-    opt.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if useinds is not 'none')
-    opt.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if useinds is not 'none')
-    opt.balldia = 9; % mm, used to convert fictrac variables into mm
-    opt.voltmin = 0; % daq voltage min; would be better to have this in metadata
-    opt.voltmax = 10; % daq voltage max, need to find this in metadata
-    opt.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12)
-    opt.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
-        "t = Time, time, T";
-        "epochts = epoch";
-        "vvynom = g4vel, g4velnom";
-        "vh = g4panels, g4yaw, g4hd";
-        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv";
-        "bf = ficTracIntForward";
-        "bvf = ficTracIntForward_dv";
-        "bs = ficTracIntSide";
-        "bvs = ficTracIntSide_dv";
-        "bh = ficTracYaw, ficTracHeading, ficTracHd";
-        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv";
-        "ftcam = ftcam"];
-    opt.optid = []; %automatically generated id for each unique input opt set; if your input opt is not generated by oset, leave optid empty
-    opt2.pth_daqrs = [] %can optionally pass in path to resampled daq file (if you don't it will be derived from pthdaq)
-    opt2.pth_ftvid = [] %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py, if you don't it will be derived from pthdaq)
-    opt2.pth_ftvidrs = [] %can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthdaq)
+    opt = []
+    opt2.pthstack = []
+    opt2.pthdaq = [] %can optionally pass in path to original daq file (if you don't it will be derived from pthstack/pthrec)
+    opt2.pth_daqrs = [] %can optionally pass in path to resampled daq file (if you don't it will be derived from pthstack/pthrec)
+    opt2.pth_ftvid = [] %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py, if you don't it will be derived from pthstack/pthrec)
+    opt2.pth_ftvidrs = [] %can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack/pthrec)
     opt2.doplt = []
+end
+pthstack = opt2.pthstack;
+pthdaq = opt2.pthdaq;
+pth_daqrs = opt2.pth_daqrs;
+pth_ftvid = opt2.pth_ftvid;
+pth_ftvidrs = opt2.pth_ftvidrs;
+doplt = opt2.doplt;
+
+if ~isempty(pthstack) && ~isempty(pthdaq)
+    error("only pass in pthstack or pthdaq, but not both (to be safe to avoid conflicts); pthstack is better to pass in, if convenient, because it allows you to derive metadata (*mdsi_.txt) in case that file doesn't exist")
+end
+
+if ~isempty(pthstack) && ~isempty(pthdaq)
+    [opt, doplt, pthdaq] = fset('daq', opt, doplt, pthdaq);
+else
+    error("you must set pthstack or pthdaq")
 end
 
 opt = optidchk('daq', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
+
 
 vtime = opt.vtime; %name of variable representing time in original daq file
 vnormal = opt.vnormal; %list normal (not circular, not categorical) daq variables you want to process; virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
@@ -109,17 +96,11 @@ usefbf = opt.usefbf; %use flyback frames when defining resampling inds if useind
 balldia = opt.balldia; % mm, used to convert fictrac variables into mm
 voltmin = opt.voltmin; % daq voltage min; need to find this in metadata
 voltmax = opt.voltmax; % daq voltage max, need to find this in metadata
-voltminhd = opt.voltminhd;%
+voltminhd = opt.voltminhd;
 vrenm = opt.vrenm; %optional new names for each daq variable
 optid = opt.optid;
 
-pth_daqrs = opt2.pth_daqrs;
-pth_ftvid = opt2.pth_ftvid;
-pth_ftvidrs = opt2.pth_ftvidrs;
-doplt = opt2.doplt;
-
 idxreg = 'start';  %hard coding this because its effect on our 10khz daq is negligible; idx can be 'start', 'end', 'center', denoting whether each daq sample represents the start, end, or center of the time bin (ie, start means first sample is t=0)
-
 
 if ~isstring(vnormal)
     vnormal = string(vnormal); %could also convert to char here
@@ -131,12 +112,25 @@ if ~isstring(vcategorical)
     vcategorical = string(vcategorical); %could also convert to char here
 end
 
-id = idmake(pthdaq); %make id again here just for id.pthrec to derive mdsi file
-pthmd = [id.pthrec '_mdsi_.txt'];
-if isfile(pthmd)
-    md = mdsild(pthmd); %mdsild can run just with recid input, but if mdsild file does not exist, will error here
-else
-    error("mdsi_.txt file does not exist, so either put it in filesystem, or create it by running stackld on the raw stack, or by running registration on the raw stack")
+
+if ~isempty(pthstack)
+    id = idmake(pthstack);
+    md = mdsild(pthstack);
+elseif ~isempty(pthdaq)
+    id = idmake(pthdaq);
+    pt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '*.mat'];
+    pthdaq = rdir(pt);
+    if isscalar(pthdaq)
+        pthdaq = pthdaq.name;
+    else
+        error("pthdaq does not exist, or there are multiple matches")
+    end
+    pthmd = [id.pthrec '_mdsi_.txt'];
+    if isfile(pthmd)
+        md = mdsild(pthmd); %mdsild can run just with recid input, but if mdsild file does not exist, it cannot be created without pthstack, so we also call this in case pthstack is nonempty
+    else
+        error("mdsi_.txt file does not exist, so either put it in filesystem, or derive it from raw stack (but for that, you must pass in pthstack, rather than pthdaq (and pthdaq will be derived automatically)")
+    end
 end
 
 if isempty(pth_daqrs)
@@ -178,6 +172,15 @@ try
 catch ME
 
     fprintf("tried loading daqrs file but it failed with this message: " + newline + ME.message + newline + "trying to process daq data now" + newline)
+
+    if isempty(pthdaq)
+        pth_daq_pat = [id.pthstackdir id.recdate '-' id.fly '_daqData_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+        pthdaq = rdir(pth_daq_pat);
+        if isempty(pthdaq)
+            error("no daq file matching this pattern: " + pth_daq_pat)
+        end
+        pthdaq = pthdaq.name;
+    end
 
     daqvars.normal = vnormal;
     daqvars.radians = vradians;
@@ -449,7 +452,7 @@ catch ME
             smlensec = 1;
             doplt_ftvalign = 1; %show the plots in ftvalign
             ftrate = []; %fictrac rate, hz, only set this to nonempty (eg, ftrate=60) if you don't have pth_dat to derive more precise estimate
-            daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthdaq=pthdaq, numvol=numvol, imrate=volrate, ...
+            daq(m).ftv = ftvalign(rsinds=daq(m).ftcam, pthstack=pthstack, numvol=numvol, imrate=volrate, ...
                 numpkthr=numpkthr, topkp=topkp, smlenpx=smlenpx, numpx=numpx, smlensec=smlensec, ftrate=ftrate, ...
                 pth_vid=pth_ftvid, pth_vidrs=pth_ftvidrs, doplt=doplt_ftvalign);
         catch ME

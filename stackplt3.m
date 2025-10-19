@@ -21,7 +21,6 @@ arguments
     opt.iso = 0;
     opt.widyxz = [];
 end
-opt = glboropt(opt);
 t = opt.t;
 epochts = opt.epochts;
 pthstack = opt.pthstack;

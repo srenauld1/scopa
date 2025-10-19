@@ -1,4 +1,5 @@
-function opt = glboropt(opt)
+function opt = optorglb(opt)
+
 
 fn = fieldnames(opt);
 for k = 1:numel(fn)

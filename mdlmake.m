@@ -4,7 +4,7 @@ function mdl = mdlmake(opt, indv, depv, pthstack, opt2)
 %{
 for outdated docs, see file mdl_notes.m
 
-if indv/depv are defined in options struct as struct tg, they get assigned
+if indv/depv are defined in options struct as struct vg, they get assigned
 every resulting indv/depv pairing gets assigned an id; if indv/depv are
 defined directly (as numeric or cell array) in options struct, or if
 they're defined as input arguments indv and depv, the pairing does not get
@@ -30,7 +30,6 @@ arguments
     opt2.numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
     opt2.histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
 end
-opt2 = glboropt(opt2);
 srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
@@ -49,23 +48,23 @@ end
 
 %% set up indv/depv
 
-if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
+if ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.vg), ~isempty(opt.depv.vg))
     error("indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 
 if isempty(indv) && isempty(depv)
-    dotsget = 1;
+    dovget = 1;
 else
-    dotsget = 0;
+    dovget = 0;
 end
 
-clear tsget %clear persistent variables within tsget (just in case)
+clear vget %clear persistent variables within vget (just in case)
 its = 0;
 while true
     its = its+1;
 
-    if dotsget %if indv/depv are defined in the options struct, instead of passed in as arguments
-        [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
+    if dovget %if indv/depv are defined in the options struct, instead of passed in as arguments
+        [vdat, indv, depv] = vget(its, opt.indv, opt.depv);
         pthmdl = [vdat.pthc vdat.varid opt.optid '_mdl_.mat'];
         varid = vdat.varid;
         last = vdat.last;
@@ -106,7 +105,7 @@ try
 catch ME
 
     if isempty(indv) || isempty(depv)
-        error("depv and indv must both be nonempty; tsget did not find indv and/or depv")
+        error("depv and indv must both be nonempty; vget did not find indv and/or depv")
     end
     if isempty(epochts)
         epochts = ones(1, size(depv, 2));

@@ -5,21 +5,28 @@ function o = oid(o, opt)
 oid is called from ofill when finalizing a2p options struct, or from vget when searching for variables; 
 oid assigns id to unique options sets for each module, and writes them to txt file; also distributes each element of any cell-valued options into separate options sets; also checks for problems in options struct
 oex.py does something similar; it does this: user's set, load defaults, overwrite defaults, distribute, reduce, sort, unique, ID, derive, check
-this function starts at the "distribute" step; "derive" and "check" steps require data, so they happen in oex.py (since oex is called after data is loaded), but not here in oid.m (where data is not necessarily loaded, like when oid is called from oset>ofill 
-so oid just has these steps: distribute, reduce, sort, unique, ID
+this function starts at the "distribute" step; "derive" and "check" steps require data, so they happen in oex.py, but not here in oid.m
+so here we just do distribute, reduce, sort, unique, ID
 
 %}
 
 arguments
     o % options struct 
     opt.getonly = 0 % get ids only (cannot write to file or create new id)
+    opt.usegit = []
 end
 
 try
 
     getonly = opt.getonly;
+    usegit = opt.usegit;
 
-    usegit = glb('usegit', err=1);
+    if isempty(usegit)
+        usegit = glb('usegit');
+        if isempty(usegit)
+            usegit = 0;
+        end
+    end
 
     scopausername = userdatfile('scopausername');
 

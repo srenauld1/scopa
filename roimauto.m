@@ -2,7 +2,15 @@ function roimaskout = roimauto(stack, opt, opt2)
 
 arguments
     stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
-    opt
+    opt.chan = 1; %1, 2, or [1 2], which channel gets auto roi extraction; this is stack index, not pmt index; (for now all options below are same for each) option where auto rois interact has not been written yet);
+    opt.numroi = 128; %partition rgname into numroi morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
+    opt.maskmake = 'nonzero'; % %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+    opt.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
+    opt.roirad = []; %radius of roi (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance; units are length of pixel in x (if z length is double x and y length, roirad 6 is 2 pixels in x and y, and 1 in z)
+    opt.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
+    opt.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+    opt.celsz = 8; %for bwmorph close after edge detection, helps connect edges
+    opt.do3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
     opt2.md = []
     opt2.widyxz = []
     opt2.roimaskin = []
@@ -10,7 +18,6 @@ arguments
     opt2.rg = []
     opt2.mmname = []
 end
-
 chan = opt.chan;
 numroi = opt.numroi;
 maskmake = opt.maskmake;
@@ -21,7 +28,6 @@ edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
 
-opt2 = glboropt(opt2);
 md = opt2.md;
 widyxz = opt2.widyxz;
 roimaskin = opt2.roimaskin;

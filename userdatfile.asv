@@ -10,6 +10,7 @@ note pthscopa is automatically added below (does not rely on user input) to prev
 
 arguments
     field = []
+    opt.pthscopa = [] %automatically set if user leaves empty; but after set, not overwritten unless user deletes pthscopa or userdat.txt
     opt.pthpar = [] %path to folder containing all stacks
     opt.pthparo2 = [] %path to folder containing all stacks on o2 
     opt.pthpy = [] %path to python executable (for running python from matlab)
@@ -18,6 +19,8 @@ arguments
     opt.gitbranch = [] %your scopa git branch (for push/pull etc)
     opt.gitusername = [] %your git username (for push/pull etc)
 end
+
+callstack = dbstack;
 
 optsin = ~structfun(@isempty, opt);
 
@@ -45,7 +48,15 @@ else
     saferun = 1;
 end
 
-pthscopa = pthscopaget();
+    if ~isscalar(callstack) && strcmp(callstack(2).file, 'pthscopaget.m')
+        if isempty(opt.pthscopa)
+            error("exiting this fuction")
+        else
+            pthscopa = pthfldformat(opt.pthscopa); %format path to folder
+        end
+    else
+        pthscopa = pthscopaget();
+    end
 
 pthuserdat = [pthscopa 'userdat.txt'];
 
@@ -77,8 +88,6 @@ if strcmpi(permission, 'read')
 
 else
 
-    callstack = dbstack;
-
     if saferun && ~( isscalar(callstack) && strcmp(callstack.file, 'userdatfile.m') )
         error("for security, when writing any git information to userdat.txt, you must run userdatfile from command line; if you did run userdatfile from command line, you may have run userdatfile while paused in debugger mode; stop debugger and run from command line");
     else
@@ -93,7 +102,7 @@ else
                 userdat.(fnopt{k}) = opt.(fnopt{k});
             end
         end
-        if ~isfield(userdat, 'pthscopa') || isempty(userdat.pthscopa)
+        if isempty(userdat.pthscopa)
             userdat.pthscopa = pthscopa;  %add this automatically, to avoid accidental mismatch between real location output from pthscopaget, and location set here (if it were user input)
         end
 

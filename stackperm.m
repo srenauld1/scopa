@@ -1,17 +1,17 @@
 function [stack, dmstackout, sznew] = stackperm(stack, dmstackin, dmstackout)
 
-% put stack into default dimension order, given current order dmstackin, and default order dmstackout; inserts singleton dims if necessary
+% permute stack from dimension order dmstackin (char vector) to dmstackout (char vector); inserts singleton dims if necessary
 
 arguments
     stack
-    dmstackin %char array, current stack dim order
-    dmstackout = [] %char array, new stack dim order (yxztck if empty)
+    dmstackin %char vector, current stack dim order
+    dmstackout = [] %char vector, new stack dim order (glb('dmstackdf') if empty)
 end
 
 if isempty(dmstackout)
-    dmstackout = glb('dmstack');
+    dmstackout = glb('dmstackdf');
     if isempty(dmstackout)
-        error("must pass in dmstackout, or set glb('dmstack')")
+        error("must pass in dmstackout, or set glb('dmstackdf')")
     end
 end
 dmstackin = convertStringsToChars(dmstackin);

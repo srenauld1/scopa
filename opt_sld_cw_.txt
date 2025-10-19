@@ -1,6 +1,13 @@
 {
-  "a1": {
+  "md": {
+    "autonm": 1,
+    "maketime": "2025101613240242",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
     "clip": [0,1],
+    "dtype": "uint16",
     "fbrm": 1,
     "ic": [1,2],
     "it": [],
@@ -10,12 +17,12 @@
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
-    "stackdtype": "uint16",
     "trm": [],
     "zerostack": 1
   },
-  "a2": {
+  "z2": {
     "clip": [0,1],
+    "dtype": "uint16",
     "fbrm": 1,
     "ic": 1,
     "it": [],
@@ -25,14 +32,48 @@
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
-    "stackdtype": "uint16",
     "trm": [],
     "zerostack": 1
   },
-  "md": {
-    "autonm": 1,
-    "maketime": "2025101610443830",
-    "nmprefix_withgit": "a",
-    "nmprefix_withoutgit": "z"
+  "z3": {
+    "clip": [0,1],
+    "dtype": "uint16",
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian",
+    "trm": [],
+    "zerostack": 1
+  },
+  "z4": {
+    "clip": [0,1],
+    "dtype": "uint16",
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian"
+  },
+  "z5": {
+    "clip": [0,1],
+    "dtype": "uint16",
+    "fbrm": 1,
+    "ic": [1,2],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian"
   }
 }

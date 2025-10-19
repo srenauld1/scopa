@@ -46,11 +46,11 @@ else
         if isfield(sout, fin2)
             if isstruct(s.(fin2))
                 fntmp = fieldnames(s.(fin2));
-                if any(ismember(fntmp, 'tg')) %copy everything user set within struct tg (since default tg is always empty) 
-                    if all(ismember(fntmp, 'tg'))
+                if any(ismember(fntmp, 'vg')) %copy everything user set within struct vg (since default vg is always empty) 
+                    if all(ismember(fntmp, 'vg'))
                         sout.(fin2) = s.(fin2);
                     else
-                        error("struct tg must not have any sibling fields")
+                        error("struct vg must not have any sibling fields")
                     end
                 else
                     if isstruct(sout.(fin2))

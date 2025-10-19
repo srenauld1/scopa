@@ -10,7 +10,7 @@
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
-    "stackdtype": "uint16",
+    "dtype": "uint16",
     "trm": [],
     "zerostack": 1
   },
@@ -31,7 +31,7 @@
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
-    "stackdtype": "uint16",
+    "dtype": "uint16",
     "trm": [],
     "zerostack": 1
   },
@@ -46,7 +46,7 @@
     "smlenpx": [0,0,0],
     "smlensec": 0,
     "smmthd": "gaussian",
-    "stackdtype": "uint16",
+    "dtype": "uint16",
     "trm": [],
     "zerostack": 1
   }

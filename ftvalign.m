@@ -42,7 +42,7 @@ arguments
     opt.numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
     opt.smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
     opt.ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
-    opt.pthstack = [] %can pass in path to stack and derive defaults for all the other paths
+    opt.pthdaq = [] %can pass in path to stack and derive defaults for all the other paths
     opt.pth_vid char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     opt.pth_vidrs char = [] %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
     opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
@@ -59,7 +59,7 @@ smlenpx = opt.smlenpx;
 numpx = opt.numpx;
 smlensec = opt.smlensec;
 ftrate = opt.ftrate;
-pthstack = opt.pthstack;
+pthdaq = opt.pthdaq;
 pth_vid = opt.pth_vid;
 pth_vidrs = opt.pth_vidrs;
 pth_dat = opt.pth_dat;
@@ -70,12 +70,12 @@ doplt = opt.doplt;
 if ~ismember(isempty(topkp) + isempty(numpx), [0,2])
     error("numpx and topkp must both be empty or nonempty")
 end
-if isempty(pthstack)
+if isempty(pthdaq)
     if isempty(pth_vid)
-        error("if pth_vid is empty, pthstack must be nonempty")
+        error("if pth_vid is empty, pthdaq must be nonempty")
     end
 else
-    id = idmake(pthstack);
+    id = idmake(pthdaq);
 end
 
 
@@ -116,7 +116,7 @@ if isempty(pth_vid)
     pth_ftvid_pat = [id.pthstackdir id.recid '_ftvds_.mat']; %downsampled ft video (downsampled in register.py)
     pth_vid = rdir(pth_ftvid_pat);
     if isempty(pth_vid)
-        error("cannot find fictrac video (pth_vid) using default pattern derived from pthstack")
+        error("cannot find fictrac video (pth_vid) using default pattern derived from pthdaq")
     else
         pth_vid = pth_vid.name;
     end
@@ -167,7 +167,7 @@ catch
 
         if isempty(ftrate)
             if isempty(pth_dat)
-                error("must pass in ftrate or pth_dat or pthstack to derive ftrate (if you got this error, pthstack or pth_dat may not exist)")
+                error("must pass in ftrate or pth_dat or pthdaq to derive ftrate (if you got this error, pthdaq or pth_dat may not exist)")
             end
             ftdat = read_fictrac_dat(pth_dat);
             ftrate = 1e9/median(ftdat.deltaTimestamp);

@@ -33,7 +33,6 @@ arguments
     opt.stackrot = []
     opt.stackslice = []
 end
-opt = glboropt(opt);
 mix = opt.mix;
 noside = opt.noside;
 lagsampxy = opt.lagsampxy;

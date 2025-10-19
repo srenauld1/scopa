@@ -15,7 +15,6 @@ classdef stackmixo < stackfindo
                 opt.rot = [0,0,0] %Euler angles in x,y,z-order in degrees, specified as a 3-element numeric vector of the form [rx ry rz]; rgnames k gets rot(k,:), so if size(rot,1)>1, it must equal numel(rgnames), unless rot is empty (no rotations for any rgnames, or is 3-element row vector, in which case it is applied to all rgnames,
                 opt.pthstack = []
             end
-            opt = glboropt(opt);
             pthstack = opt.pthstack;
             rot = opt.rot;
 

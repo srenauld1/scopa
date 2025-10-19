@@ -1,11 +1,10 @@
 
-function scannoiserm(pthstack, stopband, smlensec, zerostack, it, iz, doplt, frameinds)
+function scannoiserm(pthstack, stopband, smlensec, it, iz, doplt, frameinds)
 
 arguments
     pthstack %pthstack is full path to tif or mat (if mat is in same folder with tif, it will be loaded without reading the tif)
     stopband = [10,20]; %stopband frequency indices; set emperically for now; keep between 2 and half number of pixels in x dimension . . . hopefully scan noise bandwidth scales simply with imaging temporal frequency
     smlensec = 0 %temporal gaussian smooth window in seconds; makes scan noise more bandlimited
-    zerostack = 1 %subtract min to make min zero
     it = 3.50 %frames to plot (empty for all); 3.50 means 3 equidistant 50-frame segments 
     iz = [] %z slices to plot (empty for all)
     doplt = 0;
@@ -47,7 +46,6 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 %% load
 
 o.sld.smlensec = smlensec; 
-o.sld.zerostack = zerostack; 
 o = ofill(o, 'sld');
 
 stack = stackld(o.sld, pthstack);
@@ -81,7 +79,7 @@ end
 %% filter
 
 for k = 1:size(stack,5)
-    stack(:,:,:,:,k) = fft_filter_1d(stack(:,:,:,:,k), stopband, zerostack);
+    stack(:,:,:,:,k) = fft_filter_1d(stack(:,:,:,:,k), stopband);
     fprintf("DONE FILTERING CHANNEL INDEX " + num2str(k) + newline)
 end
 
@@ -105,12 +103,12 @@ end
 end
 
 
-function stackout = fft_filter_1d(stack, stopband, zerostack)
+function stackout = fft_filter_1d(stack, stopband)
 
 %%stopband filter each line (cannot recover precise line flyback times, so cannot 1d  filter entire stack as vector)
 
-typeout = 'uint16'; %forcing this for now;
-if ~isa(stack, typeout)
+dtype = 'uint16'; %forcing this for now;
+if ~isa(stack, dtype)
     error("STACK MUST BE UINT16")
 end
 if ndims(stack)~=4
@@ -188,11 +186,8 @@ end
 % parfor_progress(0);
 toc
 
-if zerostack
-    stackout = stackout - min(stackout, [], 'all', 'omitmissing'); %subtract min
-end
 
-stackout = stacktype(stackout, typeout); %convert from int16 to uint16
+stackout = stacktype(stackout, dtype); %convert from int16 to uint16
 
 stackout = permute(stackout, [3 1 2]);
 stackout = reshape(stackout, sz); %put back in 4d

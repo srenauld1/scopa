@@ -7,16 +7,16 @@ rgname = {'el', 'no'}; %use 'none' to skip prompt to define substack (will enter
 
 %%%% BMP %%%%
 
-bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vh';
+bmpindv.vg.daq = ['*'];
+bmpindv.vg.vnm = 'vh';
 
 o.bmp.indv = bmpindv;
 
-bmpdepv.tg.roi.rgname = 'el';
-bmpdepv.tg.roi.mm.mmname = 'el3';
-bmpdepv.tg.roi.domm = 1;
-bmpdepv.tg.vnm = 'ts';
-bmpdepv.tg.group = '1';
+bmpdepv.vg.roi.rgname = 'el';
+bmpdepv.vg.roi.mm.mmname = 'el3';
+bmpdepv.vg.roi.domm = 1;
+bmpdepv.vg.vnm = 'ts';
+bmpdepv.vg.group = '1';
 
 o.bmp.depv = bmpdepv;
 

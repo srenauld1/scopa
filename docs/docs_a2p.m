@@ -2,6 +2,8 @@
 
 %{
 
+in modules, opt are id-contolled name-value arguments (ie module options), opt2 are name-value arguments that are not id-controlled; 
+in functions that are not modules, opt is used for all name-value arguments 
 in matlab, if user explicitly sets name-value argument to empty when calling a function, the default value in arguments block is not used; 
 the arguments block default value is only used if user doesn't specify the name-value argument in the function call,  
 for example, daqld(pthdaq=[]) does not set pthdaq to its arguments block default value, but daqld() does; 
@@ -35,8 +37,8 @@ for each module
 
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
 
-glb is required in only a couple places within function tsget
-strucfile gets called by: oid, tsget, stackcrop, and fset; can read and/or
+glb is required in only a couple places within function vget
+strucfile gets called by: oid, vget, stackcrop, and fset; can read and/or
 write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 
 warning: when reading struct from file, jsencode (called from structld) will insert an 'x' at the beginning of any fieldname that doesn't begin with a letter (an invalid fieldname); if a file was written with structsv, it will not contain invalid fieldnames because structsv only writes valid structs) 
 
@@ -88,7 +90,7 @@ utility functions (and visualization functions):
     pthauto: create path (e.g. for saving figures)
     oset: set options
     ofill: invoke default options, overwriting defaults with input
-    tsget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
+    vget: choose timeseries from highly nested struct ts using string pattern matching (wildards allowed)
     axarr: arrange subplots, including automatically arranging frames of imaging stack to optimally fill available space while maintaining aspect ratio 
 
 

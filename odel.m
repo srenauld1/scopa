@@ -5,7 +5,6 @@ arguments
     opt.obin_ided = []
     opt.fig = 0
 end
-opt = glboropt(opt);
 pthpar = opt.pthpar;
 obin_ided = opt.obin_ided;
 fig = opt.fig;
@@ -39,9 +38,7 @@ else
     inf = "option";
     pthscopa = pthscopaget;
     scopausername = userdatfile('scopausername');
-    if isempty(scopausername)
-        error("you have not set glb('scopausername')")
-    end
+
     if isempty(obin_ided)
         error("obin_ided must be defined in glb or passed in as name-value argument")
     end

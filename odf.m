@@ -3,7 +3,7 @@ function odf(pthopt)
 % default options for a2p
 % running odf writes all options to txt file in scopa using jsonencode (written to file to encourage stability)  
 % each section contains options for a module called in a2p (section header is option field name, with function name in parentheses, and brief description of function)
-% options cannot be structs, except structs named tg 
+% options cannot be structs, except structs named vg 
 
 arguments
     pthopt = []
@@ -17,7 +17,7 @@ end
 %% mostree (all moss and polymos currently supported in options struct o; oset ensures all mostree are populated in o; note some moss only appear nested within others (e.g. 'mm' only exists within 'roi'), but defaults for nested mos can still be retrieved using ofill, for example ofill('mm', unpack=1)
 
 mostree = [  %in sort order; in polymos, each is filled as in du below (ie roi.mm means roi gets filled, and mm gets filled below roi), as opposed to roi having nothing below but mm
-    "bmp.mdl.opg", "bmp.mdl.opl", "bmp.roi.mm", ...
+    "bmp.mdl.opg", "bmp.mdl.opl", ...
     "daq", ...
     "fmf", ...
     "mdl.opg", "mdl.opl", ...
@@ -62,22 +62,20 @@ du.daq.vrenm = [  %string array; each element is "newname = oldnames", where new
 %% sld (stackld: load/process stack from tif / save to mat )
 
 du.sld.fbrm = 1; %crop flyback frames from each volume, if they exist, before saving to mat
-du.sld.trm = []; %how many samples to remove from [start, end] of stack, before saving to mat; empty to skip; similar to cropdata in rec6 (also applied in metrics2 without variable name cropdata), crop first 4 and last 2 imaging frames (stimulus features, and deprecated responses, have been extracted with this cropping in rec6)
 du.sld.iy = []; %y indices to keep and save to mat
 du.sld.ix = []; %x indices to keep and save to mat
 du.sld.ic = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
 du.sld.iz = []; %z indices to keep and save to mat
 du.sld.it = []; %t indices to keep and save to mat 
-du.sld.zerostack = 1; %subtract min to make min zero
 du.sld.clip = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
-du.sld.stackdtype = 'uint16';
+du.sld.dtype = 'uint16';
 du.sld.smlenpx = [0, 0, 0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
 du.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
 du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
-du.roi.s = struct('tg', []);
+du.roi.s = struct('vg', []);
 du.roi.rgname = ['none']; %default rgname name 'none' automatically gets full fov rg; user is not prompted to create one in this case
 
 %% mm (roidraw: mm = "morphological manual")
@@ -216,14 +214,14 @@ du.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 %% bmp (bmpmake: compute bump)
 
 % options for bump in bmpmake function
-% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mdl.tg.v1) and all matches from o.bmp.mdl.tg.v2
+% a von mises is fit to the instantaneous relationship between each roi timeseries (given by all matches from o.bmp.mdl.vg.v1) and all matches from o.bmp.mdl.vg.v2
 % the value of the independent variable at the max predicted response is the preferred heading for each roi
-% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mdl.tg.v1 as the magnitude, in computing pva
-% if the rgname in o.bmp.mdl.tg.v1 is in o.bmp.numangrs, and that rgname is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
+% if o.bmp.domaintypeis 'functional', these preferred headings are used as the angle, and o.bmp.mdl.vg.v1 as the magnitude, in computing pva
+% if the rgname in o.bmp.mdl.vg.v1 is in o.bmp.numangrs, and that rgname is followed by hyphen and number greater than zero, these preferred heading angles are resampled into that number, so that the rois evenly sample range 0-2pi (resampling changes angle and magnitude)
 % if o.bmp.domaintypeis 'morphological', angle is forced to be 0-2pi, with each roi evenly sampling that range
 
-du.bmp.indv = struct('tg', []);
-du.bmp.depv = struct('tg', []);
+du.bmp.indv = struct('vg', []);
+du.bmp.depv = struct('vg', []);
 du.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
 du.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
 du.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
@@ -238,8 +236,8 @@ du.bmp.omitnan = 1; %ignore nans in case there are any (e.g., making hybrid morp
 
 %% mdlmake (mdlmake: fit model, depv as function of indv)
  
-du.mdl.indv = struct('tg', []);
-du.mdl.depv = struct('tg', []);
+du.mdl.indv = struct('vg', []);
+du.mdl.depv = struct('vg', []);
 du.mdl.epochnum = 1;
 du.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 du.mdl.lensec = 0; %seconds, 0 is one sample
@@ -366,20 +364,20 @@ if any(structfun(@iscell, du_flat))
 end
 
 du_flat_cell = struct2cell(du_flat);
-tg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'tg']));
-fn_tg = fn_du_flat(tg_inds); %fieldnames with tg
-tmp_tg = du_flat_cell(tg_inds); 
-fn_invalid_tg = fn_tg(~endsWith(fn_tg, [delimflat 'tg']));
-if ~isempty(fn_invalid_tg)
-    error("tg fields in du must be empty structs, but at least one is not")
+vg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'vg']));
+fn_vg = fn_du_flat(vg_inds); %fieldnames with vg
+tmp_vg = du_flat_cell(vg_inds); 
+fn_invalid_vg = fn_vg(~endsWith(fn_vg, [delimflat 'vg']));
+if ~isempty(fn_invalid_vg)
+    error("vg fields in du must be empty structs, but at least one is not")
 end
-if any(~cellfun(@isempty, tmp_tg))
-    error("tg fields in du must be empty structs, but at least one is not")
+if any(~cellfun(@isempty, tmp_vg))
+    error("vg fields in du must be empty structs, but at least one is not")
 end
 
 depth = cell2mat(cellfun(@(x) numel(strsplit(x, delimflat)), fn_du_flat, UniformOutput=false));
 fn_invalid_depth = fn_du_flat(depth>2 | depth<2);
-fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'tg']));
+fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'vg']));
 if ~isempty(fn_invalid_depth)
     error("the following fields in du (unnested d) are invalid because they are not at depth of 3: " + newline + sprintf('%s\n', fn_invalid_depth{:}) + "within du (depth 1), there are mos (depth 2), and within each mos are options (depth 3); options in du cannot themselves be structs; mos can be within other mos in d (nested version of du) but only if their nesting is listed in mostree")
 end

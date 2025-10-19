@@ -50,5 +50,5 @@ clear ofill
 optin.bmp.domtype = 'test1';
 optin.bmp.mdl.epochnum = 'test2';
 optin.bmp.mdl.opg.MaxTime = 'test3';
-out = ofill(optin, 'bmp.mdl', mosc={'roi', 'fuk'});
+out = ofill(optin, mosc={'roi', 'fuk'});
 % outrec = ofill(optin, rec=1);

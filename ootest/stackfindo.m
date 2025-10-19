@@ -22,7 +22,6 @@ classdef stackfindo
                 opt.substr = []
                 opt.match = 'each'
             end
-            opt = glboropt(opt);
             pth = opt.pth;
             pthsib = opt.pthsib;
             pthpar = opt.pthpar;

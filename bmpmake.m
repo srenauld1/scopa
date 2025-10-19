@@ -1,7 +1,7 @@
 function bmp = bmpmake(opt, depv, indv, pthstack, opt2)
 
-%depv (roi,time), or empty if using opt to define depv via tsget 
-%indv (roi,time), or empty if using opt to define indv via tsget 
+%depv (roi,time), or empty if using opt to define depv via vget 
+%indv (roi,time), or empty if using opt to define indv via vget 
 
 arguments
     opt = []
@@ -12,7 +12,6 @@ arguments
     opt2.epochts = []
     opt2.doplt = []
 end
-opt2 = glboropt(opt2);
 srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
@@ -28,28 +27,28 @@ end
 
 %% set up indv/depv
 
-if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.tg), ~isempty(opt.depv.tg))
+if strcmp(opt.domtype, 'f') && ~isequal(isempty(indv), isempty(depv), ~isempty(opt.indv.vg), ~isempty(opt.depv.vg))
     error("if domtype is 'f', indv and depv must both be empty or nonempty, with opt.indv and opt.depv the inverse")
 end
 if strcmp(opt.domtype, 'm')
     % indv = []; 
     % opt.indv = []; 
-    if ~isequal(isempty(depv), ~isempty(opt.depv.tg))
+    if ~isequal(isempty(depv), ~isempty(opt.depv.vg))
         error("if domtype is 'm', depv must be empty or nonempty, with opt.depv the inverse; indv and opt.indv will be set to empty and ignored")
     end
 end
 
 if isempty(indv) && isempty(depv)
-    dotsget = 1;
+    dovget = 1;
 end
 
-clear tsget %clear persistent variables within tsget (just in case)
+clear vget %clear persistent variables within vget (just in case)
 its = 0;
 while true
     its = its+1;
 
-    if dotsget %if indv/depv are defined in the options struct, instead of passed in as arguments
-        [vdat, indv, depv] = tsget(its, opt.indv, opt.depv);
+    if dovget %if indv/depv are defined in the options struct, instead of passed in as arguments
+        [vdat, indv, depv] = vget(its, opt.indv, opt.depv);
         varid = vdat.varid;
         last = vdat.last;
         pthbmp = [vdat.pthc vdat.varid opt.optid '_bmp_.mat'];

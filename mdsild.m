@@ -5,7 +5,6 @@ arguments
     opt.pthpy = []
     opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
-opt = glboropt(opt);
 pthpy = opt.pthpy;
 doflyg = opt.doflyg;
 

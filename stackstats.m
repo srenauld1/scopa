@@ -9,7 +9,7 @@ arguments
     opt.pthsv_prefix = []
 end
 
-error("function stackstats is old and needs to be updated, but could be useful")
+error("function stackstats is very old and needs to be updated")
 
 mask = opt.mask;
 iz = opt.iz;
