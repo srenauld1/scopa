@@ -2,9 +2,22 @@ function [tsout, roimask] = roits(inp, roimask, opt)
 
 %{
 
-compute roi timeseries, with various normalization options, given stack and roimasks
-tsout is 2-element cell for 2-channel data (even if only one channel has rois, ie if roimask is cell with one empty element), each cell is size(roi,time); 
-for single-channel data, tsout is not cell, it is just matrix size (roi,time)
+apply input 'roimask' to input 'inp' to extract/output roi timeseries 'tsout'
+input inp can be stack or roi timeseries
+if inp is stack: 
+    input 'roimask' defines how pixels are grouped into rois
+    for each sample in time, roits averages pixel values within each superroi
+    inp must be numeric array with size (yxztc); actually, first 3 dimensions yxz can be in any order, but t and c must be 4th and 5th dimensions, respectively
+if inp is roi timeseries: 
+    input 'roimask' defines how rois are grouped into superrois
+    for each sample in time, roits averages roi values within each superroi
+    if 1-channel data, inp must be numeric array with size (roi,time), or scalar cell with element size (roi,time) 
+    if 2-channel data, length-2 cell with element size (roi,time) 
+for 1-channel data
+    tsout is matrix with size (roi,time)
+for 2-channel data
+    tsout is length-2 cell with element size (roi,time) 
+    this is the case even if only one channel has rois (ie if roimask is cell with one empty element)
 
 %}
 
@@ -15,13 +28,19 @@ arguments
 end
 memthr = opt.memthr;
 
+if isnumeric(inp) && ndims(inp)==2 %if inp is 2d, assume it's roi timeseries for roi clustering
+    inp = {inp}; %and put in cell
+end
+
+singleton_z = 0;
 if isnumeric(inp) % if inp is numeric, it's the stack (rather than caiman roi timeseries)
-    if ndims(inp)==3
-        inp = reshape(inp, size(inp,1), size(inp,2), 1, size(inp,3)); %put t in 4th dim if stack is 3d yxt
-    elseif ndims(inp)<3
-        error("stack input must be at least 3d")
-    end
     stack_input = 1;
+    if ndims(inp)==3
+        singleton_z = 1;
+        inp = reshape(inp, size(inp,1), size(inp,2), 1, size(inp,3)); %put t in 4th dim if stack is 3d yxt
+    elseif ndims(inp)<3 || ndims(inp)>5
+        error("stack input must be 3-, 4-, or 5-dimensional")
+    end
     szspace = size(inp, [1,2,3]);
     numchan = size(inp,5);
     if numchan==1
@@ -30,17 +49,17 @@ if isnumeric(inp) % if inp is numeric, it's the stack (rather than caiman roi ti
         inp = reshape(inp, [], size(inp, ndims(inp)-1), numchan); %reshape to (pixel,time)
     end
 elseif iscell(inp) %if it's a cell, it's caiman roi timeseries, rather than stack
+    stack_input = 0;
     if ndims(inp)>3
         error("respcm input must be <=3d")
     end
-    stack_input = 0;
-    szspace = size(inp, 1);
-    numchan = size(inp,3);
+    szspace = cellfun(@(x) size(x,1), inp);
+    numchan = numel(inp);
 else
-    error("inp must be numeric or cell")
+    error("inp must be numeric (stack) or cell (roi timeseries)")
 end
 
-if iscell(roimask) %awkward to do this before iscell(roimask) below, but we need chanuse up here
+if iscell(roimask)
     chanuse = ~cellfun(@isempty, roimask);
 else
     if isempty(roimask)
@@ -52,14 +71,14 @@ end
 
 for k = 1:numchan
     if ~chanuse(k)
-        roimask{k} = ones(szspace, 'logical');
+        roimask{k} = ones(szspace(k), 'logical');
     end
 end
 
 
 cellout = 0;
 if iscell(roimask)
-    if ~isequal(chanuse,0) %don't output cell if roimask was single-channel and empty
+    if ~isequal(chanuse,0) %don't output cell if roimask is single-channel and empty
         cellout = 1;
     end
     if numel(roimask)>1 && numchan==1
@@ -71,6 +90,17 @@ else
     end
     roimask = {roimask};
 end
+
+if singleton_z
+    if ndims(roimask)==4 && size(roimask,3)>1
+        error("if inp is stack with singleton z, roimask must also have singleton z")
+    else
+        if 
+        roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
+    end
+end
+
+roiwt = logical(reshape(permute(roimask, [4 1 2 3]), size(roimask,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
 
 
 roiwt = [];
@@ -94,10 +124,10 @@ if isequal(unique(roiwt), 0)
 end
 
 if ndims(inp)~=2 && ndims(inp)~=3
-    error("here, inp must be 2d (if 1 channel) or 3d (if 2-channel)")
+    error("at this point, inp must be 2d (if 1 channel) or 3d (if 2-channel)")
 end
 
-goodinds = sum(inp, 2)>0; %so they don't affect the mean, get rid of bad rois here (goodinds are not all zeros and not any nans along 2nd dimension; this expression is a fast way of checking for that); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
+goodinds = sum(inp, 2)>0; % separate good and bad inds (pixels or rois) here; bad inds have nans, or are all zeros; sum(inp, 2)>0 checks for both conditions (quickly); do this before clustering so extraction & normalization param mapping is unaffected; if inp is stack, there should be no bad inds (no bad pixels)
 if ~isempty(goodinds) && ~all(goodinds(:)) && stack_input
     error("for stack input, all pixels should be goodinds")
 end
@@ -108,7 +138,7 @@ end
 tsout = cell(1, numchan);
 for k = 1:numchan
     tsout{k} = [];
-    if any(goodinds(:,:,k)) %some caiman runs (with bad params) will output all nans
+    if any(goodinds(:,:,k)) %some caiman param sets will output roi timeseries with all nans
         tsout{k} = zeros(numel(wtsz{k}), size(inp,2), 'single'); %make it cell since each channel can have different number rois
         varsz = whos('inp');
         numseg = ceil(varsz.bytes/memthr);

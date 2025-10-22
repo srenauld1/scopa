@@ -1163,5 +1163,41 @@
     "slopelensec": 0.4,
     "slopeord": 2,
     "smlensec": 0
+  },
+  "z5": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "nrm": {
+            "post": "f"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "indv": {
+      "vg": {
+        "daq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "slopelensec": 0.4,
+    "slopeord": 2,
+    "smlensec": 0
   }
 }

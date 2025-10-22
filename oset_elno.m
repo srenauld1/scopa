@@ -13,7 +13,7 @@ bmpindv.vg.vnm = 'vh';
 o.bmp.indv = bmpindv;
 
 bmpdepv.vg.roi.rgname = 'el';
-bmpdepv.vg.roi.mm.roiname = 'el3';
+bmpdepv.vg.roi.roiname = 'el3';
 bmpdepv.vg.roi.domm = 1;
 bmpdepv.vg.vnm = 'ts';
 bmpdepv.vg.group = '1';
@@ -41,13 +41,13 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'el')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
-        o.roi.mm.roiname = 'el3';
+        o.roi.roiname = 'el3';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))
         o.roi.doma = 0; %do automated morph rois
-        o.roi.mm.roiname = {'left2', 'right2'};
+        o.roi.roiname = {'left2', 'right2'};
     end
 
     o = ofill(o, 'roi', rgname{m});

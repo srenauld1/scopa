@@ -102,37 +102,28 @@ if isempty(t)
 end
 s = [];
 
+if ndims(stack)==3
+    stack = reshape(stack, size(stack,1), size(stack,2), 1, size(stack,3)); %put t in 4th dim if stack is 3d (assumed to be yxt)
+end
 if ndims(stack)<4 || ndims(stack)>5
-    error("stack input to roidraw must have 4-5 dimensions")
+    error("stack input to roidraw must have 4-5 dimensions (yxztc)")
 end
 
 numchan = size(stack,5);
 
 rg = [];
 mm = [];
-roitscm = [];
+tscm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
-    if isempty(opt_mm)
-        roiname = 'none';
-    else
-        roiname = opt_mm.roiname;
-        if iscell(roiname)
-            if isscalar(roiname)
-                roiname = cell2mat(roiname);
-            else
-                error("roiname must be scalar (one name)")
-            end
-        end
-    end
 else
     maskin = 1;
     if ~iscell(roimask)
         roimask = {roimask};  %needs to be cell in case 2-channel with different number rois
     end
     if ~isequal(numel(roimask), numchan)
-        error("roimask must be cell, length numchan")
+        error("number of channels in input 's.stack' and name-value argument 'roimask' do not match")
     end
 end
 
@@ -196,7 +187,7 @@ catch ME
 
     if ~isempty(opt_cm) && ~maskin
         prs = struct2pairs(opt_cm);
-        [roitscm, roimask] = roifauto(stack, prs{:}, rgname=rgname, roiname=roiname);
+        [tscm, roimask] = roifauto(stack, prs{:}, rgname=rgname, roiname=roiname);
     end
 
 
@@ -210,10 +201,10 @@ catch ME
 
     %%%% COMPUTE ROI TIMESERIES AND NORMALIZE %%%%
 
-    if isempty(roitscm)
+    if isempty(tscm)
         [ts, roimask] = roits(stack, roimask);
     else
-        [ts, roimask] = roits(roitscm, roimask);
+        [ts, roimask] = roits(tscm, roimask);
     end
 
 

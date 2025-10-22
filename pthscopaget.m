@@ -1,11 +1,13 @@
-function pthscopa = pthscopaget()
+function pth = pthscopaget()
 
-%get path to repository 'scopa'
+%get path to repository 'scopa' as path to folder running this file
 
-stk = dbstack('-completenames');
-pthenv = fileparts(stk(1).file); %location of this file
-spl = strsplit(pthenv, filesep);
-tmpk = find(strcmp(spl, 'scopa'), 1, 'last'); %last appearance of folder scopa (folder holding this file), in case you put scopa in folder(s) named scopa
-pthscopa = [strjoin(spl(1:tmpk), filesep) filesep];
+cs = dbstack('-completenames');
+pth = fileparts(cs(1).file);
+if endsWith(pth, [filesep 'scopa'])
+    pth = pthfldformat(pth);
+else
+    error("pthscopaget is not in a folder named scopa")
+end
 
 end

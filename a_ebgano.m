@@ -91,13 +91,13 @@ if ~isempty(stackrot) && ( ~isequal(numel(stackrot),3) || ~isvector(stackrot) ||
     error("stackrot must be empty or ordinary length-3 vector")
 end
 
-inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.roiname', 'left'}, lev=1);
-inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.roiname', 'right'}, lev=1);
-igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.roiname', 'dorsal'}, lev=1);
-iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'mm.roiname', 'ventral'}, lev=1);
-igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.roiname', 'dorsal'}, lev=1);
-igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'mm.roiname', 'ventral'}, lev=1);
-ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'mm.roiname', 'eb4545'}, lev=1);
+inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
+igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'dorsal'}, lev=1);
+iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'ventral'}, lev=1);
+igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'dorsal'}, lev=1);
+igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'ventral'}, lev=1);
+ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'roiname', 'eb4545'}, lev=1);
 idaq = fieldmatch(daq, lev=1);
 ibmp = fieldmatch(bmp, lev=1);
 

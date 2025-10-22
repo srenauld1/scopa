@@ -103,7 +103,7 @@ end
 s = [];
 
 if ndims(stack)<4 || ndims(stack)>5
-    error("stack input to roidraw must have 4-5 dimensions")
+    error("stack input to roidraw must have 4-5 dimensions (yxztc)")
 end
 
 numchan = size(stack,5);
@@ -114,25 +114,13 @@ roitscm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
-    if isempty(opt_mm)
-        roiname = 'none';
-    else
-        roiname = opt_mm.roiname;
-        if iscell(roiname)
-            if isscalar(roiname)
-                roiname = cell2mat(roiname);
-            else
-                error("roiname must be scalar (one name)")
-            end
-        end
-    end
 else
     maskin = 1;
     if ~iscell(roimask)
         roimask = {roimask};  %needs to be cell in case 2-channel with different number rois
     end
     if ~isequal(numel(roimask), numchan)
-        error("roimask must be cell, length numchan")
+        error("name-value argument roimask is a cell ")
     end
 end
 

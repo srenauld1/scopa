@@ -15,7 +15,7 @@ o.daq.slopeord_supp = 2;
 o.daq.voltminhd = -pi;  %heading angle (radians) assigned to voltmin and voltmax
 
 o.roi.domm = 1;
-o.roi.mm.roiname = {'none'};
+o.roi.roiname = {'none'};
 o.roi.nrm.post = {'dff008000'};
 
 o = ofill(o);

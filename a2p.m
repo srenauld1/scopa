@@ -52,7 +52,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     end
 
     o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
-    glb(1, pthsvdir=s(m).pth); %update global that refers to stack location, a default location for saving some less important files (like figures)
+    glb(1, pthsvdir=o.id.pthstackdir); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
     %%%% DAQ %%%%

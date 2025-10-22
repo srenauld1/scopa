@@ -5,9 +5,9 @@ cmap = lines(8);
 
 %% 
 
-ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'mm.roiname', 'eb'}, lev=1);
-inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.roiname', 'left'}, lev=1);
-inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.roiname', 'right'}, lev=1);
+ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'roiname', 'eb'}, lev=1);
+inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
 
 eb_or = roi.(ieb).dat(1).ts;
 nol_or = roi.(inl).dat(1).ts;
@@ -45,9 +45,9 @@ roimask_inr_or = {roi.(inr).dat(1).mask, roi.(inr).dat(2).mask};
 roiraw_nor = roimake(o, s=sraw, roimask=roimask_inr_or);
 
 
-ieb_raw = fieldmatch(roiraw, {'rg.rgname', 'eb'}, {'mm.roiname', 'eb'}, lev=1);
-inl_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'mm.roiname', 'left'}, lev=1);
-inr_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'mm.roiname', 'right'}, lev=1);
+ieb_raw = fieldmatch(roiraw, {'rg.rgname', 'eb'}, {'roiname', 'eb'}, lev=1);
+inl_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+inr_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
 
 eb_raw = roiraw_eb.dat(1).ts;
 nol_raw = roiraw_nol.dat(1).ts;

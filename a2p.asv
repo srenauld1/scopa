@@ -45,25 +45,23 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% STACK %%%%
 
     if ~isempty(o.sld)
-        o.sld = rmfield(o.sld, 'optid'); %for now, temporarily, we hack using default optid for stacks (by removing derived optid) because id control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
         for m = 1:numel(o.sld)
-            op = struct2pairs(o.sld(m));
-            s = stackld(o.id.pthstack, op{:}, doplt=0); %load/process stack (metadata also gets loaded in stackld)
+            prs = struct2pairs(o.sld(m));
+            s(m) = stackld(o.id.pthstack, prs{:}, doplt=0); %load/process stack (metadata also gets loaded in stackld)
         end
-        o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case pthstack was tif going in to stackld
-        glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid); %update some globals that refer to stack location for this element of o
-        glb(1, md=s.md, srate=s.md.volrate, t=linspace(0,s.md.numvol/s.md.volrate-1/s.md.volrate,s.md.numvol), epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
     end
+
+    o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
+    glb(1, pthsvdir=o.id.pthstackdir); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
     %%%% DAQ %%%%
 
     if ~isempty(o.daq)
         for m = 1:numel(o.daq)
-            op = struct2pairs(o.daq(m));
-            daq(m) = daqld(o.id.pthdaq, op{:}, doplt=0); %load/process daq (also fictrac video)
+            prs = struct2pairs(o.daq(m));
+            daq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process daq (also fictrac video)
         end
-        glb(1, t=daq(m).t, epochts=daq(m).epochts); %set global t using daq, overwriting metadata t
     end
 
 
@@ -71,8 +69,8 @@ for k = 1:numel(oa) % loop over recordings found in oset
 
     if ~isempty(o.roi)
         for m = 1:numel(o.roi)
-            op = struct2pairs(o.roi(m));
-            roi(m) = roimake(s, op{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            prs = struct2pairs(o.roi(m));
+            roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -80,8 +78,9 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% BUMP %%%%
 
     if ~isempty(o.bmp)
-        for m = transpose(fieldnames(o.bmp))
-            bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %extract head direction bump
+        for m = 1:numel(o.bmp)
+            prs = struct2pairs(o.bmp(m));
+            bmp(m) = bmpmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -89,8 +88,9 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% FLYMAX %%%%
 
     if ~isempty(o.fmf)
-        for m = transpose(fieldnames(o.fmf))
-            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
+        for m = 1:numel(o.fmf)
+            prs = struct2pairs(o.fmf(m));
+            fmf(m) = flymaxfe('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -98,8 +98,9 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% MODELS %%%%
 
     if ~isempty(o.mdl)
-        for m = transpose(fieldnames(o.mdl))
-            mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=0);
+        for m = 1:numel(o.mdl)
+            prs = struct2pairs(o.mdl(m));
+            mdl(m) = mdlmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 

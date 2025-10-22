@@ -15,7 +15,7 @@ bmpindv.vg.vnm = 'vh';
 o.bmp.indv = bmpindv;
 
 bmpdepv.vg.roi.rgname = 'eb';
-bmpdepv.vg.roi.mm.roiname = 'eb';
+bmpdepv.vg.roi.roiname = 'eb';
 % bmpdepv.vg.roi.ma.maskseg = 'torus';
 % bmpdepv.vg.roi.nrm.post = 'f';
 bmpdepv.vg.vnm = 'ts';
@@ -37,16 +37,16 @@ for k = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     % o.roi.nrm.degdtr = 3;
 
     if strcmp(rgname{k}, 'eb')
-        o.roi.mm.roiname = 'eb';
+        o.roi.roiname = 'eb';
         o.roi.mm.chanstr = '2cp';
         % o.roi.ma.numroi = 32;
         % o.roi.ma.maskmake = 'nonzero';
         % o.roi.ma.maskseg = 'torus';
         % o.roi.ma.roirad = 1.5;
     elseif any(strcmp(rgname{k}, {'gal', 'gar'}))
-        o.roi.mm.roiname = {'dorsal', 'ventral'};
+        o.roi.roiname = {'dorsal', 'ventral'};
     elseif any(strcmp(rgname{k}, 'no'))
-        o.roi.mm.roiname = {'left', 'right'};
+        o.roi.roiname = {'left', 'right'};
     end
 
     o = ofill(o, mosc={'roi', rgname{k}});

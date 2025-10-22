@@ -1,9 +1,9 @@
-function [out, fld, idx] = structind(inp)
+function [out, field, idx] = structind(inp)
 
 %{
 
 convert char vector or string into fields and indices for getfield or setfield (out); 
-separate field and indices also output as fld and idx   
+separate field and indices also output as field and idx   
 
 %}
 
@@ -11,7 +11,7 @@ spl = convertStringsToChars(strsplit(inp, '.'));
 if ~iscell(spl)
     spl = {spl};
 end
-fld = cell(1,numel(spl));
+field = cell(1,numel(spl));
 idx = cell(1,numel(spl));
 for q = 1:numel(spl)
     if contains(spl{q}, '(')
@@ -29,10 +29,10 @@ for q = 1:numel(spl)
         fldtmp = spl{q};
         idxtmp = {':'};
     end
-    fld{q} = fldtmp;
+    field{q} = fldtmp;
     idx{q} = idxtmp;
 end
-out = vec(cat(1, fld, idx))';
+out = vec(cat(1, field, idx))';
 if isequal(out{end}, {':'})
     out(end) = [];
 end

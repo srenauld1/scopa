@@ -8,7 +8,7 @@ o.daq.slopeord = 2; % order of polynomial used to fit local slope
 o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2;
 
-o.roi.mm.roiname = {'ves041'};
+o.roi.roiname = {'ves041'};
 o.roi.nrm.nrmstr = {'dff008000'};
 
 o = ofill(o, mosfinal=do); % mosfinal final ofill call to strip o to only 'mos' listed in input 'do'
