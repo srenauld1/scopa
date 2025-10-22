@@ -7,8 +7,7 @@ arguments
     pthstack
 end
 
-id = idmake(pthstack); %just in case id info gets used below
-pthstackdir = id.pthstackdir;
+pthstackdir = idmake(pthstack, 'pthstackdir'); %just in case id info gets used below
 
 %% pattern metadata
 

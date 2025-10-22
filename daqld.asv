@@ -58,7 +58,7 @@ arguments
     opt2.pth_daqrs = [] %can optionally pass in path to resampled daq file (if you don't it will be derived from pthstack/pthrec)
     opt2.pth_ftvid = [] %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py, if you don't it will be derived from pthstack/pthrec)
     opt2.pth_ftvidrs = [] %can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthstack/pthrec)
-    opt2.doplt = []
+    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
 end
 pthstack = opt2.pthstack;
 pthdaq = opt2.pthdaq;

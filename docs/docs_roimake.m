@@ -1,7 +1,7 @@
 %{
 
 region (previously rg) are unique to recording
-mmname are unique to recording 
+roiname are unique to recording 
 
 optid 
 

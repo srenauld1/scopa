@@ -14,7 +14,7 @@ arguments
     opt.channorm = 0
     opt.t = [] % time for timeseries
     opt.pthpre = [] % save path prefix for figures; if empty, one will be generated
-    opt.doplt = 0 %whether to do plots
+    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 %whether to do plots
 end
 roiwt = opt.roiwt;
 normpre = opt.normpre;

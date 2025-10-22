@@ -9,7 +9,7 @@ o.mn.do = ["sld", "roi", "fmf", "mdl"];
 
 
 mdlindv.vg.roi.rgname = 'tm';
-mdlindv.vg.roi.mm.mmname = 'eleven';
+mdlindv.vg.roi.mm.roiname = 'eleven';
 mdlindv.vg.roi.nrm.post = 'dff015020';
 mdlindv.vg.vnm = 'ts';
 mdlindv.vg.group = '1';
@@ -17,7 +17,7 @@ mdlindv.vg.group = '1';
 o.mdl.indv = mdlindv;
 
 mdldepv.vg.roi.rgname = 't5';
-mdldepv.vg.roi.mm.mmname = 'none';
+mdldepv.vg.roi.mm.roiname = 'none';
 mdldepv.vg.roi.nrm.post = 'dff015020';
 mdldepv.vg.vnm = 'ts';
 mdldepv.vg.group = '3';
@@ -37,11 +37,11 @@ for m = 1:numel(rgname)
     o.roi.rgname = rgname{m};
     o.roi.domm = 1;
     if strcmp(rgname{m}, 'tm')
-        o.roi.mm.mmname = 'eleven2';
+        o.roi.mm.roiname = 'eleven2';
         o.roi.doma = 0;
         o.roi.ma.numroi = 1024;
     elseif strcmp(rgname{m}, 't5')
-        o.roi.mm.mmname = 'newrois';
+        o.roi.mm.roiname = 'newrois';
         o.roi.doma = 0;
     end
     o.roi.nrm.post = 'dff015020';

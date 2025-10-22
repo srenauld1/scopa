@@ -15,7 +15,7 @@ arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.pthpar = []
-    opt.usegit {mustBeMember(opt.usegit,[0,1,[]])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
+    opt.usegit {mustBeMember(opt.usegit,[0,1])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
     opt.obin_ided = []
 end
 arguments (Output)
@@ -30,11 +30,9 @@ pthpar = opt.pthpar;
 usegit = opt.usegit;
 obin_ided = opt.obin_ided;
 
-if isempty(usegit)
-    usegit = glb('usegit');
-    if isempty(usegit)
-        error("must set name-value argument 'usegit', or glb('usegit')")
-    end
+usegit = optorglb(usegit, 0);
+if ~ismember(usegit, [0,1])
+    error("usegit must be 0 or 1")
 end
 
 scopausername = userdatfile('scopausername');

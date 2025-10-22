@@ -65,13 +65,6 @@ catch
         end
         numspec = numel(s);
     end
-    if isempty(pthstacks)
-        pthstacks = {glb('pthstack')};
-        if isempty(pthstacks)
-            error("if stacks and stackids are empty, or if no stacks were found with stackids, must pass in name-value argument 'pthstacks' or set glb('pthstack')")
-        end
-        numspec = 1;
-    end
 
     pthstacks = unique(pthstacks, 'stable');
     numpth = numel(pthstacks);

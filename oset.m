@@ -32,8 +32,8 @@ elseif istextall(spec)
     spec = spectmp;
 end
 
-op = struct2pairs(spec);
-pthstacks = stackfind(op{:}, err=1); % find stacks using spec; error if none found (err=1)
+prs = struct2pairs(spec);
+pthstacks = stackfind(prs{:}, err=1); % find stacks using spec; error if none found (err=1)
 idtmp = idmake(pthstacks);
 
 

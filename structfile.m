@@ -67,6 +67,7 @@ if s=nonempty and nm=[] and s is not in file, s is written to file with default 
 for clarity, all arguments except file path (pth) are name-value arguments 
 
 note: struct sorting does not affect test of equality
+note: empty structs are not preserved by structfile; that is, struct([]) becomes [] after read/write with jsonencode/jsondecode 
 
 TODO: add name-value argument 'renm' for renaming structs in file (modeled after renm argument in daqld)
 
@@ -79,7 +80,7 @@ arguments
     opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
     opt.update = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
     opt.getonly = 0 % read from file only, skip writing
-    opt.usegit {mustBeMember(opt.usegit,[0,1,[]])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
+    opt.usegit {mustBeMember(opt.usegit,[0,1])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes); default here in arguments block is empty because we use optorglb below
     opt.dosort = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
     opt.cellout = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
 end
@@ -94,11 +95,9 @@ cellout = opt.cellout;
 
 %%%%% CHECK AND SET SOME INPUTS %%%%%
 
-if isempty(usegit)
-    usegit = glb('usegit');
-    if isempty(usegit)
-        error("must set name-value argument 'usegit', or glb('usegit')")
-    end
+usegit = optorglb(usegit, 0);
+if ~ismember(usegit, [0,1])
+    error("usegit must be 0 or 1")
 end
 
 wcpat = '*'; % wildcard character; when searching for structs in file matching s, fields with value wcpat are skipped

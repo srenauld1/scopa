@@ -44,7 +44,7 @@ arguments
     opt2.normopt = []
     opt2.ftvid = []
     opt2.stimvid = []
-    opt2.doplt = []
+    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
 end
 stack = opt2.stack;
 daq = opt2.daq;

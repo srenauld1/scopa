@@ -15,7 +15,7 @@ o.daq.slopeord_supp = 2;
 o.daq.voltminhd = -pi;  %heading angle (radians) assigned to voltmin and voltmax
 
 o.roi.domm = 1;
-o.roi.mm.mmname = {'none'};
+o.roi.mm.roiname = {'none'};
 o.roi.nrm.post = {'dff008000'};
 
 o = ofill(o);
@@ -29,8 +29,8 @@ for k = 1:numel(pthtmp)
 
     s = stackld(pthtmp{k});
     
-    id = idmake(s.pth);
-    glb(1, pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
+    pthstackdir = idmake(s.pth, 'pthstackdir');
+    glb(1, pthstackdir=pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
     daq(k) = daqld(o.daq, pthstack=s.pth);
 

@@ -1,12 +1,12 @@
 
 function dv = tsdv(vtype, tsin, slopelensec, slopeord, sper)
 
-% need to generalize this function for nd
+% need to generalize this function for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp
 
 arguments
     vtype {mustBeText} %normal, radians, degrees, or catergorical; tsin must be in radians if circular 
     tsin %input variable to be differentiated; must be in radians if vtype is circular
-    slopelensec %slope length in seconds; rounded to nearest sample
+    slopelensec %length of window (in seconds) used to fit sliding window slope (to compute bump speed); rounded to nearest sample
     slopeord %order for polynomial fit to determine local slope 
     sper %sample period
 end

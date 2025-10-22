@@ -2,8 +2,27 @@
 
 %{
 
+put any argument dependent option changing before odf=1 so arguments get changed before oid gets called in ofill 
 
+tsdv need to generalize tsdv for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp
+
+deal with nonscalar daq output within daqld (when useinds are multiple) while multiple optid also make daq nonscalar (outside daqld)
+consider renaming roi child mos 
+    rmm
+    rma
+    rfa
+    rnm
+    rqc
+(also their outputs??)
+
+put flymaxfe into stimftmake (stim feature make)
+consider putting stimftmake into daqld , as child module, and having derivatives/velocities handled by that child module 
+consider putting bmpmake into stackftmake (stack feature make) something like that
+so at the high level, daqld becomes load all stim stuff (ie not neural data)
+and bmpmake gets put into stack feature extrator, extracting all features from neural data (except rois, or rois also??)
+rename ts vec in many cases (like tsrs --> vecrs)
 consider renaming input 'opt' 'mos' in modules  
+argument validation functions applied in odf, or somewhere in oset before oid
 
 write function to delete opt set from opt file and renumber everything? or allow nonsequential nm in structfile??
 need to use better system than the glb('maketime*') checks
@@ -61,7 +80,7 @@ nonfunctional obin in ored/odist etc need to be able to be nested and returned t
 set up default roimake, where opt can be empty) - mean of fov
 need to make nan for cue in dark now that epoch is loaded on daq
 now if multiple recind are running in pl.sh, and one errors, the whole sequence will stop (i think only at the do copyfiles part though, so maybe if docopyfiles is 0 the recind without error will continue??) is this good or bad?
-should mmname none be reserved for skipping drawing?
+should roiname none be reserved for skipping drawing?
 right now opts thsat get written to opt file are only functional, and if entire obin are non-functional (ignored) they are written as empty struct which is {} in txt file; is this best? should all ignored options get written as empty or nan or something like that? that seems like a lot of clutter
 ofill argument unpack should unpack to the specified nest if obin is nested, currently it just unnpacks the highest level, or if that might cause issue somewhere, make an unpack nest option
 TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING) output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames

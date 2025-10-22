@@ -1,4 +1,4 @@
-function [tsout, roimask] = roits(tsin, roimask, opt)
+function [tsout, roimask] = roits(inp, roimask, opt)
 
 %{
 
@@ -9,35 +9,35 @@ for single-channel data, tsout is not cell, it is just matrix size (roi,time)
 %}
 
 arguments
-    tsin %stack (must be yxztc), or roi timeseries (cell, one for each channel, each cell size roi,t), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
+    inp %stack (must be yxztc), or roi timeseries (cell, one for each channel, each cell size roi,t), (if previously extracted roi timeseries, sent here to be further normalized and/or clustered according to roiwt)
     roimask = []
-    opt.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
+    opt.memthr = 1e9 %memory threshold (bytes); input inp greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
 end
 memthr = opt.memthr;
 
-if isnumeric(tsin) % if tsin is numeric, it's the stack (rather than caiman roi timeseries)
-    if ndims(tsin)==3
-        tsin = reshape(tsin, size(tsin,1), size(tsin,2), 1, size(tsin,3)); %put t in 4th dim if stack is 3d yxt
-    elseif ndims(tsin)<3
+if isnumeric(inp) % if inp is numeric, it's the stack (rather than caiman roi timeseries)
+    if ndims(inp)==3
+        inp = reshape(inp, size(inp,1), size(inp,2), 1, size(inp,3)); %put t in 4th dim if stack is 3d yxt
+    elseif ndims(inp)<3
         error("stack input must be at least 3d")
     end
     stack_input = 1;
-    szspace = size(tsin, [1,2,3]);
-    numchan = size(tsin,5);
+    szspace = size(inp, [1,2,3]);
+    numchan = size(inp,5);
     if numchan==1
-        tsin = reshape(tsin, [], size(tsin, ndims(tsin))); %reshape to (pixel,time)
+        inp = reshape(inp, [], size(inp, ndims(inp))); %reshape to (pixel,time)
     elseif numchan==2
-        tsin = reshape(tsin, [], size(tsin, ndims(tsin)-1), numchan); %reshape to (pixel,time)
+        inp = reshape(inp, [], size(inp, ndims(inp)-1), numchan); %reshape to (pixel,time)
     end
-elseif iscell(tsin) %if it's a cell, it's caiman roi timeseries, rather than stack
-    if ndims(tsin)>3
+elseif iscell(inp) %if it's a cell, it's caiman roi timeseries, rather than stack
+    if ndims(inp)>3
         error("respcm input must be <=3d")
     end
     stack_input = 0;
-    szspace = size(tsin, 1);
-    numchan = size(tsin,3);
+    szspace = size(inp, 1);
+    numchan = size(inp,3);
 else
-    error("tsin must be numeric or cell")
+    error("inp must be numeric or cell")
 end
 
 if iscell(roimask) %awkward to do this before iscell(roimask) below, but we need chanuse up here
@@ -93,11 +93,11 @@ if isequal(unique(roiwt), 0)
     error("roiwt contains no pixel or subroi indices for any roi")
 end
 
-if ndims(tsin)~=2 && ndims(tsin)~=3
-    error("here, tsin must be 2d (if 1 channel) or 3d (if 2-channel)")
+if ndims(inp)~=2 && ndims(inp)~=3
+    error("here, inp must be 2d (if 1 channel) or 3d (if 2-channel)")
 end
 
-goodinds = sum(tsin, 2)>0; %so they don't affect the mean, get rid of bad rois here (goodinds are not all zeros and not any nans along 2nd dimension; this expression is a fast way of checking for that); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
+goodinds = sum(inp, 2)>0; %so they don't affect the mean, get rid of bad rois here (goodinds are not all zeros and not any nans along 2nd dimension; this expression is a fast way of checking for that); do before clustering so extraction & normalization param mapping is unaffected, for raw pixels this should do nothing
 if ~isempty(goodinds) && ~all(goodinds(:)) && stack_input
     error("for stack input, all pixels should be goodinds")
 end
@@ -109,25 +109,25 @@ tsout = cell(1, numchan);
 for k = 1:numchan
     tsout{k} = [];
     if any(goodinds(:,:,k)) %some caiman runs (with bad params) will output all nans
-        tsout{k} = zeros(numel(wtsz{k}), size(tsin,2), 'single'); %make it cell since each channel can have different number rois
-        varsz = whos('tsin');
+        tsout{k} = zeros(numel(wtsz{k}), size(inp,2), 'single'); %make it cell since each channel can have different number rois
+        varsz = whos('inp');
         numseg = ceil(varsz.bytes/memthr);
-        if numseg>1 %if tsin is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since tsout, even though it is also single precision, is generally much smaller than tsin
-            seglen = ceil(size(tsin,2)/numseg);
+        if numseg>1 %if inp is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since tsout, even though it is also single precision, is generally much smaller than inp
+            seglen = ceil(size(inp,2)/numseg);
             for w = 1:numseg
                 idx = [1:seglen]+seglen*(w-1);
-                idx(idx>size(tsin,2)) = [];
+                idx(idx>size(inp,2)) = [];
                 if ~isempty(goodinds) && ~all(goodinds(:,:,k))
-                    tsout{k}(:,idx) = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),idx,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
+                    tsout{k}(:,idx) = roiwt(wtsz{k}, goodinds(:,:,k)) * single(inp(goodinds(:,:,k),idx,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
                 else
-                    tsout{k}(:,idx) = roiwt(wtsz{k}, :) * single(tsin(:,idx,k)) ./ sum(roiwt(wtsz{k}, :),2); %summed fluorescence in each roi, normalized by total intensity
+                    tsout{k}(:,idx) = roiwt(wtsz{k}, :) * single(inp(:,idx,k)) ./ sum(roiwt(wtsz{k}, :),2); %summed fluorescence in each roi, normalized by total intensity
                 end
             end
         else
             if ~isempty(goodinds) && ~all(goodinds(:,:,k))
-                tsout{k} = roiwt(wtsz{k}, goodinds(:,:,k)) * single(tsin(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
+                tsout{k} = roiwt(wtsz{k}, goodinds(:,:,k)) * single(inp(goodinds(:,:,k),:,k)) ./ sum(roiwt(wtsz{k}, goodinds(:,:,k)),2); %summed fluorescence in each roi, normalized by total intensity
             else
-                tsout{k} = roiwt(wtsz{k},:) * single(tsin(:,:,k)) ./ sum(roiwt(wtsz{k},:),2); %summed fluorescence in each roi, normalized by total intensity
+                tsout{k} = roiwt(wtsz{k},:) * single(inp(:,:,k)) ./ sum(roiwt(wtsz{k},:),2); %summed fluorescence in each roi, normalized by total intensity
             end
         end
 

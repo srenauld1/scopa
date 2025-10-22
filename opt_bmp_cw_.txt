@@ -1058,7 +1058,7 @@
             "maskseg": "torus"
           },
           "mm": {
-            "mmname": "eb"
+            "roiname": "eb"
           },
           "nrm": {
             "post": "f"
@@ -1096,7 +1096,7 @@
             "maskseg": "torus"
           },
           "mm": {
-            "mmname": "eb"
+            "roiname": "eb"
           },
           "nrm": {
             "post": "f"
@@ -1135,7 +1135,7 @@
             "maskseg": "torus"
           },
           "mm": {
-            "mmname": "eb"
+            "roiname": "eb"
           },
           "nrm": {
             "post": "f"

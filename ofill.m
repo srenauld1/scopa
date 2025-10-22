@@ -37,8 +37,8 @@ above/below/beside: relations among fields in options struct
 mos: "module options struct" struct holding options for modules or submodules; mos can refer to the struct and the name of the struct
 submos: mos when it appears below another mos 
 supermos: mos when it appears above another mos
-polymos: supermos and one or more submos
-childmos: mos that only ever appear as submos in polymos in d (eg, mos 'cm' only ever appears below mos 'roi', which in mostree is polymos 'roi.cm')
+polymos: supermos with one or more submos (separated by period, supermos.submos, eg, roi.ma)
+childmos: mos that only ever appears as a submos in polymos in d (eg, mos 'cm' only ever appears below mos 'roi', which in mostree is polymos 'roi.cm')
 d-mos, du-mos, optin-mos: mos in d, du, and optin, respectively
 mostree: list of all mos and polymos in d, ie all d-mos (defines nesting organization of d, relative to du), defined in odf.m
 mostreeget: function that derives mos for any input struct, relative to du
@@ -120,6 +120,7 @@ persistent du
 persistent mostree
 persistent mostree_open
 persistent mostree_top
+persistent mosh
 
 delimflat = '__';
 
@@ -163,10 +164,8 @@ end
 
 %%%% load default options with odf.m %%%%
 
-pthopt = [pthscopaget() 'optdf.txt'];
-
-if isempty(d) && isempty(du) && isempty(mostree)
-    odf(pthopt); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
+if isempty(d)
+    pthopt = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
     if isfile(pthopt)
         dall = structld(pthopt, nocells=1, dosort=0);
         d = dall.d;
@@ -174,6 +173,10 @@ if isempty(d) && isempty(du) && isempty(mostree)
         mostree = dall.mostree;
         mostree_open = dall.mostree_open;
         mostree_top = dall.mostree_top;
+        fnmh = fieldnames(dall.mosh);
+        for k = 1:numel(fnmh)
+            mosh.(fnmh{k}) = str2func(dall.mosh.(fnmh{k})); %write char, later must use str2func to use it (eg in ofill)
+        end
     else
         error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
     end
@@ -195,10 +198,10 @@ end
 %%%% ofill_scalar (ofill for each struct element, ie stack) %%%%
 
 if isempty(optin)
-    optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal);
+    optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, mosh, optin, mos, mosc, rec, mosfinal);
 else
     for k = numel(optin):-1:1 %in case optout is nonscalar, loop over each element, calling ofill_scalar; backward to preallocate
-        optout(k) = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin(k), mos, mosc, rec, mosfinal);
+        optout(k) = ofill_scalar(d, du, mostree, mostree_open, mostree_top, mosh, optin(k), mos, mosc, rec, mosfinal);
     end
 end
 
@@ -220,7 +223,7 @@ end
 
 
 
-function optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, optin, mos, mosc, rec, mosfinal)
+function optout = ofill_scalar(d, du, mostree, mostree_open, mostree_top, mosh, optin, mos, mosc, rec, mosfinal)
 
 
 persistent mosc_all
@@ -265,10 +268,10 @@ else
     end
 
     for k = 1:size(mosc_all,1) %first remove mosc from optin
-        sind = structind(mosc_all{k,1}); %the parent of the mosc is in the first cell of mosc_all
-        tmp = getfield(optin, sind{:}); %get that parent from optin
+        stind = structind(mosc_all{k,1}); %the parent of the mosc is in the first cell of mosc_all
+        tmp = getfield(optin, stind{:}); %get that parent from optin
         tmp = rmfield(tmp, mosc_all{k,2}); %remove the mosc from the parent (mosc alone is in second cell of mosc_all)
-        optin = setfield(optin, sind{:}, tmp); %set optin with mosc removed (below it will be put into optout)
+        optin = setfield(optin, stind{:}, tmp); %set optin with mosc removed (below it will be put into optout)
     end
 
     allow_du_mos = 0;
@@ -289,38 +292,38 @@ else
 
     optout = struct;
     for k = 1:numel(mos_skip) % create mos_optin_only in optout and set to their values in optin (otherwise structfill will error)
-        sind = structind(mos_skip{k});
-        tmp = getfield(optin, sind{:});
-        optout = setfield(optout, sind{:}, tmp);
+        stind = structind(mos_skip{k});
+        tmp = getfield(optin, stind{:});
+        optout = setfield(optout, stind{:}, tmp);
     end
 
     for k = 1:numel(mos) % create mos in optout and set to their values in default structs (d, or du if allow_du_mos)
-        sind = structind(mos{k});
+        stind = structind(mos{k});
         if ismember(mos{k}, mostree_open)
             if rec
-                tmp = getfield(d, sind{:});
+                tmp = getfield(d, stind{:});
             else
-                tmp = du.(sind{end});
+                tmp = du.(stind{end});
             end
         elseif ismember(mos{k}, mostree_du)
             if allow_du_mos
-                tmp = getfield(du, sind{:}); %rec is irrelevant in this case
+                tmp = getfield(du, stind{:}); %rec is irrelevant in this case
             else
                 error(mos{k} + " is a submos in mostree (defined in odf.m), but you can only pass in submos as mos argument to ofill if argument optin is empty")
             end
         else
             error(mos{k} + " is not listed in mostree (defined in odf.m), either as mos, submos, or polymos")
         end
-        optout = setfield(optout, sind{:}, tmp);
+        optout = setfield(optout, stind{:}, tmp);
     end
     [~, mostree_optout_open, ~] = mostreeget(optout, du); %mos in optout
 
     mos_return = mos_skip(~cellfun(@isempty, regexp(mos_skip, ['^(' sprintf('%s|', mos{:}) ')\..*$'], 'forceCellOutput'))); %check if any mos just filled is a parent of a mos_optin_only filled earlier, if so, it got overwritten with defaults, so return to original value
     for k = 1:numel(mos_return)
         if ~ismember(mos_return{k}, mostree_optout_open)
-            sind = structind(mos_return{k});
-            tmp = getfield(optin, sind{:});
-            optout = setfield(optout, sind{:}, tmp);
+            stind = structind(mos_return{k});
+            tmp = getfield(optin, stind{:});
+            optout = setfield(optout, stind{:}, tmp);
         end
     end
 
@@ -337,8 +340,8 @@ if ~isempty(mosc) %save any current mosc to persistent variable . . .
     if ~all(ismember(mosc{1}, mostree_optout_open))
         error("mosc first element must be mos in optout (if it weren't it would just be placing all defaults in a mosc, which is pointless; mosc are used to group options, and defaults are already in a group)")
     end
-    sind = structind(mosc{1}); %the parent of the mosc is in the first cell of mosc_all
-    tmp = getfield(optout, sind{:}); %get that parent from optin
+    stind = structind(mosc{1}); %the parent of the mosc is in the first cell of mosc_all
+    tmp = getfield(optout, stind{:}); %get that parent from optin
     mosc_all = cat(1, mosc_all, { mosc{1}, mosc{2}, tmp }); %keep record of mos above the mosc and the mosc alone and the mosc struct, all in persistent variable (adding current to previous); save all of these for convenience, since they get used later
     mos = regexprep(mos, ['^(' mosc{1} ')(\..*)*$'], ['$1' '.' mosc{2} '$2']); %add mosc into any mos it applies to, so record of mos in persistent variable shows mosc there
 end
@@ -370,7 +373,7 @@ if ~isempty(mosfinal)
     if isempty(mosc_all)
         mostree_open_with_mosc = mostree_open;
     else
-        mostree_open_with_mosc = {}; %create mostree_optout_open with all mosc inserted
+        mostree_open_with_mosc = {}; %create mostree_open with all mosc inserted (not the same as mostree_optout_open with all mosc inserted)
         for k = 1:numel(mostree_open)
             spl = strsplit(mostree_open{k}, '.');
             mos_parent_above_mosc = strjoin(spl(1:end-1), '.');
@@ -388,17 +391,40 @@ if ~isempty(mosfinal)
     end
 
     for k = 1:numel(mostree_open_with_mosc)
-        sind = structind(mostree_open_with_mosc{k});
+        stind = structind(mostree_open_with_mosc{k});
         if ~ismember(mostree_open_with_mosc{k}, mostree_optout_open_keep)
-            optout = setfield(optout, sind{:}, []); %set any missing mos to empty when mosfinal is nonempty
+            optout = setfield(optout, stind{:}, []); %set any missing mos to empty when mosfinal is nonempty
         end
     end
 
     mostree_open_with_mosc_descend = sort(mostree_open_with_mosc, 'descend'); %sort descending (deepest to shallowest)
     for k = 1:numel(mostree_open_with_mosc_descend)
-        sind = structind(mostree_open_with_mosc_descend{k});
-        if ~isempty(getfield(optout, sind{:})) && all(structfun(@isemptyall, getfield(optout, sind{:})))
-            optout = setfield(optout, sind{:}, []); %set to empty any mos containing nothing but other empty mos
+        stind = structind(mostree_open_with_mosc_descend{k});
+        if ~isempty(getfield(optout, stind{:})) && all(structfun(@isemptyall, getfield(optout, stind{:})))
+            optout = setfield(optout, stind{:}, []); %set to empty any mos containing nothing but other empty mos
+        end
+    end
+
+    for k = 1:numel(mostree_open_with_mosc)
+        stind = structind(mostree_open_with_mosc{k});
+        try
+            optout_tmp = getfield(optout, stind{:});
+        catch %trying to get submos when supermos is empty
+        end
+        if ~isempty(optout_tmp) && ismember(stind{end}, mostree_du)
+            prs = struct2pairs(optout_tmp);
+            try
+                optmosh_tmp = mosh.(stind{end})('', prs{:}, och=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
+            catch ME
+                error("attempt to validate inputs for module " +  stind{end} + newline + "failed with this error message " + ME.message)
+            end
+            optmosh_tmp_fn = fieldnames(optmosh_tmp);
+            optmosh_tmp_ne = rmfield(optmosh_tmp, optmosh_tmp_fn(structfun(@isempty, optmosh_tmp)));
+            optout_tmp_fn = fieldnames(optout_tmp);
+            optout_tmp_ne = rmfield(optout_tmp, optout_tmp_fn(structfun(@isempty, optout_tmp)));
+            if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
+                fprintf("user-supplied options changed in arguments block for module " + stind{end} + newline)
+            end
         end
     end
 

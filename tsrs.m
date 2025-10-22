@@ -27,7 +27,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
 
     if strcmp(vtype, 'normal')
 
-        inp_try = tsrspad(tsin, dsnr, dsdr);
+        inp_try = tsrs_pad(tsin, dsnr, dsdr);
         currlen = numel(inp_try);
         if currlen==newlen
             tsout = inp_try;
@@ -45,7 +45,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                         if dsdr_new<=0
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
-                        inp_try = tsrspad(tsin, dsnr_new, dsdr_new);
+                        inp_try = tsrs_pad(tsin, dsnr_new, dsdr_new);
 
                         currlen = numel(inp_try);
 
@@ -73,12 +73,12 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
             end
             if currlen~=newlen
                 fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
-                inp_try = tsrspad(tsin, dsnr_sv, dsdr_sv);
+                inp_try = tsrs_pad(tsin, dsnr_sv, dsdr_sv);
                 tsout = inp_try(1:newlen);
             end
         end
 
-    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') 
+    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees')
 
         if strcmp(vtype, 'degrees')
             tsin = deg2rad(tsin);
@@ -87,7 +87,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         inpx = cos(tsin);
         inpy = sin(tsin);
 
-        inpx_try = tsrspad(inpx, dsnr, dsdr);
+        inpx_try = tsrs_pad(inpx, dsnr, dsdr);
         currlen = numel(inpx_try);
         if currlen==newlen
             inpx = inpx_try;
@@ -106,7 +106,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
 
-                        inpx_try = tsrspad(inpx, dsnr_new, dsdr_new);
+                        inpx_try = tsrs_pad(inpx, dsnr_new, dsdr_new);
 
                         currlen = numel(inpx_try);
 
@@ -137,12 +137,12 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         end
 
         if currlen==newlen
-            inpy = tsrspad(inpy, dsnr, dsdr);
+            inpy = tsrs_pad(inpy, dsnr, dsdr);
         else
             fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
-            inpx = tsrspad(inpx, dsnr_sv, dsdr_sv);
+            inpx = tsrs_pad(inpx, dsnr_sv, dsdr_sv);
             inpx = inpx(1:newlen);
-            inpy = tsrspad(inpy, dsnr_sv, dsdr_sv);
+            inpy = tsrs_pad(inpy, dsnr_sv, dsdr_sv);
             inpy = inpy(1:newlen);
         end
 
@@ -190,7 +190,7 @@ else %if inds are nonempty, average tsin during each index of inds
             tsout(k) = mean(tsin(inds_tmp{k})); %this is fast and arrayfun is not faster
         end
 
-    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees') 
+    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees')
 
         if strcmp(vtype, 'degrees')
             tsin = deg2rad(tsin);
@@ -225,3 +225,26 @@ if strcmp(vtype, 'degrees')
     tsout = rad2deg(tsout);
 end
 
+
+end
+
+function y = tsrs_pad(x, fs_new, fs_old)
+
+if size(x,1) < size(x, 2)
+    x = x';
+end
+
+default_antialiasing_filter_order_scalefac = 10; %this is matlab default
+default_antialiasing_filter_order = 2*default_antialiasing_filter_order_scalefac*max(fs_old,fs_new);
+default_antialiasing_filter_length = default_antialiasing_filter_order+1;
+padlength = default_antialiasing_filter_length+1;
+
+padfront = repmat(x(1), padlength, 1);
+padback = repmat(x(end), padlength, 1);
+xpad = cat(1, padfront, x, padback); % extend by 2s on each side
+ypad = resample(xpad, fs_new, fs_old);
+padfrontnew = floor(padlength/fs_old*fs_new+1);
+padbacknew = floor(padlength/fs_old*fs_new);
+y = ypad(padfrontnew : length(ypad)-padbacknew);
+
+end

@@ -1,4 +1,4 @@
-function userdat = userdatfile(field, opt)
+function userdat = userdatfile(field, opt, opt2)
 
 %{
 
@@ -17,7 +17,9 @@ arguments
     opt.gittoken = [] %your git token (for push/pull etc)
     opt.gitbranch = [] %your scopa git branch (for push/pull etc)
     opt.gitusername = [] %your git username (for push/pull etc)
+    opt2.err {mustBeMember(opt2.err,[0,1]), mustBeNonempty} = 0 %1 to error if trying to read field from userdat.txt that has not been set
 end
+err = opt2.err;
 
 optsin = ~structfun(@isempty, opt);
 
@@ -70,6 +72,9 @@ if strcmpi(permission, 'read')
     if ~isempty(field)
         if isfield(userdat, field)
             userdat = userdat.(field);
+            if isempty(userdat) && err
+                error("requested userdat field'" + field + "' has not been set in userdat.txt, and name-value argument err=1, so this error occurred; if you don't want an error, make err=0, or set userdatfile('" + field + "')")
+            end
         else
             error("'" + field + "' is not field of userdat struct in userdatfile " + pthuserdat)
         end

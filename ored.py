@@ -9,7 +9,7 @@ def ored(opt, two_channel_ex):
 
     optred['methodex'] = opt['methodex'] #not a caiman param
     optred['rgname'] = opt['rgname'] #not a caiman param
-    optred['mmname'] = opt['mmname'] #not a caiman param
+    optred['roiname'] = opt['roiname'] #not a caiman param
 
     optred['gSig'] = opt['gSig']
     optred['nb'] = opt['nb']

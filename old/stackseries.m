@@ -27,7 +27,7 @@ if suffixplt or doplt is empty, nothing will be plotted, but pthstack will be lo
 arguments
     opt = []
     opt2.pthstack = []
-    opt2.doplt = []
+    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
 end
 pthstack = opt2.pthstack;
 doplt = opt2.doplt;
@@ -60,7 +60,7 @@ if ~isempty(suffixplt) && ~iscell(suffixplt)
 end
 
 if isempty(pthstack)
-    error("you must either pass in argument pthstack or set glb('pthstack')")
+    error("you must either pass in argument pthstack")
 end
 if isempty(doplt)
     doplt = any(strcmp('spr', glb('plt')));

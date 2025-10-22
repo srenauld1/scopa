@@ -14,37 +14,24 @@ arguments
     t %timestamps
     opt.usefbl = 0 %1 to include flyback lines
     opt.usefbf = 0 %1 to include flyback frames
-    opt.pthstack = [] %path to stack, can use this to find numvol, numslice, and numslice_withflyback (instead of passing them in)
     opt.numvol = [] %number volumes
     opt.numslice = [] %number slices (z planes)
     opt.numslice_withflyback = [] %number slices (z planes) including flyback frames
-    opt.doplt = 0 %plot figure
-    opt.pthfig = [] %path to save figure
+    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 %plot figure
     opt.maxtplot = 2; %max number of t samples to include in plot
+    opt.pthfig = [] %path to save figure
 end
 usefbl = opt.usefbl;
 usefbf = opt.usefbf;
-pthstack = opt.pthstack;
 numvol = opt.numvol;
 numslice = opt.numslice;
 numslice_withflyback = opt.numslice_withflyback;
 doplt = opt.doplt;
-pthfig = opt.pthfig;
 maxtplot = opt.maxtplot;
+pthfig = opt.pthfig;
 
-if isempty(numvol) && isempty(numslice) && isempty(numslice_withflyback)
-    if isempty(pthstack)
-        error("must pass in pthstack if numvol, numslice, and numslice_withflyback are empty")
-    else
-        md = mdsild(pthstack);
-        numslice_withflyback = md.numslice_withflyback;
-        numslice = md.numslice;
-        numvol = md.numvol;
-    end
-else
-    if isempty(numvol) || isempty(numslice) || isempty(numslice_withflyback)
-        error("must pass in numvol, numslice, and numslice_withflyback, or pass in none of them and pass in nonempty pthstack")
-    end
+if isempty(numvol) || isempty(numslice) || isempty(numslice_withflyback)
+    error("must pass in nonempty numvol, numslice, and numslice_withflyback")
 end
 
 

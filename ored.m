@@ -1,8 +1,10 @@
 function opt = ored(opt, mos)
 
 %{
-ored ("options reduce") removes redundancy (since options can depend on each other)
-ored is called before assigning id (optid) to an options set (using structfile in oid)
+
+ored ("options reduce") removes ambiguity/redundancy in options struct (since options can depend on each other, and multiple values can have the same effect)
+ored is called before structfile assigns optid to an options set (in oid)
+
 %}
 
 arguments
@@ -10,9 +12,6 @@ arguments
     mos
 end
 
-if isfield(opt, mos)
-    error("you passed opt with substruct " + mos + " but should pass in that substruct itself")
-end
 
 switch mos %further specialized reduction by mos
     case 'roi'
@@ -28,8 +27,6 @@ end
 
 function opt = ored_roi(opt)
 
-% reduce to minimal effective set based on interactions among options 
-
 two_channel_ex = 1; %hard coding for now, soon, parse methodex
 
 if ~isempty(opt.nrm) && opt.nrm.channorm==0
@@ -39,8 +36,8 @@ end
 
 if ~isempty(opt.cm) %unfortunately, a complex reduction scheme is required for caiman options, since there are many interactions
 
-    if any(structfun(@(x) any(strcmp(x, '*')),opt.cm))
-        error("need to fix caiman ored for wild")
+    if any(structfun(@(x) any(strcmp(x, '*')), opt.cm))
+        error("caiman options do not work right now for wild=1 in ofill - why not??")
     end
 
     %%assemble reduced cmex struct (gets special attention because it's relatively more complicated)
@@ -140,8 +137,6 @@ end
 
 
 function opt = ored_bmp(opt)
-
-%reduce bmp options to minimal functional set
 
 if strcmp(opt.domtype, 'm') && ~isempty(opt.mdl) %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
     opt.mdl = []; %rmfield(opt, 'mdl');

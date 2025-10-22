@@ -40,14 +40,14 @@ try
     if getonly
         fprintf("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     end
-    
-
+   
     mos = fieldnames(o);
     mos = mos(~strcmp(mos, 'finished'));
 
     for k = 1:numel(mos)
 
         if ~isempty(o.(mos{k}))
+
 
             %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
@@ -56,17 +56,12 @@ try
 
             %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-            optdist = odist(opttmp2, mos{k}); %optdist substructs (fields) are temporary names assigned during "distribution" of any cell-valued options
+            optdist = odist(opttmp2); %optdist substructs (fields) are temporary names assigned during "distribution" of any cell-valued options
             
             cnt = 0;
             optout = [];
             mosctmp = fieldnames(optdist);
             for q = 1:numel(mosctmp)
-
-
-                %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
-
-                optdist.(mosctmp{q}) = ochk(optdist.(mosctmp{q}), mos{k});
 
 
                 %%%%%%%% REDUCE OPTIONS %%%%%%%%
@@ -83,6 +78,7 @@ try
                     error("opttmp must be scalar, except when vgetcall=1 (ie when calling oid from vget, where wildcard can find multiple matching structs)")
                 end
 
+                
                 %%%%%%%% ACCUMULATE NONSCALAR STRUCT WITH NEW OPTID FIELD  %%%%%%%%
 
                 for m = 1:numel(opttmp)

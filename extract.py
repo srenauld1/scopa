@@ -16,7 +16,7 @@ import json
 
 
 
-def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_in_2d, methodex, rgname, mmname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
+def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_in_2d, methodex, rgname, roiname, do_crop_only=0, makeplots=0, cluster_backend='ipyparallel', use_cluster=0, optall=0):
 
     ##########################   CAIMAN SOURCE EXTRACTION   ##########################
 
@@ -68,7 +68,7 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
             
 
             if not optall:
-                optall = oex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, mmname)
+                optall = oex(pth_mmap_ex, md, dims_spatial_ex, extract_in_2d, two_channel_ex, pth_optdf, pth_optroi, methodex, rgn, roiname)
 
             print("looping over " + str(len(optall)) + " unique options sets")
             

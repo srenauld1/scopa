@@ -8,16 +8,10 @@ chan is computed from the metadata file, which keeps track of removed channels
 %}
 
 arguments
-    pthstack = [] %path to stack
+    pthstack %path to stack
 end
 
-if isempty(pthstack)
-    pthstack = glb('pthstack');
-    if isempty(pthstack)
-        error("must pass in pthstack or set glb('pthstack')")
-    end
-end
-id = idmake(pthstack);
+suffix = idmake(pthstack, 'suffix');
 md = mdsild(pthstack);
 
 [~, fn, ~] = fileparts(pthstack);
@@ -27,18 +21,18 @@ else
     rawstack = 0;
 end
 
-if isfield(md, ['chanrm_' id.suffix])
-    chanrm = md.(['chanrm_' id.suffix]);
+if isfield(md, ['chanrm_' suffix])
+    chanrm = md.(['chanrm_' suffix]);
 else
     if rawstack
         chanrm = [];
     else
-        error("chanrm_" + id.suffix + " is not a field in mdsi_.txt; " + newline + ...
+        error("chanrm_" + suffix + " is not a field in mdsi_.txt; " + newline + ...
             "it is required to track discarded channels; you may be using an old mdsi file; " + newline + ...
             "if you rerun the code that created this tif: " + pthstack + newline + ...
-            "chanrm_" + id.suffix + " will be automatically added to mdsi" + newline + ...
+            "chanrm_" + suffix + " will be automatically added to mdsi" + newline + ...
             "or, you can add the field to mdsi manually, " + newline + ...
-            "the syntax is: chanrm_" + id.suffix + ": 1, or chanrm_" + id.suffix + ": 2, or chanrm_" + id.suffix + ": null" + newline)
+            "the syntax is: chanrm_" + suffix + ": 1, or chanrm_" + suffix + ": 2, or chanrm_" + suffix + ": null" + newline)
     end
 end
 

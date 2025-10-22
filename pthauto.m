@@ -14,9 +14,9 @@ usefun = opt.usefun;
 fndefault = '00000000';
 
 if isempty(pthdir)
-    pthdir = glb('pthstackdir');
+    pthdir = glb('pthsvdir');
     if isempty(pthdir)
-        error("you must pass in name-value argument 'pthdir' or set glb('pthstackdir')")
+        error("you must pass in name-value argument 'pthdir' or set glb('pthsvdir')")
     end
 end
 pthdir = pthfldformat(pthdir);

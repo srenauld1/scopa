@@ -1,4 +1,4 @@
-function pthopt = odf(pthopt)
+function odf()
  
 %{
 
@@ -18,12 +18,8 @@ we hard-code variable 'mostree' (rather than deriving it from du) because submod
 
 %}
 
-arguments
-    pthopt {mustBeTextScalar, mustBeNonempty} = [pthscopaget() 'optdf.txt'] %path to file holding all module default options
-end
 
-
-%% mosh struct holds function handles for all a2p modules;
+%% mosh struct holds function handles for all a2p modules; 
 
 mosh.sld = @stackld;
 mosh.daq = @daqld;
@@ -429,11 +425,14 @@ dall.du = du;
 dall.mostree = mostree_d;
 dall.mostree_open = mostree_open_d;
 dall.mostree_top = mostree_top_d;
-
 fnmh = fieldnames(mosh);
 for k = 1:numel(fnmh)
-    dall.mosh.(fnmh{k}) = func2str(mosh.(fnmh{k})); %write char, later must use str2func to use it (eg in ofill)
+dall.mosh = func2str(mosh); %write char, later must use str2func to use it (eg in ofill)
 end
+dall.mosh = func2str(mosh); %write char, later must use str2func to use it (eg in ofill)
+
+pthscopa = pthscopaget();
+pthopt = [pthscopa 'optdf.txt'];
 
 fprintf("writing default options to: " + pthopt + newline)
 

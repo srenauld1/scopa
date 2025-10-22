@@ -19,7 +19,7 @@ arguments
     visyaw
     visyawvel
     sper
-    opt.doplt = []
+    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0
 end
 doplt = opt.doplt;
 

@@ -13,7 +13,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
 
 
     if strcmp(rgname{m}, 'none')
-        o.roi.mm.mmname = {'none'};
+        o.roi.mm.roiname = {'none'};
         o.roi.nrm.post = {'dff008000'};
     end
 

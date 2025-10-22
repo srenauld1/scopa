@@ -1,18 +1,25 @@
-function optout = odist(optin, mos)
+function optout = odist(optin)
 
-% odist in matlab gives 'each'/'any' functionality (distribute all combos, ie any, within each mosc, ie each), but odist in python just gives 'any' (not 'each') functionality
-% optin can be a mos, or a higher struct containing the mos (can't remember why i allowed this, but there is a reason, maybe because of how ored works after this)
+%{
+
+for each substruct within struct optin . . . 
+for any cell-valued field (option) . . . 
+create new struct for each cell element ('distribute')
+    copy non-cell fields (options) to all new structs
+    give temporary names to the new structs and delete the original struct
+    if there are multiple cell-valued fields (options), create all combinations of their elements with the new structs
+odist.m is similar to odist.py; the main difference is:
+    odist.m has 'any'/'each' functionality: distribute options ('any') within each mosc ('each') 
+    odist.py just has 'any' functionality (not 'each')
+
+%}
 
 arguments
     optin
-    mos
 end
 
 delimflat = '__';
 
-if isfield(optin, mos)
-    optin = optin.(mos);
-end
 fn = fieldnames(optin);
 
 optout = struct;

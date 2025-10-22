@@ -82,8 +82,8 @@ if write_to_userdat
     else
         userdat.pthpar = pthpar;
     end
-    op = struct2pairs(userdat);
-    userdatfile(op{:})
+    prs = struct2pairs(userdat);
+    userdatfile(prs{:})
 end
 
 

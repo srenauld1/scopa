@@ -56,7 +56,7 @@ do_crop_only = 0 #skip everything but FOV selection for all entries in rgname, m
 extract_in_2d = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 methodex = '1' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seed1mat' (channel 1 functional extraction seeded with morph rois created/saved in matlab), 'seed2mat' (same as seed1 but for channel 2), 'seed1py' (same but seeded with automated morph rois made in python), 'seed2py' (same as 'seed1py' but channel 2), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 rgname = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['none'] to extract from entire FOV
-mmname = ['none']
+roiname = ['none']
 
 ## SOME OPTIONS APPLIED IN VARIOUS PARTS OF THE PIPELINE ## 
 

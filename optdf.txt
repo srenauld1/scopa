@@ -37,22 +37,22 @@
           "OutputFcn": [],
           "PenaltyThresholdFactor": 0.2,
           "PlotFcn": [],
-          "StartPointsToRun": "bounds-ineqs",
+          "StartPointsToRun": "all",
           "XTolerance": 1E-6
         },
         "opl": {
           "Algorithm": "interior-point",
           "BarrierParamUpdate": "monotone",
           "ConstraintTolerance": 1E-6,
-          "Display": "iter-detailed",
+          "Display": "final",
           "EnableFeasibilityMode": false,
           "FiniteDifferenceStepSize": "sqrt(eps)",
-          "FiniteDifferenceType": "central",
+          "FiniteDifferenceType": "forward",
           "FunctionTolerance": 1E-6,
           "HessianApproximation": "bfgs",
           "HessianFcn": [],
           "HessianMultiplyFcn": [],
-          "HonorBounds": true,
+          "HonorBounds": 1,
           "MaxFunctionEvaluations": 3000,
           "MaxIterations": 1000,
           "ObjectiveLimit": -1.0E+20,
@@ -60,12 +60,12 @@
           "OutputFcn": [],
           "PlotFcn": [],
           "ScaleProblem": false,
-          "SpecifyConstraintGradient": false,
-          "SpecifyObjectiveGradient": false,
+          "SpecifyConstraintGradient": 0,
+          "SpecifyObjectiveGradient": 0,
           "StepTolerance": 1E-10,
           "SubproblemAlgorithm": "factorization",
           "TypicalX": "ones(numberOfVariables,1)",
-          "UseParallel": false
+          "UseParallel": 0
         },
         "rm": [],
         "slvrg": "globalsearch",
@@ -145,18 +145,11 @@
     },
     "fmf": {
       "crop_edges": 1,
-      "downsample_template": 1,
       "feat2": [],
       "flipped": 0,
-      "getgrid": 1,
-      "gridres": 256,
       "id": "CON_51",
-      "it": -100,
-      "pthpar": [],
-      "pthtemplate": [],
       "rep": 1,
-      "stimtype": "drone",
-      "vistype": "plane"
+      "stimtype": "drone"
     },
     "mdl": {
       "depv": {
@@ -185,22 +178,22 @@
         "OutputFcn": [],
         "PenaltyThresholdFactor": 0.2,
         "PlotFcn": [],
-        "StartPointsToRun": "bounds-ineqs",
+        "StartPointsToRun": "all",
         "XTolerance": 1E-6
       },
       "opl": {
         "Algorithm": "interior-point",
         "BarrierParamUpdate": "monotone",
         "ConstraintTolerance": 1E-6,
-        "Display": "iter-detailed",
+        "Display": "final",
         "EnableFeasibilityMode": false,
         "FiniteDifferenceStepSize": "sqrt(eps)",
-        "FiniteDifferenceType": "central",
+        "FiniteDifferenceType": "forward",
         "FunctionTolerance": 1E-6,
         "HessianApproximation": "bfgs",
         "HessianFcn": [],
         "HessianMultiplyFcn": [],
-        "HonorBounds": true,
+        "HonorBounds": 1,
         "MaxFunctionEvaluations": 3000,
         "MaxIterations": 1000,
         "ObjectiveLimit": -1.0E+20,
@@ -208,12 +201,12 @@
         "OutputFcn": [],
         "PlotFcn": [],
         "ScaleProblem": false,
-        "SpecifyConstraintGradient": false,
-        "SpecifyObjectiveGradient": false,
+        "SpecifyConstraintGradient": 0,
+        "SpecifyObjectiveGradient": 0,
         "StepTolerance": 1E-10,
         "SubproblemAlgorithm": "factorization",
         "TypicalX": "ones(numberOfVariables,1)",
-        "UseParallel": false
+        "UseParallel": 0
       },
       "rm": [],
       "slvrg": "globalsearch",
@@ -268,6 +261,7 @@
         "update_background_components": true,
         "use_cnn": 0
       },
+      "dodraw": 0,
       "ma": {
         "celsz": 8,
         "chan": 1,
@@ -278,10 +272,6 @@
         "maskseg": "uniform",
         "numroi": 128,
         "roirad": []
-      },
-      "mm": {
-        "chanstr": "all",
-        "mmname": "none"
       },
       "nrm": {
         "channorm": 0,
@@ -298,6 +288,7 @@
         "minroisz": 5
       },
       "rgname": "none",
+      "roiname": "none",
       "s": {
         "vg": []
       }
@@ -327,6 +318,7 @@
         "vg": []
       },
       "maxangrs": 8,
+      "mdl": [],
       "mthd": "pva",
       "numangrs": 16,
       "numcirc": 1,
@@ -445,18 +437,11 @@
     },
     "fmf": {
       "crop_edges": 1,
-      "downsample_template": 1,
       "feat2": [],
       "flipped": 0,
-      "getgrid": 1,
-      "gridres": 256,
       "id": "CON_51",
-      "it": -100,
-      "pthpar": [],
-      "pthtemplate": [],
       "rep": 1,
-      "stimtype": "drone",
-      "vistype": "plane"
+      "stimtype": "drone"
     },
     "ma": {
       "celsz": 8,
@@ -484,15 +469,13 @@
       "mdlname": "fnet_A01_s",
       "nrmd": [],
       "nrmi": [],
+      "opg": [],
+      "opl": [],
       "rm": [],
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "valnum": 0,
       "valsplit": "boutsamples"
-    },
-    "mm": {
-      "chanstr": "all",
-      "mmname": "none"
     },
     "nrm": {
       "channorm": 0,
@@ -513,22 +496,22 @@
       "OutputFcn": [],
       "PenaltyThresholdFactor": 0.2,
       "PlotFcn": [],
-      "StartPointsToRun": "bounds-ineqs",
+      "StartPointsToRun": "all",
       "XTolerance": 1E-6
     },
     "opl": {
       "Algorithm": "interior-point",
       "BarrierParamUpdate": "monotone",
       "ConstraintTolerance": 1E-6,
-      "Display": "iter-detailed",
+      "Display": "final",
       "EnableFeasibilityMode": false,
       "FiniteDifferenceStepSize": "sqrt(eps)",
-      "FiniteDifferenceType": "central",
+      "FiniteDifferenceType": "forward",
       "FunctionTolerance": 1E-6,
       "HessianApproximation": "bfgs",
       "HessianFcn": [],
       "HessianMultiplyFcn": [],
-      "HonorBounds": true,
+      "HonorBounds": 1,
       "MaxFunctionEvaluations": 3000,
       "MaxIterations": 1000,
       "ObjectiveLimit": -1.0E+20,
@@ -536,12 +519,12 @@
       "OutputFcn": [],
       "PlotFcn": [],
       "ScaleProblem": false,
-      "SpecifyConstraintGradient": false,
-      "SpecifyObjectiveGradient": false,
+      "SpecifyConstraintGradient": 0,
+      "SpecifyObjectiveGradient": 0,
       "StepTolerance": 1E-10,
       "SubproblemAlgorithm": "factorization",
       "TypicalX": "ones(numberOfVariables,1)",
-      "UseParallel": false
+      "UseParallel": 0
     },
     "qc": {
       "inmaskthr": 0.5,
@@ -551,7 +534,13 @@
       "minroisz": 5
     },
     "roi": {
+      "cm": [],
+      "dodraw": 0,
+      "ma": [],
+      "nrm": [],
+      "qc": [],
       "rgname": "none",
+      "roiname": "none",
       "s": {
         "vg": []
       }
@@ -570,6 +559,20 @@
       "smmthd": "gaussian"
     }
   },
+  "mosh": {
+    "bmp": "bmpmake",
+    "cm": "roifauto",
+    "daq": "daqld",
+    "fmf": "flymaxfe",
+    "ma": "roimauto",
+    "mdl": "mdlmake",
+    "nrm": "roinorm",
+    "opg": "opgmake",
+    "opl": "oplmake",
+    "qc": "roiqc",
+    "roi": "roimake",
+    "sld": "stackld"
+  },
   "mostree": [
     "bmp.mdl.opg",
     "bmp.mdl.opl",
@@ -579,7 +582,6 @@
     "mdl.opl",
     "roi.cm",
     "roi.ma",
-    "roi.mm",
     "roi.nrm",
     "roi.qc",
     "sld"
@@ -597,7 +599,6 @@
     "roi",
     "roi.cm",
     "roi.ma",
-    "roi.mm",
     "roi.nrm",
     "roi.qc",
     "sld"

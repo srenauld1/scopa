@@ -3,9 +3,9 @@ function [s, rg] = stackcrop(s, rgname, opt)
 % crop s.stack using user-defined cuboid (struct rg, abbreviation for region); rg saved to txt file
 
 arguments (Input)
-    s % struct output from stackld (containing s.stack, pthstack, md, and other fields); s.s.stack dim order is yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid));
-    rgname = [] % short name for region (rg, s.s.stack after cropping); if empty, default rgname assigned is 'none'; if user sets rgname='none', user is not prompted to crop s.stack (none means entire fov)
-    opt.usegit {mustBeMember(opt.usegit,[0,1,[]])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
+    s struct % struct output from stackld (containing s.stack, pthstack, md, and other fields); s.s.stack dim order is yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid));
+    rgname {mustBeTextScalar} = '' % short name for region (rg, s.s.stack after cropping); if empty, default rgname assigned is 'none'; if user sets rgname='none', user is not prompted to crop s.stack (none means entire fov)
+    opt.usegit {mustBeMember(opt.usegit,[0,1])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
 end
 arguments (Output)
     s % after cropping s.s.stack with rg
@@ -15,21 +15,18 @@ usegit = opt.usegit;
 
 maxnumdims = 5;
 rgnamedf = 'none';
+if isempty(rgname)
+    rgname = rgnamedf;
+end
 
-if isempty(usegit)
-    usegit = glb('usegit');
-    if isempty(usegit)
-        error("must set name-value argument 'usegit', or glb('usegit')")
-    end
+usegit = optorglb(usegit, 0);
+if ~ismember(usegit, [0,1])
+    error("usegit must be 0 or 1")
 end
 
 if ~isempty(s.stack) && (ndims(s.stack)<2 || ndims(s.stack)>maxnumdims)
     error("s.stack input to roidraw must be empty, or have 2-" + num2str(maxnumdims) + " dimensions")
 end
-if isempty(rgname)
-    rgname = rgnamedf;
-end
-
 
 try
     isTilde = detectOutputSuppression(nargout);
@@ -42,11 +39,10 @@ end
 
 pthscopa = pthscopaget();
 scopausername = userdatfile('scopausername');
-
 pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
 
-id = idmake(s.pthstack);
-rgid = [id.recid '_' rgname];
+recid = idmake(s.pthstack, 'recid');
+rgid = [recid '_' rgname];
 
 rg = [];
 [~, ~, rgall] = structfile(pthrg, s=[], nm=[]);

@@ -8,7 +8,7 @@ o.daq.slopeord = 2; % order of polynomial used to fit local slope
 o.daq.slopelensec_supp = 0.1; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 o.daq.slopeord_supp = 2;
 
-o.roi.mm.mmname = {'ves0'};
+o.roi.mm.roiname = {'ves0'};
 o.roi.nrm.post = {'dff008000'};
 
 

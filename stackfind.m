@@ -3,7 +3,7 @@ function pthstacks = stackfind(opt)
 % error message about duplicate specifier can be wrong for unusual cases where same specifiers match files in different locations with different extensions (in this case they pass in choose_ext as different files, and are found to have the same specifier by check_for_duplicate_specifiers
 
 arguments
-    opt.pthpat = 0 %full path pattern, can have wildcards (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators); if you use pthpat, you cannot use stackid, recdate, fly, trial, suffix, ext, or substr inputs
+    opt.pthpat = [] %full path pattern, can have wildcards (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators); if you use pthpat, you cannot use stackid, recdate, fly, trial, suffix, ext, or substr inputs
     opt.pthpar = [] %path to parent folder containing all stacks (this function searches for stacks recursively within pthpar) 
     opt.stackid = [] %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pthpat, recdate, fly, trial, or suffix are nonempty
     opt.recdate = []%char or number, alone or in cell

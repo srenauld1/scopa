@@ -28,7 +28,7 @@ OUTPUT ARGUMENTS
         same yxz size as input stack, 4th dimension represents roi index (2d input stack, yx, will have singleton 3rd dimension, z)
         all ones if user quits roidraw without drawing anything
     mm
-        struct holding roimask, and associated information (chanstr, channel, rg, and mmname)  
+        struct holding roimask, and associated information (chanstr, channel, rg, and roiname)  
         if multiple channels with rois, mm is nonscalar struct, one struct element for each stack channel
         mm is saved to mat file with suffix mm_.mat, by default in folder holding stack
 
@@ -173,8 +173,10 @@ WARNING
 
 
 arguments (Input)
+
     s %struct output from function stackld (contains stack, md, pthstack, rg, and other fields)
-    opt.mmname = [] %name given to output roimask (and by extension, saved struct mm, whichg holds roimask); this is the name of the set of rois you are drawing in this call to roidraw; if empty, default name is 'none'
+    
+    opt.roiname = [] %name given to output roimask (and by extension, saved struct mm, whichg holds roimask); this is the name of the set of rois you are drawing in this call to roidraw; if empty, default name is 'none'
     opt.chanstr = 'all' % string giving instruction on how to use stack channels for drawing rois, can be '1', '2', 'all', '1cp', '2cp' ('1'and '2' draw on channels 1 and 2, repectively, 'all' will draw on all channels, one at a time, if multiple, '1cp' copies rois drawn on channel 1 onto 2, '2cp' copies rois drawn on channel 2 onto 1)
     opt.roishape = 'freehand' %name of draw tool, can be changed with figure callback; circle, ellipse, freehand, polygon, rectangle, voxel (voxel is single click on image to make single-voxel roi)
     opt.roialpha = 0.33 %transparency for showing drawn rois over stack background
@@ -186,9 +188,10 @@ arguments (Input)
     opt.dorg = 0 %flag for drawing rg (region), which is a rectangle or cuboid (when dorg=1, default roishape is rectangle, and mm is neither loaded nor saved); dorg is true when roidraw is called from stackcrop
     opt.rgname = [] %name of rg you are drawing when dorg=1, keep empty unless dorg=1
     opt.pausetime = 0.01 %seconds, pause to allow drawing/callbacks to run smoothly; if callbacks frequently aren't caught, try increasing; pausetime=0.1 worked well on 2021 Apple M1 Pro 16 GB
+
 end
-stack = opt.stack;
-mmname = opt.mmname;
+
+roiname = opt.roiname;
 chanstr = opt.chanstr;
 roishape = opt.roishape;
 roialpha = opt.roialpha;
@@ -205,7 +208,7 @@ nmdm = 'yxztc'; %single-character name for each stack dimension
 fontsz = 10; %in figure title
 maxnumroi = 50; %just for preallocating
 maxnumsubroi = 50; %just for preallocating; max number of discontiguous subrois per roi
-mmnamedf = 'none'; %default mmname if empty
+mmnamedf = 'none'; %default roiname if empty
 
 keydict_roishape = {  ... %callback keydict for using s-switch (via function 'cb_array') to change roishape, all other switches use default keydict, which is defined in cb_array (see that example for formatting)
     {'s', 's', 'init'}, ...
@@ -280,8 +283,8 @@ if roialpha<=0
 end
 
 if dorg
-    if ~isempty(mmname)
-        error("when dorg=1, name-value argument mmname must be empty")
+    if ~isempty(roiname)
+        error("when dorg=1, name-value argument roiname must be empty")
     end
     roishape = 'rectangle'; %automatically set this to 1 if dorg
     nosave = 1;
@@ -296,10 +299,10 @@ try
     if dorg
         error("use this error to skip loading mm since dorg is true and we are not making mm, we are making rg")
     else
-        if isempty(mmname)
-            mmname = mmnamedf;
+        if isempty(roiname)
+            roiname = mmnamedf;
         end
-        fnsuffix = ['_' rgname '_' mmname '_mm'];
+        fnsuffix = ['_' rgname '_' roiname '_mm'];
         pthmm = [id.pthrec, fnsuffix, '_.mat'];
         load(pthmm, 'mm');
     end
@@ -308,8 +311,8 @@ try
         roimask{ic} = mm(ic).mask;
     end
 
-    if any(~isfield(mm(1), {'mask', 'mmname', 'chanstr', 'channel', 'rg'})) || numel(mm)==2 && any(~isfield(mm(2), {'mask', 'mmname', 'chanstr', 'channel', 'rg'}))
-        error("mm struct must contain fields 'mask', 'mmname', 'chanstr', 'channel', 'rg'; you may have loaded an old mm struct")
+    if any(~isfield(mm(1), {'mask', 'roiname', 'chanstr', 'channel', 'rg'})) || numel(mm)==2 && any(~isfield(mm(2), {'mask', 'roiname', 'chanstr', 'channel', 'rg'}))
+        error("mm struct must contain fields 'mask', 'roiname', 'chanstr', 'channel', 'rg'; you may have loaded an old mm struct")
     end
     if ~isequal(mm(1).rg, rg) || numel(mm)==2 && ~isequal(mm(2).rg, rg)
         error("mm file exists but for at least one channel rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
@@ -318,8 +321,8 @@ try
     if ~isequal(size(mm(ic).mask, [1 2 3]), [sdf.y, sdf.x, sdf.z])
         error("rg size does not match saved roimask size, name-value argument rg must not match rg used to draw rois")
     end
-    if ~isequal(mm(1).mmname, mmname) || ~isequal(mm(1).chanstr, chanstr) || ( numel(mm)==2 && ( ~isequal(mm(2).mmname, mmname) || ~isequal(mm(2).chanstr, chanstr) ) )
-        error("mm file exists but mmname and/or chanstr do not match for at least one channel")
+    if ~isequal(mm(1).roiname, roiname) || ~isequal(mm(1).chanstr, chanstr) || ( numel(mm)==2 && ( ~isequal(mm(2).roiname, roiname) || ~isequal(mm(2).chanstr, chanstr) ) )
+        error("mm file exists but roiname and/or chanstr do not match for at least one channel")
     end
 
 catch ME
@@ -331,7 +334,7 @@ catch ME
     end
     fprintf(newline + "" + ME.message + newline + "mm FILE WITH ROIS MATCHING INPUT OPTIONS NOT FOUND, OPENING ROI DRAWING FIGURE" + newline)
 
-    for ic = chandraw %some fields are redundant across channels (ie rg and mmname are the same for both channels), but for symmetry, and simpler code downstream, they're written to both channels
+    for ic = chandraw %some fields are redundant across channels (ie rg and roiname are the same for both channels), but for symmetry, and simpler code downstream, they're written to both channels
 
         stackmin = double(min(stack(:,:,:,:,ic), [], 'all'));
         stackmax = double(max(stack(:,:,:,:,ic), [], 'all'));
@@ -368,7 +371,7 @@ catch ME
         imselectkeys = {'shift', 'control'}; %hold down control with image click to select entire image as roi, hold down shift with image click to select range (from nearest selected whole image, if any, otherwise same as control)
         cbflag = flagset({'backspace', 'c', 'e', 's', 'slash', 't', 'z'}, [0,1], init=1, me=1); %set all callback flags false; struct cbflag holds mutually exclusive state switches that are set by user input while drawing figure is open, and persist until changed by user input
 
-        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+        [stacktmp, h] = stackshow([], [], [], stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, roiname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
 
         ttli = struct('drawing', 1, 'showing', 2, 'buttons', 3, 'switches', 4, 'howto', 5, 'action', 6);
         ttli.sv = [ttli.buttons, ttli.switches, ttli.howto]; %title line indices that get removed/restored when draw tool is opened/closed
@@ -680,7 +683,7 @@ catch ME
                     it = itnew;
                     dmmean(strfind(nmdm, 't')) = 0;
                 end
-                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
+                [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, roiname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys);
                 roi_on_mean_z_dummy = 0; %irrelevant here
                 [h.ttl.String, ttl_sv] = titlechange('newz', h.ttl.String, ttl_sv, ttli, ttl_prefixes, h.im.ol, zoomflag, editflag, iredit, roishape, dorg, roi_on_mean_z_dummy);
                 iznew = [];
@@ -845,7 +848,7 @@ catch ME
         %%%% ASSEMBLE mm STRUCT %%%%
 
         mm(ic).mask = roimask{ic};
-        mm(ic).mmname = mmname;
+        mm(ic).roiname = roiname;
         mm(ic).chanstr = chanstr;
         mm(ic).channel = ic;
         mm(ic).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
@@ -855,7 +858,7 @@ catch ME
             fprintf("name-value argument 'chanstr' ends with 'cp', COPYING ANY DRAWN ROIS FROM CHANNEL " + num2str(ic) + " ONTO CHANNEL " + num2str(chanreceive) + newline);
             roimask{chanreceive} = roimask{ic};
             mm(chanreceive).mask = roimask{ic};
-            mm(chanreceive).mmname = mmname;
+            mm(chanreceive).roiname = roiname;
             mm(chanreceive).chanstr = chanstr;
             mm(chanreceive).channel = chanreceive;
             mm(chanreceive).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
@@ -915,7 +918,7 @@ end
 end
 
 
-function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, mmname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
+function [stacktmp, h] = stackshow(h, subroirgba, roimask, stack, stackmnz, stackmnt, stackmnzt, stackmin, stackmax, ir, irsub, iz, it, ic, stackid, rgname, roiname, nz, nt, roishape, dorg, fontsz, dmmean, nmdm, cmap, roialpha, imselectkeys)
 
 %output stacktmp is for updating t-display, it is not necessarily what is shown in the figure (eg if z is subset)
 
@@ -981,12 +984,12 @@ if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois
     end
 end
 
-h.ttl = titlemake(h.ttl, ic, stackid, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm);
+h.ttl = titlemake(h.ttl, ic, stackid, rgname, roiname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm);
 
 end
 
 
-function ttl = titlemake(ttl, ic, stackid, rgname, mmname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm)
+function ttl = titlemake(ttl, ic, stackid, rgname, roiname, ir, irsub, iz, it, roishape, dorg, dmmean, nmdm)
 
 num_title_lines = 6;
 
@@ -1008,7 +1011,7 @@ if isempty(ttl.String) %when first making the figure/title
     if dorg
         title_roiset = ['RGNAME: "' rgname '"'];
     else
-        title_roiset = ['MMNAME: "' mmname '"'];
+        title_roiset = ['roiname: "' roiname '"'];
     end
     ttl.String(1) = { ['DRAWING:       ' title_roiset ',   ROI ' num2str(ir) ',   SUBROI ' num2str(irsub) ',   ROISHAPE: "' roishape '"'] };
 
