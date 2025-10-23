@@ -264,7 +264,7 @@ superset.t = 1:nt;
 superset.c = 1:nc;
 
 stackmnz = stacktype(mean(s.stack, strfind(nmdm, 'z')), class(s.stack));
-stackmnt = stacktype(mean(s.stack, strfind(nmdm, 't')), class(s.stack));
+stackmnt = stacktype(mean(s.mnt, strfind(nmdm, 't')), class(s.stack));
 stackmnzt = stacktype(mean(stackmnt, strfind(nmdm, 'z')), class(s.stack));
 
 if ~cellout && nc>1

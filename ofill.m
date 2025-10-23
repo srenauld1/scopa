@@ -409,7 +409,7 @@ if ~isempty(mosfinal)
         stind = structind(mostree_open_with_mosc{k});
         try
             optout_tmp = getfield(optout, stind{:});
-        catch %trying to get submos when supermos is empty
+        catch %skip trying to get submos when supermos is empty
         end
         if ~isempty(optout_tmp) && ismember(stind{end}, mostree_du)
             prs = struct2pairs(optout_tmp);

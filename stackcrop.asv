@@ -12,11 +12,11 @@ arguments (Input)
     s struct % struct output from stackld (containing s.stack, pthstack, md, and other fields); s.stack dim order is yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid);
     rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %name of region defined by output struct 'rg'; default rgname 'none' automatically makes rg the full yxz fov; user is not prompted to create an rg when rgname='none'
     opt.usegit {mustBeMember(opt.usegit,[0,1])} = [] % use git to sync rg txt file across filesystems (to prevent conflicting changes)
-    opt.justld {mustBeMember(opt.justld,[0,1])} = 0 % justld means "just load"; 1 to just load rg (and skip cropping stack); if justld=1, output s is equal to input s, and output rg is equal to rg loaded from txt file (created earlier with same inputs 's' and 'rgname'); if justld=1 and requested rg does not exist in rg txt file, output rg is empty 
+    opt.justld {mustBeMember(opt.justld,[0,1])} = 0 % justld means "just load"; 1 to just load rg (and skip cropping stack); if justld=1, output s is equal to input s, and output rg is equal to rg with loaded from txt file; if justld=1 and rg does not exist in rg txt file, output rg is empty 
 end
 arguments (Output)
-    s % same as input s, but after cropping s.stack with rg (unless justld=1, in which case s output is same as s input)
-    rg % struct containing fields with indices for cropping s.stack (iy, ix, iz, it, ic), field with region short name (rgname) and field with region full name (rgid)
+    s % same as input s, but after cropping s.stack with rg
+    rg % struct containing indices for cropping s.stack (iy, ix, iz, it, ic), region short name (rgname) and region full name (rgid)
 end
 usegit = opt.usegit;
 justld = opt.justld;
@@ -140,8 +140,6 @@ if ~justld %if input s.stack is empty, user is just checking if rg exists using 
     if ~isequal(szrg, size(s.stack, 1:maxnumdims))
         s.stack = s.stack(rg.y(1):rg.y(2), rg.x(1):rg.x(2), rg.z(1):rg.z(2), rg.t(1):rg.t(2), rg.c(1):rg.c(2)); %previously converted to single here, not sure why
     end
-
-    s.rg = rg; %update field rg
 
 end
 

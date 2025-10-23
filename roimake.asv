@@ -7,7 +7,7 @@ arguments
     s struct = []; %struct output from function stackld (contains stack, md, pthstack, and other fields)
 
     opt.s struct = struct('vg', [])
-    opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create one in this case
+    opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
     opt.roiname {mustBeTextScalar, mustBeNonempty} = 'none'; %text, name of roi set created by roimake on a single rg
     opt.dodraw {mustBeMember(opt.dodraw,[0,1]), mustBeNonempty} = 0 %1 to draw rois in roidraw
     opt.ma struct = [] %roimauto options returned by roimauto('', och=1); empty to skip roimauto; roimauto applies automated morphological roi segmentation
@@ -102,15 +102,17 @@ if isempty(t)
 end
 s = [];
 
+if ndims(stack)==3
+    stack = reshape(stack, size(stack,1), size(stack,2), 1, size(stack,3)); %put t in 4th dim if stack is 3d (assumed to be yxt)
+end
 if ndims(stack)<4 || ndims(stack)>5
     error("stack input to roidraw must have 4-5 dimensions (yxztc)")
 end
 
 numchan = size(stack,5);
 
-rg = [];
 mm = [];
-roitscm = [];
+tscm = [];
 if isempty(roimask)
     maskin = 0;
     roimask = cell(numchan,1); %needs to be cell in case 2-channel with different number rois
@@ -120,7 +122,7 @@ else
         roimask = {roimask};  %needs to be cell in case 2-channel with different number rois
     end
     if ~isequal(numel(roimask), numchan)
-        error("name-value argument roimask is a cell ")
+        error("number of channels in input 's.stack' and name-value argument 'roimask' do not match")
     end
 end
 
@@ -184,7 +186,7 @@ catch ME
 
     if ~isempty(opt_cm) && ~maskin
         prs = struct2pairs(opt_cm);
-        [roitscm, roimask] = roifauto(stack, prs{:}, rgname=rgname, roiname=roiname);
+        [tscm, roimask] = roifauto(stack, prs{:}, rgname=rgname, roiname=roiname);
     end
 
 
@@ -198,10 +200,10 @@ catch ME
 
     %%%% COMPUTE ROI TIMESERIES AND NORMALIZE %%%%
 
-    if isempty(roitscm)
+    if isempty(tscm)
         [ts, roimask] = roits(stack, roimask);
     else
-        [ts, roimask] = roits(roitscm, roimask);
+        [ts, roimask] = roits(tscm, roimask);
     end
 
 

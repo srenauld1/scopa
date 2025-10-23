@@ -4,6 +4,23 @@
 
 see docs_a2p
 
+rois are always associated with one stack, so put roi in s
+ we currently make a different roi file for each, with optid
+the advantage is we don't have to have a million checks that we have the right stack and rg 
+also things are all in one place 
+s.rg
+s.roi
+
+and stack features (like bmp) are typically associated with one stack
+same with mdl, although less often than bmp
+in any case, a bmp or mdl that uses one stack as input is saved to s
+if they use multiple s, they are saved in a common folder (like ~stacks/bmp or ~/stacks/mdl in files of their own)
+do we need to save bmp and mdl files otherwise?? since subfields of s can be loaded by themselves, maybe there is no reason
+it reduces clutter, we only lose the ability to look at what is available in file explorer, but vget can give us something similar (list of bmp or roi)
+the big concern is large files, since the stack file is already large 
+but roi files only contain the mean image, and roimasks and timeseries, usually not large (could be for lots of rois)
+
+
 %}
 
 function a2p(spec, opt)

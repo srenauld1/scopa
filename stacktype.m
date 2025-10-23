@@ -2,7 +2,7 @@ function stack = stacktype(stack, dtype)
 
 if ~isa(stack, dtype)
     if startsWith(dtype, 'u')
-        stackmin = min(stack, [], [1 2 3 4], 'omitmissing'); %compute min for all channels
+        stackmin = min(stack, [], [1 2 3 4], 'omitmissing'); %compute min for each channel
         if any(stackmin < 0)
             stack = stack - stackmin; %subtract min for all channels
             fprintf("WARNING: SUBTRACTING STACK MIN TO PREVENT CLIPPING NEGATIVE VALUES WHEN CONVERTING TO REQUESTED dtype " + dtype + newline)

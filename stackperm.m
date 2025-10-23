@@ -5,13 +5,13 @@ function [stack, dmstackout, sznew] = stackperm(stack, dmstackin, dmstackout)
 arguments
     stack
     dmstackin %char vector, current stack dim order
-    dmstackout = [] %char vector, new stack dim order (glb('dmstackdf') if empty)
+    dmstackout = [] %char vector, new stack dim order (glbfile('dmstackdf') if empty)
 end
 
 if isempty(dmstackout)
-    dmstackout = glb('dmstackdf');
+    dmstackout = glbfile('dmstackdf');
     if isempty(dmstackout)
-        error("must pass in dmstackout, or set glb('dmstackdf')")
+        error("must pass in dmstackout, or set glbfile('dmstackdf')")
     end
 end
 dmstackin = convertStringsToChars(dmstackin);

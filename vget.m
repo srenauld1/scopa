@@ -387,7 +387,7 @@ if isempty(cell2mat(optid))
     catch ME
         error("you must have made an invalid options struct for vget (vg) because ofill failed with this message: " + ME.message + newline);
     end
-    vgopt = oid(vgopt, getonly=1, usegit=usegit);
+    vgopt = oid(vgopt, justld=1, usegit=usegit);
     if ~isempty(vgopt.(obin))
         optid = transpose(fieldnames(vgopt.(obin))); %make it row vector, although here i don't think it matters
     else

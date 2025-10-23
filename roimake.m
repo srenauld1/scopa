@@ -7,7 +7,7 @@ arguments
     s struct = []; %struct output from function stackld (contains stack, md, pthstack, and other fields)
 
     opt.s struct = struct('vg', [])
-    opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create one in this case
+    opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
     opt.roiname {mustBeTextScalar, mustBeNonempty} = 'none'; %text, name of roi set created by roimake on a single rg
     opt.dodraw {mustBeMember(opt.dodraw,[0,1]), mustBeNonempty} = 0 %1 to draw rois in roidraw
     opt.ma struct = [] %roimauto options returned by roimauto('', och=1); empty to skip roimauto; roimauto applies automated morphological roi segmentation
@@ -90,8 +90,8 @@ t = opt2.t;
 roimask = opt2.roimask;
 doplt = opt2.doplt;
 
-if ~isfield(s, 'rg') || ~strcmp(s.rg, 'none')
-    error("s.rg input to roimake must be 'none'; if rg is not a field in s, you are using an old s; delete stack mat file (not tif) and run stackld again to create stack mat file with the new fields")
+if ~isfield(s, 'rg') || ~isempty(s.rg)
+    error("roimake input s must have field named 'rg', and s.rg must be empty (s.stack cannot be an rg, since roimake>stackcrop creates rg); if rg is not a field in s, or if it is not empty, you might be using an old s, or using an s that has already been passed through stackcrop; if the former, delete stack mat file (not tif) and run the most recent version of stackld to create stack mat file with the new field rg; if the latter, just run stackld again to reload the uncropped stack")
 end
 pthstack = s.pth;
 stack = s.stack;
@@ -100,7 +100,7 @@ widyxz = s.md.widyxz;
 if isempty(t)
     t = linspace(0,s.md.numvol/s.md.volrate-1/s.md.volrate,s.md.numvol);
 end
-s = [];
+% s = [];
 
 if ndims(stack)==3
     stack = reshape(stack, size(stack,1), size(stack,2), 1, size(stack,3)); %put t in 4th dim if stack is 3d (assumed to be yxt)
@@ -111,7 +111,6 @@ end
 
 numchan = size(stack,5);
 
-rg = [];
 mm = [];
 tscm = [];
 if isempty(roimask)
@@ -139,7 +138,7 @@ try
     if ~isequal(roi.maketime_optfile_roi, glb('maketime_roi'))
         error("roi id is derived from an optid file different from original")
     end
-    [~, rg] = stackcrop([], rgname); %don't input or output stack here, just loading rg
+    [~, rg] = stackcrop(s, rgname); %don't input or output stack here, just loading rg
     [~, mm] = roidraw(s, nodraw=1, roiname=roiname); %don't input stack here, just loading mm
     if ~isequal(roi.dat(1).rg, rg) || ~isequal(roi.dat(1).mm, mm(1)) || ( numel(roi.dat)==2 && ( ~isequal(roi.dat(2).rg, rg) || ~isequal(roi.dat(2).mm, mm(2)) ) )
         error("roi.dat.rg must match rg and roi.dat.mm must match mm; you may have changed rg or mm since saving roi file")

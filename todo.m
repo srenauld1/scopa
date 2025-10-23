@@ -2,6 +2,7 @@
 
 %{
 
+consider putting more fields in s (things that get used repeatedly, especially when they can cost big time/ram, like stack min, stack max, and stackmnt), but then need to be sure to update these values in stackcrop if crop
 put any argument dependent option changing before odf=1 so arguments get changed before oid gets called in ofill 
 
 tsdv need to generalize tsdv for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp

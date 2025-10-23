@@ -79,7 +79,7 @@ arguments
     opt.nm = [] % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
     opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
     opt.update = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
-    opt.getonly = 0 % read from file only, skip writing
+    opt.justld = 0 % read from file only, skip writing
     opt.usegit {mustBeMember(opt.usegit,[0,1])} = [] % use git to sync file pth across filesystems (to prevent conflicting changes); default here in arguments block is empty because we use optorglb below
     opt.dosort = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
     opt.cellout = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
@@ -88,7 +88,7 @@ s = opt.s;
 nm = opt.nm;
 dupe = opt.dupe;
 update = opt.update;
-getonly = opt.getonly;
+justld = opt.justld;
 usegit = opt.usegit;
 dosort = opt.dosort;
 cellout = opt.cellout;
@@ -114,10 +114,10 @@ end
 if dupe && update
     fprintf("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
-if getonly && dupe
-    fprintf("NOTE: you have set 'getonly' and 'dupe' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
+if justld && dupe
+    fprintf("NOTE: you have set 'justld' and 'dupe' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
-if getonly && update
+if justld && update
     fprintf("NOTE: you have set 'dupe' and 'update' to true, but their use cases never overlap, so only one will have effect, depending on your other inputs" + newline)
 end
 if startsWith(pth, '~')
@@ -215,7 +215,7 @@ if isfile(pth)
 
             if smatched %if struct matches . . .
                 if isempty(nm) % and nm is empty (whether autonm is true or not) . . .
-                    if dupe && autonm && ~getonly  %and duplicates can be written, and autonm is true
+                    if dupe && autonm && ~justld  %and duplicates can be written, and autonm is true
                         doaddon = 1;
                     end
                     matchind(k) = 1; %return the s in file that matches input s, and return its name
@@ -240,8 +240,8 @@ if isfile(pth)
     matchind = find(matchind);
 
     if isempty(matchind) || doaddon %after looping through all variables in file, if input struct doens't match any in file, append to variables in file
-        if getonly
-            fprintf("no matches to input s were found, but getonly is true, so will not create file or new name" + newline + newline)
+        if justld
+            fprintf("no matches to input s were found, but justld is true, so will not create file or new name" + newline + newline)
             nmout2 = [];
             sout2 = [];
             sfilenew2 = [];
@@ -322,8 +322,8 @@ else      %%%%% WRITE STRUCT TO NEW FILE SINCE FILE DOES NOT EXIST %%%%%
     end
     maketime_infile = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
 
-    if getonly
-        fprintf("pth des not exist, but getonly is true, so will not create file or output new name" + newline + newline)
+    if justld
+        fprintf("pth des not exist, but justld is true, so will not create file or output new name" + newline + newline)
         nmout = [];
         sout = [];
         sfilenew = [];
@@ -366,8 +366,8 @@ if isempty(sfilenew)
 
 else
 
-    if getonly
-        error("should not be here if getonly is true")
+    if justld
+        error("should not be here if justld is true")
     end
     
     fprintf("writing input struct to file " + pth + newline + newline)

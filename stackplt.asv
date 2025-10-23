@@ -72,7 +72,7 @@ dmstackdf = glbfile('dmstackdf');
 if isempty(dmstackdf)
     dmstackdf = 'yxztck'; %all dimensions allowed in stack; order here is irrelevant
 else
-    dmstackdf = [erase(dmstackdf, 'k') 'k']; %make sure k appears at the end (don't think it actually matters where, but we don't want duplicate chars)
+    dmstackdf = [erase(dmstackdf, 'k') 'k']; %make sure k appears at the end (don't think it actually matters
 end
 if isempty(dmstack)
     dmstack = dmstackdf;
