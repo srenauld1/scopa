@@ -2,7 +2,8 @@ function vecout = vecrs(vtype, vecin, opt)
 
 %{
 
-resample vector, which can be angular or categorical or "normal"; 
+resample vector using matlab function resample, or user-specified resampling indices
+input vector can be angular (radians or degrees) or categorical or "normal"; 
 vecin and vecout orientations are matched
 todo: generalize for nd
 
@@ -12,9 +13,8 @@ arguments
     vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
     vecin {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
     opt.newlen double {mustBeScalarOrEmpty, mustBePositive} = []; %new length of resampled timeseries; if nonempty, resample vecin using resample function and make vecout length match newlen; if empty, inds must be nonempty; 
-    opt.inds {mustBeVectorOrEmpty(opt.inds)} = [] %if nonempty, must be numeric vector or cell vector, will resample using interp over indices in inds (interp method depends on vtype); if empty, opt.newlen must be nonempty 
+    opt.inds {mustBeVectorOrEmpty(opt.inds)} = [] %if scalar number, new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients; if numeric vector, indices for resampling, where inds index maps to vecin index, and inds value maps to vecout index; if cell, each element is an index in vecout, and each element contains linear indices of vecin; if numeric vector or cell, will resample using interp1, where method depends on vtype)
 end
-newlen = opt.newlen;
 inds = opt.inds;
 
 wasrow = 0;
@@ -229,7 +229,7 @@ if strcmp(vtype, 'd')
     vecout = rad2deg(vecout);
 end
 
-if wasrow(vecout)
+if wasrow
     vecout = vecout';
 end
 
@@ -250,7 +250,7 @@ default_antialiasing_filter_length = default_antialiasing_filter_order+1;
 padlength = default_antialiasing_filter_length+1;
 
 padfront = repmat(x(1), padlength, 1); %make it column
-padback = repmat(x(end), padlength, 1);
+padback = repmat(x(end), padlength, 1); %make it column
 xpad = cat(1, padfront, x, padback); % extend by 2s on each side
 ypad = resample(xpad, fs_new, fs_old);
 padfrontnew = floor(padlength/fs_old*fs_new+1);
@@ -259,11 +259,3 @@ y = ypad(padfrontnew : length(ypad)-padbacknew);
 
 end
 
-
-function mustBeVectorOrEmpty(x)
-
-if ~isempty(x) && ~isvector(x)
-    error(inputname(1) + " must be empty or vector")
-end
-
-end

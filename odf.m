@@ -68,10 +68,10 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 
 %% daq (daqld: load, process daq)
 
-du.daq.rsidx = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, rsidx is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a rsidx_supp option) 
-du.daq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+du.daq.rsidx = []; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
+du.daq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
 du.daq.dvord = 2; % order of polynomial used to fit local slope
+du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, rsidx is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a rsidx_supp option) 
 du.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
 du.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
 du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
@@ -330,11 +330,6 @@ end
 mostree_invalid = mostree_flat(~ismember(mostree_flat, fnd));
 if ~isempty(mostree_invalid)
     error("the following fields are listed in mostree, but are not fields in du: " + cell2charv(mostree_invalid) )
-end
-
-tmp = split(du.daq.vrenm, '=');
-if ~strcmp(strtrim(tmp(:,2))', ["t", "epochts", "vvynom", "vh", "vvy", "bf", "bvf", "bs", "bvs", "by", "bvy", "ftcam"])
-    error("you cannot change new names for the daq in du.daq.vrenm if you're running a2p")
 end
 
 if ~strcmp(du.mdl.slvrl, 'fmincon')

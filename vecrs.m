@@ -1,4 +1,4 @@
-function vecout = vecrs(vtype, vecin, opt)
+function vecout = vecrs(vtype, vecin, rskey)
 
 %{
 
@@ -12,11 +12,8 @@ todo: generalize for nd
 arguments
     vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
     vecin {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
-    opt.newlen double {mustBeScalarOrEmpty, mustBePositive} = []; %new length of resampled timeseries; if nonempty, resample vecin using resample function and make vecout length match newlen; if empty, inds must be nonempty; 
-    opt.inds {mustBeVectorOrEmpty(opt.inds)} = [] %if nonempty, must be numeric vector or cell vector, will resample using interp over indices in inds (interp method depends on vtype); if empty, opt.newlen must be nonempty 
+    rskey {mustBeVector, mustBeA(rskey, {'numeric', 'cell'})} % rskey means resampling key; if scalar number, new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients; if numeric vector, indices for resampling, where rskey index maps to vecin index, and rskey value maps to vecout index; if cell, each element is an index in vecout, and each element contains linear indices of vecin; if numeric vector or cell, will resample using interp1, where method depends on vtype)
 end
-newlen = opt.newlen;
-inds = opt.inds;
 
 wasrow = 0;
 if isrow(vecin)
@@ -24,13 +21,12 @@ if isrow(vecin)
     vecin = vecin';
 end
 
-if ~isequal(isempty(newlen), ~isempty(inds))
-    error("opt.newlen or opt.inds must be nonempty, but not both")
-end
 
 tryrange = 3;
 
-if isempty(inds) %if inds are empty, use 'resample', looping strategy to match newlen precisely, if possible
+if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', looping strategy to match newlen precisely, if possible
+
+    newlen = rskey;
 
     dsfac = newlen / numel(vecin);
     [dsnr, dsdr] = rat(dsfac);
@@ -173,26 +169,25 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
     end
 
 
-else %if inds are nonempty, average vecin during each index of inds
+else %if rskey is not scalar number, average vecin during each index of rskey
 
-
-    if isnumeric(inds)
-        riu = unique(inds(inds~=0),'stable'); %index of each output sample
-        inds_tmp = cell(numel(riu), 1);
+    if isnumeric(rskey)
+        riu = unique(rskey(rskey~=0),'stable'); %index of each output sample
+        rsinds = cell(numel(riu), 1);
         for k = 1:numel(riu)
-            inds_tmp{riu(k)} = find(inds==riu(k)); %do this once, before taking mean, etc, since this is the slow part
+            rsinds{riu(k)} = find(rskey==riu(k)); %do this once, before taking mean, etc, since this is the slow part
         end
-    elseif iscell(inds)
-        inds_tmp = inds;
+    elseif iscell(rskey)
+        rsinds = rskey;
     end
 
-    nrs = numel(inds_tmp);
+    nrs = numel(rsinds);
 
     if strcmp(vtype, 'n')
 
         vecout = zeros(nrs, 1);
         for k = 1:nrs
-            vecout(k) = mean(vecin(inds_tmp{k})); %this is fast and arrayfun is not faster
+            vecout(k) = mean(vecin(rsinds{k})); %this is fast and arrayfun is not faster
         end
 
     elseif strcmp(vtype, 'r') || strcmp(vtype, 'd')
@@ -207,8 +202,8 @@ else %if inds are nonempty, average vecin during each index of inds
         vecoutx = zeros(nrs, 1);
         vecouty = zeros(nrs, 1);
         for k = 1:nrs
-            vecoutx(k) = mean(vecinx(inds_tmp{k})); %this is fast and arrayfun is not faster
-            vecouty(k) = mean(veciny(inds_tmp{k})); %this is fast and arrayfun is not faster
+            vecoutx(k) = mean(vecinx(rsinds{k})); %this is fast and arrayfun is not faster
+            vecouty(k) = mean(veciny(rsinds{k})); %this is fast and arrayfun is not faster
         end
         vecout = atan2(vecouty, vecoutx);
 
@@ -216,7 +211,7 @@ else %if inds are nonempty, average vecin during each index of inds
 
         cntr = zeros(nrs, 1);
         for k = 1:nrs %loop is much faster than using arrayfun
-            cntr(k) = round(mean(inds_tmp{k})); %find center index for each output sample
+            cntr(k) = round(mean(rsinds{k})); %find center index for each output sample
         end
         nzi = find(vecin);
         vecout = interp1(nzi, vecin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero vecin index
@@ -260,11 +255,3 @@ y = ypad(padfrontnew : length(ypad)-padbacknew);
 
 end
 
-
-function mustBeVectorOrEmpty(x)
-
-if ~isempty(x) && ~isvector(x)
-    error(inputname(1) + " must be empty or vector")
-end
-
-end

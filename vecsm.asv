@@ -16,13 +16,13 @@ arguments
     opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
     opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
     opt.sper double {mustBeScalarOrEmpty, mustBePositive} = []; %sample period in seconds; required if lensec is nonempty
-    opt.omitmissing = 1 %omit nan in input, smoothdata default is true; 0 will include nan
+    opt.omitnan = 1 %omit nan in input, smoothdata default is true; 0 will include nan
 end
 method = opt.method;
 lensamp = opt.lensamp;
 lensec = opt.lensec;
 sper = opt.sper;
-omitmissing = opt.omitmissing;
+omitnan = opt.omitnan;
 
 wasrow = 0;
 if isrow(vecin)
@@ -42,10 +42,7 @@ if isempty(lensamp) && ~isempty(lensec)
 end
 
 if omitmissing
-    nanflag = 'omitmissing';
-else
-    nanflag = 'includemissing';
-end
+    nanflag = 
 
 
 if strcmp(vtype, 'r') || strcmp(vtype, 'd') 

@@ -6,6 +6,8 @@
       },
       "domtype": "m",
       "dorescale": 0,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "indv": {
         "vg": []
       },
@@ -78,70 +80,18 @@
       "numcirc": 1,
       "omitnan": 1,
       "scope": "all",
-      "dvlensec": 0.4,
-      "dvord": 2,
       "smlensec": 0
     },
     "daq": {
       "balldia": 9,
-      "dvlensec": 0.4,
-      "dvlensec_supp": 0.4,
+      "dvlensec": [],
       "dvord": 2,
-      "dvord_supp": 2,
+      "rsidx": [],
       "supprate": [],
-      "tomm": [
-        "ficTracIntSide",
-        "ficTracIntForward"
-      ],
       "usefbf": 1,
       "usefbl": 1,
-      "rsidx": "none",
-      "vcategorical": [
-        "ftcam",
-        "cameraFrameClock",
-        "epoch",
-        "g4vel",
-        "g4velnom"
-      ],
-      "vdegrees": "",
-      "vnormal": [
-        "Time",
-        "heat",
-        "virmenIteration"
-      ],
-      "voltmax": 10,
-      "voltmin": 0,
-      "voltminhd": 0.52359877559829882,
-      "vradians": [
-        "ficTracIntSide",
-        "ficTracIntForward",
-        "ficTracYaw",
-        "ficTracHd",
-        "ficTracHeading",
-        "g4panels",
-        "g4yaw",
-        "g4hd"
-      ],
-      "vrenm": [
-        "t = Time, time, T",
-        "epochts = epoch",
-        "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw, g4hd",
-        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
-        "bf = ficTracIntForward",
-        "bvf = ficTracIntForward_dv",
-        "bs = ficTracIntSide",
-        "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading, ficTracHd",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
-        "ftcam = ftcam"
-      ],
-      "vtime": [
-        "Time",
-        "time",
-        "T",
-        "t"
-      ]
+      "voltlim": [0,10],
+      "voltminhd": 0.52359877559829882
     },
     "fmf": {
       "crop_edges": 1,
@@ -314,6 +264,8 @@
       },
       "domtype": "m",
       "dorescale": 0,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "indv": {
         "vg": []
       },
@@ -324,8 +276,6 @@
       "numcirc": 1,
       "omitnan": 1,
       "scope": "all",
-      "dvlensec": 0.4,
-      "dvord": 2,
       "smlensec": 0
     },
     "cm": {
@@ -376,64 +326,14 @@
     },
     "daq": {
       "balldia": 9,
-      "dvlensec": 0.4,
-      "dvlensec_supp": 0.4,
+      "dvlensec": [],
       "dvord": 2,
-      "dvord_supp": 2,
+      "rsidx": [],
       "supprate": [],
-      "tomm": [
-        "ficTracIntSide",
-        "ficTracIntForward"
-      ],
       "usefbf": 1,
       "usefbl": 1,
-      "rsidx": "none",
-      "vcategorical": [
-        "ftcam",
-        "cameraFrameClock",
-        "epoch",
-        "g4vel",
-        "g4velnom"
-      ],
-      "vdegrees": "",
-      "vnormal": [
-        "Time",
-        "heat",
-        "virmenIteration"
-      ],
-      "voltmax": 10,
-      "voltmin": 0,
-      "voltminhd": 0.52359877559829882,
-      "vradians": [
-        "ficTracIntSide",
-        "ficTracIntForward",
-        "ficTracYaw",
-        "ficTracHd",
-        "ficTracHeading",
-        "g4panels",
-        "g4yaw",
-        "g4hd"
-      ],
-      "vrenm": [
-        "t = Time, time, T",
-        "epochts = epoch",
-        "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw, g4hd",
-        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
-        "bf = ficTracIntForward",
-        "bvf = ficTracIntForward_dv",
-        "bs = ficTracIntSide",
-        "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading, ficTracHd",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
-        "ftcam = ftcam"
-      ],
-      "vtime": [
-        "Time",
-        "time",
-        "T",
-        "t"
-      ]
+      "voltlim": [0,10],
+      "voltminhd": 0.52359877559829882
     },
     "fmf": {
       "crop_edges": 1,

@@ -237,13 +237,12 @@ clear cb_array
 stackid = insertBefore(idmake(s.pth, 'stackid'), '_', '\'); %to print underscores properly
 
 callstack = dbstack('-completenames');
-fcnm = [];
 if numel(callstack) >= 2
     fcnm = callstack(2).file;
     [~, fcnm] = fileparts(fcnm);
-end
-if isequal(fcnm, 'stackcrop') && ~dorg
-    error("dorg must be true when calling roidraw from stackcrop")
+    if isequal(fcnm, 'stackcrop') && ~dorg
+        error("dorg must be true when calling roidraw from stackcrop")
+    end
 end
 
 nd = ndims(s.stack);

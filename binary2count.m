@@ -6,7 +6,9 @@ arguments
     vecin {mustBeVector}
 end
 
+wasrow = 0;
 if isrow(vecin)
+    wasrow = 1;
     vecin = vecin';
 end
 
