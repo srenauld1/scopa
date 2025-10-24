@@ -16,8 +16,8 @@ arguments
     opt2.trm = [0,0]
     opt2.roicen = []
     opt2.mask_allroi = []
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 

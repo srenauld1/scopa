@@ -8,8 +8,8 @@ format long
 maxsec = 1e9; %ignore trials longer than maxsec
 minsec = -1;  %ignore trials shorter than minsec
 numel_thresh = 0; %ignore trials shorter than this fraction of the max trial length in the found pool of trials
-slopelensec = 0.5;
-slopeord = 2;
+dvlensec = 0.5;
+dvord = 2;
 ball_radius = 4.5;
 
 limfac = 1;
@@ -79,7 +79,7 @@ count = 0;
 for j = 1:numel(allposx)
     if numel(allposx{j})>numposxmax*numel_thresh && allt{j}(end)>minsec*1e3
         count = count+1;
-        slopelen_samp = round(slopelensec/dt(j));
+        slopelen_samp = round(dvlensec/dt(j));
 
         % tmp = alldrlx{j};
         % alldrlxgood{count} = smoothdata(tmp, 'gaussian', slopelen_samp, 'omitmissing');
@@ -92,7 +92,7 @@ for j = 1:numel(allposx)
         % allintxgood{count} = allintx{j}*ball_radius;
         % allintygood{count} = allinty{j}*ball_radius;
 
-        allvelx{count} = vecdv('radians', allintx{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
+        allvelx{count} = vecdv('radians', allintx{j}, dvlensec, dvord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) alldrlygood
         cumvelxtmp = cumsum(allvelx{count});
         cumvelx(count) = cumvelxtmp(end);
 
@@ -104,7 +104,7 @@ for j = 1:numel(allposx)
         cumvelxthreshtmp = cumsum(allvelxthresh{count});
         cumvelxthresh2(count) = cumvelxthreshtmp(end);
 
-        allvely{count} = vecdv('radians', allinty{j}, slopelensec, slopeord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
+        allvely{count} = vecdv('radians', allinty{j}, dvlensec, dvord, dt(j))*ball_radius/dt(j); %why divide by dt(j); %same as (smoothed) -alldrlxgood
         cumvelytmp = cumsum(allvely{count});
         cumvely(count) = cumvelytmp(end);
 

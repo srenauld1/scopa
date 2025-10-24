@@ -9,7 +9,7 @@ arguments
     opt.s struct = struct('vg', [])
     opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
     opt.roiname {mustBeTextScalar, mustBeNonempty} = 'none'; %text, name of roi set created by roimake on a single rg
-    opt.dodraw {mustBeMember(opt.dodraw,[0,1]), mustBeNonempty} = 0 %1 to draw rois in roidraw
+    opt.dodraw (1,1) {mustBeMember(opt.dodraw,[0,1]), mustBeNonempty} = 0 %1 to draw rois in roidraw
     opt.ma struct = [] %roimauto options returned by roimauto('', och=1); empty to skip roimauto; roimauto applies automated morphological roi segmentation
     opt.cm struct = [] %roifauto options returned by roifauto('', och=1); empty to skip roifauto; roifauto calls python caiman roi extraction from matlab (functional and morphological roi segmentation)
     opt.qc struct = [] %roiqc options returned by roiqc('', och=1); empty to skip roiqc; roiqc applies quality control to rois (filtering by size, number, etc)
@@ -18,8 +18,8 @@ arguments
     
     opt2.t (1,:) double = [] %timestamp vector; only required nonempty if channorm~=0 in opt.nrm
     opt2.roimask = [] %roimask to apply to stack; if nonempty, roidraw and roimauto are skipped
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 %1 to do plots
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 %1 to do plots
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 

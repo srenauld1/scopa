@@ -4,7 +4,7 @@ do = {'sld', 'daq', 'roi'}; %string of char or cell of char; list of mos to popu
 
 o.sld.ic = [1 2];
 
-o.daq.slopelensec = .3;
+o.daq.dvlensec = .3;
 
 o.bmp.domtype = 'm';
 

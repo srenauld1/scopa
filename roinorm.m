@@ -32,8 +32,8 @@ arguments
     opt2.srate = []
     opt2.t = []
     opt2.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 
@@ -51,7 +51,7 @@ wavp = opt.wavp; %keep periods in range wavp, using continuous wavelet transform
 channorm = opt.channorm; %work in progress; 2-channel normalization with wavelet coherence based filtering
 mincoh = opt.mincoh; %work in progress min coherence threshold for channorm
 
-srate = opt2.srate; %sample period
+srate = opt2.srate; %sample period in seconds
 t = opt2.t; %time vector
 memthr = opt2.memthr; %memory threshold above which tsnorm operates in batches to prevent ram from exceeding this value
 doplt = opt2.doplt;

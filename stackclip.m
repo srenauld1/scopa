@@ -8,7 +8,7 @@ arguments
     opt.rs = 0 % 1 will rescale after clipping
     opt.skipzero = 0 % 1 will ignore zeros in computing percentiles
     opt.pthgif = ''; % path for plot
-    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 % 1 will do plot; requires double memory
+    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 % 1 will do plot; requires double memory
 end
 clip = opt.clip;
 rs = opt.rs;

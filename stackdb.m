@@ -10,7 +10,7 @@ arguments
     opt.frac = 0.25 %deblur kernal size as fraction of xyz size 
     opt.itplt = 1 % frames to plot 
     opt.dmplt = 'yxz(t)' % dimensions to plot; default is yxz on each gif frame, and time across gif frames
-    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 % 1 to plot results
+    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 % 1 to plot results
     opt.widyxz = [] %width of voxel in yxz
 end
 doiso = opt.doiso;

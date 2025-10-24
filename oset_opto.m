@@ -4,7 +4,7 @@ do = {'sld', 'roi'}; %string of char or cell of char; list of mos to populate in
 
 o.sld.ic = [1,2];
 
-o.daq.slopelensec = {.3, 0.5};
+o.daq.dvlensec = {.3, 0.5};
 
 o.bmp.domtype = 'm';
 

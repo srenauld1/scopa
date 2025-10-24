@@ -26,7 +26,7 @@ arguments
     opt.StartPointsToRun = 'all'; %'all', can try 'bounds-ineqs' to only start with points that obey user-defined constraints
     opt.XTolerance = 1e-6; %1.0000e-06
 
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 

@@ -22,8 +22,8 @@ arguments
     opt.nothr = []
     opt.colsep = 0
     opt.epoch = []
-    opt.slopelensec = []
-    opt.slopeord = 2
+    opt.dvlensec = []
+    opt.dvord = 2
     opt.fitlinealpha =  0
     opt.yconst = 0
     opt.pltstr = {'ts', 'heat', 'profile', 'hist', 'vol', 'ts2', 'scat', 'surf', 'scat2', 'polar', 'tsepoch'}
@@ -47,8 +47,8 @@ xyrng = opt.xyrng;
 nothr = opt.nothr;
 colsep = opt.colsep;
 epoch = opt.epoch;
-slopelensec = opt.slopelensec;
-slopeord = opt.slopeord;
+dvlensec = opt.dvlensec;
+dvord = opt.dvord;
 fitlinealpha = opt.fitlinealpha;
 yconst = opt.yconst;
 pltstr = opt.pltstr;
@@ -140,7 +140,7 @@ for k = 1:numel(noside)
         for q = 1:numel(lagsampz)
             for q2 = 1:numel(lagsampxy)
 
-                tmpfun(stack, noside{k}, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
+                tmpfun(stack, noside{k}, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy(q2), lagsampz(q), szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch{m}, epochts, dvlensec, dvord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
                 % close all
 
                 if ~ismember('scat', pltstr) && ~ismember('surf', pltstr) % only loop for scatterplots
@@ -156,7 +156,7 @@ end
 end
 
 
-function tmpfun(stack, noside, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, slopelensec, slopeord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
+function tmpfun(stack, noside, vish, ballh, ballvf, bmph, bmpi, nol, nor, t, sper, pthpre, gld, glv, grd, grv, glddv, glvdv, grddv, grvdv, widyxz, lagsampxy, lagsampz, szmin, facealpha, ncol, szthrxy, szthrres, szmaxfac, xyrng, nothr, colsep, epoch, epochts, dvlensec, dvord, fitlinealpha, yconst, pltstr, histplt, bmpdomain, vt, dozscore, stackrot, stackslice, ebmn)
 
 
 %%%% PREP VARS %%%%
@@ -206,13 +206,13 @@ cmap = cat(1, cmap, [0 0 0]); %add black
 
 
 noz = zscore(no);
-nodv = vecdv('radians', no, slopelensec, slopeord, sper);
+nodv = vecdv('radians', no, dvlensec, dvord, sper);
 
-bumpdv = vecdv('radians', bmph, slopelensec, slopeord, sper);
+bumpdv = vecdv('radians', bmph, dvlensec, dvord, sper);
 bumpdvrs = bumpdv*pi/max(abs(bumpdv));
 
 ballinv = -ballh;
-ballinvdv = vecdv('radians', ballinv, slopelensec, slopeord, sper);
+ballinvdv = vecdv('radians', ballinv, dvlensec, dvord, sper);
 ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
 
 if yconst
@@ -223,12 +223,12 @@ bumpnan = polarnan(bmph); %insert nan where wrap
 ballinvnan = polarnan(ballinv); %insert nan where wrap
 cuenan = polarnan(vish); %insert nan where wrap
 
-slopelensec_eb = sper*3;
-slopeord_eb = 2;
+dvlensec_eb = sper*3;
+dvord_eb = 2;
 eb2 = bmpi;
 for k = 1:size(eb2,1)
     % bmpi(k,:) = rescale(bmpi(k,:));
-    eb2(k,:) = vecdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
+    eb2(k,:) = vecdv('normal', eb2(k,:), dvlensec_eb, dvord_eb, sper);
     eb2(k,:) = zscore(eb2(k,:));
 end
 % eb2 = imgaussfilt(eb2, [0.1 0.1]);
@@ -252,15 +252,15 @@ nozmaxabspad = nozmaxabs+range(nozinv)*0.1;
 limnopad = [-nozmaxabs nozmaxabs];
 limpad = [-nozmaxabspad nozmaxabspad];
 
-slopelensec_alt = sper*3;
-slopeord_alt = 2;
+dvlensec_alt = sper*3;
+dvord_alt = 2;
 
 dodv = 0;
 if dodv %all derivatives
-    ballplot = vecdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
-    cueplot = vecdv('radians', vish, slopelensec_alt, slopeord_alt, sper);
-    bumpplot = vecdv('radians', bmph, slopelensec_alt, slopeord_alt, sper);
-    bump2plot = vecdv('radians', bump2, slopelensec_alt, slopeord_alt, sper);
+    ballplot = vecdv('radians', ballinv, dvlensec_alt, dvord_alt, sper);
+    cueplot = vecdv('radians', vish, dvlensec_alt, dvord_alt, sper);
+    bumpplot = vecdv('radians', bmph, dvlensec_alt, dvord_alt, sper);
+    bump2plot = vecdv('radians', bump2, dvlensec_alt, dvord_alt, sper);
 else
     ballplot = ballinvnan;
     cueplot = cuenan;
@@ -309,7 +309,7 @@ if ismember('heat', pltstr)
     if dozscore_hm
         for k = 1:size(bmpi,1)
             % bmpi(k,:) = rescale(bmpi(k,:));
-            % bmpi(k,:) = vecdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            % bmpi(k,:) = vecdv('normal', bmpi(k,:), dvlensec_eb, dvord_eb, sper);
             bmpi(k,:) = zscore(bmpi(k,:));
         end
         % bmpi(bmpi<0) = 0;
@@ -380,7 +380,7 @@ if ismember('profile', pltstr)
     if dozscore
         for k = 1:size(bmpi,1)
             % bmpi(k,:) = rescale(bmpi(k,:));
-            % bmpi(k,:) = vecdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            % bmpi(k,:) = vecdv('normal', bmpi(k,:), dvlensec_eb, dvord_eb, sper);
             bmpi(k,:) = zscore(bmpi(k,:));
         end
     end

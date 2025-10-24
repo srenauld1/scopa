@@ -22,8 +22,8 @@ arguments
     opt.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
     opt.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
     opt.scope = 'all'; %which part of compass to use in computing bump parameters, using anything but 'all' doesn't make much sense uunless you have a 2-circle structure, like pb; cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
-    opt.slopeord = 2; %order of polynomial used to fit sliding window slope (to compute bump speed)
-    opt.slopelensec = 0.4; %length of window (in seconds) used to fit sliding window slope (to compute bump speed); rounded to nearest sample
+    opt.dvord = 2; %order of polynomial used to fit sliding window slope (to compute bump speed)
+    opt.dvlensec = 0.4; %length of window (in seconds) used to fit sliding window slope (to compute bump speed); rounded to nearest sample
     opt.smlensec = 0; %full width of gaussian smoothing window (5 times std)
     opt.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average
     opt.maxangrs = 8; %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)opt.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass
@@ -34,8 +34,8 @@ arguments
 
     opt2.srate = []
     opt2.epochts = []
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 
@@ -112,8 +112,8 @@ numcirc = opt.numcirc;
 dorescale = opt.dorescale;
 numangrs = opt.numangrs;
 maxangrs = opt.maxangrs;
-slopelensec = opt.slopelensec;
-slopeord = opt.slopeord;
+dvlensec = opt.dvlensec;
+dvord = opt.dvord;
 smlensec = opt.smlensec;
 
 try
@@ -269,11 +269,11 @@ catch ME
     rho = rho';
 
     if smlensec
-        mu = tssm('radians', mu, smlensec, sper);
-        rho = tssm('normal', rho, smlensec, sper);
+        mu = vecsm('r', mu, lensec=smlensec, sper=sper);
+        rho = vecsm('n', rho, lensec=smlensec, sper=sper);
     end
 
-    bumpvel = vecdv('r', mu, lensec=slopelensec, ord=slopeord, sper=sper);
+    bumpvel = vecdv('r', mu, lensec=dvlensec, ord=dvord, sper=sper);
     offset = circ_dist_nan(indv.', mu);
 
     [~, k] = mink(abs(domain'-mu), numcirc, 2); %find indexes corresponding to bump position in each time point

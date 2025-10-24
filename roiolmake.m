@@ -22,7 +22,7 @@ arguments
     opt.rgb = [1,0,0] %color for each roi in output overlay rgb image; size (r,3), where r is number rois, matching roimask final dimension r
     opt.a = 0.3 %alpha (transparency) for output overlay rgb image
     opt.combine = 'occlude' %'add' or 'occlude'; how overlapping rois are combined; 'add' is additive average; 'occlude' puts later rois on top of earlier rois
-    opt.dmroi {mustBeMember(opt.dmroi,[3,4])} = [] %roi dimension in roimask; can only be 3 or 4 (or empty); only allowed to be set nonempty if background image input is empty (imgray, imrgb, imalpha) and foreground image input is roimask (not roipx), and roimask is 3d; in this case, dmroi determines whether 3rd dim is z or r 
+    opt.dmroi (1,1) {mustBeMember(opt.dmroi,[3,4])} = [] %roi dimension in roimask; can only be 3 or 4 (or empty); only allowed to be set nonempty if background image input is empty (imgray, imrgb, imalpha) and foreground image input is roimask (not roipx), and roimask is 3d; in this case, dmroi determines whether 3rd dim is z or r 
 end
 imgray = opt.imgray;
 imrgb = opt.imrgb;

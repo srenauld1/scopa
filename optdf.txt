@@ -78,16 +78,16 @@
       "numcirc": 1,
       "omitnan": 1,
       "scope": "all",
-      "slopelensec": 0.4,
-      "slopeord": 2,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "smlensec": 0
     },
     "daq": {
       "balldia": 9,
-      "slopelensec": 0.4,
-      "slopelensec_supp": 0.4,
-      "slopeord": 2,
-      "slopeord_supp": 2,
+      "dvlensec": 0.4,
+      "dvlensec_supp": 0.4,
+      "dvord": 2,
+      "dvord_supp": 2,
       "supprate": [],
       "tomm": [
         "ficTracIntSide",
@@ -95,7 +95,7 @@
       ],
       "usefbf": 1,
       "usefbl": 1,
-      "useinds": "none",
+      "rsidx": "none",
       "vcategorical": [
         "ftcam",
         "cameraFrameClock",
@@ -324,8 +324,8 @@
       "numcirc": 1,
       "omitnan": 1,
       "scope": "all",
-      "slopelensec": 0.4,
-      "slopeord": 2,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "smlensec": 0
     },
     "cm": {
@@ -376,10 +376,10 @@
     },
     "daq": {
       "balldia": 9,
-      "slopelensec": 0.4,
-      "slopelensec_supp": 0.4,
-      "slopeord": 2,
-      "slopeord_supp": 2,
+      "dvlensec": 0.4,
+      "dvlensec_supp": 0.4,
+      "dvord": 2,
+      "dvord_supp": 2,
       "supprate": [],
       "tomm": [
         "ficTracIntSide",
@@ -387,7 +387,7 @@
       ],
       "usefbf": 1,
       "usefbl": 1,
-      "useinds": "none",
+      "rsidx": "none",
       "vcategorical": [
         "ftcam",
         "cameraFrameClock",

@@ -68,22 +68,14 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 
 %% daq (daqld: load, process daq)
 
-du.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
-du.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
-du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHd", "ficTracHeading", "g4panels", "g4yaw", "g4hd"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
-du.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
-du.daq.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
-du.daq.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, useinds is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a useinds_supp option) 
-du.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and slopeord
-du.daq.slopeord = 2; % order of polynomial used to fit local slope
-du.daq.slopelensec_supp = 0.4; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
-du.daq.slopeord_supp = 2; % same as slopeord but for supplemental resampling rate (supprate, if nonempty)
-du.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if useinds is not 'none')
-du.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if useinds is not 'none')
+du.daq.rsidx = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
+du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, rsidx is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a rsidx_supp option) 
+du.daq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+du.daq.dvord = 2; % order of polynomial used to fit local slope
+du.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
+du.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
 du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
-du.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
-du.daq.voltmax = 10; % daq voltage max, need to find this in metadata
+du.daq.voltlim = [0,10]; % daq voltage [min,max]; would be better to have this in metadata
 du.daq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
 
 
@@ -212,8 +204,8 @@ du.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to ea
 du.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
 du.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
 du.bmp.scope = 'all'; %which part of compass to use in computing bump parameters, using anything but 'all' doesn't make much sense uunless you have a 2-circle structure, like pb; cell array of char, 'all', 'right', 'left', 'max', 'random', or a digits (numeric or text) denoting left half percentage weight (right will be 100-left)
-du.bmp.slopeord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
-du.bmp.slopelensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+du.bmp.dvord = 2; %order of polynomial used to fit local slope (e.g. to compute bump speed)
+du.bmp.dvlensec = 0.4; %order of polynomial used to fit local slope (e.g. to compute bump speed)
 du.bmp.smlensec = 0; %full width of gaussian smoothing window (5 times std)
 du.bmp.numangrs = 16; %how many clusters/superrois across the entire region (not hemisphere) when resampled uniformly prior to computing bump as vector average
 du.bmp.maxangrs = 8; %max number resolvable ("unaliased") angles in resampled output (ie 1/maxangrs) is highest frequency you wish to capture in output)du.bmp.smfac = 1; %when resampling compass, bandwidth of the antialiasing filter, larger number will have smoother resampled compass

@@ -25,30 +25,29 @@ upsampling imaging to match daq variables because:
 this function can retain all available lag information by averaging during
 each slice index (rather than just by volume index), or any requested
 subset of slice indices, or can just resample during each volume index, or
-can do both volume and slices; useinds controls the resampling indices
-(useinds 'none' will just use matlab function 'resample' instead) 
+can do both volume and slices; rsidx controls the resampling indices
+(rsidx 'none' will just use matlab function 'resample' instead) 
 resampling indices can contain flyback lines and/or frames, if requested with usefbl and usefbf
-this function also differentiates all requested daq variables, using movingslope to reduce noise, if desired (increase slopelensec to reduce noise)
+this function also differentiates all requested daq variables, using movingslope to reduce noise, if desired (increase dvlensec to reduce noise)
 with movingslope there is no need for smoothing first, since slope window is built in
 for circular variables, derivative operates on x and y components
 for categorical variables, derivative is just diff over slopelen using conv
 if frameClock is not on daq, uses matlab function 'resample' (again, with above adjustments for variable type)
 default frameClock approach is much slower than using 'resample', but has a little less aliasing
-useinds 'none' will use the resample approach, which takes seconds for
-each useinds register (besides none) can take ~1-5 min, but is a one-time
+rsidx 'none' will use the resample approach, which takes seconds for
+each rsidx register (besides none) can take ~1-5 min, but is a one-time
 computation, since output is saved and loaded on subsequent runs; so if you
 
-notes on useinds: can be 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 
-    'none' (resample using 'resample' function with padding to remove start/end filter transients), 
-    'slice' (resample using all slice indices), 
-    'vol' (resample using volume indices), 
-    'all' (resample using all slice indices and volume indices), 
-    numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 
-'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; 
-the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-smoothing daq variables before differentiation should not be necessary because the resampling is downsampling by a large factor,
-and vecdv allows variable slope window anyway (increase to reduce output noise), 
-but if you still want to smooth, function tssm handles circular and normal variables separately (but will error for categorical)
+notes on rsidx: empty [], or numeric vector of slice indices, with 0 denoting volume indices; 
+    eg [0 4] will resample with volume indices, and slice 4 indices
+    eg empty [] will resample without slice or volume indices, and will instead use matlab resample function to match numvol
+    [] is fastest by far, but has a little more aliasing, which is probably almost never a problem; 
+    slice resampling can be useful for slow imaging rate, or large flyback; 
+    the greater numel(rsidx), the slower this function on first run (output is saved/loaded for subsequent runs)
+
+smoothing daq variables before differentiation should not be necessary because the resampling is a downsampling by a large factor,
+and vecdv allows the user to set the differentiation window (increase dvlenserc to reduce noise in derivative/velocity), 
+but if you still want to smooth, function vecsm handles angular and non-angular variables separately (but will error for categorical)
 
     opt2.vrenm
         string array; 
@@ -81,14 +80,12 @@ arguments
 
     pthdaq char {mustBeTextScalar} = '' %path to original daq file; if empty, user prompted to select file
 
-    opt.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one-indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
-    opt.slopelensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and slopeord
-    opt.slopeord (1,1) double {mustBeMember(opt.slopeord,1:8)} = 2; % order of polynomial used to fit local slope
-    opt.supprate double {mustBeScalarOrEmpty} = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, useinds is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a useinds_supp option)
-    opt.slopelensec_supp double {mustBeScalarOrEmpty, mustBePositive} = []; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
-    opt.slopeord_supp (1,1) double {mustBeMember(opt.slopeord_supp,1:8)} = 2; % same as slopeord but for supplemental resampling rate (supprate, if nonempty)
-    opt.usefbl (1,1) {mustBeMember(opt.usefbl,[0,1])} = 1; % whether to include flyback lines when resampling with frame indices (if useinds is not 'none')
-    opt.usefbf (1,1) {mustBeMember(opt.usefbf,[0,1])} = 1; % whether to include flyback frames when resampling with volume indices (if useinds is not 'none')
+    opt.rsidx = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one-indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
+    opt.dvlensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+    opt.dvord (1,1) double {mustBeMember(opt.dvord,1:8)} = 2; % order of polynomial used to fit local slope
+    opt.supprate double {mustBeScalarOrEmpty} = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, rsidx is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a rsidx_supp option)
+    opt.usefbl (1,1) {mustBeMember(opt.usefbl,[0,1])} = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
+    opt.usefbf (1,1) {mustBeMember(opt.usefbf,[0,1])} = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
     opt.balldia (1,1) double = 9; % mm, used to convert fictrac variables into mm
     opt.voltlim (1,2) double = [0,10]; % daq voltage [min,max]; need to get this from metadata, rather than setting it here
     opt.voltminhd (1,1) double = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12)
@@ -96,13 +93,13 @@ arguments
 
     opt2.vpp (:,1) string = [  %string array; vpp means variable processing pattern each element is "newname = oldnames = type = do", where newname is one name, oldnames is comma separated list of names, type is single char, and do is 0 or 1; see docs above for more detail
         "t = t, Time, time, T = t = 1";
-        "bf = bf, ficTracIntForward = m = 1";
+        "bf = bf, ficTracIntForward = m = 0";
         "bs = bs, ficTracIntSide = m = 1";
         "bh = bh, ficTracYaw, ficTracHeading, ficTracHd = r = 1";
-        "vh = vh, g4panels, g4yaw, g4hd = r = 1";
+        "vh = vh, g4panels, g4yaw, g4hd = r = 0";
         "vvynom = vvynom, g4vel, g4velnom = c = 1";
-        "epochts = epochts, epoch = c = 1";
-        "ftcam = ftcam, ftcam = c = 1"
+        "epochts = epochts, epoch = c = 0";
+        "ftcam = ftcam, ftcam = c = 0"
         "heat = heat = c = 0"
         "iter = iter, virmenIteration = c = 0"
         ];
@@ -112,11 +109,11 @@ arguments
         "bvy = bh"; %ball heading becomes ball velocity yaw
         "vvy = vh"; %vis heading becomes vis velocity yaw
         ]
-    opt2.pth_daqrs = [] %can optionally pass in path to resampled daq file (if you don't it will be derived from pthdaq)
-    opt2.pth_ftvid = [] %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py, if you don't it will be derived from pthdaq)
-    opt2.pth_ftvidrs = [] %can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthdaq)
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.pth_daqrs char {mustBeTextScalar} = '' %can optionally pass in path to resampled daq file (if you don't it will be derived from pthdaq)
+    opt2.pth_ftvid char {mustBeTextScalar} = '' %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py, if you don't it will be derived from pthdaq)
+    opt2.pth_ftvidrs char {mustBeTextScalar} = '' %can optionally pass in save path for new temporally downsampled fictrac video (if you don't it will be derived from pthdaq)
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 
@@ -130,12 +127,12 @@ end
 
 opt = optidcheck('daq', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
-useinds = opt.useinds;
-slopelensec = opt.slopelensec;
-slopeord = opt.slopeord;
+rsidx = opt.rsidx;
+dvlensec = opt.dvlensec;
+dvord = opt.dvord;
 supprate = opt.supprate;
-slopelensec_supp = opt.slopelensec_supp;
-slopeord_supp = opt.slopeord_supp;
+dvlensec_supp = opt.dvlensec_supp;
+dvord_supp = opt.dvord_supp;
 usefbl = opt.usefbl;
 usefbf = opt.usefbf;
 balldia = opt.balldia;
@@ -215,8 +212,8 @@ catch ME
 
     fprintf("tried loading daqrs file but it failed with this message: " + newline + ME.message + newline + "trying to process daq data now" + newline)
 
-    if round(slopelensec/sper)<slopeord+1
-        error("slopelensec is too short given slopeord and sample rate, and will cause error in vecdv; you need to make slopelensec longer for this recording; the shortest possible value that will not cause error is (slopeord+1)*sper; for this recording that is: " + num2str( (slopeord+1)*sper))
+    if round(dvlensec/sper)<dvord+1
+        error("dvlensec is too short given dvord and sample rate, and will cause error in vecdv; you need to make dvlensec longer for this recording; the shortest possible value that will not cause error is (dvord+1)*sper; for this recording that is: " + num2str( (dvord+1)*sper))
     end
 
 
@@ -224,22 +221,24 @@ catch ME
 
     vpp = convertStringsToChars(erase(vpp, " "));
     spl = split(vpp, '=');
-    vppold = [];
     vrenm = strings(size(spl,1),1);
     for k = 1:size(spl,1)
         vrenm(k,:) = string(strjoin([spl(k,1), spl(k,2)], '='));
-        vppold = cat(2, vppold, strsplit(spl{k,2}, ','));
     end
-    vpp = vpp(strcmp(spl(:,4), '1')); %keep vpp with do=1
-    spl = split(vpp, '=');
+    vppdotrue = vpp(strcmp(spl(:,4), '1')); %keep vpp with do=1
+    spl = split(vppdotrue, '=');
     vppnew = spl(:,1);
     vppold = spl(:,2);
     vpptypes = spl(:,3);
-    vppr2m = split(spl(strcmp(vpptypes, 'm'),2), ',');
     vpptime = split(spl(strcmp(vpptypes, 't'),2), ',');
     if ~isvector(vpptime)
         error("there must be one and only one element with do=1 and type='t' in string array 'vpp'")
     end
+
+    nmvel = convertStringsToChars(erase(nmvel, " "));
+    spl = split(nmvel, '=');
+    nmvelnew = spl(:,1);
+    nmvelold = spl(:,2);
 
 
     %%%% LOAD DAQ DATA %%%%
@@ -249,7 +248,7 @@ catch ME
     tdvnames = trialData.Properties.VariableNames;
     vtime = string(vpptime(ismember(vpptime, tdvnames)));
     if isempty(vtime)
-        error("none of the oldnames with type 'm' in vpp are fields in trialData in the original daqData file; you need a time variable")
+        error("in vpp, none of the oldnames with type='t' and do=1 vpp elements are fields in trialData in the original daqData file; you need a time variable")
     end
 
     if exist('outputData', 'var') && outputData(2)==0 && outputData(end-1)==0 %output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing final flyback frames (if they exist)
@@ -279,38 +278,38 @@ catch ME
 
     %%%%%%%%% DEFINE INDICES FOR DOWNSAMPLING: EXTRACT SLICE AND VOLUME INDICES FROM SCANIMAGE CLOCKS %%%%%%%%%
 
-    if strcmp(useinds, 'none')
+    if strcmp(rsidx, 'none')
         daqidx.frame = []; %frame inds are not used outside function daqidxmake, although could be in the same way as slice or volume indices
         daqidx.slice = [];
         daqidx.vol = [];
-        fprintf("user requested useinds 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
+        fprintf("user requested rsidx 'none'; downsampling daq data with 'resample' function, rather than resampling with frame and/or volume indices" + newline)
     else
         if any(strcmp(tdvnames, 'frameClock')) %cannot run daqidxmake without frameClock
             daqidx = daqidxmake(trialData.frameClock, trialData.(vtime), usefbl=usefbl, usefbf=usefbf, numvol=numvol, numslice=numslice, numslice_withflyback=numslice_withflyback, doplt=doplt, pthfig=[pthpre '_daqinds_.gif']);
         else
-            error("user requested a value for useinds that requires frameClock, but frameClock is not on daq; when frameClock is not on daq, useinds='none' is the only option")
+            error("user requested a value for rsidx that requires frameClock, but frameClock is not on daq; when frameClock is not on daq, rsidx='none' is the only option")
         end
     end
 
 
-    %%%%%%%%% DEFINE INDICES FOR DOWNSAMPLING: FILTER SLICE INDS AND VOLUME INDS ACCORDING TO USEINDS %%%%%%%%%
+    %%%%%%%%% DEFINE INDICES FOR DOWNSAMPLING: FILTER SLICE INDS AND VOLUME INDS ACCORDING TO rsidx %%%%%%%%%
 
-    if strcmp(useinds, 'slice') || strcmp(useinds, 'none')
+    if strcmp(rsidx, 'slice') || strcmp(rsidx, 'none')
         daqidx.vol = [];
     end
-    if strcmp(useinds, 'vol') || strcmp(useinds, 'none')
+    if strcmp(rsidx, 'vol') || strcmp(rsidx, 'none')
         daqidx.slice = [];
     end
-    if isnumeric(useinds)
-        if any(~ismember(useinds(useinds~=0), daqidx.slice))
-            error("you requested a useinds that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
+    if isnumeric(rsidx)
+        if any(~ismember(rsidx(rsidx~=0), daqidx.slice))
+            error("you requested a rsidx that does not exist in sliceinds; it may exceed numslice_withflyback, or it may have been eliminated from sliceinds given your setting for usefbf")
         end
-        if all(useinds==0) %useinds=0 is same as useinds='vol'
+        if all(rsidx==0) %rsidx=0 is same as rsidx='vol'
             daqidx.slice = [];
         else
-            daqidx.slice(~ismember(daqidx.slice, useinds)) = 0;
+            daqidx.slice(~ismember(daqidx.slice, rsidx)) = 0;
         end
-        if ~ismember(0, useinds)
+        if ~ismember(0, rsidx)
             daqidx.vol = [];
         end
     end
@@ -319,7 +318,7 @@ catch ME
     else
         include_volume_resample = 1;
     end
-    if strcmp(useinds, 'none')
+    if strcmp(rsidx, 'none')
         include_volume_approx_resample = 1;
     else
         include_volume_approx_resample = 0;
@@ -333,21 +332,21 @@ catch ME
     sliceinds_unique = unique(daqidx.slice(daqidx.slice~=0));
     num_unique_sliceinds = numel(sliceinds_unique);
     num_resamples = num_unique_sliceinds + include_volume_resample + include_volume_approx_resample; %resample for each slice remaining in sliceinds, and and another for volume (if it volinds remains)
-    useinds_save = cell(num_resamples, 1);
+    rsidx_save = cell(num_resamples, 1);
     for rsi = 1:num_resamples
 
         newrow = table();
 
-        if strcmp(useinds, 'none')
+        if strcmp(rsidx, 'none')
             rsinds = [];
-            useinds_save{rsi} = {'none'};
+            rsidx_save{rsi} = {'none'};
         else
             if rsi<num_unique_sliceinds+1
-                rsinds_tmp = bin2ind(daqidx.slice==sliceinds_unique(rsi)); %each slice
-                useinds_save{rsi} = {['slice' num2str(sliceinds_unique(rsi))]};
+                rsinds_tmp = binary2count(daqidx.slice==sliceinds_unique(rsi)); %each slice
+                rsidx_save{rsi} = {['slice' num2str(sliceinds_unique(rsi))]};
             else
                 rsinds_tmp = daqidx.vol;
-                useinds_save{rsi} = {'volume'};
+                rsidx_save{rsi} = {'volume'};
             end
 
             riu = unique(rsinds_tmp(rsinds_tmp~=0),'stable'); %index of each resampling register (frame or volume)
@@ -366,50 +365,49 @@ catch ME
             kp = find(~cellfun(@isempty, regexp(vppold, ['^(.+,)*' tdvname '(,.+)*$'])));
 
             if isscalar(kp)
-
-                vpptype = vpptypes{kp};
-
-                if strcmp(vpptype, 't') 
-                    vpptype = 'n'; %t gets same treatment as n in vecrs and vecdv (and t doesn't exist in those functions
-                end
-                if strcmp(tdvname, vtime)
-                    trialData.(tdvname) = trialData.(tdvname)-starttime; %zero imaging starttime in case daq ran in the background
-                end
                 
+
                 tmp = trialData.(tdvname);
 
+                if doplt
+                    tmp_original = tmp;
+                end
+                if strcmp(tdvname, vtime)
+                    tmp = tmp-starttime; %zero imaging starttime in case daq ran in the background
+                end
                 if isduration(tmp) %not all durations are the "time" variable
                     tmp = seconds(tmp); %convert to seconds, whatever the units
                 end
-                if strcmp(vpptype, 'r')
+                if strcmp(vpptypes{kp}, 'r')
                     tmp = wrapToPi(tmp/(voltlim(2)-voltlim(1))*2*pi+voltminhd); %put in range -pi to pi, with 0 in front of fly
                 end
 
                 if isequal(vec(unique(tmp)), [0;1])
-                    tmp = bin2ind(tmp);
+                    tmp = binary2count(tmp);
                 end
+
+                vtype = regexprep2(vpptypes{kp}, {'t', 'm'}, {'n', 'r'}, whole=1); %vtype is input for functions vecrs and vecdv; in these functions, t needs to get the same treatment as n, and m same as r (and t and m aren't valid vtypes in those functions)
 
                 tmp_supp = [];
                 tmpdv_supp = [];
-                if supprate %resample into supplemental rate (allowing a second resampling rate, in addition to the default resampling into imaging rate,
+                if supprate %resample into supplemental rate (allowing a second resampling rate, in addition to the default resampling into imaging rate)
                     numvol_supp = round(numvol*sper*supprate);
                     sper_supp = 1/supprate;
-                    tmp_supp = vecrs(vpptype, tmp, newlen=numvol_supp); %resample into supplemental rate
-                    tmpdv_supp = vecdv(vpptype, tmp_supp, lensec=slopelensec_supp, ord=slopeord_supp, sper=sper_supp); %find local slope (velocity for some vars)
+                    tmp_supp = vecrs(vtype, tmp, newlen=numvol_supp); %resample into supplemental rate
+                    tmpdv_supp = vecdv(vtype, tmp_supp, lensec=dvlensec_supp, ord=dvord_supp, sper=sper_supp); %find local slope (velocity for some vars)
                 end
 
-                tmp = vecrs(vpptype, tmp, newlen=numvol, inds=rsinds); %resample into imaging rate
-                tmpdv = vecdv(vpptype, tmp, lensec=slopelensec, ord=slopeord, sper=sper); %find local slope (velocity for some vars)
+                tmp = vecrs(vtype, tmp, newlen=numvol, inds=rsinds); %resample into imaging rate
+                tmpdv = vecdv(vtype, tmp, lensec=dvlensec, ord=dvord, sper=sper); %find local slope (velocity for some vars)
 
                 if doplt
-                    tmp_original = trialData.(tdvname);
                     tsplt([], tmp, [], tmp_original, xseg=20, titlein=tdvname, pthgif=[pthpre tdvname '_.gif'])
                     tsplt([], tmpdv, [], tmp_original, xseg=20, titlein=tdvname, pthgif=[pthpre tdvname '_dv_.gif'])
                     tsplt([], tmp_supp, [], tmp_original, xseg=20, titlein=tdvname, pthgif=[pthpre tdvname 'supp_.gif'])
                     tsplt([], tmpdv_supp, [], tmp_original, xseg=20, titlein=tdvname, pthgif=[pthpre tdvname '_dv_supp_.gif'])
                 end
 
-                if any(strcmp(tdvname, vppr2m))
+                if strcmp(vpptypes{kp}, 'm')
                     tmp = unwrap(tmp);  %unwrap circular
                     tmp_supp = unwrap(tmp_supp);  %unwrap circular
                     tmp = tmp - tmp(1); %zero
@@ -422,20 +420,26 @@ catch ME
                     tmpdv_supp = tmpdv_supp*balldia/2; %convert to mm
                 end
 
-                if strcmp(tdvname, vtime) && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for useinds 'none', it is artifactually slightly above zero
+                if strcmp(vpptypes{kp}, 't') && strcmp(idxreg, 'start') %if idxreg is 'start', make sure time starts at zero, for rsidx 'none', it is artifactually slightly above zero
                     tmp(1) = 0;
                 end
 
-                newrow.(tdvname) = {tmp(:)}; %put column vector in cell, then table, for variable sizes
-                newrow.([tdvname '_dv']) = {tmpdv(:)}; %put column vector in cell, then table, for variable sizes
-                newrow.([tdvname '_supp']) = {tmp_supp(:)}; %put column vector in cell, then table, for variable sizes
-                newrow.([tdvname '_dv_supp']) = {tmpdv_supp(:)}; %put column vector in cell, then table, for variable sizes
+                nm = regexprep2(tdvname, strsplit(vppold{kp}, ','), vppnew{kp}, whole=1);
+                newrow.(nm) = {tmp(:)}; %put column vector in cell, then table, for variable sizes
+                newrow.([nm '_supp']) = {tmp_supp(:)}; %put column vector in cell, then table, for variable sizes
+
+                if ismember(nm, nmvelold)
+                    nmveltmp = regexprep2(nm, nmvelold, nmvelnew, whole=1);
+                    newrow.(nmveltmp) = {tmpdv(:)}; %put column vector in cell, then table, for variable sizes
+                    newrow.([nmveltmp '_supp']) = {tmpdv_supp(:)}; %put column vector in cell, then table, for variable sizes
+                end
 
             elseif isempty(kp)
-                fprintf("warning, daq does not have variable named '" + tdvname + "', skipping it" + newline)
+                fprintf("warning, trialData field '" + tdvname + "' is not listed in vpp oldnames, so it will not be processed and will not appear in output struct 'daq'" + newline)
             else
                 error("in oldnames listed in vpp, there are multiple matches to trialData field " + tdvname)
             end
+        
         end
 
         daq = [daq; newrow];
@@ -444,21 +448,15 @@ catch ME
 
     daq = table2struct(daq);
 
-
-    %%%% RENAME %%%%
-
-    if supprate %if supprate, include supp in renaming string
-        nrs = numel(vrenm);
-        for k = 1:numel(vrenm)
-            renmtmp = strtrim(strsplit(vrenm{k}, '='));
-            nmnew = renmtmp{1};
-            nmnew = strcat(nmnew, '_supp');
-            nmold = strtrim(strsplit(renmtmp{2}, ','));
-            nmold = strcat(nmold, '_supp');
-            vrenm(nrs+k) = strcat(nmnew, " = ", convertCharsToStrings(strjoin(nmold, ', ')));
+    tmp = [];
+    for k = 1:numel(vppnew)
+        if ~ismember(vppnew{k}, fieldnames(daq))
+            tmp.(vppnew{k}) = []; %add as empty [] any vpp newnames not found as fields in trialData
         end
     end
-    daq = structrenm(daq, vrenm, onlynew=1, forcenew=1); %rename daq fields according to renm, remove fields not listed in renm (onlynew=1), include all newnames in renm (forcenew=1)
+    tmp = repelem(tmp, numel(daq));
+    daq = cell2struct([struct2cell(daq);struct2cell(tmp)],[fieldnames(daq);fieldnames(tmp)]);
+
 
 
     for k = 1:numel(daq) %in case you used multiple registers with daqidx, daq struct will be nonscalar
@@ -519,7 +517,7 @@ catch ME
         %%%% RECORD SOME METADATA %%%%
 
         daq(k).md = md; %save metadata in case it changes
-        daq(k).useinds = useinds_save{k};
+        daq(k).rsidx = rsidx_save{k};
         daq(k).opt = opt;
         daq(k).optid = optid;
         daq(k).recid = id.recid;

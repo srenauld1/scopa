@@ -2,8 +2,10 @@ function s = structrenm(s, renm, opt)
 
 %{
 
-rename struct fields at top level of struct (does not recurse yet, in case nested)
-s is input (and output) struct to have fields renamed
+this function works but doesn't have a great reason to exist until it can recurse and use regexp to rename (see todo below)
+
+rename struct fields at top level of struct (does not recurse yet)
+s is input struct to have fields renamed (s is also output)
 input argument renm is renaming pattern
     must be string array or cell array (or character vector if only one field is being renamed); 
     format of each element of renm is "newname = oldnames", where newname is one fieldname, oldnames is comma separated list of fieldnames; 
@@ -19,7 +21,7 @@ name-value argument 'onlynew'
     2 to error if there are any fields unlisted in renm
 
 TODO: allow regexp in renm
-TODO: allow nested structs
+TODO: recurse to allow nested structs
 
 %}
 
@@ -28,13 +30,12 @@ arguments
     renm % renaming pattern; see docs above for details
     opt.onlynew = 0 % 1 to remove from output struct s any fields unlisted in renm, 2 to error if there are any unlisted fields, 0 to keep any unlisted fields
     opt.forcenew = 0 % 1 to include all newnames in output struct even if no corresponding oldnames are found in input struct s (in which case, s.newname=[])
-    opt.delim_newold = '=' % delimiter separating newname from oldnames
-    opt.delim_oldnames = ',' % delimiter separating oldnames from each other
 end
 onlynew = opt.onlynew;
 forcenew = opt.forcenew;
-delim_newold = opt.delim_newold;
-delim_oldnames = opt.delim_oldnames;
+
+delim_newold = '='; % delimiter separating newname from oldnames
+delim_oldnames = ','; % delimiter separating oldnames from each other
 
 if ~isstring(renm) && ~iscellstr(renm)
     if ischar(renm)

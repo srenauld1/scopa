@@ -87,8 +87,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a2": {
@@ -171,8 +171,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a3": {
@@ -259,8 +259,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a4": {
@@ -347,8 +347,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a5": {
@@ -439,8 +439,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a6": {
@@ -531,8 +531,8 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a7": {
@@ -625,8 +625,8 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a8": {
@@ -715,8 +715,8 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a9": {
@@ -807,8 +807,8 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a10": {
@@ -832,8 +832,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a11": {
@@ -856,8 +856,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a12": {
@@ -881,8 +881,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.5185,
-    "slopeord": 2,
+    "dvlensec": 0.5185,
+    "dvord": 2,
     "smlensec": 0
   },
   "a13": {
@@ -973,8 +973,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a14": {
@@ -993,8 +993,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "a15": {
@@ -1014,8 +1014,8 @@
     "omitnan": 1,
     "roi": [],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "md": {
@@ -1044,8 +1044,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "z2": {
@@ -1083,8 +1083,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "z3": {
@@ -1122,8 +1122,8 @@
     "omitnan": 1,
     "roi": [],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "z4": {
@@ -1160,8 +1160,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   },
   "z5": {
@@ -1196,8 +1196,8 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "smlensec": 0
   }
 }

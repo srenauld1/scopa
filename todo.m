@@ -8,9 +8,9 @@ and maybe voltminhd
 consider putting more fields in s (things that get used repeatedly, especially when they can cost big time/ram, like stack min, stack max, and stackmnt), but then need to be sure to update these values in stackcrop if crop
 put any argument dependent option changing before odf=1 so arguments get changed before oid gets called in ofill 
 
-vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp
+vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like dvlensec and slopelensamp
 
-deal with nonscalar daq output within daqld (when useinds are multiple) while multiple optid also make daq nonscalar (outside daqld)
+deal with nonscalar daq output within daqld (when rsidx are multiple) while multiple optid also make daq nonscalar (outside daqld)
 consider renaming roi child mos 
     rmm
     rma
@@ -97,7 +97,7 @@ make sure fictrac has not flatlined, epoch might be as expected despite fictrac 
 write function to delete a variable in txt (not allow manual) that will also delete all associated files
 \n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??
 apply vecdv to daq directly, not output of vecrs
-make vsmooth for all variables rather than stacksm and tssm
+make vsmooth for all variables rather than stacksm and vecsm
 MAKE TIME ALWAYS 2ND DIM
 FIX DIFFERENT roi OPTS FOR EACH RGNAME, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS
 CAN STACK REMAIN INT16?? zero in uint16 is nice though

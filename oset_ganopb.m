@@ -7,8 +7,8 @@ rgname = {'pb'}; %use 'none' to skip prompt to define substack (will enter roi c
 
 
 if str2double(o.id.recdate)<20231100
-    o.daq.slopelensec = 0.8;
-    fprintf("WARNING THIS IS A LOW VOLRATE RECORDING, SLOPELENSEC IS 0.8 SEC" + newline)
+    o.daq.dvlensec = 0.8;
+    fprintf("WARNING THIS IS A LOW VOLRATE RECORDING, dvlensec IS 0.8 SEC" + newline)
 end
 
 o = ofill(o);

@@ -10,7 +10,7 @@ arguments
     resp1
     resp2
     opt.t = []
-    opt.sper = [] %sample period, inverse sample rate
+    opt.sper = [] %sample period in seconds, inverse sample rate
     opt.srate = [] %sample rate
     opt.it = 1:size(resp1,2)
     opt.roiind = 1:size(resp1,1)

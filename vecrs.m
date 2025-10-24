@@ -2,19 +2,27 @@ function vecout = vecrs(vtype, vecin, opt)
 
 %{
 
-resample vector, which can be angular or categorical or "normal"
+resample vector using matlab function resample, or user-specified resampling indices
+input vector can be angular (radians or degrees) or categorical or "normal"; 
+vecin and vecout orientations are matched
 todo: generalize for nd
 
 %}
 
 arguments
     vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
-    vecin (1,:) {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
+    vecin {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
     opt.newlen double {mustBeScalarOrEmpty, mustBePositive} = []; %new length of resampled timeseries; if nonempty, resample vecin using resample function and make vecout length match newlen; if empty, inds must be nonempty; 
     opt.inds {mustBeVectorOrEmpty(opt.inds)} = [] %if nonempty, must be numeric vector or cell vector, will resample using interp over indices in inds (interp method depends on vtype); if empty, opt.newlen must be nonempty 
 end
 newlen = opt.newlen;
 inds = opt.inds;
+
+wasrow = 0;
+if isrow(vecin)
+    wasrow = 1;
+    vecin = vecin';
+end
 
 if ~isequal(isempty(newlen), ~isempty(inds))
     error("opt.newlen or opt.inds must be nonempty, but not both")
@@ -152,7 +160,6 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         vecout = atan2(inpy, inpx);
 
 
-
     elseif strcmp(vtype, 'c') %would mode be better than nearest for categorical variables?
 
         tmp = linspace(1,numel(vecin),newlen+1);
@@ -223,6 +230,10 @@ if strcmp(vtype, 'd')
     vecout = rad2deg(vecout);
 end
 
+if wasrow
+    vecout = vecout';
+end
+
 
 end
 
@@ -239,8 +250,8 @@ default_antialiasing_filter_order = 2*default_antialiasing_filter_order_scalefac
 default_antialiasing_filter_length = default_antialiasing_filter_order+1;
 padlength = default_antialiasing_filter_length+1;
 
-padfront = repmat(x(1), padlength, 1);
-padback = repmat(x(end), padlength, 1);
+padfront = repmat(x(1), padlength, 1); %make it column
+padback = repmat(x(end), padlength, 1); %make it column
 xpad = cat(1, padfront, x, padback); % extend by 2s on each side
 ypad = resample(xpad, fs_new, fs_old);
 padfrontnew = floor(padlength/fs_old*fs_new+1);

@@ -7,12 +7,12 @@ rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter
 
 %%%% DAQ %%%%
 
-o.daq.slopelensec = 0.4;
+o.daq.dvlensec = 0.4;
 
 %%%% BMP %%%%
 
 
-o.bmp.slopelensec = 0.4;
+o.bmp.dvlensec = 0.4;
 o.bmp.domtype = 'f';
 
 bmpindv.vg.daq = ['*'];

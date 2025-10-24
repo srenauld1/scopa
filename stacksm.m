@@ -12,14 +12,14 @@ can prevent ram from exceeding input ram
 arguments
     stack
     opt.method = 'gaussian' %smoothing method for smoothdata function; can be sequence of multiple (cell array of char vectors)
-    opt.smlenpx = [] % length-3 vector, yxz smoothing window size
-    opt.smlensec = [] % scalar, seconds to smooth (does not have to be integer)
-    opt.imrate = [] %imaging rate, only required if smlensec is nonempty; can be approximate (just determines window size from smlensec)
+    opt.lenpx = [] % length-3 vector, yxz smoothing window size
+    opt.lensec = [] % scalar, seconds to smooth (does not have to be integer)
+    opt.imrate = [] %imaging rate in hz, only required if lensec is nonempty; can be approximate (just determines window size from lensec)
     opt.memthr = 1e9 %memory threshold; if stack size (in bytes) exceeds memthr, we operate on stack in batches to prevent RAM crash; 1e9 is 1 gb; operate in batches to prevent ram from exceeding input stack size (since smoothdata converts from integer data inside function)
 end
 method = opt.method;
-smlenpx = opt.smlenpx;
-smlensec = opt.smlensec;
+lenpx = opt.lenpx;
+lensec = opt.lensec;
 imrate = opt.imrate;
 memthr = opt.memthr;
 
@@ -31,28 +31,28 @@ if ~iscell(method)
     method = {method};
 end
 
-if ~isempty(smlensec) && isempty(imrate)
-    error("if smlensec is nonempty, must input imrate")
+if ~isempty(lensec) && isempty(imrate)
+    error("if lensec is nonempty, must input imrate")
 end
 
-if isempty(smlenpx)
-    smlenpx = [0 0 0];
+if isempty(lenpx)
+    lenpx = [0 0 0];
 else
-    if numel(smlenpx)~=3 || ~isvector(smlenpx)
-        error("smlenpx must be 3-element vector")
+    if numel(lenpx)~=3 || ~isvector(lenpx)
+        error("lenpx must be 3-element vector")
     end
 end
 
-if isempty(smlensec)
-    smlensec = 0;
+if isempty(lensec)
+    lensec = 0;
 else
-    if ~isscalar(smlensec)
-        error("smlensec must be scalar")
+    if ~isscalar(lensec)
+        error("lensec must be scalar")
     end
 end
 
-smlensamp = smlensec*imrate;
-smlen = [smlenpx smlensamp];
+lensampt = lensec*imrate;
+lenall = [lenpx lensampt];
 dtype = class(stack);
 
 numchan = size(stack, 5);
@@ -67,15 +67,15 @@ numframes = size(stack,4);
 
 for m = 1:numel(method)
     for c = 1:numchan %do one channel at a time to keep temporary double output from crashing matlab if stack is big 2-channel
-        for w = 1:numel(smlen)
-            if smlen(w) %in case stack is large, looping over each dimension and converting dtype as we go
+        for w = 1:numel(lenall)
+            if lenall(w) %in case stack is large, looping over each dimension and converting dtype as we go
                 if isfinite(numseg) && numseg>1 %if stack is larger than memthr, convert to single (double or single required for mtimes, which is by far fastest way to do this part) in segments to use less ram, since respnew, even though it is also single precision, is generally much smaller than stack
                     seglen = ceil(numframes/numseg);
                     k = 0;
                     while true
                         k = k+1;
                         if w==4
-                            idx = [1:seglen]+(seglen-ceil(smlen(w)))*(k-1);
+                            idx = [1:seglen]+(seglen-ceil(lenall(w)))*(k-1);
                         else
                             idx = [1:seglen]+seglen*(k-1);
                         end
@@ -84,16 +84,16 @@ for m = 1:numel(method)
                             break
                         end
                         if any(strcmp(dtype, {'single', 'double'}))
-                            stack(:,:,:,idx,c) = smoothdata(stack(:,:,:,idx,c), w, method{m}, smlen(w));
+                            stack(:,:,:,idx,c) = smoothdata(stack(:,:,:,idx,c), w, method{m}, lenall(w));
                         else
-                            stack(:,:,:,idx,c) = stacktype(smoothdata(stack(:,:,:,idx,c), w, method{m}, smlen(w)), dtype);
+                            stack(:,:,:,idx,c) = stacktype(smoothdata(stack(:,:,:,idx,c), w, method{m}, lenall(w)), dtype);
                         end
                     end
                 else
                     if any(strcmp(dtype, {'single', 'double'}))
-                        stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w));
+                        stack(:,:,:,:,c) = smoothdata(stack(:,:,:,:,c), w, method{m}, lenall(w));
                     else
-                        stack(:,:,:,:,c) = stacktype(smoothdata(stack(:,:,:,:,c), w, method{m}, smlen(w)), dtype);
+                        stack(:,:,:,:,c) = stacktype(smoothdata(stack(:,:,:,:,c), w, method{m}, lenall(w)), dtype);
                     end
                 end
             end

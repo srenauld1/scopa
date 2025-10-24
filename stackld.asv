@@ -40,8 +40,8 @@ arguments
     opt2.dmstackmat = 'yxztc'; %dimension order of stack that is saved to .mat file and output from this function
     opt2.dmstacktif = 'tzcyx'; %dimension order of stack when written to tif in python with tifffile imwrite (for example, in registration or denoising); keep 'c', 'z', or 't' characters, even if that dimension is singleton
     opt2.savemem = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
-    opt2.doplt {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
-    opt2.och {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 

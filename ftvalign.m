@@ -35,7 +35,7 @@ todo:
 arguments
     opt.rsinds = [] %resampling indices (e.g. if they were on the daq)
     opt.numvol = [] %number of imaging volumes
-    opt.imrate = [] %imaging rate, volrate if volumetric, framerate if not (average,approximate can work too)
+    opt.imrate = [] %imaging rate in hz, volrate if volumetric, framerate if not (average,approximate can work too)
     opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
     opt.topkp = 0.5; % fraction of vertical top of fictrac video frames to consider when finding brightest numpx pixels (pedestal at bottom can sometimes be brightest part of image, so this can exclude that); if empty, user is prompted to choose roi
     opt.smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
@@ -48,7 +48,7 @@ arguments
     opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
     opt.pth_vidlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     opt.pth_log char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
-    opt.doplt {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
+    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
 rsinds = opt.rsinds;
 numvol = opt.numvol;
@@ -331,7 +331,7 @@ catch
 
         rsinds = zeros(size(keepinds_vid));
         rsinds(lkgzeroed) = 1;
-        rsinds = bin2ind(logical(rsinds));
+        rsinds = binary2count(logical(rsinds));
         rsinds(rsinds==0) = nan;
         rsinds = fillmissing(rsinds, 'nearest');
 
