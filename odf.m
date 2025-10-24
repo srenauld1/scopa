@@ -71,12 +71,11 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 du.daq.vtime = ["Time", "time", "T", "t"]; %list possible names for the time variable in the raw daq file; one and only one of these must exist in the raw daq file, otherwise error
 du.daq.vnormal = ["Time", "heat", "virmenIteration"]; % list possible normal (not circular, not categorical) daq variables you want to process; if any of these don't exist, they are ignored (will not error); virmenIteration is averaged by imaging frame, output is converted to frame number in the usual way
 du.daq.vradians = ["ficTracIntSide", "ficTracIntForward", "ficTracYaw", "ficTracHd", "ficTracHeading", "g4panels", "g4yaw", "g4hd"]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
-du.daq.vdegrees = [""]; % list possible circular daq variables you want to process (must be in radians); if any of these don't exist, they are ignored (will not error); 
 du.daq.vcategorical = ["ftcam", "cameraFrameClock", "epoch", "g4vel", "g4velnom"]; % list possbile categorical or integer daq variables you want to process; if any of these don't exist, they are ignored (will not error); 
 du.daq.tomm = ["ficTracIntSide", "ficTracIntForward"]; %list which vars to unwrap, then make start at zero, then rescale from radians to mm
 du.daq.useinds = 'none'; % 'none', 'slice', 'vol', 'all', or numeric vector of slice indices, with optional 0 to mean volume indices; 'none' (resample using 'resample' function with padding to avoid start/end transients), 'slice' (resample using all slice indices), 'vol' (resample using volume indices), 'all' (resample using all slice indices and volume indices), numeric vector defines which slice indices (one indexed) to use with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); 'none' is fastest but has a little more aliasing, which is probably rarely a problem; slice resampling is included especially for slow imaging rate, or large flyback; the more resampling registers are used, the slower this function on first run (output is saved/loaded for subsequent runs)
 du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, useinds is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a useinds_supp option) 
-du.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in tsdv) to be as short as possible, given sample rate and slopeord
+du.daq.slopelensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and slopeord
 du.daq.slopeord = 2; % order of polynomial used to fit local slope
 du.daq.slopelensec_supp = 0.4; % same as slopelensec but for supplemental resampling rate (supprate, if nonempty)
 du.daq.slopeord_supp = 2; % same as slopeord but for supplemental resampling rate (supprate, if nonempty)
@@ -86,19 +85,6 @@ du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
 du.daq.voltmin = 0; % daq voltage min; would be better to have this in metadata
 du.daq.voltmax = 10; % daq voltage max, need to find this in metadata
 du.daq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
-du.daq.vrenm = [  %string array; each element is "newname = oldnames", where newname is one name, oldnames is comma separated list of names; newname will be fieldname within new, saved struct 'daq', containing daq data resampled/aligned with imaging; oldnames are all possibilities for names of variable written to raw daq file that are to be renamed with new name; for each new name, if old name exists it gets new name, and if no old name exists the new name is given empty value; if you are running a2p, do not change the newnames; omit equals sign, or anything to right of equal sign (or do newname=newname) to search for newname in input; if struct has newname already, nothing changes
-    "t = Time, time, T";
-    "epochts = epoch";
-    "vvynom = g4vel, g4velnom";
-    "vh = g4panels, g4yaw, g4hd";
-    "vvy = g4panels_dv, g4yaw_dv, g4hd_dv";
-    "bf = ficTracIntForward";
-    "bvf = ficTracIntForward_dv";
-    "bs = ficTracIntSide";
-    "bvs = ficTracIntSide_dv";
-    "bh = ficTracYaw, ficTracHeading, ficTracHd";
-    "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv";
-    "ftcam = ftcam"]; 
 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)

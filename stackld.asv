@@ -55,7 +55,7 @@ end
 
 opt.optid = []; % ***NOTE NOTE NOTE*** for now, we hack using default optid for stacks (by removing actual optid) because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
 
-opt = optidchk('sld', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
+opt = optidcheck('sld', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
 fbrm = opt.fbrm;
 iy = opt.iy;

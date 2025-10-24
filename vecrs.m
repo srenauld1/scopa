@@ -1,36 +1,39 @@
-function tsout = tsrs(vtype, tsin, newlen, inds)
+function vecout = vecrs(vtype, vecin, opt)
 
-% need to generalize this function for nd
+%{
+
+resample vector, which can be angular or categorical or "normal"
+todo: generalize for nd
+
+%}
 
 arguments
-    vtype {mustBeText} %if circular, tsin must be in radians
-    tsin %must be in radians if vtype is circular (but doens't have to be wrapped, so not sure how to assert this other than the fprint warnings below)
-    newlen = [] %new length of resampled timeseries
-    inds = [] %resampling indices; if empty, resample tsin using resample function, to make tsout length match newlen; if numeric, resample using these indices, if cell, resample using these indices
+    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
+    vecin (1,:) {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
+    opt.newlen double {mustBeScalarOrEmpty, mustBePositive} = []; %new length of resampled timeseries; if nonempty, resample vecin using resample function and make vecout length match newlen; if empty, inds must be nonempty; 
+    opt.inds {mustBeVectorOrEmpty(opt.inds)} = [] %if nonempty, must be numeric vector or cell vector, will resample using interp over indices in inds (interp method depends on vtype); if empty, opt.newlen must be nonempty 
 end
+newlen = opt.newlen;
+inds = opt.inds;
 
-if ~ismember(vtype, {'normal', 'radians', 'degrees', 'categorical'})
-    error("first argument must be 'normal', 'radians', 'degrees', or 'categorical'")
-end
-
-if size(tsin,1) < size(tsin, 2)
-    tsin = tsin';
+if ~isequal(isempty(newlen), ~isempty(inds))
+    error("opt.newlen or opt.inds must be nonempty, but not both")
 end
 
 tryrange = 3;
 
-if isempty(inds) %if inds are empty, use 'resample', looping strategy to match newlen
+if isempty(inds) %if inds are empty, use 'resample', looping strategy to match newlen precisely, if possible
 
-    dsfac = newlen / numel(tsin);
+    dsfac = newlen / numel(vecin);
     [dsnr, dsdr] = rat(dsfac);
     breakout = 0;
 
-    if strcmp(vtype, 'normal')
+    if strcmp(vtype, 'n')
 
-        inp_try = tsrs_pad(tsin, dsnr, dsdr);
+        inp_try = vecrspad(vecin, dsnr, dsdr);
         currlen = numel(inp_try);
         if currlen==newlen
-            tsout = inp_try;
+            vecout = inp_try;
         else
             prevmin = Inf;
             for upfac = 1:3
@@ -45,12 +48,12 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                         if dsdr_new<=0
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
-                        inp_try = tsrs_pad(tsin, dsnr_new, dsdr_new);
+                        inp_try = vecrspad(vecin, dsnr_new, dsdr_new);
 
                         currlen = numel(inp_try);
 
                         if currlen==newlen
-                            tsout = inp_try;
+                            vecout = inp_try;
                             breakout = 1;
                             break
                         else
@@ -73,21 +76,21 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
             end
             if currlen~=newlen
                 fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
-                inp_try = tsrs_pad(tsin, dsnr_sv, dsdr_sv);
-                tsout = inp_try(1:newlen);
+                inp_try = vecrspad(vecin, dsnr_sv, dsdr_sv);
+                vecout = inp_try(1:newlen);
             end
         end
 
-    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees')
+    elseif strcmp(vtype, 'r') || strcmp(vtype, 'd')
 
-        if strcmp(vtype, 'degrees')
-            tsin = deg2rad(tsin);
+        if strcmp(vtype, 'd')
+            vecin = deg2rad(vecin);
         end
 
-        inpx = cos(tsin);
-        inpy = sin(tsin);
+        inpx = cos(vecin);
+        inpy = sin(vecin);
 
-        inpx_try = tsrs_pad(inpx, dsnr, dsdr);
+        inpx_try = vecrspad(inpx, dsnr, dsdr);
         currlen = numel(inpx_try);
         if currlen==newlen
             inpx = inpx_try;
@@ -106,7 +109,7 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
                             dsdr_new = tryrange-tryadd; %instead of subtracting, try adding more by subtracting the negative from the max
                         end
 
-                        inpx_try = tsrs_pad(inpx, dsnr_new, dsdr_new);
+                        inpx_try = vecrspad(inpx, dsnr_new, dsdr_new);
 
                         currlen = numel(inpx_try);
 
@@ -137,98 +140,95 @@ if isempty(inds) %if inds are empty, use 'resample', looping strategy to match n
         end
 
         if currlen==newlen
-            inpy = tsrs_pad(inpy, dsnr, dsdr);
+            inpy = vecrspad(inpy, dsnr, dsdr);
         else
             fprintf("failed precise resample, using smallest output that is larger than goal length and cropping extra frames" + newline)
-            inpx = tsrs_pad(inpx, dsnr_sv, dsdr_sv);
+            inpx = vecrspad(inpx, dsnr_sv, dsdr_sv);
             inpx = inpx(1:newlen);
-            inpy = tsrs_pad(inpy, dsnr_sv, dsdr_sv);
+            inpy = vecrspad(inpy, dsnr_sv, dsdr_sv);
             inpy = inpy(1:newlen);
         end
 
-        tsout = atan2(inpy, inpx);
+        vecout = atan2(inpy, inpx);
 
 
 
-    elseif strcmp(vtype, 'categorical') %would mode be better than nearest for categorical variables?
+    elseif strcmp(vtype, 'c') %would mode be better than nearest for categorical variables?
 
-        tmp = linspace(1,numel(tsin),newlen+1);
+        tmp = linspace(1,numel(vecin),newlen+1);
         tmp = tmp(1:end-1);
         mhd = mean(diff(tmp))/2;
         tmp = tmp + mhd;
         tmp = round(tmp); % roughly equidistant centroids
-        nzi = find(tsin);
-        tsout = interp1(nzi, tsin(nzi), tmp', 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
+        nzi = find(vecin);
+        vecout = interp1(nzi, vecin(nzi), tmp', 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero vecin index
 
     end
 
 
-else %if inds are nonempty, average tsin during each index of inds
+else %if inds are nonempty, average vecin during each index of inds
 
 
     if isnumeric(inds)
-        riu = unique(inds(inds~=0),'stable'); %index of each frame
+        riu = unique(inds(inds~=0),'stable'); %index of each output sample
         inds_tmp = cell(numel(riu), 1);
         for k = 1:numel(riu)
-            inds_tmp{k} = find(inds==riu(k)); %do this once, before taking mean, etc, since this is the slow part
+            inds_tmp{riu(k)} = find(inds==riu(k)); %do this once, before taking mean, etc, since this is the slow part
         end
     elseif iscell(inds)
         inds_tmp = inds;
-    else
-        error("inds must be cell by this point")
     end
 
     nrs = numel(inds_tmp);
-    if ~isequal(newlen, nrs)
-        error("if using inds to resample, number cells must match newlen")
-    end
 
-    if strcmp(vtype, 'normal')
+    if strcmp(vtype, 'n')
 
-        tsout = zeros(nrs, 1);
+        vecout = zeros(nrs, 1);
         for k = 1:nrs
-            tsout(k) = mean(tsin(inds_tmp{k})); %this is fast and arrayfun is not faster
+            vecout(k) = mean(vecin(inds_tmp{k})); %this is fast and arrayfun is not faster
         end
 
-    elseif strcmp(vtype, 'radians') || strcmp(vtype, 'degrees')
+    elseif strcmp(vtype, 'r') || strcmp(vtype, 'd')
 
-        if strcmp(vtype, 'degrees')
-            tsin = deg2rad(tsin);
+        if strcmp(vtype, 'd')
+            vecin = deg2rad(vecin);
         end
 
-        tsinx = cos(tsin);
-        tsiny = sin(tsin);
+        vecinx = cos(vecin);
+        veciny = sin(vecin);
 
-        tsoutx = zeros(nrs, 1);
-        tsouty = zeros(nrs, 1);
+        vecoutx = zeros(nrs, 1);
+        vecouty = zeros(nrs, 1);
         for k = 1:nrs
-            tsoutx(k) = mean(tsinx(inds_tmp{k})); %this is fast and arrayfun is not faster
-            tsouty(k) = mean(tsiny(inds_tmp{k})); %this is fast and arrayfun is not faster
+            vecoutx(k) = mean(vecinx(inds_tmp{k})); %this is fast and arrayfun is not faster
+            vecouty(k) = mean(veciny(inds_tmp{k})); %this is fast and arrayfun is not faster
         end
-        tsout = atan2(tsouty, tsoutx);
+        vecout = atan2(vecouty, vecoutx);
 
-    elseif strcmp(vtype, 'categorical') %takes value nearest centroid of each frame (alt approach was mode, seems less appropriate)
+    elseif strcmp(vtype, 'c') %takes value nearest centroid of each output sample (alt approach was mode, seems less appropriate)
 
         cntr = zeros(nrs, 1);
         for k = 1:nrs %loop is much faster than using arrayfun
-            cntr(k) = round(mean(inds_tmp{k})); %find center index for each frame
+            cntr(k) = round(mean(inds_tmp{k})); %find center index for each output sample
         end
-        nzi = find(tsin);
-        tsout = interp1(nzi, tsin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero tsin index
+        nzi = find(vecin);
+        vecout = interp1(nzi, vecin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero vecin index
 
     end
 
 
 end
 
-if strcmp(vtype, 'degrees')
-    tsout = rad2deg(tsout);
+if strcmp(vtype, 'd')
+    vecout = rad2deg(vecout);
 end
 
 
 end
 
-function y = tsrs_pad(x, fs_new, fs_old)
+
+
+function y = vecrspad(x, fs_new, fs_old)
 
 if size(x,1) < size(x, 2)
     x = x';
@@ -246,5 +246,14 @@ ypad = resample(xpad, fs_new, fs_old);
 padfrontnew = floor(padlength/fs_old*fs_new+1);
 padbacknew = floor(padlength/fs_old*fs_new);
 y = ypad(padfrontnew : length(ypad)-padbacknew);
+
+end
+
+
+function mustBeVectorOrEmpty(x)
+
+if ~isempty(x) && ~isvector(x)
+    error(inputname(1) + " must be empty or vector")
+end
 
 end

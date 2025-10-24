@@ -205,9 +205,7 @@ rgname = opt.rgname;
 pausetime = opt.pausetime;
 
 nmdm = glbfile('dmstackdf');
-if isempty(nmdm)
-    nmdm = 'yxztc'; %single-character name for each stack dimension
-end
+
 fontsz = 10; %in figure title
 maxnumroi = 50; %just for preallocating
 maxnumsubroi = 50; %just for preallocating; max number of discontiguous subrois per roi

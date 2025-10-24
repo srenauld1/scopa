@@ -53,7 +53,7 @@ end
 
 opt.optid = []; % ***NOTE NOTE NOTE*** for now, we hack using default optid for stacks (by removing actual optid) because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
 
-opt = optidchk('sld', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
+opt = optidcheck('sld', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
 fbrm = opt.fbrm;
 iy = opt.iy;
@@ -73,9 +73,6 @@ doplt = opt2.doplt;
 
 dmstacktif = 'tzcyx'; %dimension order of stack when written to tif in python with tifffile imwrite (for example, in registration or denoising); keep 'c', 'z', or 't' characters, even if that dimension is singleton
 dmstackmat = glbfile('dmstackdf');
-if isempty(dmstackmat)
-    dmstackmat = 'yxztc'; %don't change if you're running a2p; dimension order of stack that is saved to .mat file and output from this function
-end
 
 if isempty(pthstack)
     try
@@ -329,17 +326,18 @@ if ~isempty(md)
     s.sz = sz;
     s.dm = dmstackmat;
     s.chan = chan;
-    s.rg = []; %always empty here  
-    s.mm = []; %always empty here  
     s.minc = min(stack, [], [1 2 3 4], 'omitmissing'); % min for each channel
     s.maxc = min(stack, [], [1 2 3 4], 'omitmissing'); % max for each channel
     s.min = min(s.minc); % min for entire stack
-    s.max = max(s.maxc); % max for entire stack
-
-    s.max = []; 
-    s.mnt = []; 
-    s.mnzt = []; 
-    s.mnztc = []; 
+    s.max = max(s.maxc); % max for entire stack find(ismember('yxztc', 'zt'))
+    s.mnt = stacktype(mean(stack, 4), class(stack));
+    s.mnzt = stacktype(mean(s.mnt, 3), class(stack));
+    s.mnztc = stacktype(mean(s.mnt, 5), class(stack));
+    s.daq = []; %always empty in stackld
+    s.rg = []; %always empty in stackld
+    s.roi = []; %always empty in stackld
+    s.bmp = []; %always empty in stackld
+    s.mdl = []; %always empty in stackld
     s.opt = opt;
     s.maketime_optfile_sld = glb('maketime_sld');
     fprintf("saving stack as mat file, after permuting, and optional indexing" + newline)

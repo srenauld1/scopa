@@ -10,9 +10,6 @@ end
 
 if isempty(dmstackout)
     dmstackout = glbfile('dmstackdf');
-    if isempty(dmstackout)
-        error("must pass in dmstackout, or set glbfile('dmstackdf')")
-    end
 end
 dmstackin = convertStringsToChars(dmstackin);
 dmstackout = convertStringsToChars(dmstackout);

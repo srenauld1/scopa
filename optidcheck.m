@@ -1,4 +1,4 @@
-function opt = optidchk(mos, opt)
+function opt = optidcheck(mos, opt)
 
 %make sure optid is correct 
 

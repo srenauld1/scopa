@@ -117,10 +117,10 @@ bmpdomain = bmp.(ibmp).domain;
 
 dvlen = sper*3;
 dvord = 2;
-glddv = tsdv('normal', gld, dvlen, dvord, sper);
-glvdv = tsdv('normal', glv, dvlen, dvord, sper);
-grddv = tsdv('normal', grd, dvlen, dvord, sper);
-grvdv = tsdv('normal', grv, dvlen, dvord, sper);
+glddv = vecdv('normal', gld, dvlen, dvord, sper);
+glvdv = vecdv('normal', glv, dvlen, dvord, sper);
+grddv = vecdv('normal', grd, dvlen, dvord, sper);
+grvdv = vecdv('normal', grv, dvlen, dvord, sper);
 
 wsz = 6;
 [gld, wsz] = smoothdata(gld, 'sgolay', wsz);
@@ -206,13 +206,13 @@ cmap = cat(1, cmap, [0 0 0]); %add black
 
 
 noz = zscore(no);
-nodv = tsdv('radians', no, slopelensec, slopeord, sper);
+nodv = vecdv('radians', no, slopelensec, slopeord, sper);
 
-bumpdv = tsdv('radians', bmph, slopelensec, slopeord, sper);
+bumpdv = vecdv('radians', bmph, slopelensec, slopeord, sper);
 bumpdvrs = bumpdv*pi/max(abs(bumpdv));
 
 ballinv = -ballh;
-ballinvdv = tsdv('radians', ballinv, slopelensec, slopeord, sper);
+ballinvdv = vecdv('radians', ballinv, slopelensec, slopeord, sper);
 ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
 
 if yconst
@@ -228,7 +228,7 @@ slopeord_eb = 2;
 eb2 = bmpi;
 for k = 1:size(eb2,1)
     % bmpi(k,:) = rescale(bmpi(k,:));
-    eb2(k,:) = tsdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
+    eb2(k,:) = vecdv('normal', eb2(k,:), slopelensec_eb, slopeord_eb, sper);
     eb2(k,:) = zscore(eb2(k,:));
 end
 % eb2 = imgaussfilt(eb2, [0.1 0.1]);
@@ -257,10 +257,10 @@ slopeord_alt = 2;
 
 dodv = 0;
 if dodv %all derivatives
-    ballplot = tsdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
-    cueplot = tsdv('radians', vish, slopelensec_alt, slopeord_alt, sper);
-    bumpplot = tsdv('radians', bmph, slopelensec_alt, slopeord_alt, sper);
-    bump2plot = tsdv('radians', bump2, slopelensec_alt, slopeord_alt, sper);
+    ballplot = vecdv('radians', ballinv, slopelensec_alt, slopeord_alt, sper);
+    cueplot = vecdv('radians', vish, slopelensec_alt, slopeord_alt, sper);
+    bumpplot = vecdv('radians', bmph, slopelensec_alt, slopeord_alt, sper);
+    bump2plot = vecdv('radians', bump2, slopelensec_alt, slopeord_alt, sper);
 else
     ballplot = ballinvnan;
     cueplot = cuenan;
@@ -309,7 +309,7 @@ if ismember('heat', pltstr)
     if dozscore_hm
         for k = 1:size(bmpi,1)
             % bmpi(k,:) = rescale(bmpi(k,:));
-            % bmpi(k,:) = tsdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            % bmpi(k,:) = vecdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
             bmpi(k,:) = zscore(bmpi(k,:));
         end
         % bmpi(bmpi<0) = 0;
@@ -380,7 +380,7 @@ if ismember('profile', pltstr)
     if dozscore
         for k = 1:size(bmpi,1)
             % bmpi(k,:) = rescale(bmpi(k,:));
-            % bmpi(k,:) = tsdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
+            % bmpi(k,:) = vecdv('normal', bmpi(k,:), slopelensec_eb, slopeord_eb, sper);
             bmpi(k,:) = zscore(bmpi(k,:));
         end
     end
@@ -637,7 +637,7 @@ if ismember('scat', pltstr)
 
     %%%%% EXCLUDE BY GLNO RESPONSE AMPLITUDE %%%%%
 
-    % nodvtmp = tsdv('radians', nodv, 0.3, 2, sper);
+    % nodvtmp = vecdv('radians', nodv, 0.3, 2, sper);
     % kp33 = nodvtmp<0;
     % % kp33 = nodvtmp>0;
     % [ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist] = tscrop(kp33, ballinvdvrs, bumpdvrs, nodvsrt, sztmp, cmap, xydist);

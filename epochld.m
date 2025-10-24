@@ -91,7 +91,7 @@ for iter = 1:numiter
         end
 
         yawdeg = rad2deg(visyawtmp); %convert to degrees because tolerance is in degrees and we like degrees more anyway
-        dv = tsdv('degrees', yawdeg, dvlensec, dvord, sper); %derivative
+        dv = vecdv('d', yawdeg, lensec=dvlensec, ord=dvord, sper=sper); %derivative
         mvar = movvar(dv, boutlensamp); %moving variance of derivative should identify epochs for the open-closed-dark protocol (ignoring noise)
         lmin = islocalmin(mvar, MinSeparation=(boutlensec*minsepfac)/sper); %use islocalmin to get rid of the noise and find where moving variance is minimal ofver boutlen window
         lminfnd = find(lmin);

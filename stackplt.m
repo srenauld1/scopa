@@ -68,12 +68,9 @@ end
 if isempty(dmplt)
     dmplt = 'yxcz(t)'; %if k is present, it is averaged (omitted from char vector means averaged); this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
 end
-dmstackdf = glbfile('dmstackdf');
-if isempty(dmstackdf)
-    dmstackdf = 'yxztck'; %all dimensions allowed in stack; order here is irrelevant
-else
-    dmstackdf = [erase(dmstackdf, 'k') 'k']; %make sure k appears at the end (don't think it actually matters where, but we don't want duplicate chars)
-end
+
+dmstackdf = [erase(glbfile('dmstackdf'), 'k') 'k']; %make sure k appears at the end (don't think it actually matters where, but we don't want duplicate chars)
+
 if isempty(dmstack)
     dmstack = dmstackdf;
 end

@@ -31,7 +31,7 @@ if opt2.och
     return
 end
 
-opt = optidchk('roi', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
+opt = optidcheck('roi', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
 
 %% set up s (main variable roimake operates on)

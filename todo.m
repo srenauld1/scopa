@@ -2,10 +2,13 @@
 
 %{
 
+get voltlim from metadata
+and maybe voltminhd
+
 consider putting more fields in s (things that get used repeatedly, especially when they can cost big time/ram, like stack min, stack max, and stackmnt), but then need to be sure to update these values in stackcrop if crop
 put any argument dependent option changing before odf=1 so arguments get changed before oid gets called in ofill 
 
-tsdv need to generalize tsdv for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp
+vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like slopelensec and slopelensamp
 
 deal with nonscalar daq output within daqld (when useinds are multiple) while multiple optid also make daq nonscalar (outside daqld)
 consider renaming roi child mos 
@@ -21,7 +24,7 @@ consider putting stimftmake into daqld , as child module, and having derivatives
 consider putting bmpmake into stackftmake (stack feature make) something like that
 so at the high level, daqld becomes load all stim stuff (ie not neural data)
 and bmpmake gets put into stack feature extrator, extracting all features from neural data (except rois, or rois also??)
-rename ts vec in many cases (like tsrs --> vecrs)
+rename ts vec in many cases (like vecrs --> vecrs)
 consider renaming input 'opt' 'mos' in modules  
 argument validation functions applied in odf, or somewhere in oset before oid
 
@@ -93,7 +96,7 @@ make channel consistently 5th dim index or pmt index; right now in python code i
 make sure fictrac has not flatlined, epoch might be as expected despite fictrac flatline
 write function to delete a variable in txt (not allow manual) that will also delete all associated files
 \n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??
-apply tsdv to daq directly, not output of tsrs
+apply vecdv to daq directly, not output of vecrs
 make vsmooth for all variables rather than stacksm and tssm
 MAKE TIME ALWAYS 2ND DIM
 FIX DIFFERENT roi OPTS FOR EACH RGNAME, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS

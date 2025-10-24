@@ -370,12 +370,11 @@ catch ME
                 vpptype = vpptypes{kp};
 
                 if strcmp(vpptype, 't') 
-                    vpptype = 'n'; %t gets same treatment as n in vecrs and vecdv (and t doesn't exist in those functions
+                    vpptype = 'n'; %t gets same treatment as n in vecrs and vecdv
                 end
                 if strcmp(tdvname, vtime)
                     trialData.(tdvname) = trialData.(tdvname)-starttime; %zero imaging starttime in case daq ran in the background
                 end
-                
                 tmp = trialData.(tdvname);
 
                 if isduration(tmp) %not all durations are the "time" variable
