@@ -10,8 +10,8 @@ todo: generalize for nd
 %}
 
 arguments
-    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
-    vecin {mustBeVector} %vector to be resampled; must be in radians or degrees if vtype is r or d, respectively (angular data, radians or degrees, respectively); 
+    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin {mustBeVector} %vector to be resampled; if vtype is r or d, must be circular data in radians or degrees, respectively
     rskey {mustBeVector, mustBeA(rskey, {'numeric', 'cell'})} % rskey means resampling key; if scalar number, new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients; if numeric vector, indices for resampling, where rskey index maps to vecin index, and rskey value maps to vecout index; if cell, each element is an index in vecout, and each element contains linear indices of vecin; if numeric vector or cell, will resample using interp1, where method depends on vtype)
 end
 
@@ -22,7 +22,8 @@ if isrow(vecin)
 end
 
 
-tryrange = 3;
+numupfac = 3; %number of different upsamplings to try to get output the correct length
+tryrange = 3; %try adding -tryrange:tryrange to numerator and denominator when resampling to get output the correct length  
 
 if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', looping strategy to match newlen precisely, if possible
 
@@ -40,7 +41,7 @@ if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', loop
             vecout = inp_try;
         else
             prevmin = Inf;
-            for upfac = 1:3
+            for upfac = 1:numupfac
                 for tryadd = -tryrange:tryrange
                     for tryadd2 = -tryrange:tryrange
 
@@ -100,7 +101,7 @@ if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', loop
             inpx = inpx_try;
         else
             prevmin = Inf;
-            for upfac = 1:3
+            for upfac = 1:numupfac
                 for tryadd = -tryrange:tryrange
                     for tryadd2 = -tryrange:tryrange
 

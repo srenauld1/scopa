@@ -4,11 +4,11 @@ do = {'sld', 'roi'}; %string of char or cell of char; list of mos to populate in
 
 o.sld.ic = [1,2];
 
-o.daq.dvlensec = {.3, 0.5};
+o.dq.dvlensec = {.3, 0.5};
 
 o.bmp.domtype = 'm';
 
-bmpindv.vg.daq = ['*'];
+bmpindv.vg.dq = ['*'];
 bmpindv.vg.vnm = 'vh';
 % bmpindv.vg.optid = 'a8';
 

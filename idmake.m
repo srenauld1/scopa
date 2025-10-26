@@ -19,9 +19,9 @@ for k = 1:numel(pthstacks)
 
     pthstack = pthstacks{k};
 
-    [pthstackdir, fn, ext] = fileparts(pthstack);
-    if ~isempty(pthstackdir)
-        pthstackdir = [pthstackdir filesep];
+    [pthstackfld, fn, ext] = fileparts(pthstack);
+    if ~isempty(pthstackfld)
+        pthstackfld = [pthstackfld filesep];
     end
 
     spl = strjoin(strsplit(fn, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
@@ -51,7 +51,7 @@ for k = 1:numel(pthstacks)
     trialnum = str2double(trial);
 
     recid = [recdate '_' fly '_' trial];
-    pthrec = [pthstackdir recid];
+    pthrec = [pthstackfld recid];
 
     if isempty(suffix)
         stackid = '';
@@ -63,11 +63,11 @@ for k = 1:numel(pthstacks)
             suffix = suffix(1:end-1);
         end
         stackid = [recdate '_' fly '_' trial '_' suffix];
-        pthpre = [pthstackdir stackid '_'];
+        pthpre = [pthstackfld stackid '_'];
     end
 
 
-    pat = [pthstackdir recdate '-' fly '_daqData_*_trial_' sprintf( '%03s', trial) '*.mat'];
+    pat = [pthstackfld recdate '-' fly '_daqData_*_trial_' sprintf( '%03s', trial) '*.mat'];
     pthdaq = rdir(pat);
     if isscalar(pthdaq)
         pthdaq = pthdaq.name;
@@ -95,7 +95,7 @@ for k = 1:numel(pthstacks)
     id(k).recid = recid;
     id(k).stackid = stackid;
 
-    id(k).pthstackdir = pthstackdir;
+    id(k).pthstackfld = pthstackfld;
     id(k).pthstack = pthstack;
     id(k).pthpre = pthpre;
     id(k).pthrec = pthrec;

@@ -2,6 +2,21 @@
 
 %{
 
+each module returns a struct
+each element of the struct represents an option set
+each field represents a quantity extracted by the module
+    for each field
+        dimensions represent fundamental splits in the data (rather than created in analysis) - NO!
+        and why not s.stack in two cells for each channel? should this follow rule?
+        we know we want cell for disjoint split, then other dimensions, then time
+        time dimension is last, if it exists
+    preceding 
+        example: 'roimake' outputs struct 'roi', with field 'ts', with size (roi,t)
+    if data requires additional dimensions, and they match first dimension length, they are placed before the time dimension 
+        example: s.stack with size (y,x,z,t)
+    if additional dimensions do not necessarily match the first dimension in length, they are placed in nonscalar struct
+        example: roi.ts(1) with size (roi,t) and roi.ts(2) with size (roi,t) store roi timeseries for channel 1 and 2, respectively
+
 in modules, opt are id-contolled name-value arguments (ie module options), opt2 are name-value arguments that are not id-controlled; 
 in functions that are not modules, opt is used for all name-value arguments 
 in matlab, if user explicitly sets name-value argument to empty when calling a function, the default value in arguments block is not used; 

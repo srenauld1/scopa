@@ -61,7 +61,7 @@ here is a complete list of obins and functions they hold options for (see also s
 
     mn, a2p
     spec, stackfind   (called from ofill)
-    daq, daqld   (called from a2p)
+    dq, daqld   (called from a2p)
     spr, stackseries   (called from a2p)
     sld, stackld   (called from stackseries)
     ftv, ftvalign   (called from a2p)

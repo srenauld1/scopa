@@ -349,7 +349,7 @@ end
 [~, flnm, ~] = fileparts(pth);
 flnmsplit = strsplit(flnm, '_');
 if numel(flnmsplit)>1
-    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'daq', 'rg', 'var'}) 
+    if ismember(flnmsplit{2}, {'roi', 'mdl', 'bmp', 'sld', 'fmf', 'dq', 'rg', 'var'}) 
         mos = flnmsplit{2};
         if isempty(glb(['maketime_' mos]))
             glb(['maketime_' mos], maketime_infile); % previously tried to set globals as struct, but currently won't allow updating fields within maketime_infile struct in glb (and maybe it shouldn't anyway), so only one field ends up being saved to globals; this is what i tried --> maketime_glb.(mos) = maketime_infile; glb(maketime_infile=maketime_glb)

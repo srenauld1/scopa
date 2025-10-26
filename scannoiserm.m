@@ -36,7 +36,7 @@ else
 end
 
 figtitle_prefix = [id.recid '_' id.suffix '_' sbstr '_' smstr];
-filename_prefix = [id.pthstackdir figtitle_prefix];
+filename_prefix = [id.pthstackfld figtitle_prefix];
 
 timestr = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS')) ;
 

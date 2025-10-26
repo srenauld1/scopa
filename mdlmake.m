@@ -102,8 +102,8 @@ while true
         last = vdat.last;
     else
         varid = 'z0';
-        pthstackdir = idmake(pthstack, 'pthstackdir');
-        pthmdl = [pthstackdir varid opt.optid '_mdl_.mat'];
+        pthstackfld = idmake(pthstack, 'pthstackfld');
+        pthmdl = [pthstackfld varid opt.optid '_mdl_.mat'];
         last = 1;
     end
 

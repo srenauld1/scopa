@@ -3,8 +3,8 @@ function vecout = vecdv(vtype, vecin, opt)
 
 %{
 
-differentiate vector using user-specified window length (seconds or samples) and model order
-input vector can be angular (radians or degrees) or categorical or "normal"; 
+differentiate vector over sliding window using user-specified window length (seconds or samples) and polynomial model order
+input vector can be circular (radians or degrees) or "categorical" or "normal" (see vtype notes below); 
 vecin and vecout orientations are matched
 todo: generalize for nd
 
@@ -12,8 +12,8 @@ todo: generalize for nd
 
 
 arguments
-    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
-    vecin {mustBeVector} %input variable to be differentiated; must be in radians if vtype is angular
+    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin {mustBeVector} %vector to be differentiated; if vtype is r or d, must be circular data in radians or degrees, respectively
     opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
     opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
     opt.ord (1,1) double {mustBeMember(opt.ord,1:8)} = 2; % order of polynomial used to fit local slope

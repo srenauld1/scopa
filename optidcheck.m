@@ -3,7 +3,7 @@ function opt = optidcheck(mos, opt)
 %make sure optid is correct 
 
 arguments
-    mos % short name for calling function, also name of field holding options in options struct (eg 'roi', 'daq', etc)
+    mos % short name for calling function, also name of field holding options in options struct (eg 'roi', 'dq', etc)
     opt % options for calling function
 end
 

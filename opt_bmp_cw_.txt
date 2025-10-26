@@ -1072,7 +1072,7 @@
     "dorescale": 0,
     "indv": {
       "vg": {
-        "daq": "*",
+        "dq": "*",
         "vnm": "vh"
       }
     },
@@ -1110,7 +1110,7 @@
     "dorescale": 0,
     "indv": {
       "vg": {
-        "daq": "*",
+        "dq": "*",
         "vnm": "by"
       }
     },
@@ -1149,7 +1149,7 @@
     "dorescale": 0,
     "indv": {
       "vg": {
-        "daq": "*",
+        "dq": "*",
         "vnm": "by"
       }
     },
@@ -1185,7 +1185,7 @@
     "dorescale": 0,
     "indv": {
       "vg": {
-        "daq": "*",
+        "dq": "*",
         "vnm": "by"
       }
     },

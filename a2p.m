@@ -20,14 +20,11 @@ close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
 %%%% GLOBALS %%%%
 
-userdatfile( ... %write some fields to userdat.txt once; scopausername and pthpar are the only two required for normal/default runs of a2p, although other fields might be required for less common use cases (see userdatfile.m)
-    scopausername='cw', ... %scopausername
-    pthpar=pthparget() ... %if you don't want to set pthpar manually, you can let function 'pthparget' prompt you to find it with uigetdir, as it does here
-    )
-
-glbfile('dmstackdf') %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
-glbfile('optiddf') % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
-glb(usegit=usegit) %set usegit in globals function 'glb'
+userdatfile(scopausername='cw') %make sure scopausername is written to userdat.txt
+userdatfile(pthpar=pthparget()); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
+glb(usegit=usegit); %set usegit in globals function 'glb'
+glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
 
 
 %%%% OPTIONS %%%%
@@ -49,15 +46,15 @@ for k = 1:numel(oa) % loop over recordings found in oset
     end
 
     o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
-    glb(1, pthsvdir=o.id.pthstackdir); %update global that refers to stack location, a default location for saving some less important files (like figures)
+    glb(1, pthsvdir=o.id.pthstackfld); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
-    %%%% DAQ %%%%
+    %%%% dq %%%%
 
-    if ~isempty(o.daq)
-        for m = 1:numel(o.daq)
-            prs = struct2pairs(o.daq(m));
-            daq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process daq (also fictrac video)
+    if ~isempty(o.dq)
+        for m = 1:numel(o.dq)
+            prs = struct2pairs(o.dq(m));
+            dq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
         end
     end
 
@@ -105,7 +102,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% PLOTS %%%%
 
     if dopltx
-        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+        pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
 
 
@@ -116,13 +113,13 @@ for k = 1:numel(oa) % loop over recordings found in oset
         epoch = 6;
         bout = 13;
 
-        idaq = fieldmatch(daq, lev=1);
-        [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
+        idaq = fieldmatch(dq, lev=1);
+        [~, ~, ipe, ~, tpe] = trmake(dq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
 
         a_opto(roi, s, glb('t') )
 
 
-        a_ebgano(s, roi, daq, bmp, glb('t'), ...
+        a_ebgano(s, roi, dq, bmp, glb('t'), ...
             mix={'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...

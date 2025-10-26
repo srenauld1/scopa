@@ -2,42 +2,26 @@ function [posx, posy] = ficpath(vf, vfu, vs, vsu, hd, hdu, t, tu, ballr, ballru,
 
 %{
 
-compute fictive path (x and y position)
-input units designated after each input 
-currently only one option for each unit, to help prevent unit mistakes, and also allow unit flexibility in future
+use fictrac data to compute fictive "flat path" (xy position)
+input units required after each input (to help user prevent unit mistakes) 
+currently only one option for each unit, but in future, units will be flexible
 
 %}
 
 arguments
-    vf % angular forward velocity, units vfu
-    vfu %vf units 
-    vs % angular side velocity, , units vsu
-    vsu %vs units
-    hd % heading, units hdu
-    hdu %hd units
-    t % timestamp for each sample, units tu
-    tu %t units 
-    ballr % ball radius, units ballru
-    ballru %ballr units
-    doplt = 0
+    vf (1,:) double {mustBeVector} % angular forward velocity, units vfu
+    vfu string {mustBeTextScalar, mustBeMember(vfu,"r/s")} %vf units
+    vs (1,:) double {mustBeVector} % angular side velocity, units vsu
+    vsu string {mustBeTextScalar, mustBeMember(vsu,"r/s")} %vs units
+    hd (1,:) double {mustBeVector} % heading, units hdu
+    hdu string {mustBeTextScalar, mustBeMember(hdu,"r")} %hd units
+    t (1,:) double {mustBeVector} % timestamp for each sample, units tu
+    tu string {mustBeTextScalar, mustBeMember(tu,"s")} %t units
+    ballr (1,1) double % ball radius, units ballru
+    ballru string {mustBeTextScalar, mustBeMember(ballru,"mm")} %ballr units
+    doplt (1,1) {mustBeMember(doplt,[0,1]), mustBeNonempty} = 0
 end
 
-%%%% make sure units are correct (see allowed units below) %%%% 
-
-unitcheck(vfu, 'radians/second')
-unitcheck(vsu, 'radians/second')
-unitcheck(hdu, 'radians')
-unitcheck(tu, 'seconds')
-unitcheck(ballru, 'millimeters')
-
-%%%% row vectors to put time in 2nd dim %%%% 
-
-vf = vf(:)';
-vs = vs(:)';
-hd = hd(:)';
-t = t(:)';
-
-%%%% compute path %%%% 
 
 if isempty(vf) || isempty(vs) || isempty(hd)
     posx = [];
@@ -53,7 +37,6 @@ else
     posy = (cumsum(dty) - dty(1)) .* ballr;
 end
 
-%%%% plot %%%% 
 
 if doplt
     pthfig = pthauto(suffix='.gif');
@@ -69,12 +52,5 @@ if doplt
     fig2gif(h,1,pthfig); close(h)
 end
 
-end
-
-function unitcheck(nm, unit)
-
-if ~strcmpi(strtrim(nm), strtrim(unit))
-    error(nm + " must be " + unit)
-end
 
 end

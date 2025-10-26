@@ -1,14 +1,14 @@
 function o = oset_opto()
 
-do = {'sld', 'daq', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
+do = {'sld', 'dq', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
 
 o.sld.ic = [1 2];
 
-o.daq.dvlensec = .3;
+o.dq.dvlensec = .3;
 
 o.bmp.domtype = 'm';
 
-bmpindv.vg.daq = ['*'];
+bmpindv.vg.dq = ['*'];
 bmpindv.vg.vnm = 'vh';
 % bmpindv.vg.optid = 'a8';
 

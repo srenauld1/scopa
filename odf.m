@@ -26,7 +26,7 @@ end
 %% mosh struct holds function handles for all a2p modules;
 
 mosh.sld = @stackld;
-mosh.daq = @daqld;
+mosh.dq = @daqld;
 mosh.roi = @roimake;
 mosh.cm = @roifauto;
 mosh.ma = @roimauto;
@@ -43,7 +43,7 @@ mosh.fmf = @flymaxfe;
 
 mostree = [  %in matlab sort order; in polymos, each is filled as in du below (ie roi.ma means roi gets filled, and ma gets filled below roi), as opposed to roi having nothing below but ma
     "bmp.mdl.opg", "bmp.mdl.opl", ...
-    "daq", ...
+    "dq", ...
     "fmf", ...
     "mdl.opg", "mdl.opl", ...
     "roi.cm", "roi.ma", "roi.nrm", "roi.qc", ...   
@@ -66,17 +66,16 @@ du.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (defaul
 du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
 
 
-%% daq (daqld: load, process daq)
+%% dq (daqld: load, process daq)
 
-du.daq.rsidx = []; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
-du.daq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
-du.daq.dvord = 2; % order of polynomial used to fit local slope
-du.daq.supprate = []; % supplemental downsampling rate (in addition to main downsampling into imaging rate); empty to skip; for supplemental resampling, rsidx is effectively 'none' (uses resample function, since there is no daq record of indices at the supplemental rate, but if there were, for example, a record of each fictrac sample on the daq, this could be used for the resampling, and then there would need to be a rsidx_supp option) 
-du.daq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
-du.daq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
-du.daq.balldia = 9; % mm, used to convert fictrac variables into mm
-du.daq.voltlim = [0,10]; % daq voltage [min,max]; would be better to have this in metadata
-du.daq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
+du.dq.rsidx = []; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
+du.dq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+du.dq.dvord = 2; % order of polynomial used to fit local slope
+du.dq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
+du.dq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
+du.dq.balldia = 9; % mm, used to convert fictrac variables into mm
+du.dq.voltlim = [0,10]; % daq voltage [min,max]; would be better to have this in metadata
+du.dq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)

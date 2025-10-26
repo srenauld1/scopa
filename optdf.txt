@@ -82,12 +82,11 @@
       "scope": "all",
       "smlensec": 0
     },
-    "daq": {
+    "dq": {
       "balldia": 9,
       "dvlensec": [],
       "dvord": 2,
       "rsidx": [],
-      "supprate": [],
       "usefbf": 1,
       "usefbl": 1,
       "voltlim": [0,10],
@@ -324,12 +323,11 @@
       "update_background_components": true,
       "use_cnn": 0
     },
-    "daq": {
+    "dq": {
       "balldia": 9,
       "dvlensec": [],
       "dvord": 2,
       "rsidx": [],
-      "supprate": [],
       "usefbf": 1,
       "usefbl": 1,
       "voltlim": [0,10],
@@ -462,7 +460,7 @@
   "mosh": {
     "bmp": "bmpmake",
     "cm": "roifauto",
-    "daq": "daqld",
+    "dq": "daqld",
     "fmf": "flymaxfe",
     "ma": "roimauto",
     "mdl": "mdlmake",
@@ -476,7 +474,7 @@
   "mostree": [
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "daq",
+    "dq",
     "fmf",
     "mdl.opg",
     "mdl.opl",
@@ -491,7 +489,7 @@
     "bmp.mdl",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "daq",
+    "dq",
     "fmf",
     "mdl",
     "mdl.opg",
@@ -505,7 +503,7 @@
   ],
   "mostree_top": [
     "bmp",
-    "daq",
+    "dq",
     "fmf",
     "mdl",
     "roi",

@@ -333,7 +333,7 @@ if ~isempty(md)
     s.mnt = stacktype(mean(stack, 4), class(stack));
     s.mnzt = stacktype(mean(s.mnt, 3), class(stack));
     s.mnztc = stacktype(mean(s.mnt, 5), class(stack));
-    s.daq = []; %always empty in stackld
+    s.dq = []; %always empty in stackld
     s.rg = []; %always empty in stackld
     s.roi = []; %always empty in stackld
     s.bmp = []; %always empty in stackld

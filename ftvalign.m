@@ -1,8 +1,8 @@
-function ftvdsrs = ftvalign(opt)
+function ftvrs = ftvalign(opt)
 
 %{
 
-NOTE: THIS IS ONLY USEFUL IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME DAQ AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO
+NOTE: IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME daq AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO, THIS FUNCTION PERFORMS A HACK ALIGNMENT THAT DOESN'T ALWAYS WORK (ALTHOUGH A LITTLE WORK COULD MAKE IT BETTER PROBABLY) 
 
 align fictrac video to imaging data using oscillations of the laser on fictrac video
 save and output the aligned, temporally resampled video
@@ -20,7 +20,7 @@ algorithm:
 
 this function only uses fictrac .dat file to estimate approximate fictrac rate
 this function does not use the fictrac .txt file, or .log file,
-but if user passes pth_vidlog and pth_log, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
+but if user passes pthvlog and pthlog, loads/parses .txt and .log file, respectively, in case they can help in the future (but they all have independent problems of their own)
 currently, this function aligns with precision of +/- one-half imaging sample (if it aligns without error)
 
 todo:
@@ -33,7 +33,7 @@ todo:
 %}
 
 arguments
-    opt.rsinds = [] %resampling indices (e.g. if they were on the daq)
+    opt.rsidx = [] %resampling indices (e.g. if they were on the daq)
     opt.numvol = [] %number of imaging volumes
     opt.imrate = [] %imaging rate in hz, volrate if volumetric, framerate if not (average,approximate can work too)
     opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
@@ -41,16 +41,16 @@ arguments
     opt.smlenpx = 2 %window length for gaussian smoothing filter applied to average frame of fictrac video, prior to finding the brightest pixels (to locate laser)
     opt.numpx = 10  %after spatial smoothing, number of pixels to average on each frame of fictrac video; these are the brightest 'numpx' pixels in the mean frame of fictrac video
     opt.smlensec = 1 %window length for gaussian smoothing filter applied to laser timeseries, to help denoise timeseries prior to findpeaks (to help find the true laser oscillation peaks)
-    opt.ftrate = [] %fictrac sample rate; if empty, derived from sample times in pth_dat
+    opt.ftrate = [] %fictrac sample rate; if empty, derived from sample times in pthdat
     opt.pthdaq = [] %can pass in path to stack and derive defaults for all the other paths
-    opt.pth_vid char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
-    opt.pth_vidrs char = [] %path to save 'ftvdsrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
-    opt.pth_dat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
-    opt.pth_vidlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
-    opt.pth_log char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
+    opt.pthv char = [] %path to load 'ftvds', which is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
+    opt.pthvrs char = [] %path to save 'ftvrs', output of this function, which is version of ftvds that has been temporally downsampled and aligned with imaging data
+    opt.pthdat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
+    opt.pthvlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
+    opt.pthlog char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
     opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
-rsinds = opt.rsinds;
+rsidx = opt.rsidx;
 numvol = opt.numvol;
 imrate = opt.imrate;
 numpkthr = opt.numpkthr;
@@ -60,116 +60,112 @@ numpx = opt.numpx;
 smlensec = opt.smlensec;
 ftrate = opt.ftrate;
 pthdaq = opt.pthdaq;
-pth_vid = opt.pth_vid;
-pth_vidrs = opt.pth_vidrs;
-pth_dat = opt.pth_dat;
-pth_vidlog = opt.pth_vidlog;
-pth_log = opt.pth_log;
+pthv = opt.pthv;
+pthvrs = opt.pthvrs;
+pthdat = opt.pthdat;
+pthvlog = opt.pthvlog;
+pthlog = opt.pthlog;
 doplt = opt.doplt;
 
 if ~ismember(isempty(topkp) + isempty(numpx), [0,2])
     error("numpx and topkp must both be empty or nonempty")
 end
 if isempty(pthdaq)
-    if isempty(pth_vid)
-        error("if pth_vid is empty, pthdaq must be nonempty")
+    if isempty(pthv)
+        error("if pthv is empty, pthdaq must be nonempty")
     end
 else
     id = idmake(pthdaq);
 end
 
 
-
 %%%% GET PATHS, IN CASE THEY WEREN'T PASSED IN %%%%
 
-if isempty(pth_dat)
-    pth_ftdat_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.dat'];
-    pth_dat = rdir(pth_ftdat_pat);
-    if isempty(pth_dat)
-        pth_dat = [];
+if isempty(pthdat)
+    pthdat_pat = [id.pthstackfld 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.dat'];
+    pthdat = rdir(pthdat_pat);
+    if isempty(pthdat)
+        pthdat = [];
     else
-        pth_dat = pth_dat.name;
+        pthdat = pthdat.name;
     end
 end
 
-if isempty(pth_log)
-    pth_ftlog_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.log']; %
-    pth_log = rdir(pth_ftlog_pat);
-    if isempty(pth_log)
-        pth_log = [];
+if isempty(pthlog)
+    pthlog_pat = [id.pthstackfld 'FicTracData' filesep 'fictrac-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.log']; %
+    pthlog = rdir(pthlog_pat);
+    if isempty(pthlog)
+        pthlog = [];
     else
-        pth_log = pth_log.name;
+        pthlog = pthlog.name;
     end
 end
 
-if isempty(pth_vidlog)
-    pth_ftvidlog_pat = [id.pthstackdir 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.txt']; %
-    pth_vidlog = rdir(pth_ftvidlog_pat);
-    if isempty(pth_vidlog)
-        pth_vidlog = [];
+if isempty(pthvlog)
+    pthftvlog_pat = [id.pthstackfld 'FicTracData' filesep 'fictrac-vidLogFrames-' num2str(id.recdatenum) '*_trial_' sprintf( '%03d', id.trialnum ) '.txt']; %
+    pthvlog = rdir(pthftvlog_pat);
+    if isempty(pthvlog)
+        pthvlog = [];
     else
-        pth_vidlog = pth_vidlog.name;
+        pthvlog = pthvlog.name;
     end
 end
 
-if isempty(pth_vid)
-    pth_ftvid_pat = [id.pthstackdir id.recid '_ftvds_.mat']; %downsampled ft video (downsampled in register.py)
-    pth_vid = rdir(pth_ftvid_pat);
-    if isempty(pth_vid)
-        error("cannot find fictrac video (pth_vid) using default pattern derived from pthdaq")
+if isempty(pthv)
+    pthftv_pat = [id.pthstackfld id.recid '_ftvds_.mat']; %downsampled ft video (downsampled in register.py)
+    pthv = rdir(pthftv_pat);
+    if isempty(pthv)
+        error("cannot find fictrac video (pthv) using default pattern derived from pthdaq")
     else
-        pth_vid = pth_vid.name;
+        pthv = pthv.name;
     end
 end
 
 
-if isempty(pth_vidrs)
-    pth_vidrs = [pth_vid(1:end-4) 'RS_.mat'];
+if isempty(pthvrs)
+    pthvrs = [pthv(1:end-4) 'RS_.mat'];
 end
-
 
 
 %%%% CHECK IF RESAMPLED VIDEO ALREADY EXISTS %%%%
 
 try
 
-    load(pth_vidrs, 'ftvdsrs')
+    load(pthvrs, 'ftvrs')
 
 catch
 
 
-
     %%%% LOAD SUPPLEMENTAL FILES, WHICH MAY OR MAY NOT GET USED %%%%
 
-    if pth_vidlog
-        ftvl = parse_fictrac_vidlog(pth_vidlog);
+    if pthvlog
+        ftvl = parse_fictrac_vidlog(pthvlog);
     end
 
-    if pth_log
+    if pthlog
         try
-            [pthtmp, fnlog, ~] = fileparts(pth_log);
-            pth_log_parsed = [pthtmp filesep fnlog '_parsed_.mat'];
-            load(pth_log_parsed, 'log_timestamps', 'log_framecounts')
+            [pthtmp, fnlog, ~] = fileparts(pthlog);
+            pthlog_parsed = [pthtmp filesep fnlog '_parsed_.mat'];
+            load(pthlog_parsed, 'log_timestamps', 'log_framecounts')
         catch
-            [log_timestamps, log_framecounts] = parse_fictrac_log(pth_log, pth_log_parsed, ftvl(end)); %outputs: vlts (vid log
+            [log_timestamps, log_framecounts] = parse_fictrac_log(pthlog, pthlog_parsed, ftvl(end)); %outputs: vlts (vid log
         end
     end
 
 
-
     %%%% LOAD VIDEO, EXTRACT LASER TIMESERIES %%%%
 
-    ftvds = struct2cell(load(pth_vid)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
+    ftvds = struct2cell(load(pthv)); %make sure loaded variable is named 'ftvds'; %ftvds is spatially downsampled, grayscale fictrac video, which was saved in ftvdownsample.py, as part of registration pipeline
     ftvds = ftvds{1};
     ftvds = permute(ftvds, [2 3 1]);
 
-    if isempty(rsinds)
+    if isempty(rsidx)
 
         if isempty(ftrate)
-            if isempty(pth_dat)
-                error("must pass in ftrate or pth_dat or pthdaq to derive ftrate (if you got this error, pthdaq or pth_dat may not exist)")
+            if isempty(pthdat)
+                error("must pass in ftrate or pthdat or pthdaq to derive ftrate (if you got this error, pthdaq or pthdat may not exist)")
             end
-            ftdat = read_fictrac_dat(pth_dat);
+            ftdat = read_fictrac_dat(pthdat);
             ftrate = 1e9/median(ftdat.deltaTimestamp);
         end
 
@@ -226,10 +222,9 @@ catch
             imagesc(hax, ftvid_cntr_t); hold on;
             [mxr, mxc] = ind2sub(szvd(1:2), mxi(1:numpx)); %plot with image to confirm these are good pixels for extracting laser timeseries
             scatter(mxc,mxr,5,'red','filled')
-            pth_gif = [pth_vid '_mean_t_im_.gif'];
+            pth_gif = [pthv '_mean_t_im_.gif'];
             fig2gif(hfg, 1, pth_gif);
         end
-
 
 
         %%%% FIND PEAKS IN THE LASER TIMESERIES %%%%
@@ -249,12 +244,10 @@ catch
         pkdistdiff = [pkdist(1)-1 diff(pkdist)];
 
 
-
         %%%% FIND LASER OSCILLATION PERIOD BY FINDING DELAY BETWEEN SIGNAL AND ITS INVERSE %%%%
 
         pkhalfper = find_oscillation_halfperiod(laser_ts_smoothed);
         pkhalfper = ceil(mean(goodpers));
-
 
 
         %%%% CROP BEFORE/AFTER TRIAL PERIOD BY FINDING/CROPPING APERIODIC PEAKS IN THE LASER TIMESERIES (THIS WORKED BETTER THAN RUNNING RMOUTLIERS ON PEAK PROMINENCES) %%%%
@@ -293,11 +286,9 @@ catch
         % peakinds_to_plot = numel(lk)-badpeaks_back-(numgoodpeaks_to_plot-1):numel(lk); figure; plot(1:numel(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), laser_ts_smoothed(lk(peakinds_to_plot(1)):lk(peakinds_to_plot(end))), lk(peakinds_to_plot)-lk(peakinds_to_plot(1))+1, pk(peakinds_to_plot), 'o')
 
 
-
         %%%% FIND SLOPE (OVER PEAK HALF PERIOD) OF LASER TIMESERIES (CURRENTLY NOT USED, BUT PREVIOUSLY CONSIDERED USING SLOPES TO DEFINE THE OSCILLATIONS AGAINST THE NON-OSCILLATIONS, SINCE LASER OSCILLATIONS HAVE MUCH BIGGER SLOPES) %%%%
 
         dfmnt = differentiate_laser_timeseries(laser_ts_smoothed, pkhalfper);
-
 
 
         %%%% PLOT LASER INTENSITY TIMESERIES WITH PEAKS MARKED %%%%
@@ -306,14 +297,13 @@ catch
             peaks_timeseries = nan(size(laser_ts_smoothed));
             peaks_timeseries(lkg) = pkg;
             segx = 50;
-            pth_gif = [pth_vid(1:end-4) 'peaks_.gif'];
+            pth_gif = [pthv(1:end-4) 'peaks_.gif'];
             titlein = 'laser oscillation with peaks (ideally imaging volumes) marked in red';
             yconst = 1;
             mkr2 = 'o';
             ylimtype = 'each';
             tsplt(laser_ts_smoothed, y2=peaks_timeseries, pthgif=pth_gif, segx=segx, titlein=titlein, yconst=yconst, ymatch=ymatch, mkr2=mkr2)
         end
-
 
 
         %%%% FIND DOWNSAMPLING INDICES %%%%
@@ -329,49 +319,45 @@ catch
 
         lkgzeroed = lkg - keepinds_vid(1) + 1;
 
-        rsinds = zeros(size(keepinds_vid));
-        rsinds(lkgzeroed) = 1;
-        rsinds = binary2count(logical(rsinds));
-        rsinds(rsinds==0) = nan;
-        rsinds = fillmissing(rsinds, 'nearest');
-
+        rsidx = zeros(size(keepinds_vid));
+        rsidx(lkgzeroed) = 1;
+        rsidx = binary2count(logical(rsidx));
+        rsidx(rsidx==0) = nan;
+        rsidx = fillmissing(rsidx, 'nearest');
 
 
         %%%% REMOVE FRAMES BEFORE AND AFTER IMAGING %%%%
 
         ftvds = ftvds(:,:,keepinds_vid);
 
-
     end
 
 
     %%%% DOWNSAMPLE VIDEO %%%%
 
-    rsu = unique(rsinds(rsinds~=0),'stable'); %index of each volume, according to light flashes
-    ftvdsrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
+    rsu = unique(rsidx(rsidx~=0),'stable'); %index of each volume, according to light flashes
+    ftvrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
     for ri = 1:numel(rsu)
-        ftvdsrs(:,:,ri) = mean(ftvds(:,:,rsinds==rsu(ri)),3);
+        ftvrs(:,:,ri) = mean(ftvds(:,:,rsidx==rsu(ri)),3);
     end
 
-    fprintf("final resampled fictrac video size is: " + mat2str(size(ftvdsrs)) + newline)
-
+    fprintf("final resampled fictrac video size is: " + mat2str(size(ftvrs)) + newline)
 
 
     %%%% PLOT VIDEO BEFORE AND AFTER RESAMPLING %%%%
 
     if doplt
         title_prefix = 'pre resample';
-        pthgif = [pth_vid(1:end-4) '.gif'];
+        pthgif = [pthv(1:end-4) '.gif'];
         stackplt(reshape(ftvds, size(ftvds,1), size(ftvds,2), 1, size(ftvds,3)), it=3i+50, pthgif=pthgif, title_prefix=title_prefix)
 
         title_prefix = 'post resample';
-        pthgif = [pth_vid(1:end-4) 'RS_.gif'];
-        stackplt(reshape(ftvdsrs, size(ftvdsrs,1), size(ftvdsrs,2), 1, size(ftvdsrs,3)), it=3i+50, pthgif=pthgif, title_prefix=title_prefix)
+        pthgif = [pthv(1:end-4) 'RS_.gif'];
+        stackplt(reshape(ftvrs, size(ftvrs,1), size(ftvrs,2), 1, size(ftvrs,3)), it=3i+50, pthgif=pthgif, title_prefix=title_prefix)
     end
 
-    save(pth_vidrs, 'ftvdsrs', '-v7.3', '-mat')
+    save(pthvrs, 'ftvrs', '-v7.3', '-mat')
     fprintf("exiting downsample_fictrac_video" + newline)
-
 
 
 end
@@ -439,10 +425,10 @@ end
 end
 
 
-function ftvl = parse_fictrac_vidlog(pth_vidlog)
+function ftvl = parse_fictrac_vidlog(pthvlog)
 
 
-ftvl = table2array(readtable(pth_vidlog));
+ftvl = table2array(readtable(pthvlog));
 vlend = ftvl(end);
 vlnumel = numel(ftvl(:));
 vl_num_missing = vlend-vlnumel;
@@ -467,19 +453,19 @@ fprintf("found " + num2str(num_drop_occurrences) + " frame drop events in vidLog
 end
 
 
-function [log_timestamps, log_framecounts] = parse_fictrac_log(pth_log, pth_log_parsed, vlend)
+function [log_timestamps, log_framecounts] = parse_fictrac_log(pthlog, pthlog_parsed, vlend)
 
 if ~exist('vlend', 'var') || isempty(vlend)
     vlend = nan; %optional expected number logged frames
 end
 
-fid = fopen(pth_log, 'r');
+fid = fopen(pthlog, 'r');
 linesubstr = 'Trackball::process [';
 linesubstr2 = 'Frame';
 log_timestamps = {};
 log_framecounts = {};
 count = 0;
-fprintf("starting to extract frame times and indices from this fictrac log file: \n" + pth_log + newline)
+fprintf("starting to extract frame times and indices from this fictrac log file: \n" + pthlog + newline)
 while ~feof(fid)
     str = fgetl(fid);
     if contains(str, linesubstr) && contains(str, linesubstr2)
@@ -500,9 +486,9 @@ if ~isequal(unique(log_framecounts), 0:max(log_framecounts))
     error("fictrac log file has missing frames")
 end
 
-save(pth_log_parsed, 'log_timestamps', 'log_framecounts', '-v7.3', '-mat')
+save(pthlog_parsed, 'log_timestamps', 'log_framecounts', '-v7.3', '-mat')
 
-fprintf("saved fictrac frame times and indices to this file: \n" + pth_log_parsed + newline)
+fprintf("saved fictrac frame times and indices to this file: \n" + pthlog_parsed + newline)
 
 end
 

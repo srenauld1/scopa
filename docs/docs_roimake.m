@@ -36,7 +36,7 @@ rois:
     output: roi masks and timeseries
 
 post:
-    extern/daq
+    extern/dq
     feature extraction (from stack and/or timeseries)
     modeling
     visualization

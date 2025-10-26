@@ -1,12 +1,12 @@
 function o = oset_sophia()
 
-do = {'sld', 'daq', 'roi'};
+do = {'sld', 'dq', 'roi'};
 
-o.daq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
-o.daq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
-o.daq.dvord = 2; % order of polynomial used to fit local slope
-o.daq.dvlensec_supp = 0.1; % same as dvlensec but for supplemental resampling rate (supprate, if nonempty)
-o.daq.dvord_supp = 2;
+o.dq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
+o.dq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+o.dq.dvord = 2; % order of polynomial used to fit local slope
+o.dq.dvlensec_supp = 0.1; % same as dvlensec but for supplemental resampling rate (supprate, if nonempty)
+o.dq.dvord_supp = 2;
 
 o.roi.roiname = {'ves0'};
 o.roi.nrm.post = {'dff008000'};

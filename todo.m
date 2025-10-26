@@ -2,6 +2,8 @@
 
 %{
 
+voltlim, balldia, voltminhd, should all probably not be in opt
+
 get voltlim from metadata
 and maybe voltminhd
 
@@ -10,7 +12,7 @@ put any argument dependent option changing before odf=1 so arguments get changed
 
 vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like dvlensec and slopelensamp
 
-deal with nonscalar daq output within daqld (when rsidx are multiple) while multiple optid also make daq nonscalar (outside daqld)
+deal with nonscalar dq output within daqld (when rsidx are multiple) while multiple optid also make dq nonscalar (outside daqld)
 consider renaming roi child mos 
     rmm
     rma
@@ -74,34 +76,34 @@ vget defaults are never filled in on purpose, but is that right?
 make daqld ftv have a dotfv, just like roimake
 consider making default nested opts rather than using otree; for example, d.roi.cm = [], etc
 optid for stackseries, since it affects the rois
-no roeason to make daq a table in daqld then convert to struct, just m,ake struct from start
+no roeason to make dq a table in daqld then convert to struct, just m,ake struct from start
 in vget there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one
 do i need maketime protection for rg??
-in odf define timeseries fields available to bmp (like mu, rho, amp, etc), the way you did with daq, do this for all main modules 
-vget is limited to one obin within vg at a time but shouldn't be, what if you want a daq and roi variable as indv
+in odf define timeseries fields available to bmp (like mu, rho, amp, etc), the way you did with dq, do this for all main modules 
+vget is limited to one obin within vg at a time but shouldn't be, what if you want a dq and roi variable as indv
 make sure optids refer to same file, that the opt file mapping opt to id has not been changed 
 nonfunctional obin in ored/odist etc need to be able to be nested and returned to right spot
 set up default roimake, where opt can be empty) - mean of fov
-need to make nan for cue in dark now that epoch is loaded on daq
+need to make nan for cue in dark now that epoch is loaded on dq
 now if multiple recind are running in pl.sh, and one errors, the whole sequence will stop (i think only at the do copyfiles part though, so maybe if docopyfiles is 0 the recind without error will continue??) is this good or bad?
 should roiname none be reserved for skipping drawing?
 right now opts thsat get written to opt file are only functional, and if entire obin are non-functional (ignored) they are written as empty struct which is {} in txt file; is this best? should all ignored options get written as empty or nan or something like that? that seems like a lot of clutter
 ofill argument unpack should unpack to the specified nest if obin is nested, currently it just unnpacks the highest level, or if that might cause issue somewhere, make an unpack nest option
-TEMPORARY HACK FOR CROPPING NEW RUNBG DAQ (WHEN DAQ RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING) output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
+TEMPORARY HACK FOR CROPPING NEW RUNBG dq (WHEN dq RUNS IN BACKGROUND, TO CAPTURE START AND END OF EVERYTHING) output data is less accurate than frameClock, since volume (or frame?) seems to complete after outputData ends, but i think frameClock is missing any final flyback frames
 should ftv downsampling occur in ftvalign in matlab? why do it in pythno during register?? oh it's because matlab on mac can't read it??
-daq needs toindex, like doballscale etc, to convert binary to index, right now it happens by default in daqpr for any binary variable, but what if you want it to remain binary?? it should also occur outside daqpr, like the other to* variables, but this one before daqpr
+dq needs toindex, like doballscale etc, to convert binary to index, right now it happens by default in daqpr for any binary variable, but what if you want it to remain binary?? it should also occur outside daqpr, like the other to* variables, but this one before daqpr
 make substr have convenient start finish markers, rather than having to use ^ and $ where the option is specified
 make chan sum to draw on sum of channels
 make channel consistently 5th dim index or pmt index; right now in python code it's pmt index and in matlab it's mostly stack 5th dim index
 make sure fictrac has not flatlined, epoch might be as expected despite fictrac flatline
 write function to delete a variable in txt (not allow manual) that will also delete all associated files
 \n\nSTITCH IS INDEPENDENT FOR 2 CHANNELS, FIX THAT? OR IS THAT FINE??
-apply vecdv to daq directly, not output of vecrs
+apply vecdv to dq directly, not output of vecrs
 make vsmooth for all variables rather than stacksm and vecsm
 MAKE TIME ALWAYS 2ND DIM
 FIX DIFFERENT roi OPTS FOR EACH RGNAME, OR MAYBE TRANSFER MANY PARAMS TO OPTS IN THEIR FUNCTIONS
 CAN STACK REMAIN INT16?? zero in uint16 is nice though
-MAKE ALL INDICES CONSISTENTLY REPRESENT START, CENTER, OR END . . . daq starts at 0, so maybe do start indexed, but singleton 0 indexed samples don't tell you width; but currently default daq downsampling makes time represent center, since it takeds average
+MAKE ALL INDICES CONSISTENTLY REPRESENT START, CENTER, OR END . . . dq starts at 0, so maybe do start indexed, but singleton 0 indexed samples don't tell you width; but currently default dq downsampling makes time represent center, since it takeds average
 make hemisphere option (eg option to analyze left or right or both)
 fix hsv spec for internal periodic components (vonmises in fnet gets periodic hue spec)
 need to make mdl_parse_mdlname_string run with other inputs ignored during param setting to check the syntax (so you don't find out later, halfway through the pipeline

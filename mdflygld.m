@@ -7,7 +7,7 @@ arguments
     pthstack
 end
 
-pthstackdir = idmake(pthstack, 'pthstackdir'); %just in case id info gets used below
+pthstackfld = idmake(pthstack, 'pthstackfld'); %just in case id info gets used below
 
 %% pattern metadata
 
@@ -41,7 +41,7 @@ end
 
 %% experiment metadata
 
-expMdFile = fullfile(pthstackdir, 'csv', 'expMd.csv');
+expMdFile = fullfile(pthstackfld, 'csv', 'expMd.csv');
 
 try
     expMetadata = readtable(expMdFile, 'delimiter', ',');
@@ -52,7 +52,7 @@ end
 
 %% trial metadata
 
-trialMdFile = fullfile(pthstackdir, [id.recdate '-' id.fly '_trialMetadata.mat']);
+trialMdFile = fullfile(pthstackfld, [id.recdate '-' id.fly '_trialMetadata.mat']);
 trialMetadata = [];
 if exist(trialMdFile,'file')
     load(trialMdFile, 'trialMetadata');

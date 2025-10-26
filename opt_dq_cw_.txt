@@ -1,0 +1,29 @@
+{
+  "md": {
+    "autonm": 1,
+    "maketime": "2025102510213684",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "balldia": 9,
+    "dvlensec": [],
+    "dvord": 2,
+    "rsidx": [],
+    "supprate": [],
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  },
+  "z2": {
+    "balldia": 9,
+    "dvlensec": [],
+    "dvord": 2,
+    "rsidx": [],
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  }
+}

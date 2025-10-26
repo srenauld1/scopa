@@ -17,7 +17,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
     pthrawpt = [id.pthrec '_o_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)
-        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
+        pthrawpt = [id.pthstackfld id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
         pthraw = rdir(pthrawpt);
     end
     if isempty(pthraw)
@@ -105,7 +105,7 @@ md.sper = 1/md.volrate;
 
 
 if doflyg
-    pthmd_flyg_pat = [pthstackdir id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+    pthmd_flyg_pat = [pthstackfld id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
     pthmd_flyg = rdir(pthmd_flyg_pat);
     if isempty(pthmd_flyg)
         pthmd_flyg = [];

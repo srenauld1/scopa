@@ -1,13 +1,13 @@
 function o = oset_ebno(o)
 
 
-o.mn.do = ["sld", "daq", "roi", "bmp"];
+o.mn.do = ["sld", "dq", "roi", "bmp"];
 
 rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-%%%% DAQ %%%%
+%%%% dq %%%%
 
-o.daq.dvlensec = 0.4;
+o.dq.dvlensec = 0.4;
 
 %%%% BMP %%%%
 
@@ -15,7 +15,7 @@ o.daq.dvlensec = 0.4;
 o.bmp.dvlensec = 0.4;
 o.bmp.domtype = 'f';
 
-bmpindv.vg.daq = ['*'];
+bmpindv.vg.dq = ['*'];
 bmpindv.vg.vnm = 'by';
 
 o.bmp.indv = bmpindv;
@@ -40,7 +40,7 @@ o.bmp.mdl.epochnum = 1;
 mdlindv.vg.bmp = ['*'];
 mdlindv.vg.vnm = 'vel';
 mdlindv.vg.group2 = '1';
-mdlindv.vg(2).daq = ['*'];
+mdlindv.vg(2).dq = ['*'];
 mdlindv.vg(2).vnm = 'bvy';
 
 o.mdl.indv = mdlindv;

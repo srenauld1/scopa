@@ -3,20 +3,20 @@ function vecout = vecsm(vtype, vecin, opt)
 %{
 
 smooth vector (with matlab function smoothdata) using user-specified window length (seconds or samples) 
-input vector can be angular (radians or degrees) or categorical or "normal"; 
+input vector can be circular (radians or degrees) or "categorical" or "normal" (see vtype notes below); 
 vecin and vecout orientations are matched
 todo: generalize for nd
 
 %}
 
 arguments
-    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output uses only input values), 'n' everything else
-    vecin {mustBeVector} %input variable to be differentiated; must be in radians if vtype is angular
+    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin {mustBeVector} %input variable to be smoothed;  if vtype is r or d, must be circular data in radians or degrees, respectively
     opt.method char {mustBeTextScalar} = 'gaussian' %smoothing method for smoothdata function;
-    opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
-    opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
+    opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples
+    opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds
     opt.sper double {mustBeScalarOrEmpty, mustBePositive} = []; %sample period in seconds; required if lensec is nonempty
-    opt.omitmissing = 1 %omit nan in input, smoothdata default is true; 0 will include nan
+    opt.omitmissing = 1 %1 to omit nan in input (this is smoothdata default); 0 will include nan
 end
 method = opt.method;
 lensamp = opt.lensamp;

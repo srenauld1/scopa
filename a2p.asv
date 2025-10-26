@@ -69,15 +69,15 @@ for k = 1:numel(oa) % loop over recordings found in oset
     end
 
     o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
-    glb(1, pthsvdir=o.id.pthstackdir); %update global that refers to stack location, a default location for saving some less important files (like figures)
+    glb(1, pthsvdir=o.id.pthstackfld); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
-    %%%% DAQ %%%%
+    %%%% dq %%%%
 
-    if ~isempty(o.daq)
-        for m = 1:numel(o.daq)
-            prs = struct2pairs(o.daq(m));
-            daq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process daq (also fictrac video)
+    if ~isempty(o.dq)
+        for m = 1:numel(o.dq)
+            prs = struct2pairs(o.dq(m));
+            dq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
         end
     end
 
@@ -125,7 +125,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% PLOTS %%%%
 
     if dopltx
-        pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+        pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
 
 
@@ -136,13 +136,13 @@ for k = 1:numel(oa) % loop over recordings found in oset
         epoch = 6;
         bout = 13;
 
-        idaq = fieldmatch(daq, lev=1);
-        [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
+        idaq = fieldmatch(dq, lev=1);
+        [~, ~, ipe, ~, tpe] = trmake(dq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
 
         a_opto(roi, s, glb('t') )
 
 
-        a_ebgano(s, roi, daq, bmp, glb('t'), ...
+        a_ebgano(s, roi, dq, bmp, glb('t'), ...
             mix={'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...

@@ -1,11 +1,11 @@
 
-function a_ebgano(s, roi, daq, bmp, t, opt)
+function a_ebgano(s, roi, dq, bmp, t, opt)
 
 
 arguments
     s
     roi
-    daq
+    dq
     bmp
     t
     opt.mix = []
@@ -98,7 +98,7 @@ iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'ventral'}, lev=1);
 igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'dorsal'}, lev=1);
 igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'ventral'}, lev=1);
 ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'roiname', 'eb4545'}, lev=1);
-idaq = fieldmatch(daq, lev=1);
+idaq = fieldmatch(dq, lev=1);
 ibmp = fieldmatch(bmp, lev=1);
 
 nol = roi.(inl).dat(1).ts;
@@ -107,10 +107,10 @@ gld = roi.(igld).dat(1).ts;
 glv = roi.(iglv).dat(1).ts;
 grd = roi.(igrd).dat(1).ts;
 grv = roi.(igrv).dat(1).ts;
-epochts = daq.(idaq).epochts;
-vish = daq.(idaq).vh;
-ballh = daq.(idaq).bh;
-ballvf = daq.(idaq).bvf;
+epochts = dq.(idaq).epochts;
+vish = dq.(idaq).vh;
+ballh = dq.(idaq).bh;
+ballvf = dq.(idaq).bvf;
 bmph = bmp.(ibmp).mu;
 bmpi = bmp.(ibmp).respcl;
 bmpdomain = bmp.(ibmp).domain;
@@ -770,8 +770,8 @@ if ismember('scat2', pltstr)
     for q = 1:numel(iepoch)
 
         ie = iepoch(q);
-        [~, gldtmp, glvtmp, grdtmp, grvtmp] = epochcrop(daq.(idaq).epochts, ie, gld, glv, grd, grv);
-        [~, glddv_tmp, glvdv_tmp, grddv_tmp, grvdv_tmp] = epochcrop(daq.(idaq).epochts, ie, glddv, glvdv, grddv, grvdv);
+        [~, gldtmp, glvtmp, grdtmp, grvtmp] = epochcrop(dq.(idaq).epochts, ie, gld, glv, grd, grv);
+        [~, glddv_tmp, glvdv_tmp, grddv_tmp, grvdv_tmp] = epochcrop(dq.(idaq).epochts, ie, glddv, glvdv, grddv, grvdv);
 
         if dodv
             if q==1
