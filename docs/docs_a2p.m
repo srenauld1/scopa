@@ -2,6 +2,7 @@
 
 %{
 
+module
 each module returns a struct
 each element of the struct represents an option set
 each field represents a quantity extracted by the module
@@ -17,8 +18,16 @@ each field represents a quantity extracted by the module
     if additional dimensions do not necessarily match the first dimension in length, they are placed in nonscalar struct
         example: roi.ts(1) with size (roi,t) and roi.ts(2) with size (roi,t) store roi timeseries for channel 1 and 2, respectively
 
-in modules, opt are id-contolled name-value arguments (ie module options), opt2 are name-value arguments that are not id-controlled; 
-in functions that are not modules, opt is used for all name-value arguments 
+in a2p, functions (modules or otherwise) often take more name-value arguments than positional
+    this is mostly a stylistic choice (to make functions easier to call, in the author's opinion)
+    positional arguments are kept to a minimum
+    sometimes there are multiple name-value argument structs (for example, opt and opt2, see below)
+    some utility functions take only positional arguments, particularly when default values are not appropriate and/or positional argument order is intuitive, and number is 5 or fewer
+
+in modules, struct 'opt' contains only id-contolled name-value arguments (ie module options); these are "functional options" because they affect the outpuut data (in nontrivial or non-cosmetic ways)
+    opt2 are name-value arguments that are not id-controlled; 
+    in functions that are not modules, opt is used for all name-value arguments 
+
 in matlab, if user explicitly sets name-value argument to empty when calling a function, the default value in arguments block is not used; 
 the arguments block default value is only used if user doesn't specify the name-value argument in the function call,  
 for example, daqld(pthdaq=[]) does not set pthdaq to its arguments block default value, but daqld() does; 

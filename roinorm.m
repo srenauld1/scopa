@@ -32,7 +32,7 @@ arguments
     opt2.srate = []
     opt2.t = []
     opt2.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
-    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 % 1 to make plots
     opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end

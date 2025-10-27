@@ -44,7 +44,7 @@ arguments
     opt2.normopt = []
     opt2.ftvid = []
     opt2.stimvid = []
-    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 % 1 to make plots
 end
 stack = opt2.stack;
 dq = opt2.dq;

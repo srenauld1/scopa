@@ -4206,5 +4206,71 @@
     "s": {
       "vg": []
     }
+  },
+  "z44": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "roiname": "dorsal",
+    "s": {
+      "vg": []
+    }
+  },
+  "z45": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "roiname": "ventral",
+    "s": {
+      "vg": []
+    }
+  },
+  "z46": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "roiname": "dorsal",
+    "s": {
+      "vg": []
+    }
+  },
+  "z47": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "roiname": "ventral",
+    "s": {
+      "vg": []
+    }
+  },
+  "z48": {
+    "cm": [],
+    "dodraw": 0,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "dff008000",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "none",
+    "roiname": "ves041",
+    "s": {
+      "vg": []
+    }
   }
 }

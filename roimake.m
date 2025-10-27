@@ -18,7 +18,7 @@ arguments
     
     opt2.t (1,:) double = [] %timestamp vector; only required nonempty if channorm~=0 in opt.nrm
     opt2.roimask = [] %roimask to apply to stack; if nonempty, roidraw and roimauto are skipped
-    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 %1 to do plots
+    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 % 1 to do plots
     opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end

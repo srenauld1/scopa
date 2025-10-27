@@ -2,7 +2,8 @@ function ftvrs = ftvalign(opt)
 
 %{
 
-NOTE: IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME daq AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO, THIS FUNCTION PERFORMS A HACK ALIGNMENT THAT DOESN'T ALWAYS WORK (ALTHOUGH A LITTLE WORK COULD MAKE IT BETTER PROBABLY) 
+NOTE: IF YOU DO NOT YET HAVE A RECORD OF FICTRAC DATA ON THE SAME daq AS IMAGING DATA, WHICH IS THE BEST WAY TO ALIGN THE TWO, THIS FUNCTION PERFORMS A HACK ALIGNMENT THAT DOESN'T ALWAYS WORK 
+NOTE: THIS ALIGNS FICTRAC VIDEO TO IMAGING (IT DOESN'T MAKE SENSE TO RESAMPLE THE ENTIRE VIDEO INTO ARBITRARY RATE, AS IS ALLOWED IN daqld, SINCE WE DON'T KNOW WHEN THE VIDEO BEGINS RELATIVE TO IMAGING; SO WE EITHER DO PROPER INDEXING ALIGNMENT OR THE LASER OSCILLATION HACK
 
 align fictrac video to imaging data using oscillations of the laser on fictrac video
 save and output the aligned, temporally resampled video
@@ -33,8 +34,8 @@ todo:
 %}
 
 arguments
-    opt.rsidx = [] %resampling indices (e.g. if they were on the daq)
-    opt.numvol = [] %number of imaging volumes
+    opt.rsidx = [] %resampling indices, if they were on the daq; if not, empty will invoke the hack alignment
+    opt.numvol = [] %number of imaging volumes (which is new length for fictrac video)
     opt.imrate = [] %imaging rate in hz, volrate if volumetric, framerate if not (average,approximate can work too)
     opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
     opt.topkp = 0.5; % fraction of vertical top of fictrac video frames to consider when finding brightest numpx pixels (pedestal at bottom can sometimes be brightest part of image, so this can exclude that); if empty, user is prompted to choose roi
@@ -336,8 +337,11 @@ catch
     %%%% DOWNSAMPLE VIDEO %%%%
 
     rsu = unique(rsidx(rsidx~=0),'stable'); %index of each volume, according to light flashes
+    if ~isequal(numvol, numel(rsu))
+        error("numel(rsidx) does not equal numvol")
+    end
     ftvrs = zeros(size(ftvds, 1), size(ftvds, 2), numvol, 'uint8');
-    for ri = 1:numel(rsu)
+    for ri = 1:numvol
         ftvrs(:,:,ri) = mean(ftvds(:,:,rsidx==rsu(ri)),3);
     end
 

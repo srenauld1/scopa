@@ -405,42 +405,40 @@ if ~isempty(mosfinal)
         end
     end
 
-    optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and vget)
-
-    optout = oid(optout); %assign ids to options sets
-
-    for k = 1:numel(mostree_open_with_mosc) %do option validation (one final thing even though finished = 1 above)
+    for k = 1:numel(mostree_open_with_mosc)
         stind = structind(mostree_open_with_mosc{k});
         try
             optout_tmp = getfield(optout, stind{:});
         catch %skip trying to get submos when supermos is empty
-            optout_tmp = [];
         end
         if ~isempty(optout_tmp)
+            prs = struct2pairs(optout_tmp);
             try
                 if ismember(stind{end}, mostree_du)
                     stindtmp = stind{end};
-                    stindtmp_with_mosc_option = stindtmp;
-                elseif numel(stind)>2 && ismember(stind{end-2}, mostree_du)
-                    stindtmp = stind{end-2};
-                    stindtmp_with_mosc_option = strjoin(stind([end-2, end]), '.');
+                elseif numel(stind)>1 && ismember(stind{end-1}, mostree_du)
+                    stindtmp = stind{end-1};
                 else
-                    error("you have either created a mosc directly below a mosc, or a mosc without a mos above (neither should not be possible, how did we get here)")
+                    error("you have either created a mosc directly below a mosc, or a mosc without a mos above (neither should not be possible, how did w)")
+                
                 end
-                prs = struct2pairs(optout_tmp);
                 optmosh_tmp = mosh.(stindtmp)('', prs{:}, och=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
             catch ME
-                error("attempt to validate inputs for module " +  stindtmp_with_mosc_option + newline + "failed with this error message " + ME.message)
+                error("attempt to validate inputs for module " +  stind{end} + newline + "failed with this error message " + ME.message)
             end
             optmosh_tmp_fn = fieldnames(optmosh_tmp);
             optmosh_tmp_ne = rmfield(optmosh_tmp, optmosh_tmp_fn(structfun(@isempty, optmosh_tmp)));
             optout_tmp_fn = fieldnames(optout_tmp);
             optout_tmp_ne = rmfield(optout_tmp, optout_tmp_fn(structfun(@isempty, optout_tmp)));
             if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
-                fprintf("user-supplied options changed (but did not cause error) in arguments block for module " + stindtmp_with_mosc_option + newline)
+                fprintf("user-supplied options changed in arguments block for module " + stind{end} + newline)
             end
         end
     end
+
+    optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and vget)
+
+    optout = oid(optout); %assign ids to options sets
 
     clear mosc_all
 

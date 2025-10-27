@@ -2,6 +2,8 @@
 
 %{
 
+need to add input validation for tg 
+
 voltlim, balldia, voltminhd, should all probably not be in opt
 
 get voltlim from metadata
