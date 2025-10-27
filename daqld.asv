@@ -234,18 +234,19 @@ catch ME
 
     vpp = convertStringsToChars(erase(vpp, " "));
     spl = split(vpp, '=');
-    vrenm = strings(size(spl,1),1);
     for k = 1:size(spl,1)
-        vrenm(k,:) = string(strjoin([spl(k,1), spl(k,2)], '='));
+        vppold_flat = catstrsplit(spl(k,2)], ',');
     end
     vppnew = spl(:,1);
-    mustBeUnique
     vppold = spl(:,2);
     vpptypes = spl(:,3);
-    nmvel = spl(:,4);
+    vppvel = spl(:,4);
     vpptime = split(spl(strcmp(vpptypes, 't'),2), ',');
     if ~isvector(vpptime)
         error("there must be one and only one element with dodv=1 and type='t' in string array 'vpp'")
+    end
+    if any(cellfun(@isempty, [vppnew; vppold]))
+        error("none of the newnames or oldnames in vpp can be empty")
     end
 
 
@@ -389,8 +390,8 @@ catch ME
 
                 dq.(nm)(m,:) = tmp; 
 
-                if ~isempty(nmvel{k}) %only save differentiated variable if it has an entry after 3rd equals sign in name-value argument 'vpp'
-                    dq.(nmvel{k})(m,:) = tmpdv; 
+                if ~isempty(vppvel{k}) %only save differentiated variable if it has an entry after 3rd equals sign in name-value argument 'vpp'
+                    dq.(vppvel{k})(m,:) = tmpdv; 
                 end
 
             elseif isempty(tdvname)
