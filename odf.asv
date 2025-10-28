@@ -18,10 +18,7 @@ we hard-code variable 'mostree' (rather than deriving it from du) because submod
 
 NOTE: module options are validated in each module's arguments block; 
     however, here, below, argument validation is not listed; 
-    the purpose of this list is to have all options and modules listed in one place, for convenience, 
-    but this list is not really functional (since any mismatch between these options and those listed in module arguments block causes error)    
-
-NOTE: if you change a default argument here, you must also change it in the corresponding arguments block
+    the purpose of this list is to have everything in one place, for convenience, but this list is not actually functional (since any mismatch between these options and those listed in module arguments block causes error)    
 
 %}
 
@@ -75,14 +72,14 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 
 %% dq (daqld: load, process daq)
 
-du.dq.rsidx = [0]; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
+du.dq.rsidx = []; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
 du.dq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
 du.dq.dvord = 2; % order of polynomial used to fit local slope
 du.dq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
 du.dq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
 du.dq.balldia = 9; % mm, used to convert fictrac variables into mm
 du.dq.voltlim = [0,10]; % daq voltage [min,max]; would be better to have this in metadata
-du.dq.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence glbfile('voltminhd_berg1') is 1/12) 
+du.dq.voltminhd = 1/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12) 
 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)

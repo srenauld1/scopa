@@ -1,4 +1,6 @@
 {
   "dmstackdf": "yxztc",
-  "optiddf": "z0"
+  "optiddf": "z0",
+  "voltminhd_flyclock_berg1": 1,
+  "voltminhd_flyclock_berg2": 6
 }

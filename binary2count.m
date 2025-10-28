@@ -1,10 +1,11 @@
 function vecout = binary2count(vecin)
 
-% convert binary vector to cumulative count; vecin orientation matches vecout
+% convert binary vector (only 0s and 1s) to cumulative count; vecin orientation matches vecout
 
 arguments
-    vecin {mustBeVector}
+    vecin {mustBeVector, mustBeBinary}
 end
+
 
 wasrow = 0;
 if isrow(vecin)

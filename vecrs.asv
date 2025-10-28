@@ -3,8 +3,9 @@ function vecout = vecrs(vtype, vecin, rskey)
 %{
 
 resample vector using matlab function resample (scalar rskey), or user-specified resampling indices (nonscalar rskey)
-    if rskey is scalar, rskey is length of resampled vector 
-    if rskey is nonscalar, must be vector of integers, same length as vecin
+    if rskey is scalar, 
+    if rskey is nonscalar, 
+        must be vector of integers, where unique(rskey_nozeros), 'stable') = min(rskey_nozeros):max(rskey_nozeros), where rskey_nozeros=rskey(rskey~=0); 
         for example; [0 1 1 0 2 2] and [1 1 0 2 2] are valid, but [0 1 1 0 3 3] is not; 
         rskey = [0 1 1 0 2 2] would output a 2-element vecout from a 6-element vecin, where vecout(1) = f(vecin(2:3)) and vecout(2) = f(vecin(5:6)), and f is a function that depends on vtype   
 input vector can be angular (radians or degrees) or categorical or "normal"; 
@@ -176,15 +177,18 @@ if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', loop
 
 else %if rskey is not scalar, average vecin during each index of rskey
 
-    % idxvol(idxvol==0) = nan; %replace zeros (if they exist) with nan, then . . .
-    % idxvol = fillmissing(idxvol, 'previous');
-    % rskey_nozeros = rskey(rskey~=0);
+    idxvol(idxvol==0) = nan; %replace zeros (if they exist) with nan, then . . .
+    idxvol = fillmissing(idxvol, 'previous');
+    rskey_nozeros = rskey(rskey~=0);
 
     if max(rskey)>numel(vecin)
         error("max(rskey) is greater than numel(vecin)")
     end
+    if ~all(ismember(unique(rskey), [0, 1:numel(vecin)])), transpose([min(rskey_nozeros):max(rskey_nozeros)]))
+        error("if rskey is not scalar, must be vector of integers where unique(rskey_nozeros), 'stable') = min(rskey_nozeros):max(rskey_nozeros); for example; [0 1 1 0 2 2] and [1 1 0 2 2] are valid, but [0 1 1 0 3 3] is not")
+    end
 
-    % rskey=[1 1 1 1 2 2 2 2 3 3 0 0]';
+    rskey=[1 1 1 1 2 2 2 2 3 3 0 0]';
     rskeydiff = [0; diff(rskey,2); 0]; %do 2nd-order diff in case there are no zeros (this can happen with volume resampling, ie rsidx=0, if usefbl and usefbf are both true)
     segstart = find(rskeydiff<0); %start index for each resampling index
     segend = find(rskeydiff>0); %end index for each resampling index

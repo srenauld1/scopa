@@ -10,14 +10,6 @@ SUBROUTINES
 
 NAME-VALUE ARGUMENT 'rsidx'
     determines how to resample
-        if empty [] 
-            uses matlab function 'resample' to match imaging number of volumes (or frames, if not volumetric)
-            only requires daq record of number of imaging volumes (or from scanimage metadata), and imaging start time
-        if negative
-            must be scalar
-            the negative of the negative rsidx represents the desired arbitrary resampling rate 
-            with negative rsidx, daqld operates exactly the same as empty rsidx, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rsidx is exactly imaging volume rate (times -1)
-            this can be useful if you want daq variables resampled into behavior rate (often 60 hz, so for this, rsidx = -60)
         if nonnegative
             must be integer (does not have to be matlab class int), can be nonscalar
             requires daq record of imaging-frame-on and imaging-frame-off samples (eg 'frameClock'), which are used to determine when each slice and each volume are being acquired  
@@ -33,14 +25,21 @@ NAME-VALUE ARGUMENT 'rsidx'
                     - this is particularly useful when comparing rois from different slices of a stack acquired at low volume rate, or when volume flyback time is slow
             daqld allows multiple resampling registers to be saved to the same output struct 'dq' (rather than requiring rsidx always be scalar) to facilitate comparisons among resampling registers; 
                 however, empty or negative rsidx must be run separately from nonnegative rsidx because they can output different resampled variable length (certainly this is true for negative rsidx, but often is also true for rsidx=[] because of resample imprecision, although typically empty and nonnegative rsidx match in resampled output length)  
-            warning: nonnegative rsidx is much slower than rsidx=[] or negative scalar; 
-                each "resampling register" can take a few minutes to complete; but this is a one-time computation, since output struct 'dq' is saved on first run, and loaded on subsequent runs
-                resampling with slice/volume indices (nonnegative rsidx) has a little less aliasing than resampling with 'resample' (rsidx=[] or negative scalar), but the differences in spectra are typically small; 
             warning: all nonnegative rsidx should resample into the same length (matching number of imaging volumes, or frames if non-volumetric, which are also called "volumes" in scopa metadata anyway), 
                 however, sometimes the resampled length can be slightly shorter than expected; 
                 this can happen if the daq onset is delayed, relative to imaging (if runbg is false, see runbg section above); 
                 it can also happen if you use a "resampling register" representing one of the last slices in the stack, as these can be missing in the final volume)
             vpp is in opt (rather than opt2) because it is id-controlled (see function 'oid'), ie 'rsidx' is a "functional" option (affects output data in nontrivial/non-cosmetic ways)
+        if empty [] 
+            uses matlab function 'resample' to match imaging number of volumes (or frames, if not volumetric)
+            only requires daq record of number of imaging volumes (or from scanimage metadata), and imaging start time
+            warning: resampling with 'resample' (rsidx=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rsidx), but the differences in spectra are typically very small; 
+        if negative
+            must be scalar
+            the negative of the negative rsidx represents the desired arbitrary resampling rate 
+            with negative rsidx, daqld operates exactly the same as empty rsidx, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rsidx is exactly imaging volume rate (times -1)
+            this can be useful if you want daq variables resampled into behavior rate (often 60 hz, so for this, rsidx = -60)
+            warning: resampling with 'resample' (rsidx=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rsidx), but the differences in spectra are typically very small; 
 
 NAME-VALUE ARGUMENT 'vpp'
     controls which daq variables are resampled, how they are processed before/during/after resampling, and fieldnames they are given in output struct 'dq' 
@@ -116,7 +115,7 @@ arguments
 
     pthdaq char {mustBeTextScalar} = '' %path to original daq file; if empty, user prompted to select file interactively
 
-    opt.rsidx {mustBeNumeric, mustBeVectorOrEmpty, mustBeAllNonnegIntOrNegScalarOrEmpty, mustBeUnique} = []; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem;
+    opt.rsidx {mustBeNumeric, mustBeVectorOrEmpty, mustBeAllNonnegIntOrNegScalarOrEmpty, mustBeUnique} = [0]; % empty or nonempty numeric vector denoting resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rsidx*-1 (eg rsidx=-60 resamples into 60 hz); nonnegative integer (in which case, can be nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs above), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rsidx is recommended over empty rsidx, because there is a little less aliasing and it is faster 
     opt.dvlensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
     opt.dvord (1,1) double {mustBeMember(opt.dvord,1:8)} = 2; % order of polynomial used to fit local slope
     opt.usefbl (1,1) {mustBeMember(opt.usefbl,[0,1])} = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not empty)
@@ -162,7 +161,7 @@ usefbl = opt.usefbl;
 usefbf = opt.usefbf;
 balldia = opt.balldia;
 voltlim = opt.voltlim;
-voltminhd = opt.voltminhd;%
+voltminhd = opt.voltminhd;
 optid = opt.optid;
 
 vpp = opt2.vpp;
@@ -324,16 +323,11 @@ catch ME
                 newlen = rskey;
             else
                 if rsidx{m} == 0
-                    rsinds_tmp = daqidx.vol;
+                    rskey = daqidx.vol;
                 else
-                    rsinds_tmp = binary2count(daqidx.slice==rsidx{m}); % slice resampling
+                    rskey = binary2count(daqidx.slice==rsidx{m}); % slice resampling
                 end
-                riu = unique(rsinds_tmp(rsinds_tmp~=0), 'stable'); %index of each resampling register (frame or volume)
-                newlen = numel(riu);
-                rskey = cell(newlen, 1);
-                parfor k = 1:newlen
-                    rskey{k} = find(rsinds_tmp==riu(k)); %do this once, before operating on variable, since this is the slow part; we use find because a boolean array holding all inds would be way too large, and this let's us find all inds once, and reuse them for all daq variables;
-                end
+                newlen = numel(unique(rskey(rskey~=0), 'stable'));  %index of each resampling register (frame or volume)
             end
         end
 
@@ -353,23 +347,19 @@ catch ME
                 if strcmp(tdvname, vtime)
                     tmp = tmp-starttime; %zero imaging starttime in case daq ran in the background
                 end
-                if strcmp(vpptypes{k}, 'r')
+                if any(strcmp(vpptypes{k}, {'r', 'm'}))
                     tmp = wrapToPi(tmp/(voltlim(2)-voltlim(1))*2*pi+voltminhd); %put in range -pi to pi, with 0 in front of fly
                 end
                 if strcmp(vpptypes{k}, 'b')
-                    if all(tmp == 0 | tmp == 1, 'all')
-                        tmp = binary2count(tmp);
-                    else
-                        error("variable " + tdvname + " was assigned vpptype 'b', but it is not binary")
-                    end
+                    tmp = binary2count(tmp);
                 end
 
                 vtype = regexprep2(vpptypes{k}, {'t', 'm', 'b'}, {'n', 'r', 'c'}, whole=1); %rename some vpptypes to obtain vtype; vtype is input for functions vecrs and vecdv; in these functions, t needs to get the same treatment as n, m the same as r, and b the same as c (t, m, and b aren't valid vtypes in vecrs and vecdv)
 
                 tmp_o = tmp; %set aside before resampling, in case plotting below
 
-                tmp = vecrs(vtype, tmp, rskey); %resample into imaging rate
-                tmpdv = vecdv(vtype, tmp, lensec=dvlensec, ord=dvord, sper=sper_tmp); %find local slope (velocity for some vars)
+                tmp = vecrs(vtype, tmp, rskey); %resample
+                tmpdv = vecdv(vtype, tmp, lensec=dvlensec, ord=dvord, sper=sper_tmp); %find "sliding derivative" / "moving slope" (ie velocity, for some vars)
 
                 if doplt
                     tsplt([], tmp, [], tmp_o, xseg=20, titlein=tdvname, pthgif=[pthauto() tdvname '_.gif'])
