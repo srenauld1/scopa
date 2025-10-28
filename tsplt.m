@@ -18,6 +18,7 @@ arguments
     opt.xmark = [] %x positions to draw markers (style set by mkr2); nearest interp to x; no extrapolation performed (outside domain is discarded); if vector, will apply to all timeseries; if cell, cell index indicates which timeseries to mark; nested cell will draw multiple sets of marks on same timeseries; will error if there is not a common x
     opt.xln = []
     opt.tsp = 0
+    opt.prec = 'double' %warning, for very large timeseries (like those from original daq) there can be precision artifacts if you don't use 'double'
     opt.mkr {mustBeText} = 'diamond' %marker for plotting optional argument 'xmark',  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.col = []; %color,  length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
     opt.lst {mustBeText} = '-' %linestyle, length 1 if same for all, or length 2 if one for first, another for all subsequent, or length matching number plots
@@ -39,6 +40,7 @@ yroomfac = opt.yroomfac;
 xmark = opt.xmark;
 xln = opt.xln;
 tsp = opt.tsp;
+prec = opt.prec;
 col = opt.col;
 lst = opt.lst;
 mkr = opt.mkr;
@@ -181,8 +183,8 @@ else
     dosave = 1; %1 for now but eventually 0 here; not set up to save outside this function because of the loop, but that would be better
 end
 
-x = cellfun(@single, x, 'UniformOutput', false);
-y = cellfun(@single, y, 'UniformOutput', false);
+x = cellfun(str2func(['@' prec]), x, 'UniformOutput', false);
+y = cellfun(str2func(['@' prec]), y, 'UniformOutput', false);
 
 %% INERPOLATE TIMESERIES ONTO SAME RANGE
 

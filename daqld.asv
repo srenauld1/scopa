@@ -8,7 +8,7 @@ SUBROUTINES
     (3) compute fly fictive path; function 'ficpath'
     (4) resample and crop fictrac video to align with imaging (optional); function 'ftvalign'
 
-NAME-VALUE ARGUMENT 'rsidx'
+NAME-VALUE ARGUMENT 'rskey'
     determines how to resample
         if nonnegative
             must be integer (does not have to be matlab class int), can be nonscalar
@@ -16,30 +16,30 @@ NAME-VALUE ARGUMENT 'rsidx'
                 function 'daqidxmake' computes volume and slice indices (and frame indices, which are unused, directly)
                     'daqidxmake' uses 'frameClock' on daq to assign daq samples to frames (nearest neighbor interpolation to find each frame's centroid), then uses mod to convert to slice and volume indices
                     'daqidxmake' optionally includes volume and frame flyback samples, if name-value arguments 'usefbl' and 'usefbf' equal 1, respectively
-            each nonnegative rsidx element denotes which slice and/or volume index to use for resampling, where 0 denotes volume indices, and 1+ denotes slice indices
-            daq variables are resampled according to coincident slice and/or volume index, creating a different timeseries for each nonnegative rsidx element (each "resampling register")
-            example: rsidx = [0,4] will create two "resampling registers", one with volume indices and one with slice 4 indices; dq fields will have size (2,v), where v is number imaging volumes
+            each nonnegative rskey element denotes which slice and/or volume index to use for resampling, where 0 denotes volume indices, and 1+ denotes slice indices
+            daq variables are resampled according to coincident slice and/or volume index, creating a different timeseries for each nonnegative rskey element (each "resampling register")
+            example: rskey = [0,4] will create two "resampling registers", one with volume indices and one with slice 4 indices; dq fields will have size (2,v), where v is number imaging volumes
             daqld allows multiple resampling registers for the following reasons:
                - we don't know the "true lag" between imaging and daq variables
                - often, our imaging volume rate is at least 2-4 times slower than stimulus and/or behavior rate, while imaging frame rate is at least 2-4 times faster, so multiple resampling registers can improve the resolution of temporal correlations between imaging and daq variables
                     - this is particularly useful when comparing rois from different slices of a stack acquired at low volume rate, or when volume flyback time is slow
-            daqld allows multiple resampling registers to be saved to the same output struct 'dq' (rather than requiring rsidx always be scalar) to facilitate comparisons among resampling registers; 
-                however, empty or negative rsidx must be run separately from nonnegative rsidx because they can output different resampled variable length (certainly this is true for negative rsidx, but often is also true for rsidx=[] because of resample imprecision, although typically empty and nonnegative rsidx match in resampled output length)  
-            warning: all nonnegative rsidx should resample into the same length (matching number of imaging volumes, or frames if non-volumetric, which are also called "volumes" in scopa metadata anyway), 
+            daqld allows multiple resampling registers to be saved to the same output struct 'dq' (rather than requiring rskey always be scalar) to facilitate comparisons among resampling registers; 
+                however, empty or negative rskey must be run separately from nonnegative rskey because they can output different resampled variable length (certainly this is true for negative rskey, but often is also true for rskey=[] because of resample imprecision, although typically empty and nonnegative rskey match in resampled output length)  
+            warning: all nonnegative rskey should resample into the same length (matching number of imaging volumes, or frames if non-volumetric, which are also called "volumes" in scopa metadata anyway), 
                 however, sometimes the resampled length can be slightly shorter than expected; 
                 this can happen if the daq onset is delayed, relative to imaging (if runbg is false, see runbg section above); 
                 it can also happen if you use a "resampling register" representing one of the last slices in the stack, as these can be missing in the final volume)
-            vpp is in opt (rather than opt2) because it is id-controlled (see function 'oid'), ie 'rsidx' is a "functional" option (affects output data in nontrivial/non-cosmetic ways)
+            vpp is in opt (rather than opt2) because it is id-controlled (see function 'oid'), ie 'rskey' is a "functional" option (affects output data in nontrivial/non-cosmetic ways)
         if empty [] 
             uses matlab function 'resample' to match imaging number of volumes (or frames, if not volumetric)
             only requires daq record of number of imaging volumes (or from scanimage metadata), and imaging start time
-            warning: resampling with 'resample' (rsidx=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rsidx), but the differences in spectra are typically very small; 
+            warning: resampling with 'resample' (rskey=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rskey), but the differences in spectra are typically very small; 
         if negative
             must be scalar
-            the negative of the negative rsidx represents the desired arbitrary resampling rate 
-            with negative rsidx, daqld operates exactly the same as empty rsidx, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rsidx is exactly imaging volume rate (times -1)
-            this can be useful if you want daq variables resampled into behavior rate (often 60 hz, so for this, rsidx = -60)
-            warning: resampling with 'resample' (rsidx=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rsidx), but the differences in spectra are typically very small; 
+            the negative of the negative rskey represents the desired arbitrary resampling rate 
+            with negative rskey, daqld operates exactly the same as empty rskey, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rskey is exactly imaging volume rate (times -1)
+            this can be useful if you want daq variables resampled into behavior rate (often 60 hz, so for this, rskey = -60)
+            warning: resampling with 'resample' (rskey=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rskey), but the differences in spectra are typically very small; 
 
 NAME-VALUE ARGUMENT 'vpp'
     controls which daq variables are resampled, how they are processed before/during/after resampling, and fieldnames they are given in output struct 'dq' 
@@ -115,11 +115,11 @@ arguments
 
     pthdaq char {mustBeTextScalar} = '' %path to original daq file; if empty, user prompted to select file interactively
 
-    opt.rsidx {mustBeNumeric, mustBeVectorOrEmpty, mustBeAllNonnegIntOrNegScalarOrEmpty, mustBeUnique} = [0]; % empty or nonempty numeric vector denoting resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rsidx*-1 (eg rsidx=-60 resamples into 60 hz); nonnegative integer (in which case, can be nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs above), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rsidx is recommended over empty rsidx, because there is a little less aliasing and it is faster 
+    opt.rskey {mustBeNumeric, mustBeVectorOrEmpty, mustBeAllNonnegIntOrNegScalarOrEmpty, mustBeUnique} = 0; % nonempty numeric vector (scalar or nonscalar), or negative scalar, or empty []; rskey denotes resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rskey*-1 (eg rskey=-60 resamples into 60 hz); nonnegative integer (in which case, can be scalar or nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rskey is recommended over empty rskey, because there is a little less aliasing and it is faster 
     opt.dvlensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
     opt.dvord (1,1) double {mustBeMember(opt.dvord,1:5)} = 2; % order of polynomial used to fit local slope; should probably always be 2 or 3; setting max to 5, because it seems reasonable, but this is not actually required 
-    opt.usefbl (1,1) {mustBeBinary} = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not empty)
-    opt.usefbf (1,1) {mustBeBinary} = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not empty)
+    opt.usefbl (1,1) {mustBeBinary} = 1; % whether to include flyback lines when resampling with frame indices (if rskey is not empty)
+    opt.usefbf (1,1) {mustBeBinary} = 1; % whether to include flyback frames when resampling with volume indices (if rskey is not empty)
     opt.balldia (1,1) double {mustBePositive} = glbfile('balldia_berg1'); % ball diameter in mm, used to convert some fictrac variables into mm
     opt.voltlim (1,2) double {mustBeNonnegative, mustBeUnique} = glbfile('voltlim_berg1'); % daq voltage [min,max];
     opt.voltminhd (1,1) double {mustBeInRange(opt.voltminhd, -3.1416, 3.1416)} = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12 * 2*pi)
@@ -154,7 +154,7 @@ end
 
 opt = optidcheck('dq', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
-rsidx = opt.rsidx;
+rskey = opt.rskey;
 dvlensec = opt.dvlensec;
 dvord = opt.dvord;
 usefbl = opt.usefbl;
@@ -207,7 +207,7 @@ try
     if any(~isfield(dq, {'md', 'optid', 'recid', 'maketime_optfile_daq'}))
         error("struct 'dq' must contain fields 'md', 'optid', 'recid', 'maketime_optfile_daq'; you may have loaded an old struct 'dq'")
     end
-    if ~isequal(dq.maketime_optfile_daq, glb('maketime_daq'))
+    if ~isequal(dq.maketime_optfile_daq, glb('maketime_dq'))
         error("daq id is derived from an optid file different from original")
     end
     if ~isequal(dq.md, md) || ~isequal(dq.recid, id.recid)
@@ -286,14 +286,14 @@ catch ME
 
     %%%%%%%%% DEFINE INDICES FOR DOWNSAMPLING: EXTRACT SLICE AND VOLUME INDICES FROM SCANIMAGE CLOCKS %%%%%%%%%
 
-    if any(rsidx>=0)
+    if any(rskey>=0)
         if any(strcmp(tdvnames, 'frameClock')) %cannot run daqidxmake without frameClock
             daqidx = daqidxmake(trialData.frameClock, trialData.(vtime), numvol, numslice, numslice_withflyback, usefbl=usefbl, usefbf=usefbf, doplt=doplt);
         else
-            error("user requested a nonnegative value for rsidx, which requires frameClock, but frameClock is not on daq; when frameClock is not on daq, empty or negative rsidx are the only options")
+            error("user requested a nonnegative value for rskey, which requires frameClock, but frameClock is not on daq; when frameClock is not on daq, empty or negative rskey are the only options")
         end
-        if any(~ismember(rsidx(rsidx~=0), daqidx.slice))
-            error("you requested at least one nonnegative value in rsidx that is outside the range 1:numslices_withflyback; it may exceed numslice_withflyback if usefbf=1, oirit may exceed numslice_withflyback if usefbf=1, ")
+        if any(~ismember(rskey(rskey~=0), daqidx.slice))
+            error("you requested at least one nonnegative value in rskey that either exceeds numslice_withflyback if usefbf=1, or it exceeds numslice if usefbf=0")
         end
     end
 
@@ -304,30 +304,30 @@ catch ME
         dq.(vppnew{k}) = []; %create empty output struct 'dq' (in case some variables aren't found)
     end
 
-    if isempty(rsidx)
-        rsidx = {[]};
+    if isempty(rskey)
+        rskey = {[]};
     else
-        rsidx = num2cell(rsidx);
+        rskey = num2cell(rskey);
     end
 
-    for m = 1:numel(rsidx)
+    for m = 1:numel(rskey)
 
-        if rsidx{m}<0
-            rskey = round( numvol * sper * -rsidx{m} );
-            newlen = rskey;
-            sper_tmp = 1/-rsidx{m};
+        if rskey{m}<0
+            rskeytmp = round( numvol * sper * -rskey{m} );
+            newlen = rskeytmp;
+            sper_tmp = 1/-rskey{m};
         else
             sper_tmp = sper;
-            if isempty(rsidx{m})
-                rskey = numvol;
-                newlen = rskey;
+            if isempty(rskey{m})
+                rskeytmp = numvol;
+                newlen = rskeytmp;
             else
-                if rsidx{m} == 0
-                    rskey = daqidx.vol;
+                if rskey{m} == 0
+                    rskeytmp = daqidx.vol;
                 else
-                    rskey = binary2count(daqidx.slice==rsidx{m}); % slice resampling
+                    rskeytmp = binary2count(daqidx.slice==rskey{m}); % slice resampling
                 end
-                newlen = numel(unique(rskey(rskey~=0), 'stable'));  %index of each resampling register (frame or volume)
+                newlen = numel(unique(rskeytmp(rskeytmp~=0), 'stable'));  %index of each resampling register (frame or volume)
             end
         end
 
@@ -358,11 +358,11 @@ catch ME
 
                 tmp_o = tmp; %set aside before resampling, in case plotting below
 
-                tmp = vecrs(vtype, tmp, rskey); %resample
+                tmp = vecrs(vtype, tmp, rskeytmp); %resample
                 tmpdv = vecdv(vtype, tmp, lensec=dvlensec, ord=dvord, sper=sper_tmp); %find "sliding derivative" / "moving slope" (ie velocity, for some vars)
 
                 if doplt
-                    tsplt([], tmp, [], tmp_o, xseg=20, titlein=tdvname, pthgif=[pthauto() tdvname '_.gif'])
+                    tsplt(1:numel(tmp), tmp, 1:numel(tmp_o), tmp_o, xseg=[0.96 1], titlein=tdvname, pthgif=[pthauto() tdvname '_.gif'])
                     tsplt([], tmpdv, [], tmp_o, xseg=20, titlein=tdvname, pthgif=[pthauto() tdvname '_dv_.gif'])
                 end
 
@@ -374,13 +374,13 @@ catch ME
                 end
 
                 if strcmp(vpptypes{k}, 't')
-                    tmp(1) = 0; %we do this because we consider each sample to represent start of time bin (not end or center), make sure time starts at zero, for empty or negative rsidx, it is artifactually slightly above zero
+                    tmp(1) = 0; %we do this because we consider each sample to represent start of time bin (not end or center), make sure time starts at zero, for empty or negative rskey, it is artifactually slightly above zero
                 end
 
                 nm = regexprep2(tdvname, strsplit(vppold{k}, ','), vppnew{k}, whole=1); %rename matched oldname with newname using scopa function regexprep2
 
                 if m>1 && ~isequal(newlen, numel(tmp), size(dq.(nm)(m-1,:), 2))
-                    error("resampled variable length does not match length of a previous 'resampling register'; this should only happen if rsidx has multiple nonnegative values; one of the values you chose for rsidx might correspond to a slice that appears in fewer volumes than a previous value for rsidx; you cannot use this current problematic value")
+                    error("resampled variable length does not match length of a previous 'resampling register'; this should only happen if rskey has multiple nonnegative values; one of the values you chose for rskey might correspond to a slice that appears in fewer volumes than a previous value for rskey; you cannot use this current problematic value")
                 end
 
                 dq.(nm)(m,:) = tmp; 
@@ -425,15 +425,15 @@ catch ME
         %%%% RESAMPLE FICTRAC VIDEO %%%%
 
         ftvaligned = 0;
-        if ~ftvaligned && rsidx{m}>=0 %switch ftvalign off if it succeeded once; we resample only using one "resampling register" because we don't want a bunch of fictrac videos (too big); also rsidx must not be negative or empty, ie video must be aligned with imaging indices (eg daq variable ftcam), not just by using a resample rate, ie desired length in time (empty or negative rsidx); in particular, because we don't know when video begins relative to imaging, resampling the whole video into some desired length is pointless
+        if ~ftvaligned && rskey{m}>=0 %switch ftvalign off if it succeeded once; we resample only using one "resampling register" because we don't want a bunch of fictrac videos (too big); also rskey must not be negative or empty, ie video must be aligned with imaging indices (eg daq variable ftcam), not just by using a resample rate, ie desired length in time (empty or negative rskey); in particular, because we don't know when video begins relative to imaging, resampling the whole video into some desired length is pointless
             try
                 do_hack_ftvalign = 1;
                 if do_hack_ftvalign
-                    rsidx_ftv = dq.ftcam(m,:); %ftcam provides the good way to align fictrac video, but ftcam has problems, so right now we force the hack alignment, which only sometimesd works, so we put ftvalign in try block
+                    rskey_ftv = []; %empty invokes hack alignment in ftvalign
                 else
-                    rsidx_ftv = []; %empty invokes hack alignment in ftvalign
+                    rskey_ftv = dq.ftcam(m,:); %ftcam provides the good way to align fictrac video, but ftcam has problems, so right now we force the hack alignment, which only sometimesd works, so we put ftvalign in try block
                 end
-                dq.ftv = ftvalign(rsidx=rsidx_ftv, pthdaq=pthdaq, numvol=numvol, imrate=1/sper, ...
+                dq.ftv = ftvalign(rskey=rskey_ftv, pthdaq=pthdaq, numvol=numvol, imrate=1/sper, ...
                     numpkthr=10, topkp=0.5, smlenpx=2, numpx=10, smlensec=1, ftrate=[], pthv=pthftv, doplt=1);
                 ftvaligned = 1;
             catch ME
@@ -450,11 +450,11 @@ catch ME
     %%%% RECORD SOME METADATA %%%%
 
     dq.md = md; %save metadata in case it changes
-    dq.rsidx = rsidx;
+    dq.rskey = rskey;
     dq.opt = opt;
     dq.optid = optid;
     dq.recid = id.recid;
-    dq.maketime_optfile_daq = glb('maketime_daq');
+    dq.maketime_optfile_daq = glb('maketime_dq');
 
 
     %%%% SAVE %%%%
