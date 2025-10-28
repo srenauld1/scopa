@@ -437,7 +437,7 @@ if ~isempty(mosfinal)
             optout_tmp_fn = fieldnames(optout_tmp);
             optout_tmp_ne = rmfield(optout_tmp, optout_tmp_fn(structfun(@isempty, optout_tmp)));
             if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
-                fprintf("user-supplied options changed (but did not cause error) in arguments block for module " + stindtmp_with_mosc_option + newline)
+                fprintf("user-supplied options changed (in a minor way, like vector orientation or class) in arguments block for module " + stindtmp_with_mosc_option + newline)
             end
         end
     end

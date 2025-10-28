@@ -15,7 +15,7 @@ arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
     opt.pthpar = []
-    opt.usegit (1,1) {mustBeBinary} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
+    opt.usegit (1,1) {mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
     opt.obin_ided = []
 end
 arguments (Output)

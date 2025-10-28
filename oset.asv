@@ -60,8 +60,7 @@ for k = 1:numel(idtmp)
             elseif contains(idtmp(k).pthstack, {'312'})
                 o(k) = oset_312();
             elseif contains(idtmp(k).pthstack, {'gluetest'})
-                o(k) = oset_sophia();
-                % o(k) = oset_gluetest();
+                o(k) = oset_gluetest();
             elseif contains(idtmp(k).pthstack, {'f91g'})
                 o(k) = oset_t5();
             end
