@@ -19,7 +19,7 @@ arguments
     tu string {mustBeTextScalar, mustBeMember(tu,"s")} %t units
     ballr (1,1) double % ball radius, units ballru
     ballru string {mustBeTextScalar, mustBeMember(ballru,"mm")} %ballr units
-    doplt (1,1) {mustBeMember(doplt,[0,1]), mustBeNonempty} = 0
+    doplt (1,1) {mustBeBinary} = 0
 end
 
 

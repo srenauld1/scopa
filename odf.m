@@ -75,14 +75,14 @@ du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'met
 
 %% dq (daqld: load, process daq)
 
-du.dq.rsidx = [0]; % resampling indices; empty or nonempty numeric vector of slice indices, with optional 0 denoting volume indices; empty [] means resample using 'resample' function with padding to avoid start/end transients); numeric vector defines which slice indices (one-indexed) to use, with 0 denoting volume index resampling (eg [0 4] will resample with volume and slice 4); empty [] is fastest by far (on first run, since subsequent runs just load results) but has a little more aliasing, which is probably rarely a problem; 
+du.dq.rsidx = [0]; % empty or nonempty numeric vector denoting resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rsidx*-1 (eg rsidx=-60 resamples into 60 hz); nonnegative integer (in which case, can be nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs above), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rsidx is recommended over empty rsidx, because there is a little less aliasing and it is faster
 du.dq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
-du.dq.dvord = 2; % order of polynomial used to fit local slope
-du.dq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not 'none')
-du.dq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not 'none')
-du.dq.balldia = 9; % mm, used to convert fictrac variables into mm
-du.dq.voltlim = [0,10]; % daq voltage [min,max]; would be better to have this in metadata
-du.dq.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence glbfile('voltminhd_berg1') is 1/12) 
+du.dq.dvord = 2; % order of polynomial used to fit local slope; should probably always be 2 or 3; vecdv and daqld set max to 5, because it seems reasonable, but this is not actually required
+du.dq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rsidx is not empty)
+du.dq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rsidx is not empty)
+du.dq.balldia = glbfile('balldia_berg1'); % ball diameter in mm, used to convert some fictrac variables into mm
+du.dq.voltlim = glbfile('voltlim_berg1'); % daq voltage [min,max];
+du.dq.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12 * 2*pi)
 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)

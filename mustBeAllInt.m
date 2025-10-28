@@ -11,6 +11,10 @@ if exist('emptyflag', 'var')
     end
 end
 
-if ~emptyok && isempty(x) || any(mod(x,1)~=0)
-    error("all elements of must be integer")
+if ~emptyok && isempty(x)
+    error("must be nonempty (emptyflag is not 'emptyok')")
 end
+if any(mod(x,1)~=0, 'all')
+    error("all elements of must be integer (if nonempty)")
+end
+

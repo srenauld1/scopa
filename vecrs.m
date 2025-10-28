@@ -14,9 +14,9 @@ todo: generalize for nd
 %}
 
 arguments
-    vtype char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
-    vecin {mustBeVector} %vector to be resampled; if vtype is r or d, must be circular data in radians or degrees, respectively
-    rskey (:,1) single {mustBeNumeric, mustBeVector} % rskey means resampling key; if scalar number, rskey is the new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients); if numeric vector, rskey is indices for resampling, and rskey and vecin must be equal in length (see docs above for more detail)
+    vtype char {mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin {mustBeNonscalarVector} %vector to be resampled; if vtype is r or d, must be circular data in radians or degrees, respectively
+    rskey (:,1) single {mustBeNonnegative, mustBeFinite, mustBeVector, mustBeNonempty} % rskey means resampling key; if scalar number, rskey is the new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients); if numeric vector, rskey is indices for resampling, and rskey and vecin must be equal in length (see docs above for more detail)
 end
 
 wasrow = 0;
@@ -26,7 +26,62 @@ if isrow(vecin)
 end
 
 
-if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', looping strategy to match newlen precisely, if possible
+if ~isscalar(rskey)   %if rskey is not scalar, average vecin during each index of rskey
+
+    if ~isequal(numel(rskey), numel(vecin))
+        error("numel(rskey) must equal numel(vecin)")
+    end
+
+    rskeydiff = [0; logical(diff(rskey))]; 
+    segstart = find(rskeydiff>0);  %start index in vecin for each resampling time bin
+    segend = segstart(rskey(segstart)==0)-1; %end index in vecin for each resampling time bin
+    segstart(rskey(segstart)==0) = [];
+    segend = sort([segend; segstart-1]); 
+    segend(rskey(segend)==0) = [];
+    if rskey(1)>0
+        segstart = [1; segstart];
+    end
+    if rskey(end)>0
+        segend = [segend; numel(rskey)];
+    end
+    seglen = zeros(1, numel(segend));
+    for k = 1:numel(segend)
+        seglen(k) = numel(segstart(k):segend(k)); %length of each segment
+    end
+    newlen = numel(seglen);
+    nanmat = nan(max(seglen), newlen, 'single'); %preallocate nan, so we can take vectorized mean with nan padding that won't affect anything
+    if strcmp(vtype, 'c')
+        for k = 1:numel(segend)
+            nanmat(1:seglen(k), k) = segstart(k):segend(k); %for 'c' variables, nanmat contains indices, not values, for finding index centroid (then nearest neighbor interp onto that centroid)
+        end
+    else
+        for k = 1:numel(segend)
+            nanmat(1:seglen(k), k) = vecin(segstart(k):segend(k)); %for all other variables nanmat contains values (for averaging them)
+        end
+    end
+
+
+    if strcmp(vtype, 'n')
+
+        vecout = mean(nanmat, 'omitmissing');
+
+    elseif strcmp(vtype, 'r') || strcmp(vtype, 'd')
+
+        if strcmp(vtype, 'd')
+            nanmat = deg2rad(nanmat);
+        end
+
+        vecout = atan2(mean(sin(nanmat),'omitmissing'), mean(cos(nanmat),'omitmissing'));
+
+    elseif strcmp(vtype, 'c') %takes value nearest centroid of each output sample (alt approach was mode, seems less appropriate)
+
+        cntr = mean(nanmat, 'omitmissing'); %find centroid of each index
+        nzi = find(vecin);
+        vecout = interp1(nzi, vecin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero vecin index
+
+    end
+
+else %if rskey is scalar, use 'resample' to resample into rskey-length vector (looping strategy with numupfac and tryrange below is meant to match newlen precisely, if possible)
 
     numupfac = 3; %number of different upsamplings to try to get output the correct length
     tryrange = 3; %try adding -tryrange:tryrange to numerator and denominator when resampling to get output the correct length
@@ -173,73 +228,6 @@ if isscalar(rskey) && isnumeric(rskey) %if rskey are empty, use 'resample', loop
 
     end
 
-
-else %if rskey is not scalar, average vecin during each index of rskey
-
-    % idxvol(idxvol==0) = nan; %replace zeros (if they exist) with nan, then . . .
-    % idxvol = fillmissing(idxvol, 'previous');
-    % rskey_nozeros = rskey(rskey~=0);
-
-    if max(rskey)>numel(vecin)
-        error("max(rskey) is greater than numel(vecin)")
-    end
-
-    % rskey=[1 1 1 1 2 2 2 2 3 3 0 0]';
-    rskeydiff = [0; diff(rskey,2); 0]; %do 2nd-order diff in case there are no zeros (this can happen with volume resampling, ie rsidx=0, if usefbl and usefbf are both true)
-    segstart = find(rskeydiff<0); %start index for each resampling index
-    segend = find(rskeydiff>0); %end index for each resampling index
-    if rskey(1)>0
-        segstart = [1; segstart];
-        if rskey(2)-rskey(1)==1 %if first sample is the only sample of an index, it is the start and end of its segment
-            segend = [1; segend];
-        end
-    end
-    if rskey(end)>0
-        segend = [segend; numel(rskey)];
-        if rskey(end)-rskey(end-1)==1 %if last sample is the only sample of an index, it is the start and end of its segment
-            segstart = [segstart; numel(rskey)];
-        end
-    end
-
-    seglen = zeros(1, numel(segend));
-    for k = 1:numel(segend)
-        seglen(k) = numel(segstart(k):segend(k)); %length of each segment
-    end
-    newlen = numel(seglen);
-    nanmat = nan(max(seglen), newlen, 'single'); %preallocate nan, so we can take vectorized mean with nan padding that won't affect anything
-    if strcmp(vtype, 'c')
-        for k = 1:numel(segend)
-            nanmat(1:seglen(k), k) = segstart(k):segend(k); %for 'c' variables, nanmat contains indices, not values, for finding index centroid (then nearest neighbor interp onto that centroid)
-        end
-    else
-        for k = 1:numel(segend)
-            nanmat(1:seglen(k), k) = vecin(segstart(k):segend(k)); %for all other variables nanmat contains values (for averaging them)
-        end
-    end
-
-
-    if strcmp(vtype, 'n')
-
-        vecout = mean(nanmat, 'omitmissing');
-
-    elseif strcmp(vtype, 'r') || strcmp(vtype, 'd')
-
-        if strcmp(vtype, 'd')
-            nanmat = deg2rad(nanmat);
-        end
-
-        vecout = atan2(mean(sin(nanmat),'omitmissing'), mean(cos(nanmat),'omitmissing'));
-
-    elseif strcmp(vtype, 'c') %takes value nearest centroid of each output sample (alt approach was mode, seems less appropriate)
-
-        cntr = mean(nanmat, 'omitmissing'); %find centroid of each index
-        nzi = find(vecin);
-        vecout = interp1(nzi, vecin(nzi), cntr, 'nearest', 'extrap'); %use extrap to deal with final query point, which can be greater than greatest nonzero vecin index
-
-    end
-
-    vecout = vecout';
-
 end
 
 if strcmp(vtype, 'd')
@@ -247,7 +235,13 @@ if strcmp(vtype, 'd')
 end
 
 if wasrow
-    vecout = vecout';
+    if iscolumn(vecout)
+        vecout = vecout';
+    end
+else
+    if isrow(vecout)
+        vecout = vecout';
+    end
 end
 
 

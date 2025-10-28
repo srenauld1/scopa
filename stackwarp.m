@@ -17,7 +17,7 @@ arguments
     opt.transx = []
     opt.transy = []
     opt.transz = []
-    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0
+    opt.doplt (1,1) {mustBeBinary} = 0
 end
 rot = opt.rot;
 rotx = opt.rotx;

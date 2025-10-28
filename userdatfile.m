@@ -17,7 +17,7 @@ arguments
     opt.gittoken = [] %your git token (for push/pull etc)
     opt.gitbranch = [] %your scopa git branch (for push/pull etc)
     opt.gitusername = [] %your git username (for push/pull etc)
-    opt2.err (1,1) {mustBeMember(opt2.err,[0,1]), mustBeNonempty} = 0 %1 to error if trying to read field from userdat.txt that has not been set
+    opt2.err (1,1) {mustBeBinary} = 0 %1 to error if trying to read field from userdat.txt that has not been set
 end
 err = opt2.err;
 

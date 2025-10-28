@@ -181,11 +181,11 @@ arguments (Input)
     opt.roishape {mustBeTextScalar, mustBeNonempty} = 'freehand' %name of draw tool, can be changed with figure callback; circle, ellipse, freehand, polygon, rectangle, voxel (voxel is single click on image to make single-voxel roi)
     opt.roialpha (1,1) double {mustBePositive, mustBeLessThanOrEqual(opt.roialpha,1)} = 0.33 %transparency for showing drawn rois over stack background
     opt.cmap (:,3) double = [] %colormap for showing drawn rois over stack background; empty will use a default colormap
-    opt.rmolap (1,1) {mustBeMember(opt.rmolap,[0,1])} = 0 %1 to remove overlapping pixels from all rois (so you don't have to press 'o' after every subroi is drawn, but equivalent to that callback applied after every subroi is drawn); 0 will leave any overlapping voxels remaining after exiting drawing figure
-    opt.cellout (1,1) {mustBeMember(opt.cellout,[0,1])} = 0 %1 will output roimask in cell, 0 will not (cellout=0 will error if user creates rois on more than 1 channel)
-    opt.nosave (1,1) {mustBeMember(opt.nosave,[0,1])} = 0 %1 to skip saving drawn rois, 0 to save drawn rois
-    opt.nodraw (1,1) {mustBeMember(opt.nodraw,[0,1])} = 0 %1 to error and exit if loading roi file fails, 0 to draw if loading fails
-    opt.dorg (1,1) {mustBeMember(opt.dorg,[0,1])} = 0 %flag for drawing rg (region), which is a rectangle or cuboid (when dorg=1, default roishape is rectangle, and mm is neither loaded nor saved); dorg is true when roidraw is called from stackcrop
+    opt.rmolap (1,1) {mustBeBinary} = 0 %1 to remove overlapping pixels from all rois (so you don't have to press 'o' after every subroi is drawn, but equivalent to that callback applied after every subroi is drawn); 0 will leave any overlapping voxels remaining after exiting drawing figure
+    opt.cellout (1,1) {mustBeBinary} = 0 %1 will output roimask in cell, 0 will not (cellout=0 will error if user creates rois on more than 1 channel)
+    opt.nosave (1,1) {mustBeBinary} = 0 %1 to skip saving drawn rois, 0 to save drawn rois
+    opt.nodraw (1,1) {mustBeBinary} = 0 %1 to error and exit if loading roi file fails, 0 to draw if loading fails
+    opt.dorg (1,1) {mustBeBinary} = 0 %flag for drawing rg (region), which is a rectangle or cuboid (when dorg=1, default roishape is rectangle, and mm is neither loaded nor saved); dorg is true when roidraw is called from stackcrop
     opt.rgname {mustBeTextScalar} = '' %name of rg you are drawing when dorg=1, keep empty unless dorg=1
     opt.pausetime (1,1) double {mustBePositive} = 0.01 %seconds, pause to allow drawing/callbacks to run smoothly; if callbacks frequently aren't caught, try increasing; pausetime=0.1 worked well on 2021 Apple M1 Pro 16 GB
 

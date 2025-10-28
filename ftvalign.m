@@ -49,7 +49,7 @@ arguments
     opt.pthdat char = [] %fictrac .dat file; used to derive ftrate; can pass in ftrate instead
     opt.pthvlog char = [] %path to fictrac 'vidLogFrames' .txt file; file not used in this function, but may be useful sometime
     opt.pthlog char = [] %path to fictrac .log file; file not used in this function, but may be useful sometime
-    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
+    opt.doplt (1,1) {mustBeBinary} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
 rsidx = opt.rsidx;
 numvol = opt.numvol;

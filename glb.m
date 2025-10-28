@@ -45,7 +45,7 @@ arguments (Repeating)
     inp
 end
 arguments
-    opt.err (1,1) {mustBeMember(opt.err,[0,1]), mustBeNonempty} = 0 %1 to error if trying to read a glb that has not been set
+    opt.err (1,1) {mustBeBinary} = 0 %1 to error if trying to read a glb that has not been set
 end
 err = opt.err;
 

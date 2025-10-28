@@ -10,14 +10,14 @@ output idx is struct holding idxvol, idxslice, idxframe; also output each separa
 %}
 
 arguments
-    frameon {mustBeMember(frameon,[0,1]), mustBeVector} %logical vector, 1 when frame is acquiring
+    frameon {mustBeBinary, mustBeVector} %logical vector, 1 when frame is acquiring
     t double {mustBeVector, mustBeNonnegative} %timestamps
     numvol (1,1) {mustBePositive, mustBeAllInt} %number volumes
     numslice (1,1) {mustBePositive, mustBeAllInt} %number slices (z planes)
     numslice_withflyback (1,1) {mustBePositive, mustBeAllInt, mustBeGreaterThanOrEqual(numslice_withflyback,numslice)} %number slices (z planes) including flyback frames
-    opt.usefbl (1,1) {mustBeMember(opt.usefbl,[0,1])} = 1; % whether to include flyback lines when resampling with frame indices
-    opt.usefbf (1,1) {mustBeMember(opt.usefbf,[0,1])} = 1; % whether to include flyback frames when resampling with volume indices
-    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 %plot figure
+    opt.usefbl (1,1) {mustBeBinary} = 1; % whether to include flyback lines when resampling with frame indices
+    opt.usefbf (1,1) {mustBeBinary} = 1; % whether to include flyback frames when resampling with volume indices
+    opt.doplt (1,1) {mustBeBinary} = 0 %plot figure
 end
 usefbl = opt.usefbl;
 usefbf = opt.usefbf;

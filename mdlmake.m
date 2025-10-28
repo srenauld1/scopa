@@ -46,11 +46,11 @@ arguments
 
     opt2.srate = [] %sample rate in hz
     opt2.epochts = []
-    opt2.doplt (1,1) {mustBeMember(opt2.doplt,[0,1]), mustBeNonempty} = 0 % 1 to make plots
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
     opt2.ldval = 0 %load saved model if it exists
     opt2.numsyn = 0 %run numsyn synthetic data tests; test fits use model options in opt, and synthetic data with same bounds as input data after option-dependent processing); numsyn is number of synthetic responses to fit; [] or 0 to skip
     opt2.histinc = 0; %optimization iteration increment to save; 0 to skip saving optimization history
-    opt2.och (1,1) {mustBeMember(opt2.och,[0,1]), mustBeNonempty} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
 
 end
 

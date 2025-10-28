@@ -3,8 +3,8 @@ function pthsv = pthauto(opt)
 arguments
     opt.pthdir char {mustBeTextScalar} = ''
     opt.suffix char {mustBeTextScalar} = '' %includes extension
-    opt.usetime (1,1) {mustBeMember(opt.usetime,[0,1]), mustBeNonempty} = 1
-    opt.usefun (1,1) {mustBeMember(opt.usefun,[0,1]), mustBeNonempty} = 1
+    opt.usetime (1,1) {mustBeBinary} = 1
+    opt.usefun (1,1) {mustBeBinary} = 1
 end
 pthdir = opt.pthdir;
 suffix = opt.suffix;

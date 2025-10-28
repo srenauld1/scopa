@@ -2,6 +2,7 @@
 
 %{
 
+add classes to validation functions like mustBeBinary, etc with 'cellok' or something like that
 need to add input validation for tg 
 
 voltlim, balldia, voltminhd, should all probably not be in opt

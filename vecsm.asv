@@ -10,8 +10,8 @@ todo: generalize for nd
 %}
 
 arguments
-    vtype char {mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
-    vecin {mustBeNonscalarVector} %input variable to be smoothed;  if vtype is r or d, must be circular data in radians or degrees, respectively
+    vtype (1,1) char {mustBeTextScalar, mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin (1,:) {mustBeNonscalarVector} %input variable to be smoothed;  if vtype is r or d, must be circular data in radians or degrees, respectively
     opt.method (1,:) char {mustBeTextScalar} = 'gaussian' %smoothing method for smoothdata function;
     opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples
     opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds

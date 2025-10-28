@@ -9,7 +9,7 @@ arguments
     opt.it = 1:size(resp,2) %subset of t for plotting (full timeseries gets filtered by wavelet regardless)
     opt.ir = [] %subset of rois for plotting (all rois gets filtered by wavelet regardless)
     opt.pthgifpre = '' %prefix to gif
-    opt.doplt (1,1) {mustBeMember(opt.doplt,[0,1]), mustBeNonempty} = 0 %do plot or not
+    opt.doplt (1,1) {mustBeBinary} = 0 %do plot or not
     opt.onlyir = [] %only apply wavelet filtering to rois being plotted (listed in ir); convenient for quickly plotting but not using output; if left empty or not passed, this mode applies when there is no output argument and ir is not empty
 end
 
