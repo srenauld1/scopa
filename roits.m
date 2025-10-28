@@ -92,21 +92,19 @@ else
 end
 
 if singleton_z
+    error("need to make this clause handle cell roimasks")
     if ndims(roimask)==4 && size(roimask,3)>1
         error("if inp is stack with singleton z, roimask must also have singleton z")
     else
-        if 
         roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
     end
 end
 
-roiwt = logical(reshape(permute(roimask, [4 1 2 3]), size(roimask,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
-
-
 roiwt = [];
 wtsz = cell(numchan,1);
 for k = 1:numchan
-    roiwttmp = roiwtmake(roimask{k});
+    dmroi = 4;
+    roiwttmp = logical(reshape(permute(roimask{k}, [4 1 2 3]), size(roimask{k},dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
     if k==1
         wtsz{k} = [1:size(roiwttmp,1)];
     elseif k==2

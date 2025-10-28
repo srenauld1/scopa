@@ -48,7 +48,9 @@ if isequal(mm, {[]}) %if mm is empty when entering roidatmake, set to awkward em
     mm = [];
 end
 
-roiwt = roiwtmake(roimask_onechan);
+dmroi = 4;
+roiwt = logical(reshape(permute(roimask_onechan, [4 1 2 3]), size(roimask_onechan,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
+
 numroi = size(roiwt,1);
 roicen = find_roi_centroids(roimask_onechan);
 

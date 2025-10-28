@@ -4,7 +4,7 @@ function roi = roimake(s, opt, opt2)
 
 arguments
     
-    s struct = []; %struct output from function stackld (contains stack, md, pth, and other fields)
+    s struct = []; %struct output from function stackld (contains stack, md, pthstack, and other fields)
 
     opt.s struct = struct('vg', [])
     opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
@@ -93,6 +93,7 @@ doplt = opt2.doplt;
 if ~isfield(s, 'rg') || ~isempty(s.rg)
     error("roimake input s must have field named 'rg', and s.rg must be empty (s.stack cannot be an rg, since roimake>stackcrop creates rg); if rg is not a field in s, or if it is not empty, you might be using an old s, or using an s that has already been passed through stackcrop; if the former, delete stack mat file (not tif) and run the most recent version of stackld to create stack mat file with the new field rg; if the latter, just run stackld again to reload the uncropped stack")
 end
+pthstack = s.pth;
 if isempty(t)
     t = linspace(0,s.md.numvol/s.md.volrate-1/s.md.volrate,s.md.numvol);
 end
@@ -173,7 +174,7 @@ catch ME
 
     if ~isempty(opt_ma) && ~maskin
         prs = struct2pairs(opt_ma);
-        roimask = roimauto(stackmnt, prs{:}, roimaskin=roimask, widyxz=s.md.widyxz, pthstack=s.pth, rg=rg, roiname=roiname);
+        roimask = roimauto(stackmnt, prs{:}, roimaskin=roimask, widyxz=s.md.widyxz, pthstack=pthstack, rg=rg, roiname=roiname);
     end
 
 
@@ -212,7 +213,7 @@ catch ME
 
     %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
 
-    roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, s.pth);
+    roi.dat = roidatmake(stackmnt, roimask, ts, rg, mm, pthstack);
 
 
     %%%% SAVE %%%%

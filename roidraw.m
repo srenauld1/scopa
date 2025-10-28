@@ -304,16 +304,16 @@ try
         roimask{ic} = mm(ic).mask;
     end
 
-    if any(~isfield(mm(1), {'mask', 'roiname', 'chanstr', 'channel', 'rg'})) || numel(mm)==2 && any(~isfield(mm(2), {'mask', 'roiname', 'chanstr', 'channel', 'rg'}))
-        error("mm struct must contain fields 'mask', 'roiname', 'chanstr', 'channel', 'rg'; you may have loaded an old mm struct")
-    end
-    if ~isequal(mm(1).rg, rg) || numel(mm)==2 && ~isequal(mm(2).rg, rg)
-        error("mm file exists but for at least one channel rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
-    end
-    sdf = structfun(@(x) diff(x)+1, rg, 'UniformOutput', false);
-    if ~isequal(size(mm(ic).mask, [1 2 3]), [sdf.y, sdf.x, sdf.z])
-        error("rg size does not match saved roimask size, name-value argument rg must not match rg used to draw rois")
-    end
+    % if any(~isfield(mm(1), {'mask', 'roiname', 'chanstr', 'channel', 'rg'})) || numel(mm)==2 && any(~isfield(mm(2), {'mask', 'roiname', 'chanstr', 'channel', 'rg'}))
+    %     error("mm struct must contain fields 'mask', 'roiname', 'chanstr', 'channel', 'rg'; you may have loaded an old mm struct")
+    % end
+    % if ~isequal(mm(1).rg, rg) || numel(mm)==2 && ~isequal(mm(2).rg, rg)
+    %     error("mm file exists but for at least one channel rg in mm file does not match current rg with same name; did you delete the rg you used to draw this mm?")
+    % end
+    % sdf = structfun(@(x) diff(x)+1, rg, 'UniformOutput', false);
+    % if ~isequal(size(mm(ic).mask, [1 2 3]), [sdf.y, sdf.x, sdf.z])
+    %     error("rg size does not match saved roimask size, name-value argument rg must not match rg used to draw rois")
+    % end
     if ~isequal(mm(1).roiname, roiname) || ~isequal(mm(1).chanstr, chanstr) || ( numel(mm)==2 && ( ~isequal(mm(2).roiname, roiname) || ~isequal(mm(2).chanstr, chanstr) ) )
         error("mm file exists but roiname and/or chanstr do not match for at least one channel")
     end
@@ -844,7 +844,7 @@ catch ME
         mm(ic).roiname = roiname;
         mm(ic).chanstr = chanstr;
         mm(ic).channel = ic;
-        mm(ic).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
+        % mm(ic).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
 
         if dochancp
             chanreceive = setdiff(1:nc, ic);
@@ -854,7 +854,7 @@ catch ME
             mm(chanreceive).roiname = roiname;
             mm(chanreceive).chanstr = chanstr;
             mm(chanreceive).channel = chanreceive;
-            mm(chanreceive).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
+            % mm(chanreceive).rg = rg; %save the region (rg) the masks were drawn on, in case the region changes but its name stays the same
         end
 
     end
@@ -966,7 +966,7 @@ end
 
 if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois, subroirgba saves them in correct locations, regardless of which parts of the stack are displayed
     if dmmean(strfind(nmdm, 'z')) %if z dimension is averaged, we must average rgba (if it exists)
-        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha); %
+        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha, dmroi=3); %collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
         h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
         h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
     else
@@ -1078,11 +1078,11 @@ if ~isempty(subroinew)
     ttl = regexprep(ttl, 'SUBROI \d+', ['SUBROI ' num2str(irsub)]);
 end
 
-[imrgb, imalpha] = roiolmake(roimask=squeeze(any(roimask{ic}, 4)), rgb=cmap, a=roialpha); %
+[imrgb, imalpha] = roiolmake(roimask=squeeze(any(roimask{ic}, 4)), rgb=cmap, a=roialpha);
 subroirgba = cat(4, imrgb, imalpha); %add rgba, we use this elsewhere, so compute even if roi_on_mean_z
 
 if roi_on_mean_z
-    [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha); %
+    [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha, dmroi=3); %%collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
     h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
     h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
 else
