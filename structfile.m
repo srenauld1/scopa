@@ -80,7 +80,7 @@ arguments
     opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
     opt.update = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
     opt.justld = 0 % read from file only, skip writing
-    opt.usegit (1,1) {mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync file pth across filesystems (to prevent conflicting changes); default here in arguments block is empty because we use optorglb below
+    opt.usegit {mustBeScalarOrEmpty, mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync file pth across filesystems (to prevent conflicting changes); default here in arguments block is empty because we use optorglb below
     opt.dosort = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
     opt.cellout = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
 end
