@@ -11,8 +11,8 @@ output struct rg; rg means "region"; rg saved to txt file
 arguments (Input)
     s struct % struct output from stackld (containing s.stack, pthstack, md, and other fields); s.stack dim order is yxztc (can have singleton trailing dims, so 4d yxzt, 3d yxz, and 2d yx stacks are also valid);
     rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %name of region defined by output struct 'rg'; default rgname 'none' automatically makes rg the full yxz fov; user is not prompted to create an rg when rgname='none'
-    opt.usegit (1,1) {mustBeScalarOrEmpty, mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync rg txt file across filesystems (to prevent conflicting changes)
-    opt.justld (1,1) {mustBeBinary} = 0 % justld means "just load"; 1 to just load rg (and skip cropping stack); if justld=1, output s is equal to input s, and output rg is equal to rg loaded from txt file (created earlier with same inputs 's' and 'rgname'); if justld=1 and requested rg does not exist in rg txt file, output rg is empty 
+    opt.usegit {mustBeScalarOrEmpty, mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync rg txt file across filesystems (to prevent conflicting changes)
+    opt.justld {mustBeBinary} = 0 % justld means "just load"; 1 to just load rg (and skip cropping stack); if justld=1, output s is equal to input s, and output rg is equal to rg loaded from txt file (created earlier with same inputs 's' and 'rgname'); if justld=1 and requested rg does not exist in rg txt file, output rg is empty 
 end
 arguments (Output)
     s % same as input s, but after cropping s.stack with rg (unless justld=1, in which case s output is same as s input)
