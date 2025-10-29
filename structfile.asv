@@ -496,7 +496,7 @@ end
 
 fnf = fieldnames(sfile);
 for k = 1:numel(fnf)
-    if isempty(sfile.(fnf{k})) % was this but things have changed, FIX THIS!! isstruct(sfile.(fnf{k})) && isempty(fieldnames(sfile.(fnf{k}))) %remove empty structs, they only exist when switch for them is off
+    if isempty(fieldnames(sfile.(fnf{k}))) %remove empty structs, they only exist when switch for them is off
         sfile = rmfield(sfile, fnf{k});
     end
 end

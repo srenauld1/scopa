@@ -966,7 +966,8 @@ end
 
 if ~isempty(subroirgba) %when redrawing the stack, also redraw any existing rois, subroirgba saves them in correct locations, regardless of which parts of the stack are displayed
     if dmmean(strfind(nmdm, 'z')) %if z dimension is averaged, we must average rgba (if it exists)
-        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha, dmroi=3); %collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
+        roimask_anysubroi_anyz = squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])); %we need to know ndims for roimask_anysubroi, so we can set dmroi in call to roiolmake (although this one should always be ndims 4
+        [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha, dmroi=ndims(roimask_anysubroi_anyz)); %collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
         h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
         h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
     else
@@ -1078,11 +1079,13 @@ if ~isempty(subroinew)
     ttl = regexprep(ttl, 'SUBROI \d+', ['SUBROI ' num2str(irsub)]);
 end
 
-[imrgb, imalpha] = roiolmake(roimask=squeeze(any(roimask{ic}, 4)), rgb=cmap, a=roialpha);
+roimask_anysubroi = squeeze(any(roimask{ic}, 4)); %we need to know ndims for roimask_anysubroi, so we can set dmroi in call to roiolmake
+[imrgb, imalpha] = roiolmake(roimask=roimask_anysubroi, rgb=cmap, a=roialpha, dmroi=ndims(roimask_anysubroi));
 subroirgba = cat(4, imrgb, imalpha); %add rgba, we use this elsewhere, so compute even if roi_on_mean_z
 
 if roi_on_mean_z
-    [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])), rgb=cmap, a=roialpha, dmroi=3); %%collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
+    roimask_anysubroi_anyz = squeeze(any(roimask{ic}(:,:,iz(:),:,:), [3,4])); %we need to know ndims for roimask_anysubroi, so we can set dmroi in call to roiolmake (although this one should always be ndims 4
+    [imrgb_meanz, imalpha_meanz] = roiolmake(roimask=roimask_anysubroi_anyz, rgb=cmap, a=roialpha, dmroi=ndims(roimask_anysubroi_anyz)); %%collapse to any subroi in z or subroi dimension, for all roi dimension (so dmroi is 3, which must be set)
     h.im.ol{1}.CData = squeeze(imrgb_meanz); %rgb image
     h.im.ol{1}.AlphaData = imalpha_meanz; %transparency image,
 else

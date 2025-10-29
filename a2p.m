@@ -74,7 +74,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if ~isempty(o.bmp)
         for m = 1:numel(o.bmp)
             prs = struct2pairs(o.bmp(m));
-            bmp(m) = bmpmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            bmp(m) = bmpmake('', prs{:}, srate=s.md.volrate, epochts=dq.epochts, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 

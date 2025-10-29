@@ -36,9 +36,9 @@ end
 
 if ~isempty(opt.cm) %unfortunately, a complex reduction scheme is required for caiman options, since there are many interactions
 
-    if any(structfun(@(x) any(strcmp(x, '*')), opt.cm))
-        error("caiman options do not work right now for wild=1 in ofill - why not??")
-    end
+    % if any(structfun(@(x) any(strcmp(x, '*')), opt.cm))
+    %     error("caiman options do not work right now for wild=1 in ofill - why not??")
+    % end
 
     %%assemble reduced cmex struct (gets special attention because it's relatively more complicated)
 

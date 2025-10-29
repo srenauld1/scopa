@@ -8,6 +8,8 @@
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -87,8 +89,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a2": {
@@ -98,6 +98,8 @@
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {}
     },
@@ -171,8 +173,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a3": {
@@ -182,6 +182,8 @@
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -259,8 +261,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a4": {
@@ -270,6 +270,8 @@
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -347,8 +349,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a5": {
@@ -360,6 +360,8 @@
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -439,8 +441,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a6": {
@@ -452,6 +452,8 @@
     },
     "domtype": "f",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -531,8 +533,6 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a7": {
@@ -544,6 +544,8 @@
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -625,8 +627,6 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a8": {
@@ -636,6 +636,8 @@
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -715,8 +717,6 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a9": {
@@ -728,6 +728,8 @@
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -807,8 +809,6 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a10": {
@@ -820,6 +820,8 @@
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -832,8 +834,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a11": {
@@ -844,6 +844,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -856,8 +858,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a12": {
@@ -869,6 +869,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.5185,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -881,8 +883,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.5185,
-    "dvord": 2,
     "smlensec": 0
   },
   "a13": {
@@ -893,6 +893,8 @@
     },
     "domtype": "f",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -973,8 +975,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a14": {
@@ -983,6 +983,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -993,8 +995,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "a15": {
@@ -1003,6 +1003,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": []
     },
@@ -1014,8 +1016,6 @@
     "omitnan": 1,
     "roi": [],
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "md": {
@@ -1032,6 +1032,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "vg": []
@@ -1044,8 +1046,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "z2": {
@@ -1070,6 +1070,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "dq": "*",
@@ -1083,8 +1085,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "z3": {
@@ -1108,6 +1108,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "dq": "*",
@@ -1122,8 +1124,6 @@
     "omitnan": 1,
     "roi": [],
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "z4": {
@@ -1147,6 +1147,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "dq": "*",
@@ -1160,8 +1162,6 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "dvlensec": 0.4,
-    "dvord": 2,
     "smlensec": 0
   },
   "z5": {
@@ -1183,6 +1183,8 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
       "vg": {
         "dq": "*",
@@ -1196,8 +1198,174 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
+    "smlensec": 0
+  },
+  "z6": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "nrm": {
+            "nrmstr": "f"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
     "dvlensec": 0.4,
     "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z7": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z8": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z9": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z10": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
     "smlensec": 0
   }
 }

@@ -2,6 +2,9 @@
 
 %{
 
+commebnted out metadata check in vsget, fix that
+remove ii from stackind
+probably should make no norm nrmstr = 'f' everywhere, and not allow empty?? but right now reverted to empty in most places in a rush
 add classes to validation functions like mustBeBinary, etc with 'cellok' or something like that
 need to add input validation for tg 
 

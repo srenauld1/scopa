@@ -226,7 +226,7 @@
         "channorm": 0,
         "degdtr": 0,
         "mincoh": 0.3,
-        "nrmstr": "f",
+        "nrmstr": [],
         "wavp": []
       },
       "qc": {
@@ -379,7 +379,7 @@
       "channorm": 0,
       "degdtr": 0,
       "mincoh": 0.3,
-      "nrmstr": "f",
+      "nrmstr": [],
       "wavp": []
     },
     "opg": {

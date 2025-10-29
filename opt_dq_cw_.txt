@@ -1,62 +1,11 @@
 {
   "md": {
     "autonm": 1,
-    "maketime": "2025102510213684",
+    "maketime": "2025102822422952",
     "nmprefix_withgit": "a",
     "nmprefix_withoutgit": "z"
   },
   "z1": {
-    "balldia": 9,
-    "dvlensec": [],
-    "dvord": 2,
-    "rsidx": [],
-    "supprate": [],
-    "usefbf": 1,
-    "usefbl": 1,
-    "voltlim": [0,10],
-    "voltminhd": 0.52359877559829882
-  },
-  "z2": {
-    "balldia": 9,
-    "dvlensec": [],
-    "dvord": 2,
-    "rsidx": [],
-    "usefbf": 1,
-    "usefbl": 1,
-    "voltlim": [0,10],
-    "voltminhd": 0.52359877559829882
-  },
-  "z3": {
-    "balldia": 9,
-    "dvlensec": 0.49,
-    "dvord": 2,
-    "rsidx": [],
-    "usefbf": 1,
-    "usefbl": 1,
-    "voltlim": [0,10],
-    "voltminhd": 0.52359877559829882
-  },
-  "z4": {
-    "balldia": 9,
-    "dvlensec": 0.4,
-    "dvord": 2,
-    "rsidx": [],
-    "usefbf": 1,
-    "usefbl": 1,
-    "voltlim": [0,10],
-    "voltminhd": 0.52359877559829882
-  },
-  "z5": {
-    "balldia": 9,
-    "dvlensec": 0.49,
-    "dvord": 2,
-    "rsidx": 0,
-    "usefbf": 1,
-    "usefbl": 1,
-    "voltlim": [0,10],
-    "voltminhd": 0.52359877559829882
-  },
-  "z6": {
     "balldia": 9,
     "dvlensec": 0.49,
     "dvord": 2,

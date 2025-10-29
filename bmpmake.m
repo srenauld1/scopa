@@ -51,9 +51,9 @@ srate = opt2.srate;
 epochts = opt2.epochts;
 doplt = opt2.doplt;
 
-[opt, doplt, pthstack] = fset('bmp', opt, doplt, pthstack);
+opt = optidcheck('bmp', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
-if isempty(srate)
+if isempty(srate) %need this for computing bump velocity (also if smooth window if smoothing, and for functional fit)
     error("must pass in name-value argument srate or set glb('srate')")
 end
 if isempty(epochts)

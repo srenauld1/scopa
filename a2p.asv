@@ -4,23 +4,6 @@
 
 see docs_a2p
 
-rois are always associated with one stack, so put roi in s
- we currently make a different roi file for each, with optid
-the advantage is we don't have to have a million checks that we have the right stack and rg 
-also things are all in one place 
-s.rg
-s.roi
-
-and stack features (like bmp) are typically associated with one stack
-same with mdl, although less often than bmp
-in any case, a bmp or mdl that uses one stack as input is saved to s
-if they use multiple s, they are saved in a common folder (like ~stacks/bmp or ~/stacks/mdl in files of their own)
-do we need to save bmp and mdl files otherwise?? since subfields of s can be loaded by themselves, maybe there is no reason
-it reduces clutter, we only lose the ability to look at what is available in file explorer, but vget can give us something similar (list of bmp or roi)
-the big concern is large files, since the stack file is already large 
-but roi files only contain the mean image, and roimasks and timeseries, usually not large (could be for lots of rois)
-
-
 %}
 
 function a2p(spec, opt)
@@ -35,20 +18,14 @@ dopltx = opt.dopltx;
 
 close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
-%%%% USERDATFILE %%%%
-
-userdatfile( ... %write some fields to userdat.txt once; scopausername and pthpar are the only two required for normal/default runs of a2p, although other fields might be required for less common use cases (see userdatfile.m)
-    scopausername='cw', ... %scopausername
-    pthpar=pthparget() ... %if you don't want to set pthpar manually, you can let function 'pthparget' prompt you to find it with uigetdir, as it does here
-    )
-
 %%%% GLOBALS %%%%
 
-glb( ...
-    usegit=usegit, ...
-    optiddf='z0', ... %default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
-    dmstackdf='yxztck' ... %default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
-    )
+userdatfile(scopausername='cw') %make sure scopausername is written to userdat.txt
+userdatfile(pthpar=pthparget()); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
+glb(usegit=usegit); %set usegit in globals function 'glb'
+glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
+
 
 %%%% OPTIONS %%%%
 
@@ -97,7 +74,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if ~isempty(o.bmp)
         for m = 1:numel(o.bmp)
             prs = struct2pairs(o.bmp(m));
-            bmp(m) = bmpmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            bmp(m) = bmpmake('', prs{:}, srate=s.md.volrate, epochts=dq.epochts, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 

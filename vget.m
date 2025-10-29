@@ -14,9 +14,7 @@ end
 arguments (Input)
     opt.unpack = 1 %output timeseries not in cell, only works when
     opt.dm = [] %dim order of timeseries to be found; used to apply indices
-    opt.pthpar = []
     opt.usegit {mustBeScalarOrEmpty, mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync file pth across filesystems (to prevent conflicting changes)
-    opt.obin_ided = []
 end
 arguments (Output)
     datout
@@ -26,38 +24,28 @@ arguments (Repeating, Output)
 end
 
 dm = opt.dm;
-pthpar = opt.pthpar;
 usegit = opt.usegit;
-obin_ided = opt.obin_ided;
 
 usegit = optorglb(usegit, 0);
 if ~ismember(usegit, [0,1])
     error("usegit must be 0 or 1")
 end
 
-scopausername = userdatfile('scopausername');
-
-numvarin = numel(vg); %number of independent output variables (number of nonempty input arguments to vget)
-tsout = cell(1, numvarin);
 persistent dattmp
 persistent tsouttmp
 
+scopausername = userdatfile('scopausername', err=1);
+pthpar = userdatfile('pthpar', err=1);
+pthscopa = pthscopaget();
+
+pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
+
+numvarin = numel(vg); %number of independent output variables (number of nonempty input arguments to vget)
+tsout = cell(1, numvarin);
 
 if isempty(dm)
     dm = 'it';
 end
-if isempty(pthpar)
-    error("you must pass in pthpar or set glb('pthpar')")
-end
-if isempty(obin_ided)
-    error("obin_ided are not defined in glb, using default defined in vget, but you should define them in glb")
-end
-if isstring(obin_ided)
-    obin_ided = convertStringsToChars(obin_ided);
-end
-
-pthscopa = pthscopaget();
-pthvar = [pthscopa 'opt_var_' scopausername '_.txt'];
 
 if isempty(dattmp) && isempty(tsouttmp) %reset counter if vget is called from a different location, or a2p starttime has changed
 
@@ -66,27 +54,27 @@ if isempty(dattmp) && isempty(tsouttmp) %reset counter if vget is called from a 
 
     for m = 1:numvarin %loop over number of repeated vg inputs
         if ~isempty(vg{m})
-            [tsouttmp_hold{m}, dattmp_hold{m}] = vget2(vg{m}, dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
+            [tsouttmp_hold{m}, dattmp_hold{m}] = vget2(vg{m}, dm, pthpar, scopausername, pthscopa, usegit);
         end
     end
 
-    datflat = cellflat(dattmp_hold);
-    datflat = [datflat{:}];
-    cnt = 0;
-    for k = 1:numel(datflat)
-        if ~isempty(datflat(k))
-            cnt = cnt+1;
-            md = mdsild(datflat(k).pth);
-            if cnt==1
-                vrtmp = md.volrate;
-                eptmp = glb('epochts');
-            else
-                if ~isequal(vrtmp, md.volrate) || ~isequal(eptmp, glb('epochts'))
-                    error("metadata does not agree across found ts, need to write how to deal with this")
-                end
-            end
-        end
-    end
+    % datflat = cellflat(dattmp_hold);
+    % datflat = [datflat{:}];
+    % cnt = 0;
+    % for k = 1:numel(datflat)
+    %     if ~isempty(datflat(k))
+    %         cnt = cnt+1;
+    %         md = mdsild(datflat(k).pth);
+    %         if cnt==1
+    %             vrtmp = md.volrate;
+    %             eptmp = glb('epochts');
+    %         else
+    %             if ~isequal(vrtmp, md.volrate) || ~isequal(eptmp, glb('epochts'))
+    %                 error("metadata does not agree across found ts, need to write how to deal with this")
+    %             end
+    %         end
+    %     end
+    % end
 
     tsouttmp = tsouttmp_hold;
     dattmp = dattmp_hold;
@@ -178,7 +166,7 @@ end
 
 end
 
-function [tsout, dat] = vget2(vg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat] = vget2(vg, dm, pthpar, scopausername, pthscopa, usegit)
 
 if isstruct(vg) && all(startsWith(fieldnames(vg), 'vg')) && isscalar(vg)
     vg = vg.vg; %since the input to this function is also named vg
@@ -191,7 +179,7 @@ tsout = cell(numvg,1);
 dattmp = cell(numvg,1);
 group = cell(numvg,1);
 for m = 1:numvg %loop over vg elements
-    [tsout{m}, dattmp{m}, group{m}] = vget3(vg(m), dm, pthpar, scopausername, pthscopa, obin_ided, usegit);
+    [tsout{m}, dattmp{m}, group{m}] = vget3(vg(m), dm, pthpar, scopausername, pthscopa, usegit);
 end
 
 
@@ -255,7 +243,7 @@ end
 end
 
 
-function [tsout, dat, group] = vget3(vg, dm, pthpar, scopausername, pthscopa, obin_ided, usegit)
+function [tsout, dat, group] = vget3(vg, dm, pthpar, scopausername, pthscopa, usegit)
 
 
 if isfield(vg, 'optid') && ~isempty(vg.optid)
@@ -349,53 +337,56 @@ if strcmp(recid, 'curr')
     recid = {glb('recid')};
 end
 
-
-
+pthopt = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
+dall = structld(pthopt, nocells=1, dosort=0);
+mostree_top = dall.mostree_top;
 
 nonemptyinds = [];
-obin_ided_in_vg = obin_ided(isfield(vg, obin_ided));
-for k = 1:numel(obin_ided_in_vg)
-    if ~isempty(vg.(obin_ided_in_vg{k}))
+mos_ided_in_vg = mostree_top(isfield(vg, mostree_top));
+for k = 1:numel(mos_ided_in_vg)
+    if ~isempty(vg.(mos_ided_in_vg{k}))
         nonemptyinds = [nonemptyinds k];
     end
 end
 
-if isscalar(obin_ided_in_vg)
-    obin = cell2mat(obin_ided_in_vg(1));
-elseif numel(obin_ided_in_vg)>1
+if isscalar(mos_ided_in_vg)
+    mos = cell2mat(mos_ided_in_vg(1));
+elseif numel(mos_ided_in_vg)>1
     if isscalar(nonemptyinds)
-        obin = cell2mat(obin_ided_in_vg(nonemptyinds));
+        mos = cell2mat(mos_ided_in_vg(nonemptyinds));
     else
-        error("obin can be empty if there is only one; if there are multiple, they must all be empty except one")
+        error("mos can be empty if there is only one; if there are multiple, they must all be empty except one")
     end
-elseif isempty(obin_ided_in_vg)
-    error("there are no obin in vg")
+elseif isempty(mos_ided_in_vg)
+    error("there are no mos in vg")
 end
 
-if isequal(vg.(obin), '*')
-    vg.(obin) = []; %now that you've distinguished the obin from other potentially empty obin, you can set it to empty if it was star, since star is meant to be empty
+if isequal(vg.(mos), '*')
+    vg.(mos) = []; %now that you've distinguished the mos from other potentially empty mos, you can set it to empty if it was star, since star is meant to be empty
 end
 
 
 if isempty(cell2mat(optid))
-    vgopt.(obin) = vg.(obin);
-    if isempty(vgopt.(obin))
+    vgopt.(mos) = vg.(mos);
+    if isempty(vgopt.(mos))
         vgopt = [];
     end
     try
-        vgopt = ofill(vgopt, obin, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
+        vgopt = ofill(vgopt, mos, rec=1, wild=1); %make sure any unspecified option gets wildcard (rather than default value)
     catch ME
         error("you must have made an invalid options struct for vget (vg) because ofill failed with this message: " + ME.message + newline);
     end
-    vgopt = oid(vgopt, justld=1, usegit=usegit);
-    if ~isempty(vgopt.(obin))
-        optid = transpose(fieldnames(vgopt.(obin))); %make it row vector, although here i don't think it matters
+    vgopt = oid(vgopt, justld=1); %we don't need usegit since justld=1 here
+    if ~isempty(vgopt.(mos))
+        for k = 1:numel(vgopt)
+            optid{k} = vgopt.(mos).optid; %make it row vector, although here i don't think it matters
+        end
     else
         fprintf("no variable found" + newline)
     end
 else
-    if ~isempty(vg.(obin))
-        error("obin substruct and optid cannot both exist in vg")
+    if ~isempty(vg.(mos))
+        error("mos substruct and optid cannot both exist in vg")
     end
 end
 
@@ -420,7 +411,7 @@ for w = 1:numel(varid)
     varid_tmp = varid{w};
     for k = 1:numel(optid)
         optid_tmp = optid{k};
-        fnpat = ['*' varid_tmp optid_tmp '_' obin '_.mat'];
+        fnpat = ['*' varid_tmp optid_tmp '_' mos '_.mat'];
         pthpat = fullfile(pthpar, '**', fnpat);
         pthtmpall = rdir(pthpat);
         pthtmp = cell(numel(pthtmpall),1);
@@ -433,17 +424,17 @@ for w = 1:numel(varid)
         end
         pthtmp = pthtmp(~cellfun(@isempty, pthtmp));
         if isempty(cell2mat(pthtmp))
-            fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + obin + "'; you may have created it and then deleted it; skipping this optid" + newline)
+            fprintf("WARNING, optid '" + optid_tmp + "' was matched but there is no corresponding data file for domain '" + mos + "'; you may have created it and then deleted it; skipping this optid" + newline)
         else
             if numel(pthtmp)>1
                 error("there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one" + newline)
             end
             pth = pthtmp{1}; %there should only be one here
-            fprintf("loading data file for domain '" + obin + "', optid '" + optid_tmp + "'" + newline)
+            fprintf("loading data file for domain '" + mos + "', optid '" + optid_tmp + "'" + newline)
             saved_struct = load(pth);
-            if isfield(saved_struct, obin)
-                saved_struct = saved_struct.(obin);
-                fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with obin" + newline)
+            if isfield(saved_struct, mos)
+                saved_struct = saved_struct.(mos);
+                fprintf("saved variable was not saved as struct (maybe it was nonscalar), so indexing into with with mos" + newline)
             end
             if isempty(cell2mat(vnm))
                 vnm = transpose(fieldnames(saved_struct)); % all variables if vnm is empty

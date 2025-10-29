@@ -12,13 +12,12 @@ o.dq.dvlensec = .49;
 o.bmp.domtype = 'm';
 
 o.bmp.indv.vg.dq = ['*'];
-o.bmp.indv.vg.vnm = 'by';
+o.bmp.indv.vg.vnm = 'bh';
 % o.bmp.indv.vg.optid = 'a8';
 
 o.bmp.depv.vg.roi.rgname = 'eb';
 o.bmp.depv.vg.roi.roiname = 'eb';
 o.bmp.depv.vg.roi.ma.maskseg = 'torus';
-o.bmp.depv.vg.roi.nrm.post = 'f';
 o.bmp.depv.vg.vnm = 'ts';
 % o.bmp.depv.vg.optid = 'a76';
 o.bmp.depv.vg.group = '1';

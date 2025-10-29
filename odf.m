@@ -195,7 +195,7 @@ du.qc.inmaskthr = 0.5; % discard roi if more than inmaskthr is outside morpholog
 
 %% nrm (roinorm: nrm = "normalization"; normalize roi timeseries using various optional methods)
 
-du.nrm.nrmstr = 'f'; % (nrmstr means "norm string"); char vector; 'f' is no normalization; nrmstr must be compsed of syllables above; normalization is applied to each roi
+du.nrm.nrmstr = []; % (nrmstr means "norm string"); char vector; 'f' is same as [], which is no normalization; nrmstr must be compsed of syllables above; normalization is applied to each roi
 du.nrm.degdtr = 0; %polynomial for detrending before normalization; 0 to skip detrending; wavp detrends by default
 du.nrm.wavp = []; %[0.3 50]; %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
 du.nrm.channorm = 0; %work in progress; 0 to skip; leave as 0 for now; which channel to normalize the other with (dampen time-frequency regions of high wavelet coherence)
