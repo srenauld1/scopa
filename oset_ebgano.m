@@ -39,7 +39,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'eb')
         o.roi.roiname = 'eb';
         o.roi.dodraw = 1;
-        o.roi.ma.numroi = {32, 64};
+        o.roi.ma.numroi = 32;
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 1.5;

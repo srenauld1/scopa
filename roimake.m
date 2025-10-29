@@ -165,7 +165,7 @@ catch ME
     %%%% DRAW ROIS %%%%
 
     if dodraw && ~maskin
-        [roimask, mm] = roidraw(s, roiname=roiname, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
+        [roimask, mm] = roidraw(s, roiname=roiname, rgname=rgname, cellout=1); %cellout=1 because in roimake roimask is cell (one for each channel)
     end
 
 
