@@ -19,8 +19,8 @@ jobind = ['all'] #list, 'all' or list of zero-indexed string ints or ints, if 'a
 folder_with_all_recordings_on_storage_and_compute_filesystems = 'stacks' #folder holding all recordings you want this pipeline to operate on, if you're using do_copyfiles, this will refer to a folder on storage server and o2, tree on storage will be mirrored on o2; it is a separate variable (rather than end of pth_storage_prefix) to emphasize that it is separated off and mirrored on O2 
 pth_storage_prefix = '/n/files/Neurobio/wilsonlab/wienecke/' #string, single element not in list, pth_storage_prefix+folder_with_all_recordings_on_storage_and_compute_filesystems is the path to the storage folder containing all recordings, data will be copied from here, into a folder on scratch with name (folder_with_all_recordings_on_storage_and_compute_filesystems) then analyzed, then copied back, ignored if do_copyfiles==0, 
 
-recdate = ['20251001'] #list of strings, as it appears in the directory and original scanimage file filename (with hyphen not underscore for now), '*' for any 
-fly = ['144'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
+recdate = ['20251029'] #list of strings, as it appears in the directory and original scanimage file filename (with hyphen not underscore for now), '*' for any 
+fly = ['*'] #list of strings, fly, '*' for any, can be len 1 or len(recdate), if len 1 and len(recdate)>1, fly will be copied to match
 trial = ['*'] #list of strings, trial, '*' for any #
 substr = ['*'] #list of strings, match recordings only in paths containing any substring in list; '*' for any
 file_matching_style = 'any' #string, single element not in list, 'any' or 'each', if any, will find all files matching any combo from above lists, if each, will match files using corresponding elements of above lists
@@ -53,7 +53,7 @@ use_scannoise_removed = 0 #1 to use the stack (a mat file) with scan noise remov
 
 do_crop_only = 0 #skip everything but FOV selection for all entries in rgname, must have already run motion correction if use_denoised=False, or motion correction and denoising if use_denoised=True, convenient to do for many recordings at once so extraction can be run on a batch of recordings without interruption
 
-extract_in_2d = 0 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
+extract_in_2d = 1 #caiman source extraction for each plane independently (WARNING, 3D EXTRACTION REQUIRES AT LEAST 3 ELEMENTS IN EACH DIMENSION X Y and Z, OR you must REWRITE binary_closing IN CAIMAN'S THRESHOLD_COMPONENTS)
 methodex = '1' #'1' (channel 1 only), '2' (channel 2 only), '12' (channel 1 and 2 independently), 'seed1mat' (channel 1 functional extraction seeded with morph rois created/saved in matlab), 'seed2mat' (same as seed1 but for channel 2), 'seed1py' (same but seeded with automated morph rois made in python), 'seed2py' (same as 'seed1py' but channel 2), 'seedeachpy' (channel 1 and 2 independently, with python-automated morph roi seed masks for each channel), 'seedeachmat' (same as seedeachpy, but using morph rois created/saved in matlab), 'seed21py' (python-automated morph roi seed mask in channel 2 seed functional extraction from channel 1), 'seed12py' (inverse of seed21py), 'seed21mat' (same as 'seed21py', but for morph rois created/saved in matlab), 'seed12mat' (inverse of 'seed21mat'); the seed*py methodex only work when extract_in_2d=True
 rgname = ['pnew3'] #DO NOT USE UNDERSCORES, or any punctuation, . . . list of strings specifying names for xy rectangular or xyz cuboid fov subregions that are passed separately to source extraction; interactive plots prompt user to define z range and draw xy rectangle; use ['none'] to extract from entire FOV
 mmname = ['none']
