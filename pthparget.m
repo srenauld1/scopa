@@ -9,15 +9,24 @@ if pthpar and pthparo2 have both been set in userdat.txt, pthpar is whichever on
 
 %}
 
+write_to_userdat = 0;
 try
     loc = userdatfile('pthpar');
     o2 = userdatfile('pthparo2');
 catch
     loc = [];
     o2 = [];
+    write_to_userdat = 1;
 end
 
 pthscopa = pthscopaget();
+
+envname = getenv('HOSTNAME');
+if isempty(regexp( envname, 'compute-', 'once' ))
+    on_o2 = 0;
+else
+    on_o2 = 1;
+end
 
 if isempty(loc)
     if isempty(o2)
@@ -25,8 +34,14 @@ if isempty(loc)
         pause(2)
         loc = uigetdir(pthscopa, 'choose directory to search for stacks');
     else
-        fprintf("you have set userdatfile('pthparo2') but not userdatfile('pthpar'), assuming you are on o2" + newline)
-        loc = o2;
+        if on_o2
+            fprintf("you have set userdatfile('pthparo2') but not userdatfile('pthpar'), assuming you are on o2" + newline)
+            loc = o2;
+        else
+            fprintf("YOU HAVE SET userdatfile('pthparo2') BUT NOT userdatfile('pthpar'), AND YOU ARE NOT ON O2, SO YOU WILL NOW BE PROMPTED TO CHOOSE DIRECTORY" + newline + "THE DIRECTORY YOU CHOOSE WILL BE THE ROOT DIRECTORY FOR STACK SEARCH" + newline)
+            pause(2)
+            loc = uigetdir(pthscopa, 'choose directory to search for stacks');
+        end
     end
 end
 loc = pthfldformat(loc); %format path to folder
@@ -35,8 +50,7 @@ if endsWith(loc, filesep)
 end
 [~, fldpar, ~] = fileparts(loc);
 
-envname = getenv('HOSTNAME');
-if ~isempty(regexp( envname, 'compute-', 'once' ))
+if on_o2
     if isempty(o2)
         fprintf("pthparo2 (parent path to all stacks on O2) was not specified" + newline + ...
             "deriving default pthparo2 based on pthpar (parent path to all stacks on your local machine)" + newline + ...
@@ -60,6 +74,18 @@ pthpar = [pthpar filesep];
 if ~isfolder(pthpar)
     error("ON THIS FILESYSTEM, '" + pthpar + "' DOES NOT EXIST OR IS NOT A FOLDER")
 end
+
+if write_to_userdat
+    fprintf("writing pthpar to userdat.txt, but no other fields will be written now" + newline)
+    if on_o2
+        userdat.pthparo2 = pthpar;
+    else
+        userdat.pthpar = pthpar;
+    end
+    prs = struct2pairs(userdat);
+    userdatfile(prs{:})
+end
+
 
 
 end

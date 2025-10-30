@@ -24,7 +24,7 @@ function pltx(opt, opt2)
 arguments
     opt = []
     opt2.stack = []
-    opt2.daq = []
+    opt2.dq = []
     opt2.roi = []
     opt2.bmp = []
     opt2.mdl = []
@@ -44,11 +44,10 @@ arguments
     opt2.normopt = []
     opt2.ftvid = []
     opt2.stimvid = []
-    opt2.doplt = []
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
 end
-opt2 = glboropt(opt2);
 stack = opt2.stack;
-daq = opt2.daq;
+dq = opt2.dq;
 roi = opt2.roi;
 bmp = opt2.bmp;
 mdl = opt2.mdl;

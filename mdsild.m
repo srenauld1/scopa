@@ -1,32 +1,23 @@
 function md = mdsild(pth, opt)
 
 arguments
-    pth = [] %path to metadata file ('*mdsi_.txt') or path to stack
-    opt.pthpy = []
+    pth = [] %path to metadata file ('*mdsi_.txt'), or path to stack, or path to daq file
     opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
 end
-opt = glboropt(opt);
-pthpy = opt.pthpy;
 doflyg = opt.doflyg;
 
-if isempty(pth)
-    if isempty(glb('pthstack'))
-        error("must pass in nonempty name-value argument 'pth', or set glb('pthstack')")
-    else
-        fprintf("WARNING, RETRIEVING METADATA FOR STACK LISTED IN glb('pthstack') BECAUSE NAME-VALUE ARGUMENT 'pth' IS EMPTY" + newline)
-    end
-    pth = glb('pthstack');
-end
-id = idmake(pth); 
+pthpy = userdatfile('pthpy', err=1); %path to python executable; only required to run caiman from matlab (if opt.cm is nonempty)
+
+id = idmake(pth); %this will for idmake fields needed here if pth is mdsi file, stack file, or daq file
 pthmd = [id.pthrec '_mdsi_.txt'];
 
 if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.py
 
     fprintf("cannot find this scanimage metadata file: " + newline + pthmd + newline + "if you successfully ran registration, it should have been created" + newline + "creating it now using tifreadfast (from within mdsisv.m), and if that fils, using python function mdsisv, and if that fails, calling mdsisv_pymat" + newline)
-    pthrawpt = [id.pthrec '_raw_.tif'];
+    pthrawpt = [id.pthrec '_o_.tif'];
     pthraw = rdir(pthrawpt);
     if isempty(pthraw)
-        pthrawpt = [id.pthstackdir id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
+        pthrawpt = [id.pthstackfld id.recdate '-' id.fly '_*_trial_' sprintf( '%03s', id.trial) '_*.tif'];
         pthraw = rdir(pthrawpt);
     end
     if isempty(pthraw)
@@ -114,7 +105,7 @@ md.sper = 1/md.volrate;
 
 
 if doflyg
-    pthmd_flyg_pat = [pthstackdir id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
+    pthmd_flyg_pat = [pthstackfld id.recdate '-' id.fly '_metadata_*_trial_' sprintf( '%03d', id.trialnum ) '.mat'];
     pthmd_flyg = rdir(pthmd_flyg_pat);
     if isempty(pthmd_flyg)
         pthmd_flyg = [];

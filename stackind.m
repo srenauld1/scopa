@@ -5,6 +5,7 @@ function [stack, lab] = stackind(stack, opt)
 arguments (Input)
     stack
     opt.dm = [] %char array, default dim order for input variable stack
+    opt.ii = [] 
     opt.iy = [] 
     opt.ix = [] 
     opt.iz = [] 

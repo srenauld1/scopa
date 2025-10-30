@@ -1,6 +1,6 @@
 function o = oset_312(o)
 
-o.mn.do = ["sld", "daq", "roi"];
+o.mn.do = ["sld", "dq", "roi"];
 
 rgname = {'none'}; 
 

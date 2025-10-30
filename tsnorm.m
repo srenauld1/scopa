@@ -1,37 +1,43 @@
-function ts = tsnorm(ts, normall, sper, memthr)
+function ts = tsnorm(ts, nrmstr, opt)
+
+%{
+
+several normalization methods, input tsin is 2d space x time, single or double precision
+normtype_all is cell array of strings, each string specifies a different
+normalization method, which is applied independently to each roi's timeseries (or pixel's timeseries)
+each normalization string is comprised of 'syllables', which can be concatenated in any order for sequential normalization operations
+syllables are applied in order from left to right
+normalized responses are output in same size as input (NO LONGER saved in struct 'resp' to a field whose name matches the normalization string used to produce them)
+below, xxx, yyy, zzz, and www, are 3-character strings converted to integers, range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
+valid normalization syllables are:
+'f' : no normalization
+'dffuuuvvv' : df/f with or without sliding window, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries (not a sliding window)
+'rscxxxyyy' : rescale, sending xxx percentile to 0, yyy percentile to 1,
+'z' : zscore
+'nn' : nonnegative (subtract min)
+'box' : box-cox transformation
+
+%}
 
 arguments
     ts
-    normall
-    sper
-    memthr = 1e9
+    nrmstr char
+    opt.srate = []
+    opt.memthr = 1e9
 end
+srate = opt.srate;
+memthr = opt.memthr;
 
-% several normalization methods, input tsin is 2d space x time, single or double precision
-% normtype_all is cell array of strings, each string specifies a different
-% normalization method, which is applied independently to each roi's timeseries (or pixel's timeseries)
-% each normalization string is comprised of 'syllables', which can be concatenated in any order for sequential normalization operations
-% syllables are applied in order from left to right
-% normalized responses are output in same size as input (NO LONGER saved in struct 'resp' to a field whose name matches the normalization string used to produce them)
-% below, xxx, yyy, zzz, and www, are 3-character strings converted to integers, range 0-100 (ie use leading zeros to reach 3 characters for anything under 100)
-% valid normalization syllables are:
-% 'f' : no normalization
-% 'dffuuuvvv' : df/f with or without sliding window, uuu as percentile to compute f0 for each window, vvv as sliding window length in seconds, if vvv is 000 then f0 is computed across the entire timeseries (not a sliding window)
-% 'rscxxxyyy' : rescale, sending xxx percentile to 0, yyy percentile to 1,
-% 'z' : zscore
-% 'nn' : nonnegative (subtract min)
-% 'box' : box-cox transformation
-% for example
 
 tsclass = class(ts);
 
-if ~iscell(normall)
-    normall = {normall};
+if ~iscell(nrmstr)
+    nrmstr = {nrmstr};
 end
 
-for k = 1:length(normall)
+for k = 1:length(nrmstr)
 
-    normtmp = normall{k};
+    normtmp = nrmstr{k};
     if ~ischar(normtmp)
         error("normtmp must be char")
     end
@@ -57,10 +63,10 @@ for k = 1:length(normall)
                 end
                 ts = ts - min(ts, [], 2); %make it nonnegative before dff 
                 if wlen
-                    if isempty(sper)
-                        error("sper (sample period) must not be empty if using a dff window")
+                    if isempty(srate)
+                        error("srate (sample rate) must not be empty if using a dff window")
                     end
-                    wlen = round(wlen / sper);
+                    wlen = round(wlen * srate);
                     % f0 = RankOrderFilter(ts, wlen, f0_pct);
                     f0 = rofilt(ts, wlen, f0_pct);
                 else

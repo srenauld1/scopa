@@ -5,7 +5,7 @@ function h = stackplt(stack, opt)
 arguments
     stack %image stack(s), matrix if single stack, cell if multiple; if cell, must be same size; stack dimensions assumed to be (y,x,z,t,c,j); can be any data type; if passing cmap, clim property of image scaled to colormap range; if cmap is 'rgb', image must be rgb
     opt.pthgif char = ''
-    opt.gifvis char = 'on'
+    opt.pthdir = [];
     opt.roipx = []
     opt.ir = []
     opt.roicols = [1 0 0]
@@ -33,9 +33,8 @@ arguments
     opt.fontsz = 10;
     opt.dosave = 1 %whether to write to gif
 end
-opt = glboropt(opt);
 pthgif = opt.pthgif;
-gifvis = opt.gifvis;
+pthdir = opt.pthdir;
 roipx = opt.roipx;
 ir = opt.ir;
 roicols = opt.roicols;
@@ -45,7 +44,6 @@ title_prefix = opt.title_prefix;
 title_suffix = opt.title_suffix;
 index_labels = opt.index_labels;
 szf = opt.szf;
-numcolorsgif = opt.numcolorsgif;
 dmplt = opt.dmplt;
 dmstack = opt.dmstack;
 dr = opt.dr;
@@ -64,18 +62,21 @@ fontsz = opt.fontsz;
 dosave = opt.dosave;
 
 if isempty(pthgif)
-    pthgif = pthauto(suffix='.gif', usetime=1);
+    pthgif = pthauto(suffix='.gif', pthdir=pthdir, usetime=1);
 end
+
 if isempty(dmplt)
-    dmplt = 'yxczk(t)'; %this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
+    dmplt = 'yxcz(t)'; %if k is present, it is averaged (omitted from char vector means averaged); this will work for mean t or not, and with 1 or 2 channel, and 1 or more z; any t wil be shown across channels, everything else in each frame (if you don't like that just change dmplt
 end
-dmstackmax = 'yxztck'; %all dimensions allowed in stack; order is irrelevant
+
+dmstackdf = [erase(glbfile('dmstackdf'), 'k') 'k']; %make sure k appears at the end (don't think it actually matters where, but we don't want duplicate chars)
+
 if isempty(dmstack)
-    dmstack = dmstackmax;
+    dmstack = dmstackdf;
 end
-dmstack = [dmstack dmstackmax(~ismember(dmstackmax, dmstack))];
-maxnumdims = numel(dmstackmax);
-dimlabelsmax = vec(num2cell(dmstackmax));
+dmstack = [dmstack dmstackdf(~ismember(dmstackdf, dmstack))];
+maxnumdims = numel(dmstackdf);
+dimlabelsmax = vec(num2cell(dmstackdf));
 dimlabels = vec(num2cell(dmstack));
 max_num_inds_to_print = 10;
 max_num_im_per_frame = 64;
@@ -94,11 +95,11 @@ end
 if strcmp(cmap, 'rgb') && size(stack, ndims(stack))~=3
     error("last dimension must be length 3 if cmap argument is 'rgb'")
 end
-if ~isempty(dmstack) && ( ~ischar(dmstack) || ~isequal(numel(erase(dmstack, {'(', ')'})), numel(unique(erase(dmstack, {'(', ')'})))) || any(~ismember(unique(dmstack), [dmstackmax '()'])) )
-    error("dmstack must a char vector, without repeats, and can only contain the following characters: " + [dmstackmax '()'])
+if ~isempty(dmstack) && ( ~ischar(dmstack) || ~isequal(numel(erase(dmstack, {'(', ')'})), numel(unique(erase(dmstack, {'(', ')'})))) || any(~ismember(unique(dmstack), [dmstackdf '()'])) )
+    error("dmstack must a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
 end
-if ~isempty(dmplt) && ( ~ischar(dmplt) || ~isequal(numel(erase(dmplt, {'(', ')'})), numel(unique(erase(dmplt, {'(', ')'})))) || any(~ismember(unique(dmplt), [dmstackmax '()'])) )
-    error("dmplt must be a char vector, without repeats, and can only contain the following characters: " + [dmstackmax '()'])
+if ~isempty(dmplt) && ( ~ischar(dmplt) || ~isequal(numel(erase(dmplt, {'(', ')'})), numel(unique(erase(dmplt, {'(', ')'})))) || any(~ismember(unique(dmplt), [dmstackdf '()'])) )
+    error("dmplt must be a char vector, without repeats, and can only contain the following characters: " + [dmstackdf '()'])
 end
 if iscell(stack) && ~all(cellfun(@(e) isequal(size(stack{1}), size(e)), stack(2:end)))
     error("all stacks (each cell element) must be the same size")
@@ -109,10 +110,10 @@ end
 
 if iscell(stack)
     stack_oneframe = stack{1}(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
-    szdfo = size(stack{1}, 1:numel(dmstackmax));
+    szdfo = size(stack{1}, 1:numel(dmstackdf));
 else
     stack_oneframe = stack(:,:,:,1,1,1); %doing this before or after indexing is fine since if roipx is nonempty and xyz indexes are used error gets thrown
-    szdfo = size(stack, 1:numel(dmstackmax));
+    szdfo = size(stack, 1:numel(dmstackdf));
 end
 
 if all(cellfun(@isempty, index_labels))
@@ -436,7 +437,7 @@ for ri = 1:roi_loop_size % loop over all rois, or if none, roi_loop_size is 1
         h.ttl.String = titlenew{cnt};
 
         if dosave
-            fig2gif(h.fg, cnt, pthgif, numcolorsgif) %save each frame to gif
+            fig2gif(h.fg, cnt, pthgif) %save each frame to gif
         end
 
     end

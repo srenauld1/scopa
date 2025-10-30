@@ -3,15 +3,15 @@
 % '20250713_2_1_ord_.mat' with glue window
 % '20250713_2_2_ord_.mat' without glue window
 
-pthstackdir = '/Users/wienecke/stacks/ebgano/20250713-2_d05_s8m_018_s8m/'; %path to stack directory 
+pthstackfld = '/Users/wienecke/stacks/ebgano/20250713-2_d05_s8m_018_s8m/'; %path to stack directory 
 fn = '20250713_2_2_ord_.mat'; %filename of stack
 it = 100:3:150; %frames to plot; -x will plot x equidistant frames across all t
 rot = [-90,0,0]; %Euler angles in x,y,z-order in degrees, specified as a 3-element numeric vector of the form [rx ry rz]
 widyxz = [1.5899 1.5899 2.8000]; %don't change this; voxel width in yxz
 
-pthstack = [pthstackdir fn];
+pthstack = [pthstackfld fn];
 clear glb %clear globals in glb
-glb(pthstackdir=pthstackdir)
+glb(pthstackfld=pthstackfld)
 load(pthstack, 'stack') %load yxzt stack
 stackplt(stack, it=it) %plot stack, it specifies frames to plot
 stackmnt = mean(stack,4); %average all frames

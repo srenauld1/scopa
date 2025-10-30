@@ -86,7 +86,7 @@ Ad3 = resample(A, p, q);
 
 %% 
 
-Ad4 = tsrs(A, numel(Ad1));
+Ad4 = vecrs(A, numel(Ad1));
 
 %% plot frame average
 

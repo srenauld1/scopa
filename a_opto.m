@@ -1,59 +1,98 @@
+function a_opto(roi, s, t)
 
-clearvars
-clear glb
-clear ofill
-close all
-clc
-
-stackid = '20251004_4*'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
-
-o.roi.domm = 1;
-o.roi.mm.mmname = {'opto'};
-o.roi.nrm.post = {'z'};
-
-o = ofill(o);
-
-pthtmp = stackfind(stackid=stackid, err=1);
-if ~iscell(pthtmp)
-    pthtmp = {pthtmp};
-end
-
-for k = 1:numel(pthtmp)
-
-    s = stackld(pthtmp{k});
-    
-    id = idmake(s.pth);
-    glb(1, pthstackdir=id.pthstackdir) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
-
-    % daq = daqld(o.daq, pthstack=s.pth);
-    % 
-    % stackplt(stacksm(s.stack, method={'movmedian', 'gaussian'}, imrate=s.md.volrate, smlensec=1), ic=1, it=-30)
-    % stackplt(stacksm(s.stack, method={'gaussian'}, imrate=s.md.volrate, smlensec=1), ic=1, it=-30)
-    stack2 = stacksm(s.stack, method={'gaussian'}, imrate=s.md.volrate, smlensec=1, smlenpx=[3,3,0]);
-    stackplt(stack2, ic=1, it=-100)
-    s.stack = stack2;
-    stack2 = [];
-
-    roi(k) = roimake(o.roi, s=s);
+cmap = lines(8);
 
 
 %% 
 
-t = linspace(0, 600, 25000);
-eb = roi.dat(1).ts(1:8,:);
-nol = roi.dat(1).ts(9,:);
-nor = roi.dat(1).ts(10,:);
-stim = squeeze(mean(s.stack(:,:,:,:,2), [1:3]));
+ieb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'roiname', 'eb'}, lev=1);
+inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
 
-figure; hold on;  plot(nol); hold on; plot(nor); yyaxis right; plot(stim);
+eb_or = roi.(ieb).dat(1).ts;
+nol_or = roi.(inl).dat(1).ts;
+nor_or = roi.(inr).dat(1).ts;
+
+stim_or = squeeze(mean(s.stack(:,:,:,:,2), [1:3]))';
+
+%% 
+
+recid = idmake(s.pth, 'recid');
+pthraw = stackfind(stackid=[recid '_o']);
+sraw = stackld(pthraw);
+
+clear ofill
+o.roi.rgname = 'eb';
+o = ofill(o, mosfinal='roi');
+o = o.roi;
+roimask_ieb_or = {roi.(ieb).dat(1).mask, roi.(ieb).dat(2).mask};
+roiraw_eb = roimake(o, s=sraw, roimask=roimask_ieb_or);
+
+
+clear ofill
+o.roi.rgname = 'no';
+o = ofill(o, mosfinal='roi');
+o = o.roi;
+roimask_inl_or = {roi.(inl).dat(1).mask, roi.(inl).dat(2).mask};
+roiraw_nol = roimake(o, s=sraw, roimask=roimask_inl_or);
+
+
+clear ofill
+o.roi.rgname = 'no';
+o = ofill(o, mosfinal='roi');
+o = o.roi;
+roimask_inr_or = {roi.(inr).dat(1).mask, roi.(inr).dat(2).mask};
+roiraw_nor = roimake(o, s=sraw, roimask=roimask_inr_or);
+
+
+ieb_raw = fieldmatch(roiraw, {'rg.rgname', 'eb'}, {'roiname', 'eb'}, lev=1);
+inl_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+inr_raw = fieldmatch(roiraw, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
+
+eb_raw = roiraw_eb.dat(1).ts;
+nol_raw = roiraw_nol.dat(1).ts;
+nor_raw = roiraw_nor.dat(1).ts;
+
+stim_raw = squeeze(mean(sraw.stack(:,:,:,:,2), [1:3]))';
+
+%% 
+
+stim_raw_sm = smoothdata(stim_raw, 2, 'gaussian', 30);
+eb_raw_sm = smoothdata(eb_raw, 2, 'gaussian', 30);
+nol_raw_sm = smoothdata(nol_raw, 2, 'gaussian', 30);
+nor_raw_sm = smoothdata(nor_raw, 2, 'gaussian', 30);
+figure; hold on;  plot(t, nol_raw_sm); hold on; plot(t, nor_raw_sm); yyaxis right; plot(t, stim_raw_sm);
+
+
+figure; hold on;  plot(t, nol_raw_sm); hold on; plot(t, nor_raw_sm); yyaxis right; plot(t, stim_raw_sm);
+
+%% 
+
+
+stim_or_sm = smoothdata(stim_or, 2, 'gaussian', 30);
+eb_or_sm = smoothdata(eb_or, 2, 'gaussian', 30);
+nol_or_sm = smoothdata(nol_or, 2, 'gaussian', 30);
+nor_or_sm = smoothdata(nor_or, 2, 'gaussian', 30);
+figure; hold on;  plot(t, nol_or_sm); hold on; plot(t, nor_or_sm); yyaxis right; plot(t, stim_or_sm);
+
+%% 
+
+its = t2i([140:.1:170], t);
+stackplt(sraw.stack, it=its, ic=1)
+
+%% 
+
+
+figure; hold on;  plot(nol_or); hold on; plot(nor_or); yyaxis right; plot(stim);
+figure; hold on;  plot(nol_raw); hold on; plot(nor_raw); yyaxis right; plot(stim_raw);
 
 ax = axarr([1,1]);
 h = fg(szf=2);
-h = axim(eb, h=h, ax=ax, notim=1, noax=0);
+h = axim(eb_or, h=h, ax=ax, notim=1, noax=0);
 hold(h.im.ax{1}, "on")
 h.im.pl{1}.XData = t;
-plot(h.im.ax{1}, t, rescale(nol, 1, size(eb,1)), color=cmap(1,:), linestyle='-', linewidth=2);
-plot(h.im.ax{1}, t, rescale(nor, 1, size(eb,1)), color=cmap(2,:), linestyle='-', linewidth=2);
+plot(h.im.ax{1}, t, rescale(nol_or, 1, size(eb_or,1)), color=cmap(1,:), linestyle='-', linewidth=2);
+plot(h.im.ax{1}, t, rescale(nor_or, 1, size(eb_or,1)), color=cmap(2,:), linestyle='-', linewidth=2);
 
 xlim(lim_t)
 title('eb (heatmap), gall left (blue), gall right (red), vish (yellow), ballh yaw (purple)')

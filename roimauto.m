@@ -1,14 +1,35 @@
 function roimaskout = roimauto(stack, opt, opt2)
 
 arguments
+
     stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
-    opt
+    
+    opt.chan = 1; %1, 2, or [1 2], which channel gets auto roi extraction; this is stack index, not pmt index; (for now all options below are same for each) option where auto rois interact has not been written yet);
+    opt.numroi = 128; %partition rgname into numroi morphological rois; a drawn roi, if it exists, masks the rgname prior to automated super-roi extraction; num_roim_auto and number drawn rois cannot both exceed 1 (i.e. the code cannot automatically partition discontiguous rois within a single rgname)
+    opt.maskmake = 'nonzero'; % %method for automatically defining morphological roi mask (union of all morphological rois) from stack or union of manually drawn rois, options are 'edge', 'outlier', 'triangle', 'nonzero'
+    opt.maskseg = 'uniform'; %'skeleton' for elongated structures or 'uniform'; method for subsampling mask into rois; for 'uniform', o.roi.ma.num_roim_auto_str must be power of 2 and works best for convex structures since for concave structures it will find rois outside the structure but can be masked to remove orois outside the structure afterward
+    opt.roirad = []; %radius of roi (circle if 2d, sphere if 3d) centered on roi centroid; make this empty to have voxels mapped to roi centroid using euclidian distance; units are length of pixel in x (if z length is double x and y length, roirad 6 is 2 pixels in x and y, and 1 in z)
+    opt.edgethr = [0.1, 0.7]; %two thresholds to detect strong and weak edges; includes weak edges in output only if they are connected to strong edges
+    opt.edgesig = [3, 3, 3]; %for edge detection, defines smoothing filter sigma for each dim xyz, or use one value for all dim, if 2d edge detection, first element is used for x and y
+    opt.celsz = 8; %for bwmorph close after edge detection, helps connect edges
+    opt.do3d = 1; %1 makes 3d mask unless stack is 2d, 0 makes 2d mask for 2d, 3d, or 4d stack input
+    
     opt2.md = []
     opt2.widyxz = []
     opt2.roimaskin = []
     opt2.pthstack = []
     opt2.rg = []
-    opt2.mmname = []
+    opt2.roiname = []
+    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+
+end
+
+if opt2.och
+    if isfield(opt, 'optid')
+        opt = rmfield(opt, 'optid');
+    end
+    roimaskout = opt;
+    return
 end
 
 chan = opt.chan;
@@ -21,12 +42,11 @@ edgesig = opt.edgesig;
 celsz = opt.celsz;
 do3d = opt.do3d;
 
-opt2 = glboropt(opt2);
 md = opt2.md;
 widyxz = opt2.widyxz;
 roimaskin = opt2.roimaskin;
 pthstack = opt2.pthstack;
-mmname = opt2.mmname;
+roiname = opt2.roiname;
 rg = opt2.rg;
 
 if size(stack,4)>1
@@ -47,10 +67,10 @@ if isempty(roimaskin)
     roimaskin = cell(numchan,1);
 end
 if isempty(pthstack)
-   error("must set pthstack or glb('pthstack')")
+   error("must set pthstack")
 end
-if isempty(mmname)
-   mmname = 'none';
+if isempty(roiname)
+   roiname = 'none';
 end
 if isempty(rg)
     [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
@@ -73,9 +93,9 @@ else
     roimaskin = {roimaskin};
 end
 
-id = idmake(pthstack);
-fnsuffix = ['_' rgname '_' mmname '_ma'];
-pthma = [id.pthrec, fnsuffix, '_.mat'];
+pthrec = idmake(pthstack, 'pthrec');
+fnsuffix = ['_' rgname '_' roiname '_ma'];
+pthma = [pthrec, fnsuffix, '_.mat'];
 
 roimaskout = roimaskin;
 
@@ -87,17 +107,17 @@ try
         roimaskout{c} = ma(c).mask;
     end
 
-    if any(~isfield(ma(1), {'mask', 'mask_in', 'rg', 'mmname', 'opt'})) || numel(ma)==2 && any(~isfield(ma(2), {'mask', 'mask_in', 'rg', 'mmname', 'opt'}))
-        error("ma struct must contain fields 'mask', 'mask_in', 'rg', 'mmname', 'opt'; you may have loaded an old ma struct")
+    if any(~isfield(ma(1), {'mask', 'mask_in', 'rg', 'roiname', 'opt'})) || numel(ma)==2 && any(~isfield(ma(2), {'mask', 'mask_in', 'rg', 'roiname', 'opt'}))
+        error("ma struct must contain fields 'mask', 'mask_in', 'rg', 'roiname', 'opt'; you may have loaded an old ma struct")
     end
     if ~isequal(ma(1).rg, rg) || numel(ma)==2 && ~isequal(ma(2).rg, rg)
         error("ma file exists but for at least one channel rg in ma file does not match current rg with same name; did you delete the rg you used to draw this ma?")
     end
-    if ~isequal(ma(1).mmname, mmname) || numel(ma)==2 && ~isequal(ma(2).mmname, mmname)
-        error("ma file exists but input roimask mmname does not match for at least one channel")
+    if ~isequal(ma(1).roiname, roiname) || numel(ma)==2 && ~isequal(ma(2).roiname, roiname)
+        error("ma file exists but input roimask roiname does not match for at least one channel")
     end
     if ~isequal(ma(1).opt, opt) || numel(ma)==2 && ~isequal(ma(2).opt, opt)
-        error("ma file exists but input roimask mmname does not match for at least one channel")
+        error("ma file exists but input roimask roiname does not match for at least one channel")
     end
 
 catch ME
@@ -109,7 +129,7 @@ catch ME
         ma(c).mask = roimaskout{c};
         ma(c).mask_in = roimaskin{c};
         ma(c).rg = rg;
-        ma(c).mmname = mmname;
+        ma(c).roiname = roiname;
         ma(c).opt = opt;
     end
 

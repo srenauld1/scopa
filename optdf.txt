@@ -2,22 +2,24 @@
   "d": {
     "bmp": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "domtype": "m",
       "dorescale": 0,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "maxangrs": 8,
       "mdl": {
         "depv": {
-          "tg": []
+          "vg": []
         },
         "epochmix": 0,
         "epochnum": 1,
         "indv": {
-          "tg": []
+          "vg": []
         },
         "lagsec": 0,
         "lensec": 0,
@@ -37,22 +39,22 @@
           "OutputFcn": [],
           "PenaltyThresholdFactor": 0.2,
           "PlotFcn": [],
-          "StartPointsToRun": "bounds-ineqs",
+          "StartPointsToRun": "all",
           "XTolerance": 1E-6
         },
         "opl": {
           "Algorithm": "interior-point",
           "BarrierParamUpdate": "monotone",
           "ConstraintTolerance": 1E-6,
-          "Display": "iter-detailed",
+          "Display": "final",
           "EnableFeasibilityMode": false,
           "FiniteDifferenceStepSize": "sqrt(eps)",
-          "FiniteDifferenceType": "central",
+          "FiniteDifferenceType": "forward",
           "FunctionTolerance": 1E-6,
           "HessianApproximation": "bfgs",
           "HessianFcn": [],
           "HessianMultiplyFcn": [],
-          "HonorBounds": true,
+          "HonorBounds": 1,
           "MaxFunctionEvaluations": 3000,
           "MaxIterations": 1000,
           "ObjectiveLimit": -1.0E+20,
@@ -60,12 +62,12 @@
           "OutputFcn": [],
           "PlotFcn": [],
           "ScaleProblem": false,
-          "SpecifyConstraintGradient": false,
-          "SpecifyObjectiveGradient": false,
+          "SpecifyConstraintGradient": 0,
+          "SpecifyObjectiveGradient": 0,
           "StepTolerance": 1E-10,
           "SubproblemAlgorithm": "factorization",
           "TypicalX": "ones(numberOfVariables,1)",
-          "UseParallel": false
+          "UseParallel": 0
         },
         "rm": [],
         "slvrg": "globalsearch",
@@ -77,109 +79,35 @@
       "numangrs": 16,
       "numcirc": 1,
       "omitnan": 1,
-      "roi": {
-        "docm": 0,
-        "doma": 0,
-        "domm": 0,
-        "doqc": 0,
-        "mm": {
-          "chanstr": "all",
-          "mmname": "none"
-        },
-        "rgname": "none",
-        "s": {
-          "tg": []
-        }
-      },
       "scope": "all",
-      "slopelensec": 0.4,
-      "slopeord": 2,
       "smlensec": 0
     },
-    "daq": {
+    "dq": {
       "balldia": 9,
-      "slopelensec": 0.4,
-      "slopelensec_supp": 0.4,
-      "slopeord": 2,
-      "slopeord_supp": 2,
-      "supprate": [],
-      "tomm": [
-        "ficTracIntSide",
-        "ficTracIntForward"
-      ],
+      "dvlensec": [],
+      "dvord": 2,
+      "rskey": 0,
       "usefbf": 1,
       "usefbl": 1,
-      "useinds": "none",
-      "vcategorical": [
-        "ftcam",
-        "cameraFrameClock",
-        "epoch",
-        "g4vel",
-        "g4velnom"
-      ],
-      "vdegrees": "",
-      "vnormal": [
-        "Time",
-        "heat",
-        "virmenIteration"
-      ],
-      "voltmax": 10,
-      "voltmin": 0,
-      "voltminhd": 0.52359877559829882,
-      "vradians": [
-        "ficTracIntSide",
-        "ficTracIntForward",
-        "ficTracYaw",
-        "ficTracHd",
-        "ficTracHeading",
-        "g4panels",
-        "g4yaw",
-        "g4hd"
-      ],
-      "vrenm": [
-        "t = Time, time, T",
-        "epochts = epoch",
-        "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw, g4hd",
-        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
-        "bf = ficTracIntForward",
-        "bvf = ficTracIntForward_dv",
-        "bs = ficTracIntSide",
-        "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading, ficTracHd",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
-        "ftcam = ftcam"
-      ],
-      "vtime": [
-        "Time",
-        "time",
-        "T",
-        "t"
-      ]
+      "voltlim": [0,10],
+      "voltminhd": 0.52359877559829882
     },
     "fmf": {
       "crop_edges": 1,
-      "downsample_template": 1,
       "feat2": [],
       "flipped": 0,
-      "getgrid": 1,
-      "gridres": 256,
       "id": "CON_51",
-      "it": -100,
-      "pthpar": [],
-      "pthtemplate": [],
       "rep": 1,
-      "stimtype": "drone",
-      "vistype": "plane"
+      "stimtype": "drone"
     },
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -199,22 +127,22 @@
         "OutputFcn": [],
         "PenaltyThresholdFactor": 0.2,
         "PlotFcn": [],
-        "StartPointsToRun": "bounds-ineqs",
+        "StartPointsToRun": "all",
         "XTolerance": 1E-6
       },
       "opl": {
         "Algorithm": "interior-point",
         "BarrierParamUpdate": "monotone",
         "ConstraintTolerance": 1E-6,
-        "Display": "iter-detailed",
+        "Display": "final",
         "EnableFeasibilityMode": false,
         "FiniteDifferenceStepSize": "sqrt(eps)",
-        "FiniteDifferenceType": "central",
+        "FiniteDifferenceType": "forward",
         "FunctionTolerance": 1E-6,
         "HessianApproximation": "bfgs",
         "HessianFcn": [],
         "HessianMultiplyFcn": [],
-        "HonorBounds": true,
+        "HonorBounds": 1,
         "MaxFunctionEvaluations": 3000,
         "MaxIterations": 1000,
         "ObjectiveLimit": -1.0E+20,
@@ -222,12 +150,12 @@
         "OutputFcn": [],
         "PlotFcn": [],
         "ScaleProblem": false,
-        "SpecifyConstraintGradient": false,
-        "SpecifyObjectiveGradient": false,
+        "SpecifyConstraintGradient": 0,
+        "SpecifyObjectiveGradient": 0,
         "StepTolerance": 1E-10,
         "SubproblemAlgorithm": "factorization",
         "TypicalX": "ones(numberOfVariables,1)",
-        "UseParallel": false
+        "UseParallel": 0
       },
       "rm": [],
       "slvrg": "globalsearch",
@@ -282,10 +210,7 @@
         "update_background_components": true,
         "use_cnn": 0
       },
-      "docm": 0,
-      "doma": 0,
-      "domm": 0,
-      "doqc": 0,
+      "dodraw": 0,
       "ma": {
         "celsz": 8,
         "chan": 1,
@@ -297,16 +222,11 @@
         "numroi": 128,
         "roirad": []
       },
-      "mm": {
-        "chanstr": "all",
-        "mmname": "none"
-      },
       "nrm": {
         "channorm": 0,
         "degdtr": 0,
         "mincoh": 0.3,
-        "post": "f",
-        "pre": "f",
+        "nrmstr": [],
         "wavp": []
       },
       "qc": {
@@ -317,12 +237,14 @@
         "minroisz": 5
       },
       "rgname": "none",
+      "roiname": "none",
       "s": {
-        "tg": []
+        "vg": []
       }
     },
     "sld": {
       "clip": [0,1],
+      "dtype": "uint16",
       "fbrm": 1,
       "ic": [],
       "it": [],
@@ -331,30 +253,28 @@
       "iz": [],
       "smlenpx": [0,0,0],
       "smlensec": 0,
-      "smmthd": "gaussian",
-      "stackdtype": "uint16",
-      "trm": [],
-      "zerostack": 1
+      "smmthd": "gaussian"
     }
   },
   "du": {
     "bmp": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "domtype": "m",
       "dorescale": 0,
+      "dvlensec": 0.4,
+      "dvord": 2,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "maxangrs": 8,
+      "mdl": [],
       "mthd": "pva",
       "numangrs": 16,
       "numcirc": 1,
       "omitnan": 1,
       "scope": "all",
-      "slopelensec": 0.4,
-      "slopeord": 2,
       "smlensec": 0
     },
     "cm": {
@@ -403,81 +323,23 @@
       "update_background_components": true,
       "use_cnn": 0
     },
-    "daq": {
+    "dq": {
       "balldia": 9,
-      "slopelensec": 0.4,
-      "slopelensec_supp": 0.4,
-      "slopeord": 2,
-      "slopeord_supp": 2,
-      "supprate": [],
-      "tomm": [
-        "ficTracIntSide",
-        "ficTracIntForward"
-      ],
+      "dvlensec": [],
+      "dvord": 2,
+      "rskey": 0,
       "usefbf": 1,
       "usefbl": 1,
-      "useinds": "none",
-      "vcategorical": [
-        "ftcam",
-        "cameraFrameClock",
-        "epoch",
-        "g4vel",
-        "g4velnom"
-      ],
-      "vdegrees": "",
-      "vnormal": [
-        "Time",
-        "heat",
-        "virmenIteration"
-      ],
-      "voltmax": 10,
-      "voltmin": 0,
-      "voltminhd": 0.52359877559829882,
-      "vradians": [
-        "ficTracIntSide",
-        "ficTracIntForward",
-        "ficTracYaw",
-        "ficTracHd",
-        "ficTracHeading",
-        "g4panels",
-        "g4yaw",
-        "g4hd"
-      ],
-      "vrenm": [
-        "t = Time, time, T",
-        "epochts = epoch",
-        "vvynom = g4vel, g4velnom",
-        "vh = g4panels, g4yaw, g4hd",
-        "vvy = g4panels_dv, g4yaw_dv, g4hd_dv",
-        "bf = ficTracIntForward",
-        "bvf = ficTracIntForward_dv",
-        "bs = ficTracIntSide",
-        "bvs = ficTracIntSide_dv",
-        "bh = ficTracYaw, ficTracHeading, ficTracHd",
-        "bvy = ficTracYaw_dv, ficTracHeading_dv, ficTracHd_dv",
-        "ftcam = ftcam"
-      ],
-      "vtime": [
-        "Time",
-        "time",
-        "T",
-        "t"
-      ]
+      "voltlim": [0,10],
+      "voltminhd": 0.52359877559829882
     },
     "fmf": {
       "crop_edges": 1,
-      "downsample_template": 1,
       "feat2": [],
       "flipped": 0,
-      "getgrid": 1,
-      "gridres": 256,
       "id": "CON_51",
-      "it": -100,
-      "pthpar": [],
-      "pthtemplate": [],
       "rep": 1,
-      "stimtype": "drone",
-      "vistype": "plane"
+      "stimtype": "drone"
     },
     "ma": {
       "celsz": 8,
@@ -492,12 +354,12 @@
     },
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -505,22 +367,19 @@
       "mdlname": "fnet_A01_s",
       "nrmd": [],
       "nrmi": [],
+      "opg": [],
+      "opl": [],
       "rm": [],
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "valnum": 0,
       "valsplit": "boutsamples"
     },
-    "mm": {
-      "chanstr": "all",
-      "mmname": "none"
-    },
     "nrm": {
       "channorm": 0,
       "degdtr": 0,
       "mincoh": 0.3,
-      "post": "f",
-      "pre": "f",
+      "nrmstr": [],
       "wavp": []
     },
     "opg": {
@@ -535,22 +394,22 @@
       "OutputFcn": [],
       "PenaltyThresholdFactor": 0.2,
       "PlotFcn": [],
-      "StartPointsToRun": "bounds-ineqs",
+      "StartPointsToRun": "all",
       "XTolerance": 1E-6
     },
     "opl": {
       "Algorithm": "interior-point",
       "BarrierParamUpdate": "monotone",
       "ConstraintTolerance": 1E-6,
-      "Display": "iter-detailed",
+      "Display": "final",
       "EnableFeasibilityMode": false,
       "FiniteDifferenceStepSize": "sqrt(eps)",
-      "FiniteDifferenceType": "central",
+      "FiniteDifferenceType": "forward",
       "FunctionTolerance": 1E-6,
       "HessianApproximation": "bfgs",
       "HessianFcn": [],
       "HessianMultiplyFcn": [],
-      "HonorBounds": true,
+      "HonorBounds": 1,
       "MaxFunctionEvaluations": 3000,
       "MaxIterations": 1000,
       "ObjectiveLimit": -1.0E+20,
@@ -558,12 +417,12 @@
       "OutputFcn": [],
       "PlotFcn": [],
       "ScaleProblem": false,
-      "SpecifyConstraintGradient": false,
-      "SpecifyObjectiveGradient": false,
+      "SpecifyConstraintGradient": 0,
+      "SpecifyObjectiveGradient": 0,
       "StepTolerance": 1E-10,
       "SubproblemAlgorithm": "factorization",
       "TypicalX": "ones(numberOfVariables,1)",
-      "UseParallel": false
+      "UseParallel": 0
     },
     "qc": {
       "inmaskthr": 0.5,
@@ -573,17 +432,20 @@
       "minroisz": 5
     },
     "roi": {
-      "docm": 0,
-      "doma": 0,
-      "domm": 0,
-      "doqc": 0,
+      "cm": [],
+      "dodraw": 0,
+      "ma": [],
+      "nrm": [],
+      "qc": [],
       "rgname": "none",
+      "roiname": "none",
       "s": {
-        "tg": []
+        "vg": []
       }
     },
     "sld": {
       "clip": [0,1],
+      "dtype": "uint16",
       "fbrm": 1,
       "ic": [],
       "it": [],
@@ -592,23 +454,32 @@
       "iz": [],
       "smlenpx": [0,0,0],
       "smlensec": 0,
-      "smmthd": "gaussian",
-      "stackdtype": "uint16",
-      "trm": [],
-      "zerostack": 1
+      "smmthd": "gaussian"
     }
+  },
+  "mosh": {
+    "bmp": "bmpmake",
+    "cm": "roifauto",
+    "dq": "daqld",
+    "fmf": "flymaxfe",
+    "ma": "roimauto",
+    "mdl": "mdlmake",
+    "nrm": "roinorm",
+    "opg": "opgmake",
+    "opl": "oplmake",
+    "qc": "roiqc",
+    "roi": "roimake",
+    "sld": "stackld"
   },
   "mostree": [
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "bmp.roi.mm",
-    "daq",
+    "dq",
     "fmf",
     "mdl.opg",
     "mdl.opl",
     "roi.cm",
     "roi.ma",
-    "roi.mm",
     "roi.nrm",
     "roi.qc",
     "sld"
@@ -618,9 +489,7 @@
     "bmp.mdl",
     "bmp.mdl.opg",
     "bmp.mdl.opl",
-    "bmp.roi",
-    "bmp.roi.mm",
-    "daq",
+    "dq",
     "fmf",
     "mdl",
     "mdl.opg",
@@ -628,14 +497,13 @@
     "roi",
     "roi.cm",
     "roi.ma",
-    "roi.mm",
     "roi.nrm",
     "roi.qc",
     "sld"
   ],
   "mostree_top": [
     "bmp",
-    "daq",
+    "dq",
     "fmf",
     "mdl",
     "roi",

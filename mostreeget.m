@@ -1,4 +1,4 @@
-function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du)
+function [mostree, mostree_open, mostree_top, options_o] = mostreeget(o, du, mosc)
 
 %{
 
@@ -12,11 +12,13 @@ mostree_top: fields at the top level of o, ie fieldnames(o)
 arguments
     o struct % options struct to derive mostree from; if empty struct, all outputs will be empty
     du struct % unnested default options struct (du, defined in odf.m, which is the unnested version of d, also defined in odf.m) 
+    mosc = [] % if o contains mosc, pass in list of those mosc (to prevent error identifying options vs mos)
 end
 
 delimflat = '__';
 
 fn_du = fieldnames(du);
+mos_and_mosc = cat(1, fn_du(:), mosc(:));
 
 oflat = structflat(o, delim=delimflat);
 fn_oflat = fieldnames(oflat);
@@ -24,9 +26,16 @@ fn_oflat = fieldnames(oflat);
 options_o = fn_oflat; %options only, not mos
 while true
     options_tmp = options_o;
-    options_o = regexprep(options_o, strcat('^', fn_du, delimflat), ''); %remove contiguous sequence of mos at the beginning (will not remove mos preceded by a mosc)
+    options_o = regexprep(options_o, strcat('^', mos_and_mosc, delimflat), ''); %remove contiguous sequence of mos and/or mosc at the beginning  
     if isequal(options_o, options_tmp) %once all not-mos have been removed, break from the loop
         break
+    end
+end
+
+if ~isempty(mosc)
+    fn_invalid_mosc = fn_oflat(~cellfun(@isempty, regexp(fn_oflat, sprintf([delimflat '%s$|'], mosc{:})))); %empty struct mosc (or mosc with same name as option) will be end with [delimflat mosc] in oflat
+    if ~isempty(fn_invalid_mosc)
+        error("mosc must be struct, and cannot be empty struct")
     end
 end
 
@@ -35,9 +44,8 @@ for k = 1:numel(fn_du)
     options_du = cat(1, options_du, fieldnames(du.(fn_du{k})));
 end
 
-options_o_no_tg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'tg(' delimflat '.*)*$']))); %remove tg 
-invalid_options_o = options_o_no_tg(~ismember(options_o_no_tg, options_du));
-invalid_options_o = invalid_options_o(~ismember(invalid_options_o, fn_du));
+options_o_no_vg = options_o(cellfun(@isempty, regexp(options_o, [delimflat 'vg' '(' delimflat '.*)*$']))); %remove vg
+invalid_options_o = options_o_no_vg(~ismember(options_o_no_vg, cat(1, options_du(:), fn_du(:))));
 if ~isempty(invalid_options_o)
     error("the following options in o do not exist in du (in odf.m): " + newline + sprintf('%s\n', invalid_options_o{:}) + newline)
 end

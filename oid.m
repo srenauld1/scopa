@@ -1,170 +1,107 @@
-function opt = oid(opt, obin, opt2)
+function o = oid(o, opt)
 
-% python oex.py does this: user's set, load df, overwrite df, distribute, reduce, sort, unique, ID, derive, check
-% this function starts at distribute, and derive and check require data, so only happen in python, not here
-% so here we just do distribute, reduce, sort, unique, ID
+%{
+
+oid is called from ofill when finalizing a2p options struct, or from vget when searching for variables; 
+oid assigns id to unique options sets for each module, and writes them to txt file; also distributes each element of any cell-valued options into separate options sets; also checks for problems in options struct
+oex.py does something similar; it does this: user's set, load defaults, overwrite defaults, distribute, reduce, sort, unique, ID, derive, check
+this function starts at the "distribute" step; "derive" and "check" steps require data, so they happen in oex.py (since oex is called after data is loaded), but not here in oid.m (where data is not necessarily loaded, like when oid is called from oset>ofill 
+so oid just has these steps: distribute, reduce, sort, unique, ID
+
+%}
 
 arguments
-    opt %options struct
-    obin = [] %obin to recover id (and expand)
-    opt2.getonly = 0 %get ids only (cannot write to file or create new id)
-    opt2.scopausername = []
-    opt2.usegit = []
-    opt2.obin_ided = []
-    opt2.delimflat = []
+    o % options struct 
+    opt.justld = 0 % get ids only (cannot write to file or create new id)
 end
 
 try
 
-    opt2 = glboropt(opt2); %get some arguments from glb or name-value
-    getonly = opt2.getonly;
-    scopausername = opt2.scopausername;
-    usegit = opt2.usegit;
-    obin_ided = opt2.obin_ided;
-    delimflat = opt2.delimflat;
+    justld = opt.justld;
 
-    pthscopa = pthscopaget();
-    pthopt = [pthscopa 'optdf.txt'];
+    usegit = glb('usegit', err=1);
 
-    if isfile(pthopt)
-        dall = structld(pthopt, nocells=1, dosort=0);
-        otree = dall.otree;
-    else
-        error("cannot find default options file: " + pthopt + newline + "run 'odf()' to create it")
-    end
-
-    if isempty(obin_ided)
-        % obin_ided = glb('otree');
-        obin_ided = [ "sld", "daq", "roi", "bmp", "mdl", "fmf"];
-    end
-
-    if isstring(obin_ided)
-        obin_ided = convertStringsToChars(obin_ided);
-    end
-    if isempty(usegit)
-        error("must set name-value argument usegit or glb('usegit')")
-    end
-    if isempty(obin)
-        obin = obin_ided;
-    end
-    if ~iscell(obin)
-        obin = {obin};
-    end
-    if getonly
-        warning("NOTE: setting usegit to false because s is empty or getonly is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary")
-    end
+    scopausername = userdatfile('scopausername');
 
     callstack = dbstack();
-    tsgetcall = 0;
-    if ismember('tsget', {callstack.name})
-        tsgetcall = 1;
+    vgetcall = 0;
+    if ismember('vget', {callstack.name})
+        vgetcall = 1;
     end
-
-    if tsgetcall && ~getonly
-        error("tsget should call oid with getonly=1")
+    if vgetcall && ~justld
+        error("vget should call oid with justld=1")
     end
-
-    if isempty(getfieldns(opt, 'finished')) || any(cellfun(@isempty, getfieldns(opt, 'finished'))) || any(~isequal(cell2mat(getfieldns(opt, 'finished')),1))
-        if ~tsgetcall %input struct does not require true 'finished' field if oid is called from tsget
-            error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
-        end
+    if ~vgetcall && ( ~isfield(o, 'finished') || ~isequal(o.finished, 1) ) %input struct does not require true 'finished' field if oid is called from vget
+        error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
     end
+    if ~isscalar(o) || ~isstruct(o)
+        error("o must be scalar struct")
+    end
+    if justld
+        fprintf("NOTE: setting usegit to false because s is empty or justld is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
+    end
+   
+    mos = fieldnames(o);
+    mos = mos(~strcmp(mos, 'finished'));
 
-    for k = 1:numel(obin)
+    for k = 1:numel(mos)
 
-        obintmp = obin{k};
-
-        if ~any(strcmp(obintmp, obin_ided))
-            error("option module (obin) " + obintmp + " does not support mapping between options sets and option ids (oid)")
-        end
-
-        %%%%%%%% FIND OPTIONS FILE (FOR THIS FILESYSTEM) FOR A SINGLE obin %%%%%%%%
-
-        pthoptpat = [pthscopa 'opt_' obintmp '_' scopausername '_.txt'];
-
-        for m = 1:numel(opt)
-
-            if isfield(opt(m), obintmp)
-
-                %%%%%%%% PLACE OPTIONS IN TEMPORARY COPYBIN (IF NOT ALREADY) %%%%%%%%
-
-                opttmp2 = ocopybinset(opt(m), obintmp, tsgetcall=tsgetcall);
-
-                %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
-
-                optdist = odist(opttmp2, obintmp, delimflat=delimflat); %optdist substructs (fields) are temporary names assigned during distribution
-
-                optout = [];
-                fntmp = fieldnames(optdist);
-                for p = 1:numel(fntmp)
+        if ~isempty(o.(mos{k}))
 
 
-                    %%%%%%%% CHECK OPTIONS FOR PROBLEMS %%%%%%%%
+            %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
 
-                    optdist.(fntmp{p}) = ochk(optdist.(fntmp{p}), obintmp);
-
-
-                    %%%%%%%% REDUCE OPTIONS %%%%%%%%
-
-                    [optred, tmpinert] = ored(optdist.(fntmp{p}), obintmp, delimflat=delimflat); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, and without non-functional obin (plotting obin, temporarily held in tmpinert); ored is written to file (if it wasn't already)
+            opttmp2 = moscset(o, mos{k});
 
 
-                    %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
+            %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-                    [opttmp, optid] = structfile(pthoptpat, s=optred, usegit=usegit, getonly=getonly, dupe=0, dosort=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+            optdist = odist(opttmp2); %optdist substructs (fields) are temporary names assigned during "distribution" of any cell-valued options
+            
+            cnt = 0;
+            optout = [];
+            mosctmp = fieldnames(optdist);
+            for q = 1:numel(mosctmp)
 
 
-                    %%%%%%%% PUT NON FUNCTIONAL OBIN BACK INTO OPTIONS STRUCT (after retrieving optid and possbily writing to file, return substructs (obin) that have no functional effect (just for plotting); must be returned to struct because struct ciouod have changed withi ored; ); INDIVIDUAL sub FIELDS THAT HAVE NO FUNCTIONAL EFFECT ARE REMOVED IN ored??  %%%%%%%%
+                %%%%%%%% REDUCE OPTIONS %%%%%%%%
+
+                optred = ored(optdist.(mosctmp{q}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file below with structfile (if it wasn't already)
 
 
-                    if tsgetcall && ~iscell(opttmp)
-                        opttmp = {opttmp};
-                        optid = {optid};
-                    end
+                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
 
-                    fnr = fieldnames(tmpinert);
-                    if iscell(opttmp)
-                        if ~tsgetcall
-                            error("opttmp cannot be cell if tsgetcall")
-                        end
-                        for k2 = 1:numel(opttmp)
-                            if ~isempty(opttmp{k2})
-                                opttmp{k2} = structflat(opttmp{k2}, delim=delimflat);
-                                fnor = fieldnames(opttmp{k2});
-                                tghold = fnor(endsWith(fnor, ['tg' delimflat 'tg']));
-                                opttmp{k2} = rmfield(opttmp{k2}, tghold);
-                                for q = 1:numel(fnr)
-                                    opttmp{k2}.(fnr{q}) = tmpinert.(fnr{q});
-                                end
-                                opttmp{k2} = structunflat(opttmp{k2}, delim=delimflat);
-                                optout.(optid{k2}) = opttmp{k2};
-                            end
-                        end
-                    else
-                        opttmp = structflat(opttmp, delim=delimflat);
-                        fnor = fieldnames(opttmp);
-                        tghold = fnor(endsWith(fnor, ['tg' delimflat 'tg']));
-                        opttmp = rmfield(opttmp, tghold); %remove the empty tg field you had to insert for json to write empty tg properly (hack needs to be fixed)
-                        for q = 1:numel(fnr)
-                            opttmp.(fnr{q}) = tmpinert.(fnr{q});
-                        end
-                        opttmp = structunflat(opttmp, delim=delimflat);
-                        if ~isfield(opttmp, 'optid') %if optid itself is not field (shouldn't ever be, right?) add it here
-                            opttmp.optid = optid;
-                        end
-                        optout.(optid) = opttmp;
-                    end
+                pthoptmos = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
+                [opttmp, optid, ~] = structfile(pthoptmos, s=optred, usegit=usegit, justld=justld, dupe=0, dosort=1, cellout=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
 
+                if ~vgetcall && ~isscalar(opttmp)
+                    error("opttmp must be scalar, except when vgetcall=1 (ie when calling oid from vget, where wildcard can find multiple matching structs)")
                 end
 
-                opt(m).(obintmp) = optout;
+                
+                %%%%%%%% ACCUMULATE NONSCALAR STRUCT WITH NEW OPTID FIELD  %%%%%%%%
+
+                for m = 1:numel(opttmp)
+                    if ~isempty(opttmp{m}) %why would this ever be empty??
+                        cnt = cnt+1;
+                        opttmp{m}.optid = optid{m};
+                        if cnt==1
+                            optout = opttmp{m};
+                        else
+                            optout(cnt) = opttmp{m};
+                        end
+                    end
+                end
 
             end
+
+            o.(mos{k}) = optout;
+
         end
 
     end
 
-    opt = structsort(opt, vectype='row');
+    o = structsort(o, vectype='row');
 
 catch ME
 

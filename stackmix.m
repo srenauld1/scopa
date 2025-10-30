@@ -11,7 +11,6 @@ arguments
     opt.pthpar = [] %path to folder containing all stacks
     opt.optsld = [] %options for stackld for loading all stacks found; if empty, default are used
 end
-opt = glboropt(opt);
 rgnames = opt.rgnames;
 rot = opt.rot;
 s = opt.s;
@@ -66,13 +65,6 @@ catch
         end
         numspec = numel(s);
     end
-    if isempty(pthstacks)
-        pthstacks = {glb('pthstack')};
-        if isempty(pthstacks)
-            error("if stacks and stackids are empty, or if no stacks were found with stackids, must pass in name-value argument 'pthstacks' or set glb('pthstack')")
-        end
-        numspec = 1;
-    end
 
     pthstacks = unique(pthstacks, 'stable');
     numpth = numel(pthstacks);
@@ -125,17 +117,17 @@ catch
             error("stack must be 2d-6d")
         end
         id = idmake(pthstacks{k});
-        fld = fieldmatch(tmprg, {'recdatenum', id.recdatenum}, {'flynum', id.flynum}, {'trialnum', id.trialnum}, lev=1, multi=1);
-        if ~iscell(fld)
-            fld = {fld};
+        field = fieldmatch(tmprg, {'recdatenum', id.recdatenum}, {'flynum', id.flynum}, {'trialnum', id.trialnum}, lev=1, multi=1);
+        if ~iscell(field)
+            field = {field};
         end
         rg{k} = {};
-        for q = 1:numel(fld)
-            kp = strcmp(tmprg.(fld{q}).rgname, rgnames{k});
+        for q = 1:numel(field)
+            kp = strcmp(tmprg.(field{q}).rgname, rgnames{k});
             if any(kp) || isempty(rgnames{k})
                 numrg = numrg+1;
                 kpi = find(kp);
-                rg{k}{kpi} = tmprg.(fld{q});
+                rg{k}{kpi} = tmprg.(field{q});
             end
         end
         % if isempty(rg{k})

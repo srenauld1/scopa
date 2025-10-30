@@ -5,17 +5,15 @@ arguments
     resp %response
     opt.wavp (:,2) = [] %(n,2) array denoting wavelet filtering min and max period (seconds); if n>1, will use last row in output by default (n>1 is really for exploration, plotting to see how different periods affect output); empty to skip; 0 in first column will not apply lower period threshold; any number larger than max valid period (determined in wavflt) will not apply upper period threshold, but [0 inf] (or 0 and any giant number) is not the proper way to skip wavelet filtering because the algorithm will still be applied (ie timeseries will be unchanged except mean will be lost, pointlessly), so use [] to skip wavelet filtering
     opt.t = [] %time vector
-    opt.sper = [] %sample period, inverse sample rate
     opt.srate = [] %sample rate
     opt.it = 1:size(resp,2) %subset of t for plotting (full timeseries gets filtered by wavelet regardless)
     opt.ir = [] %subset of rois for plotting (all rois gets filtered by wavelet regardless)
     opt.pthgifpre = '' %prefix to gif
-    opt.doplt = 0 %do plot or not
+    opt.doplt (1,1) {mustBeBinary} = 0 %do plot or not
     opt.onlyir = [] %only apply wavelet filtering to rois being plotted (listed in ir); convenient for quickly plotting but not using output; if left empty or not passed, this mode applies when there is no output argument and ir is not empty
 end
 
 t = opt.t;
-sper = opt.sper;
 srate = opt.srate;
 it = opt.it;
 ir = opt.ir;
@@ -23,14 +21,6 @@ pthgifpre = opt.pthgifpre;
 wavp = opt.wavp;
 doplt = opt.doplt;
 onlyir = opt.onlyir;
-
-if (isempty(sper) && isempty(srate)) || (~isempty(sper) && ~isempty(srate))
-    error("sper and srate cannot both be empty or nonempty")
-end
-
-if isempty(srate)
-    srate = 1/sper;
-end
 
 if isempty(onlyir)
     if nargout==0 && ~isempty(ir) %if no output argument and ir is not empty, only apply wavelet filtering to rois being plotted (listed in ir);

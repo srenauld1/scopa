@@ -1,36 +1,50 @@
-function roiqc(stack, pth_roif, opt)
+function roimask = roiqc(roimask, opt, opt2)
 
 arguments
-    stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
-    pth_roif
-    roitype
+
+    roimask
+
     opt.minpixperreg = 3 % min pix in each distongiguous region, roi selection criterion
     opt.minroisz = 5 % pixels, roi selection criterion
     opt.maxroisz = 300 % pixels
     opt.maxregperroi = 4 % for discontiguous rois
     opt.inmaskthr = 0.5 % discard roi if more than inmaskthr is outside morphological mask (morph mask is all ones if you don't make one)
-    opt.numbins = 20 % num hist bins for rval and snr caiman output
-    opt.roisrt = 'majoraxis' % 'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
-    opt.ir = []
-    opt.doplt = 0
-    opt.trm = [0, 0]
-    opt.roicen = []
-    opt.mask_allroi = []
+    
+    opt2.numbins = 20 % num hist bins for rval and snr caiman output
+    opt2.roisrt = 'majoraxis' % 'snr' sorts by caiman output cmsnr, 'none' doens't sort, 'majoraxis' if morphological rois exist, 'majoraxis' will sort along 3d major axis
+    opt2.ir = []
+    opt2.trm = [0,0]
+    opt2.roicen = []
+    opt2.mask_allroi = []
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
+    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+
 end
+
+if opt2.och
+    if isfield(opt, 'optid')
+        opt = rmfield(opt, 'optid');
+    end
+    roimask = opt;
+    return
+end
+
 minpixperreg = opt.minpixperreg;
 minroisz = opt.minroisz;
 maxroisz = opt.maxroisz;
 maxregperroi = opt.maxregperroi;
 inmaskthr = opt.inmaskthr;
-roisrt = opt.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
-numroiplt = opt.roiol.ir;
-doplt = opt.doplt;
-trm = opt.trm;
-cnt_roim = opt.roicen;
-mask_roim_all = opt.mask_allroi;
 
+numbins = opt2.numbins;
+roisrt = opt2.roisrt; %if morphological rois exist, 'majoraxis' will sort along 3d major axis
+numroiplt = opt2.ir;
+trm = opt2.trm;
+cnt_roim = opt2.roicen;
+mask_roim_all = opt2.mask_allroi;
+doplt = opt2.doplt;
 
-numbins = 20;
+error("roiqc function is not finished")
+
 if size(stack,4)>1
     stackmnt = mean(stack,4);
 else

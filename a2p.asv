@@ -6,131 +6,120 @@ see docs_a2p
 
 %}
 
-function a2p(usegit, spec)
+function a2p(spec, opt)
 
 arguments
-    usegit logical = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
     spec = [] % optional input; struct of stack specifiers (see function 'stackfind'), or char or cell of char specifying full path(s) to stack(s); wildcards * are allowed; if empty, recording(s) searched for in oset>stackfind using stack specifiers set in oset (in struct spec)
+    opt.usegit (1,1) {mustBeBinary} = 0 % optional input; 0 or 1; 1 to use git to sync with scopa remote repository to ensure opt files (and consequently, optid and varid) are integrated across filesystems; 0 to skip git
+    opt.dopltx (1,1) {mustBeBinary} = 0 % 1 to run pltx
 end
+usegit = opt.usegit;
+dopltx = opt.dopltx;
 
-close all; clc; clear glb tsget ofill; clearvars -except spec usegit; 
+close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
-%% options
+%%%% GLOBALS %%%%
 
-oa = oset(spec, usegit=usegit); % set options; oa stands for "o all" (ie options for all recordings)
+userdatfile(scopausername='cw') %make sure scopausername is written to userdat.txt
+userdatfile(pthpar=pthparget()); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
+glb(usegit=usegit); %set usegit in globals function 'glb'
+glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
 
-for k = 1:numel(oa) % loop over recordings
 
-    o = oa(k); %index into options for one recording, o
-    
-    %% stack
+%%%% OPTIONS %%%%
 
-    for m = transpose(fieldnames(o.sld))
-        s = stackld(o.sld.(m{1}), o.id.pthstack); %load/process stack (metadata also gets loaded in stackld)
+oa = oset(spec); % set options; oa stands for "o all" (ie options for all recordings)
+
+for k = 1:numel(oa) % loop over recordings found in oset
+
+    o = oa(k); %index into options for one recording
+
+
+    %%%% STACK %%%%
+
+    if ~isempty(o.sld)
+        for m = 1:numel(o.sld)
+            prs = struct2pairs(o.sld(m));
+            s(m) = stackld(o.id.pthstack, prs{:}, doplt=0); %load/process stack (metadata also gets loaded in stackld)
+        end
     end
 
-    o.id.pthstack = s.pth; oa(k).id.pthstack = s.pth; %update with .mat extension, in case it was tif going in to stackld
-    glb(1, pthstackdir=o.id.pthstackdir, pthstack=o.id.pthstack, recid=o.id.recid, pthrec=o.id.pthrec); %update some globals that refer to stack location for this element of o
-    glb(1, md=s.md, srate=s.md.volrate, t=s.md.sper:s.md.sper:s.md.numvol*s.md.sper, epochts=ones(1, s.md.numvol)); %set some globals that refer to stack metadata
-
-    %% daq
-
-    for m = transpose(fieldnames(o.daq))
-        daq.(m{1}) = daqld(o.daq.(m{1})); %process daq
-    end
-    if ~isempty(daq.(m{1}))
-        glb(1, t=daq.(m{1}).t, epochts=daq.(m{1}).epochts); %set global t using daq, overwriting metadata t
-    end
+    o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
+    glb(1, pthsvdir=o.id.pthstackfld); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
-    %% rois
+    %%%% dq %%%%
 
-    if o.mn.doroi
-        for m = transpose(fieldnames(o.roi))
-            roi.(m{1}) = roimake(o.roi.(m{1}), stack=s.stack, pthstack=s.pth, md=s.md); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    if ~isempty(o.dq)
+        for m = 1:numel(o.dq)
+            prs = struct2pairs(o.dq(m));
+            dq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
         end
     end
 
 
-    %% bump
+    %%%% ROIS %%%%
 
-    if o.mn.dobmp
-        for m = transpose(fieldnames(o.bmp))
-            bmp.(m{1}) = bmpmake(o.bmp.(m{1})); %extract head direction bump
+    if ~isempty(o.roi)
+        for m = 1:numel(o.roi)
+            prs = struct2pairs(o.roi(m));
+            roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
-    %% flymax
+    %%%% BUMP %%%%
 
-    if o.mn.dofmf
-        for m = transpose(fieldnames(o.fmf))
-            [fmf.(o.fmf.(m{1}).id), fmfvid] = flymaxfe(o.id.pthstack, o.fmf.(m{1})); %extract flymax visual features
+    if ~isempty(o.bmp)
+        for m = 1:numel(o.bmp)
+            prs = struct2pairs(o.bmp(m));
+            bmp(m) = bmpmake('', prs{:}, srate=s.md.volrate, epochts=dq.epochts, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
-    %% models
+    %%%% FLYMAX %%%%
 
-    if o.mn.domdl
-        for m = transpose(fieldnames(o.mdl))
-            mdl.(m{1}) = mdlmake(o.mdl.(m{1}), doplt=1);
+    if ~isempty(o.fmf)
+        for m = 1:numel(o.fmf)
+            prs = struct2pairs(o.fmf(m));
+            fmf(m) = flymaxfe('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
-    %% interactive plots
+    %%%% MODELS %%%%
 
-    % pltx(o.pltx, stack=stack, daq=daq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
-
-    %% a_* functions (analysis specific to experiment)
-
-    inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'left'}, lev=1);
-    inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'right'}, lev=1);
-    eb = fieldmatch(roi, {'rg.rgname', 'eb'}, {'mm.mmname', 'eb'}, lev=1);
-    ch2 = squeeze(mean(s.stack, [1 2 3 5]));
-
-    %% 
-
-    t = glb('t');
-    % [pks, locs] = findpeaks(ch2);
-%% 
-
-    figure; hold on;
-    plot(t, roi.(inl).dat.ts); 
-    plot(t, roi.(inr).dat.ts); 
-    yyaxis right; 
-    plot(t, ch2)
-
-    %% 
-    figure; hold on;
-    plot(t, roi.(eb).dat(1).ts(1,:));
-    plot(t, roi.(eb).dat(1).ts(2,:));
-    yyaxis right; 
-    plot(t, ch2)
-
-    %% 
+    if ~isempty(o.mdl)
+        for m = 1:numel(o.mdl)
+            prs = struct2pairs(o.mdl(m));
+            mdl(m) = mdlmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+        end
+    end
 
 
-    figure; hold on;
-    plot(t, roi.(inl).dat.ts); 
-    plot(t, roi.(inr).dat.ts); 
-    plot(t, roi.(eb).dat(1).ts(1,:));
-    plot(t, roi.(eb).dat(1).ts(2,:));
-    yyaxis right; 
-    plot(t, ch2)
+    %%%% PLOTS %%%%
 
-    %%
+    if dopltx
+        pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+    end
 
-    if 1
+
+    %%%% a_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
+
+    if 0
 
         epoch = 6;
         bout = 13;
 
-        idaq = fieldmatch(daq, lev=1);
-        [~, ~, ipe, ~, tpe] = trmake(daq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
+        idaq = fieldmatch(dq, lev=1);
+        [~, ~, ipe, ~, tpe] = trmake(dq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
 
-        a_ebgano(s, roi, daq, bmp, glb('t'), ...
+        a_opto(roi, s, glb('t') )
+
+
+        a_ebgano(s, roi, dq, bmp, glb('t'), ...
             mix={'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...
@@ -145,14 +134,15 @@ for k = 1:numel(oa) % loop over recordings
             lagsampxy=-1, ...
             lagsampz=0, ...
             yconst=1, ...
-            slopelensec=0.35, ...
-            slopeord=3, ...
-            vt=tpe, ... 
+            dvlensec=0.35, ...
+            dvord=3, ...
+            vt=tpe, ...
             dozscore=1, ...
             stackrot=[-90,0,0], ...
             stackslice=[])
 
     end
+
 
 end
 

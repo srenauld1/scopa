@@ -1,22 +1,22 @@
 function o = oset_elno(o)
 
 
-o.mn.do = ["sld", "daq", "roi", "bmp"];
+o.mn.do = ["sld", "dq", "roi", "bmp"];
 
 rgname = {'el', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
 %%%% BMP %%%%
 
-bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'vh';
+bmpindv.vg.dq = ['*'];
+bmpindv.vg.vnm = 'vh';
 
 o.bmp.indv = bmpindv;
 
-bmpdepv.tg.roi.rgname = 'el';
-bmpdepv.tg.roi.mm.mmname = 'el3';
-bmpdepv.tg.roi.domm = 1;
-bmpdepv.tg.vnm = 'ts';
-bmpdepv.tg.group = '1';
+bmpdepv.vg.roi.rgname = 'el';
+bmpdepv.vg.roi.roiname = 'el3';
+bmpdepv.vg.roi.domm = 1;
+bmpdepv.vg.vnm = 'ts';
+bmpdepv.vg.group = '1';
 
 o.bmp.depv = bmpdepv;
 
@@ -41,13 +41,13 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'el')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 32;
-        o.roi.mm.mmname = 'el3';
+        o.roi.roiname = 'el3';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))
         o.roi.doma = 0; %do automated morph rois
-        o.roi.mm.mmname = {'left2', 'right2'};
+        o.roi.roiname = {'left2', 'right2'};
     end
 
     o = ofill(o, 'roi', rgname{m});

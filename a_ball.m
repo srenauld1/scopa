@@ -1,7 +1,7 @@
-function a_ball(daq, t)
+function a_ball(dq, t)
 
 arguments
-    daq
+    dq
     t = []
 end
 
@@ -20,26 +20,26 @@ else
     end
 end
 
-idaq = fieldmatch(daq, lev=1);
+idaq = fieldmatch(dq, lev=1);
 
 figure;
-plot(t, daq.(idaq).bh, '-b');
+plot(t, dq.(idaq).bh, '-b');
 yyaxis right;
-plot(t, daq.(idaq).bvf, '-r');
+plot(t, dq.(idaq).bvf, '-r');
 hold on;
-plot(t, rescale(daq.(idaq).epochts, min(daq.(idaq).bvf), max(daq.(idaq).bvf)), '-c');
+plot(t, rescale(dq.(idaq).epochts, min(dq.(idaq).bvf), max(dq.(idaq).bvf)), '-c');
 
 
 ie=1;
-[~, fvtmp] = epochcrop(daq.(idaq).epochts, ie, daq.(idaq).bvf);
+[~, fvtmp] = epochcrop(dq.(idaq).epochts, ie, dq.(idaq).bvf);
 tinds = 10000:numel(fvtmp);
 figure; histogram(fvtmp(tinds), 50)
 
 
 figure;
-plot(t, daq.(idaq).vh);
+plot(t, dq.(idaq).vh);
 yyaxis right;
-plot(t, daq.(idaq).bvf);
+plot(t, dq.(idaq).bvf);
 hold on;
-plot(t, daq.(idaq).epochts, 'c');
+plot(t, dq.(idaq).epochts, 'c');
 title('ball yaw (blue), ball forward vel (red), epochs (cyan)')

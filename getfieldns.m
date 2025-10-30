@@ -19,16 +19,16 @@ arguments
 end
 
 tmp = strsplit(inp, '.');
-fld = tmp{1};
-[fld, idx] = getidx(fld);
+field = tmp{1};
+[field, idx] = getidx(field);
 if numel(tmp)>1
-    % if strcmp(fld, '*')
-    %     fld = fieldnames(s);
+    % if strcmp(field, '*')
+    %     field = fieldnames(s);
     % end
     suffix = strjoin(tmp(2:end), '.');
-    if isfield(s, fld)
+    if isfield(s, field)
         try
-            out = getfieldns([s.(fld)(idx)],suffix);
+            out = getfieldns([s.(field)(idx)],suffix);
         catch ME
             if contains(ME.message, 'Concatenation of structure arrays requires that these arrays have the same set of fields')
                 fprintf("YOU GOT THIS ERROR: " + newline + ME.message + newline + "ALL INDICES OF INPUT STRUCT MUST HAVE SAME FIELDS")
@@ -38,12 +38,12 @@ if numel(tmp)>1
             out = {};
         end
     else
-        fprintf(fld + " IS NOT A FIELD IN INPUT STRUCT; OUTPUT FOR THIS INDEX (AND ANY NESTED INDEX) WILL BE AN EMPTY CELL" + newline)
+        fprintf(field + " IS NOT A FIELD IN INPUT STRUCT; OUTPUT FOR THIS INDEX (AND ANY NESTED INDEX) WILL BE AN EMPTY CELL" + newline)
         out = {};
     end
 else
-    if isfield(s, fld)
-        out = {s(idx).(fld)};
+    if isfield(s, field)
+        out = {s(idx).(field)};
     else
         fprintf(tmp + " IS NOT A FIELD IN INPUT STRUCT; OUTPUT AT THIS INDEX (AND ANY NESTED INDEX) WILL BE AN EMPTY CELL" + newline)
         out = {};
@@ -55,14 +55,14 @@ end
 
 
 
-function [fld, idx] = getidx(fld)
+function [field, idx] = getidx(field)
 
 idx = ':';
-if contains(fld, '(')
-    idx = regexp(fld, '\(\d+\)$', 'match');
+if contains(field, '(')
+    idx = regexp(field, '\(\d+\)$', 'match');
     if isscalar(idx)
         idx = idx{1};
-        fld = erase(fld, idx);
+        field = erase(field, idx);
         idx = str2double(erase(idx, {'(', ')'}));
     else
         error("noscalar index not properly formatted")

@@ -31,7 +31,7 @@ try
                 [roipixind_new, vars{j}] = make_ui_roi(cb.val.roicen{j}, newroicen_all{j}, widyxz, roimaskman, umy, umx, umz, newroirad, stack, normopt, ti, sper, pth_roim_interactive); % cb.delete.roicen{cb.val.v}
                 roipx = cat(1, roipx, roipixind_new);
                 disp("warning, hard coding parsex and parsnorm, fix this now")
-                labs{j} = {['resp.none.moex_interactive.in_imf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of tsget
+                labs{j} = {['resp.none.moex_interactive.in_imf_pc_f_cl_f_w_no.ind' num2str(max_index_available_rois+cnt)]}; %cell in cell to match output of vget
             end
         end
 
@@ -46,7 +46,7 @@ try
                 end
 
                 vars{j} = mean(vars{j}(cb.val.k{j},:), 1);
-                labs{j} = labs{sind}(cb.val.k{j});
+                labs{j} = labs{stind}(cb.val.k{j});
             end
         end
 

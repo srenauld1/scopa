@@ -1,5 +1,7 @@
 %{
 
+deprecated, don't read this, just read docs at top of ofill.m
+
 ----- o, oset, and ofill ----- 
 
 oset uses function ofill to set options for all major functions in a2p
@@ -59,7 +61,7 @@ here is a complete list of obins and functions they hold options for (see also s
 
     mn, a2p
     spec, stackfind   (called from ofill)
-    daq, daqld   (called from a2p)
+    dq, daqld   (called from a2p)
     spr, stackseries   (called from a2p)
     sld, stackld   (called from stackseries)
     ftv, ftvalign   (called from a2p)
@@ -70,7 +72,7 @@ here is a complete list of obins and functions they hold options for (see also s
     pop, popcmp   (called from a2p)
     bmp, bmpmake   (called from popcmp)
     mdlmake, mdlmake   (called from a2p)
-    tg, tsget   (called from, bmpmake, mdlmake, and pltx)
+    vg, vget   (called from, bmpmake, mdlmake, and pltx)
     pltx, pltx   (called from a2p)
     tp, tsplt   (called from various functions for visualization) 
     sp, stackplt   (called from various functions for visualization) 
@@ -105,10 +107,10 @@ for brevity, only the deepest nesting of each unique branch is shown
     o.spr.sp   (stackplt called from within stackseries called from a2p)
     o.spr.sld   (stackld called from within stackseries called from a2p)
     o.bmp   (bmpmake called from within popcmp called from a2p)
-    o.mdl.tg   (tsget called from within mdlmake called from a2p)
+    o.mdl.vg   (vget called from within mdlmake called from a2p)
     o.mdl.sp   (stackplt called from within mdlmake called from a2p)
     o.mdl.tp   (tsplt called from within mdlmake called from a2p)
-    o.pltx.tg   (tsget called from within pltx called from a2p)
+    o.pltx.vg   (vget called from within pltx called from a2p)
     o.roi.mm   (roidraw called from within roimake called from a2p)
     o.roi.ma   (roimauto called from within roimake called from a2p)
     o.roi.qc   (roifauto called from within roimake called from a2p)

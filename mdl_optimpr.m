@@ -55,15 +55,8 @@ end
 
 op.max_iter_global = opt.max_iter_global;
 
-
-fng = fieldnames(opt.opg);
-tmpopts = cell(numel(fng),1);
-for k = 1:numel(fng)
-    tmpopts{2*k-1} = fng{k};
-    tmpopts{2*k} = opt.opg.(fng{k});
-end
-op.opg = GlobalSearch(tmpopts{:});
-
+prs = struct2pairs(opt.opg);
+op.opg = GlobalSearch(prs{:});
 
 op.opp = createOptimProblem(opt.slvrl, options=opt.opl);
 fn = fieldnames(op.opp);

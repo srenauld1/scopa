@@ -1,6 +1,6 @@
 function o = oset_fb8c(o)
 
-o.mn.do = ["sld", "daq", "roi"];
+o.mn.do = ["sld", "dq", "roi"];
 
 rgname = {'fb8c'}; 
 

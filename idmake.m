@@ -1,14 +1,17 @@
-function id = idmake(pthstacks)
+function id = idmake(pthstacks, field)
 
 % derive some identifiers using expected stack filename patterns for scopa and flyg; output in struct
 
 arguments
     pthstacks %full path to stacks will fill all fields; if you just input stack filename, path fields will be empty; if you just input recdate_fly_trial, only those fields will be derived
+    field {mustBeTextScalar} = '' %optional individual field of output struct id; if nonempty, output will only be this field; if single pthstacks input, output will be char vector, if multiple pthstacks input, output will be cell 
 end
 
 if ~isempty(pthstacks) && ~iscell(pthstacks)
     pthstacks = {pthstacks};
 end
+
+optid_sld_suffix = 'z0_sld_'; %temporary hack, to make sure this is not considered part of suffix
 
 id = [];
 
@@ -16,9 +19,9 @@ for k = 1:numel(pthstacks)
 
     pthstack = pthstacks{k};
 
-    [pthstackdir, fn, ext] = fileparts(pthstack);
-    if ~isempty(pthstackdir)
-        pthstackdir = [pthstackdir filesep];
+    [pthstackfld, fn, ext] = fileparts(pthstack);
+    if ~isempty(pthstackfld)
+        pthstackfld = [pthstackfld filesep];
     end
 
     spl = strjoin(strsplit(fn, '-'), '_'); %if there's a hyphen, separate and then join all with underscore
@@ -42,24 +45,43 @@ for k = 1:numel(pthstacks)
         end
     end
 
+
     recdatenum = str2double(recdate);
     flynum = str2double(fly);
     trialnum = str2double(trial);
 
     recid = [recdate '_' fly '_' trial];
+    pthrec = [pthstackfld recid];
+
     if isempty(suffix)
         stackid = '';
         pthstack = ''; %since we don't know suffix, you must have passed in pthrec, so make pthstack empty
         pthpre = '';
-        pthrec = '';
     else
+        suffix = erase(suffix, optid_sld_suffix);
         if strcmp(suffix(end), '_')
             suffix = suffix(1:end-1);
         end
         stackid = [recdate '_' fly '_' trial '_' suffix];
-        pthpre = [pthstackdir stackid '_'];
-        pthrec = [pthstackdir recid];
+        pthpre = [pthstackfld stackid '_'];
     end
+
+
+    pat = [pthstackfld recdate '-' fly '_daqData_*_trial_' sprintf( '%03s', trial) '*.mat'];
+    pthdaq = rdir(pat);
+    if isscalar(pthdaq)
+        pthdaq = pthdaq.name;
+    else
+        if isempty(pthdaq)
+            pthdaq = [];
+            fprintf("pthdaq does not exist, setting to empty" + newline)
+        else
+            error("there are multiple matches to pthdaq")
+        end
+    end
+
+    pthmd = [pthrec '_mdsi_.txt']; %don't need to confirm this exists here, will be created later if necessary
+
 
     id(k).recdate = recdate;
     id(k).fly = fly;
@@ -73,9 +95,23 @@ for k = 1:numel(pthstacks)
     id(k).recid = recid;
     id(k).stackid = stackid;
 
-    id(k).pthstackdir = pthstackdir;
+    id(k).pthstackfld = pthstackfld;
     id(k).pthstack = pthstack;
     id(k).pthpre = pthpre;
     id(k).pthrec = pthrec;
 
+    id(k).pthmd = pthmd;
+    id(k).pthdaq = pthdaq;
+
+end
+
+if ~isempty(field)
+    idtmp = cell(1,numel(id));
+    for k = 1:numel(id)
+        idtmp{k} = id(k).(field);
+    end
+    id = idtmp;
+    if isscalar(id)
+        id = cell2mat(id);
+    end
 end

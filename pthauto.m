@@ -1,22 +1,22 @@
 function pthsv = pthauto(opt)
 
 arguments
-    opt.pthdir = []
-    opt.suffix = '' %includes extension
-    opt.usetime = 1
-    opt.usefun = 1
+    opt.pthdir char {mustBeTextScalar} = ''
+    opt.suffix char {mustBeTextScalar} = '' %includes extension
+    opt.usetime (1,1) {mustBeBinary} = 1
+    opt.usefun (1,1) {mustBeBinary} = 1
 end
 pthdir = opt.pthdir;
 suffix = opt.suffix;
 usetime = opt.usetime;
 usefun = opt.usefun;
 
-fndefault = '00000000';
+fn_prefix = '00000000'; %filename prefix
 
 if isempty(pthdir)
-    pthdir = glb('pthstackdir');
+    pthdir = glb('pthsvdir');
     if isempty(pthdir)
-        error("you must pass in name-value argument 'pthdir' or set glb('pthstackdir')")
+        error("you must pass in name-value argument 'pthdir' or set glb('pthsvdir')")
     end
 end
 pthdir = pthfldformat(pthdir);
@@ -40,8 +40,11 @@ if usetime
     tmp = char(datetime('now','TimeZone','local','Format','yyyyMMddHHmmssSS'));
     infix = [infix '_' tmp];
 end
-infix = [fndefault infix];
+infix = [fn_prefix infix];
 
+if ~isempty(suffix) && ~contains(suffix, '.')
+    error("name-value argument must include file type extension")
+end
 if ~startsWith(suffix, '_')
     suffix = ['_' suffix];
 end

@@ -2,24 +2,27 @@ function [imrgb, imalpha] = roiolmake(opt)
 
 %{
 
-make roi overlay between roimask (or roipx) and background image imgray (or imrgb)
+make roi overlay image(s) using input 'roimask' (or 'roipx') and background image 'imgray' (or 'imrgb')
+creates overlay for each roi in input 'roimask' (or 'roipx')
 overlapping rois are averaged in color and alpha/transparency
-imalpha is a grayscale stack matching size of imgb, with value representing alpha/transparency 
-using name-value arguments even for background image to make clear distinction between grayscale and rgb, since number dimensions will not always distinguish them, likewise for roimask and roipx
 rgb average is additive, not subtractive (ie average of green and red is yellow, not brown)
 roi r is assigned color r, even if roi is empty
+imalpha is a grayscale image matching size of imrgb in spatial dimensions, with value representing alpha/transparency; 
+    imalpha is output, and is also an optional input (imalpha input and output can be different if roi alphas get averaged)
+this function uses all name-value arguments, even for background image, to make clear distinction between grayscale and rgb inputs, since number of dimensions will not always distinguish them, likewise for roimask and roipx
 
 %}
 
 arguments
     opt.imgray = [] %background image, grayscale, size yxz, can pass in this or imrgb, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
     opt.imrgb = [] %background image, rgb, size yx3 or yxz3, must pass in this or imgray, or neither, but not both; if neither, must pass in roimask (not roipx) to determine image dimensions
-    opt.imalpha = [] %background image alpha, rgba, size yxa or yxza, optional; only need this if rois have different alpha and you want them averaged
+    opt.imalpha = [] %optional; background image alpha (transparency), size yxa or yxza; only need this if rois have different alpha and you want their alpha averaged
     opt.roimask = [] % mask for roi(s) (size yxzr), matching imgray yxz or imrgb yxz dimensions (z may be singleton), must pass in this or roipx, but not both
     opt.roipx = [] %length-r cell array of roi's linear indices, or vector of linear indices if one roi, must pass in this or roimask, but not both
-    opt.rgb = [1,0,0] %color, size (r,3), where r matches roimask r
-    opt.a = 0.3 %alpha (transparency)
-    opt.combine = 'occlude' %add, subtract, occlude
+    opt.rgb = [1,0,0] %color for each roi in output overlay rgb image; size (r,3), where r is number rois, matching roimask final dimension r
+    opt.a = 0.3 %alpha (transparency) for output overlay rgb image
+    opt.combine = 'occlude' %'add' or 'occlude'; how overlapping rois are combined; 'add' is additive average; 'occlude' puts later rois on top of earlier rois
+    opt.dmroi {mustBeScalarOrEmpty, mustBeMember(opt.dmroi,[3,4])} = [] %roi dimension in roimask; can only be 3 or 4 (or empty); only allowed to be set nonempty if background image input is empty (imgray, imrgb, imalpha) and foreground image input is roimask (not roipx), and roimask is 3d; in this case, dmroi determines whether 3rd dim is z or r 
 end
 imgray = opt.imgray;
 imrgb = opt.imrgb;
@@ -29,11 +32,13 @@ roimask = opt.roimask;
 rgb = opt.rgb;
 a = opt.a;
 combine = opt.combine;
+dmroi = opt.dmroi;
 
 
 %%%% PREP BACKGROUND IMAGE %%%%
 
 singleton_z = 0;
+dmroi_must_be_empty = 1;
 
 if isempty(imrgb)
     if isempty(imgray)
@@ -44,12 +49,17 @@ if isempty(imrgb)
                 [ny,nx,nz] = size(imalpha);
             elseif ~isempty(roimask)
                 if ndims(roimask)==3
-                    [ny,nx,nr] = size(roimask);
-                    nz = 1;
-                    singleton_z = 1;
-                else
-                    [ny,nx,nz,nr] = size(roimask);
+                    dmroi_must_be_empty = 0;
+                    if isempty(dmroi)
+                        error("if user did not set any background image input (imgray, imrgb, or imalpha), and roimask is 3d, name-value argument rdim must be nonempty to determine whether roimask 3rd dimension is z or r")
+                    else
+                        if isequal(dmroi, 3)
+                            roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
+                            singleton_z = 1;
+                        end
+                    end
                 end
+                [ny,nx,nz,nr] = size(roimask);
             end
             imrgb = zeros( ny, nx, nz, 3, 'single');
         end
@@ -64,6 +74,10 @@ else
     if size(imrgb,ndims(imrgb))~=3
         error("last dimension of imrgb must be size 3 (rgb)")
     end
+end
+
+if dmroi_must_be_empty && ~isempty(dmroi)
+    error("dmroi can only be nonempty if background image input is empty (imgray, imrgb, imalpha) and foreground image input is roimask (not roipx), and roimask is 3d; in this case, dmroi determines whether 3rd dim is z or r")
 end
 
 if ndims(imrgb)==3
@@ -111,11 +125,13 @@ else
 end
 
 if ndims(roimask)<2 || ndims(roimask)>4
-    error("imrgb and must be 4d at this point and imalpha must be 2d, 3d, or 4d")
+    error("at this point, roimask must be 2d, 3d, or 4d")
 end
 if singleton_z
-    if ndims(roimask)==4 && size(roimask,3)>1
-        error("if image has singleton z, so must roimask")
+    if ndims(roimask)==4
+        if size(roimask,3)>1
+            error("if image has singleton z, so must roimask")
+        end
     else
         roimask = reshape(roimask, size(roimask,1), size(roimask,2), 1, size(roimask,3));
     end
@@ -128,6 +144,7 @@ if ~islogical(roimask)
 end
 
 numroi = size(roimask,4);
+
 
 %%%% PREP OTHER OPTIONAL ARGUMENTS %%%%
 
@@ -150,6 +167,7 @@ rgb = single(rgb);
 if ~isequal(numroi, size(rgb,1), numel(a))
     error("numroi, size(rgb,1), numel(a) must all be equal")
 end
+
 
 %%%% MAKE OVERLAY %%%%
 

@@ -5,7 +5,7 @@ arguments
     opt.nodes = [0 0 0; 1 1 1]
     opt.satfac = 1
     opt.method = '1d'
-    opt.doplt = 0
+    opt.doplt (1,1) {mustBeBinary} = 0
 end
 method = opt.method;
 ncol = opt.ncol;

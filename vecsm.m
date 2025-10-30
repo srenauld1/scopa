@@ -1,0 +1,83 @@
+function vecout = vecsm(vtype, vecin, opt)
+
+%{
+
+smooth vector (with matlab function smoothdata) using user-specified window length (seconds or samples) 
+input vector can be circular (radians or degrees) or "categorical" or "normal" (see vtype notes below); 
+vecin and vecout orientations are matched
+todo: generalize for nd
+
+%}
+
+arguments
+    vtype char {mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vecin {mustBeNonscalarVector} %input variable to be smoothed;  if vtype is r or d, must be circular data in radians or degrees, respectively
+    opt.method (1,:) char {mustBeTextScalar} = 'gaussian' %smoothing method for smoothdata function;
+    opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples
+    opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds
+    opt.sper double {mustBeScalarOrEmpty, mustBePositive} = []; %sample period in seconds; required if lensec is nonempty
+    opt.omitmissing (1,1) {mustBeBinary} = 1 %1 to omit nan in input (this is smoothdata default); 0 will include nan
+end
+method = opt.method;
+lensamp = opt.lensamp;
+lensec = opt.lensec;
+sper = opt.sper;
+omitmissing = opt.omitmissing;
+
+wasrow = 0;
+if isrow(vecin)
+    wasrow = 1;
+    vecin = vecin';
+end
+
+if ~isempty(lensamp) && ~isempty(lensec)
+    error("opt.lensamp or opt.lensec cannot both be nonempty")
+end
+if ~isempty(lensec) && isempty(sper)
+    error("opt.sper must be nonempty if opt.lensec is nonempty")
+end
+
+if isempty(lensamp) 
+    if isempty(lensec)
+        error("opt.lensec and opt.sper must be nonempty if opt.lensamp is empty")
+    else
+        lensamp = round(lensec / sper);
+    end
+end
+
+if omitmissing
+    nanflag = 'omitmissing';
+else
+    nanflag = 'includemissing';
+end
+
+
+if strcmp(vtype, 'r') || strcmp(vtype, 'd') 
+
+    if strcmp(vtype, 'd')
+        vecin = deg2rad(vecin);
+    end
+
+    tmpx = cos(vecin);
+    tmpy = sin(vecin);
+    tmpx = smoothdata(tmpx, method, lensamp, nanflag);
+    tmpy = smoothdata(tmpy, method, lensamp, nanflag);
+    vecout = atan2(tmpy, tmpx);
+
+    if strcmp(vtype, 'd')
+        vecout = rad2deg(vecout);
+    end
+
+elseif strcmp(vtype, 'n')
+
+    vecout = smoothdata(vecin, method, lensamp, nanflag);
+
+elseif strcmp(vtype, 'c')
+
+    error("need to write categorical smooth (?)")
+
+end
+
+if wasrow
+    vecout = vecout';
+end

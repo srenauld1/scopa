@@ -1,11 +1,7 @@
 
 numsamp = 1000;
 
-if isempty(glb('pthstackdir'))
-    glb(pthstackdir = '/Users/wienecke/stacks/');
-else
-    glb(1, pthstackdir = '/Users/wienecke/stacks/');
-end
+
 pthsv = pthauto(suffix='.gif', usetime=1);
 
 fun = 'vonmises';

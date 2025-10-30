@@ -5,7 +5,7 @@ function [common, outall] = fieldmatch(s, varargin, opt)
 find fieldname in struct (struct can be nested and nonscalar)
 
 example:
-    fieldmatch(roi, {'rg.rgname', 'no'}, {'mm.mmname', 'left'}, lev=1);
+    fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
 
 %}
 
@@ -18,18 +18,17 @@ end
 arguments (Input)
     opt.lev = []; % level of nesting for output
     opt.multi = []; % 1 to allow output multiple matches
-    opt.delimflat = []; % delimiter in flattened struct
     opt.noerror = 1; % 1 will not stop execution if error just results in empty output (does not apply to syntax errors)
 end
 arguments (Output)
     common
     outall
 end
-opt = glboropt(opt);
 lev = opt.lev;
 multi = opt.multi;
-delimflat = opt.delimflat;
 noerror = opt.noerror;
+
+delimflat = '__'; % delimiter in flattened struct
 
 if ~isempty(lev)
     if ~isequal(lev, sort(lev), min(lev):max(lev)) || any(mod(lev,1)) || any(lev<1)
@@ -40,9 +39,6 @@ if isempty(multi)
     multi = 0;
 end
 multi = logical(multi);
-if isempty(delimflat)
-    delimflat = '__';
-end
 
 if ~isstruct(s)
     if isfile(s)

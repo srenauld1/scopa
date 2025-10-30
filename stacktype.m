@@ -1,15 +1,20 @@
-function stack = stacktype(stack, typeout)
+function stack = stacktype(stack, dtype)
 
-if ~isa(stack, typeout)
-    stackmin = min(stack, [], [1 2 3 4], 'omitmissing');
-    if any(stackmin < 0) && startsWith(typeout, 'u')
-        error("stack minimum is negative, and stackdtype is " + typeout + "; data type conversion would clip negative values in original data type; consider subtracting min (zerostack=1), or clipping negatives yourself (clipneg=1)")
+if ~isa(stack, dtype)
+    if startsWith(dtype, 'u')
+        stackmin = min(stack, [], [1 2 3 4], 'omitmissing'); %compute min for each channel
+        if any(stackmin < 0)
+            stack = stack - stackmin; %subtract min for all channels
+            fprintf("WARNING: SUBTRACTING STACK MIN TO PREVENT CLIPPING NEGATIVE VALUES WHEN CONVERTING TO REQUESTED dtype " + dtype + newline)
+        end
     end
-    stackmax = max(stack(:)); %find max after possible zeroing
-    if startsWith(typeout, 'u') && stackmax > intmax(typeout)
-        error("ERROR, CONVERTING TO typeout " + typeout + " WILL CAUSE UPPER CLIPPING, CHANGE typeout")
+    if contains(dtype, 'int')
+        stackmax = max(stack(:)); %find max (also could have changed after possible zeroing above)
+        if stackmax > intmax(dtype)
+            error("ERROR, CONVERTING TO dtype " + dtype + " WILL CAUSE UPPER CLIPPING, CHANGE dtype")
+        end
     end
-    switch typeout
+    switch dtype
         case 'uint16'
             stack = uint16(stack);
         case 'uint32'
@@ -29,7 +34,7 @@ if ~isa(stack, typeout)
         case 'logical'
             stack = logical(stack);
         otherwise
-            error("stack class is not in this switch statement; add it")
+            error("stack class is not in this switch statement; add it if you need it")
     end
 
 end

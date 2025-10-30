@@ -1,32 +1,32 @@
 function o = oset_ebno(o)
 
 
-o.mn.do = ["sld", "daq", "roi", "bmp"];
+o.mn.do = ["sld", "dq", "roi", "bmp"];
 
 rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-%%%% DAQ %%%%
+%%%% dq %%%%
 
-o.daq.slopelensec = 0.4;
+o.dq.dvlensec = 0.4;
 
 %%%% BMP %%%%
 
 
-o.bmp.slopelensec = 0.4;
+o.bmp.dvlensec = 0.4;
 o.bmp.domtype = 'f';
 
-bmpindv.tg.daq = ['*'];
-bmpindv.tg.vnm = 'by';
+bmpindv.vg.dq = ['*'];
+bmpindv.vg.vnm = 'by';
 
 o.bmp.indv = bmpindv;
 
-bmpdepv.tg.roi.rgname = 'eb';
-bmpdepv.tg.roi.domm = 1;
-bmpdepv.tg.roi.ma.maskseg = 'torus';
-bmpdepv.tg.roi.ma.numroi = 16;
-bmpdepv.tg.roi.nrm.post = 'f';
-bmpdepv.tg.vnm = 'ts';
-bmpdepv.tg.group = '1';
+bmpdepv.vg.roi.rgname = 'eb';
+bmpdepv.vg.roi.domm = 1;
+bmpdepv.vg.roi.ma.maskseg = 'torus';
+bmpdepv.vg.roi.ma.numroi = 16;
+bmpdepv.vg.roi.nrm.post = 'f';
+bmpdepv.vg.vnm = 'ts';
+bmpdepv.vg.group = '1';
 
 o.bmp.depv = bmpdepv;
 
@@ -37,17 +37,17 @@ o.bmp.mdl.epochnum = 1;
 
 %%%% MDL %%%%
 
-mdlindv.tg.bmp = ['*'];
-mdlindv.tg.vnm = 'vel';
-mdlindv.tg.group2 = '1';
-mdlindv.tg(2).daq = ['*'];
-mdlindv.tg(2).vnm = 'bvy';
+mdlindv.vg.bmp = ['*'];
+mdlindv.vg.vnm = 'vel';
+mdlindv.vg.group2 = '1';
+mdlindv.vg(2).dq = ['*'];
+mdlindv.vg(2).vnm = 'bvy';
 
 o.mdl.indv = mdlindv;
 
-mdldepv.tg.roi.rgname = 'no';
-mdldepv.tg.group = '3';
-mdldepv.tg.vnm = 'ts';
+mdldepv.vg.roi.rgname = 'no';
+mdldepv.vg.group = '3';
+mdldepv.vg.vnm = 'ts';
 
 o.mdl.depv = mdldepv;
 
@@ -70,13 +70,13 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     if strcmp(rgname{m}, 'eb')
         o.roi.doma = 1; %do automated morph rois
         o.roi.ma.numroi = 16;
-        o.roi.mm.mmname = 'eb';
+        o.roi.roiname = 'eb';
         o.roi.ma.maskmake = 'nonzero';
         o.roi.ma.maskseg = 'torus';
         o.roi.ma.roirad = 3;
     elseif any(strcmp(rgname{m}, 'no'))
         o.roi.doma = 0; %do automated morph rois
-        o.roi.mm.mmname = {'left', 'right'};
+        o.roi.roiname = {'left', 'right'};
     end
 
     o = ofill(o, 'roi', rgname{m});

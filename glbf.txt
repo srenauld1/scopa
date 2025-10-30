@@ -1,0 +1,10 @@
+{
+  "dmstackdf": "yxztc",
+  "optiddf": "z0",
+  "voltminhd_flyclock_berg1": 1,
+  "voltminhd_flyclock_berg2": 6,
+  "balldia_berg1": 9,
+  "balldia_berg2": 9,
+  "voltlim_berg1": [0,10],
+  "voltlim_berg2": [0,10]
+}

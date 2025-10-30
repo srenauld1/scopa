@@ -21,7 +21,6 @@ arguments
     opt.iso = 0;
     opt.widyxz = [];
 end
-opt = glboropt(opt);
 t = opt.t;
 epochts = opt.epochts;
 pthstack = opt.pthstack;
@@ -48,7 +47,7 @@ if iso && isempty(widyxz)
 end
 
 if isempty(pthstack)
-    error("you must set name-value argument pthstack or glb('pthstack')")
+    error("you must set name-value argument pthstack")
 end
 if isempty(t)
     error("you must set name-value argument t or glb('t')")
@@ -62,8 +61,7 @@ if ~isempty(svtype) && isempty(pthgif)
     error("")
 end
 
-id = idmake(pthstack);
-recid = id.recid;
+recid = idmake(pthstack, 'recid');
 
 pthpre = [erase(pthstack, '.mat') 'stack3_'];
 

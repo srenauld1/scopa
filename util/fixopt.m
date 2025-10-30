@@ -39,10 +39,10 @@ for k = 1:numel(tmp)
                 mm(kkj).channel = mm(kkj).chan;
                 mm = rmfield(mm, 'chan');
             end
-            if ~isfield(mm(kkj), 'mmname')
-                mm(kkj).mmname = mm(kkj).mmname;
+            if ~isfield(mm(kkj), 'roiname')
+                mm(kkj).roiname = mm(kkj).roiname;
                 if kkj == numel(mm)
-                    mm = rmfield(mm, 'mmname');
+                    mm = rmfield(mm, 'roiname');
                 end
             end
             if ~isfield(mm(kkj).rg, 'rgname')
@@ -96,10 +96,10 @@ for k = 1:numel(tmp)
                         roi.dat(kk).mm(kkj).channel = roi.dat(kk).mm(kkj).chan;
                         roi.dat(kk).mm = rmfield(roi.dat(kk).mm, 'chan');
                     end
-                    if ~isfield(roi.dat(kk).mm(kkj), 'mmname')
-                        roi.dat(kk).mm(kkj).mmname = roi.dat(kk).mm(kkj).mmname;
+                    if ~isfield(roi.dat(kk).mm(kkj), 'roiname')
+                        roi.dat(kk).mm(kkj).roiname = roi.dat(kk).mm(kkj).roiname;
                         if kkj == numel(roi.dat(kk).mm)
-                            roi.dat(kk).mm = rmfield(roi.dat(kk).mm, 'mmname');
+                            roi.dat(kk).mm = rmfield(roi.dat(kk).mm, 'roiname');
                         end
                     end
                     if ~isfield(roi.dat(kk).mm(kkj).rg, 'rgname')

@@ -2,26 +2,28 @@
   "a1": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -75,10 +77,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -87,29 +89,29 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a2": {
     "chan": 1,
     "depv": {
-      "tg": {}
+      "vg": {}
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {}
+      "vg": {}
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -171,29 +173,29 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a3": {
     "chan": 1,
     "depv": {
-      "tg": []
+      "vg": []
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": []
+      "vg": []
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -247,10 +249,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -259,29 +261,29 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a4": {
     "chan": 1,
     "depv": {
-      "tg": []
+      "vg": []
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": []
+      "vg": []
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 6,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -335,10 +337,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -347,33 +349,33 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a5": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "functional",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -427,10 +429,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -439,33 +441,33 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a6": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "f",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -519,10 +521,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -531,33 +533,33 @@
     "numangrs": 16,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a7": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -611,10 +613,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -625,29 +627,29 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a8": {
     "chan": 1,
     "depv": {
-      "tg": []
+      "vg": []
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": []
+      "vg": []
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -701,10 +703,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -715,31 +717,31 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a9": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": []
+      "vg": []
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -793,10 +795,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -807,22 +809,22 @@
     "omitnan": 1,
     "rot": [90,0,0],
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a10": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 1,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": [],
@@ -832,21 +834,21 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a11": {
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": [],
@@ -856,22 +858,22 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a12": {
     "chan": 1,
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.5185,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": [],
@@ -881,32 +883,32 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.5185,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a13": {
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "f",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": 8,
     "mdl": {
       "depv": {
-        "tg": []
+        "vg": []
       },
       "epochmix": 0,
       "epochnum": 1,
       "indv": {
-        "tg": []
+        "vg": []
       },
       "lagsec": 0,
       "lensec": 0,
@@ -960,10 +962,10 @@
       "slvrg": "globalsearch",
       "slvrl": "fmincon",
       "sp": {
-        "tg": []
+        "vg": []
       },
       "tp": {
-        "tg": []
+        "vg": []
       },
       "valnum": 0,
       "valsplit": "boutsamples"
@@ -973,18 +975,18 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "a14": {
     "depv": {
-      "tg": []
+      "vg": []
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": []
+      "vg": []
     },
     "maxangrs": [],
     "mdl": {},
@@ -993,8 +995,27 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "smlensec": 0
+  },
+  "a15": {
+    "depv": {
+      "vg": []
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": []
+    },
+    "maxangrs": 8,
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": 16,
+    "numcirc": 1,
+    "omitnan": 1,
+    "roi": [],
+    "scope": "all",
     "smlensec": 0
   },
   "md": {
@@ -1005,15 +1026,17 @@
   },
   "z1": {
     "depv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "tg": []
+      "vg": {
+        "vg": []
       }
     },
     "maxangrs": [],
@@ -1023,13 +1046,11 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
     "smlensec": 0
   },
   "z2": {
     "depv": {
-      "tg": {
+      "vg": {
         "group": "1",
         "roi": {
           "domm": 1,
@@ -1037,7 +1058,7 @@
             "maskseg": "torus"
           },
           "mm": {
-            "mmname": "eb"
+            "roiname": "eb"
           },
           "nrm": {
             "post": "f"
@@ -1049,9 +1070,11 @@
     },
     "domtype": "m",
     "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
     "indv": {
-      "tg": {
-        "daq": "*",
+      "vg": {
+        "dq": "*",
         "vnm": "vh"
       }
     },
@@ -1062,8 +1085,287 @@
     "numcirc": 1,
     "omitnan": 1,
     "scope": "all",
-    "slopelensec": 0.4,
-    "slopeord": 2,
+    "smlensec": 0
+  },
+  "z3": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "mm": {
+            "roiname": "eb"
+          },
+          "nrm": {
+            "post": "f"
+          },
+          "rgname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "roi": [],
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z4": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "mm": {
+            "roiname": "eb"
+          },
+          "nrm": {
+            "post": "f"
+          },
+          "rgname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z5": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "nrm": {
+            "post": "f"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z6": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "nrm": {
+            "nrmstr": "f"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z7": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z8": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z9": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "by"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z10": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
     "smlensec": 0
   }
 }

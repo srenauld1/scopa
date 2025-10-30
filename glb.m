@@ -1,4 +1,4 @@
-function out = glb(inp)
+function out = glb(inp, opt)
 
 %{
 
@@ -44,9 +44,16 @@ TIPS
 arguments (Repeating)
     inp
 end
+arguments
+    opt.err (1,1) {mustBeBinary} = 0 %1 to error if trying to read a glb that has not been set
+end
+err = opt.err;
+
+if ~isempty(inp) && isempty(inp{1})
+    error("optional first argument cannot be empty (must be -1, 0, or 1, or omitted)")
+end
 
 persistent gset
-
 
 
 %%%%%% PROCESS OPTIONAL 'change' ARGUMENT %%%%%%
@@ -180,7 +187,11 @@ else
                             if iscellnested(inp{k+1})
                                 strtmp = 'a nested cell that will not be printed here';
                             else
-                                strtmp = ['{' cell2charv(tmpcl) '}'];
+                                if all(cellfun(@(x) ischar(x) | isstring(x) | isnumeric(x), tmpcl))
+                                    strtmp = ['{' cell2charv(tmpcl) '}'];
+                                else
+                                    strtmp = 'a cell with at least element that is neither char, string, or numeric, so will not br printed here';
+                                end
                             end
                         else
                             if numel(inp{k+1})>60
@@ -211,11 +222,11 @@ else
                     else
                         fprintf(msgstart + " global variable '" + char(inp{k}) + "' to " + strtmp + newline)
                     end
-                    sind = structind(inp{k});
+                    stind = structind(inp{k});
                     if ~isempty(gset) && ~isscalar(gset) %make sure before you change gset
                         error("glb struct cannot be nonscalar right now")
                     end
-                    gset = setfield(gset, sind{:}, inp{k+1});
+                    gset = setfield(gset, stind{:}, inp{k+1});
                 end
             else
                 error("you are trying to set global variable '" + char(inp{k}) + "' after it's already been set" + newline + "make first argument 1 to update global variable(s)" + newline + "or clear global variable '" + char(inp{k}) + "' with first argument -1, like this: glb(-1, '" + char(inp{k}) + "')" + newline + "or 'clear glb' to clear all global variables before attempting to set" + newline)
@@ -223,18 +234,21 @@ else
         end
         out = gset;
     elseif ischar(inp) %getting globals
-        sind = structind(inp);
+        stind = structind(inp);
         if ~isempty(gset) && ~isscalar(gset) %make sure before you access gset
             error("glb struct cannot be nonscalar right now")
         end
         try
-            out = getfield(gset, sind{:});
+            out = getfield(gset, stind{:});
         catch ME
-            % fprintf(string(ME.message) + newline + "will output empty array" + newline)
-            out = [];
+            if err
+                error("requested global variable '" + inp + "' has not been set in glb, and name-value argument err=1, so this error occurred; if you don't want an error, make err=0, or set glb('" + inp + "')")
+            else
+                out = [];
+            end
         end
     end
 end
 
-end
+
 

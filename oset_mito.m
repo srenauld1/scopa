@@ -2,7 +2,7 @@ function o = oset_mito(o)
 
 rgname = {'none'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
 
-o.mn.do = ["sld", "daq", "roi", "mdl"];
+o.mn.do = ["sld", "dq", "roi", "mdl"];
 
 
 o = ofill(o);
@@ -12,7 +12,7 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
     o.roi.rgname = rgname{m};
 
     o.roi.domm = 1; %do draw rois
-    o.roi.mm.mmname = {'lo'};
+    o.roi.roiname = {'lo'};
     
     o.roi.doma = 1; %do automated morph rois
     o.roi.ma.numroi = 1024;
