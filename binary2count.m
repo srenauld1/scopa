@@ -1,6 +1,6 @@
 function vecout = binary2count(vecin)
 
-% convert binary vector (only 0s and 1s) to cumulative count; vecin orientation matches vecout
+% convert binary vector (0s and/or 1s only) to cumulative count; vecin and vecout orientations match
 
 arguments
     vecin {mustBeVector, mustBeBinary}
@@ -13,12 +13,7 @@ if isrow(vecin)
     vecin = vecin';
 end
 
-if vecin(1) == 0
-    first_sample_insert = 0;
-else
-    first_sample_insert = 1;
-end
-vecout = [first_sample_insert; diff(vecin)];
+vecout = [vecin(1); diff(vecin)];
 vecout(vecout<0) = 0;
 vecout = cumsum(vecout);
 vecout(vecin==0) = 0;

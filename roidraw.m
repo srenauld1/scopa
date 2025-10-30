@@ -1080,7 +1080,11 @@ if ~isempty(subroinew)
 end
 
 roimask_anysubroi = squeeze(any(roimask{ic}, 4)); %we need to know ndims for roimask_anysubroi, so we can set dmroi in call to roiolmake
-[imrgb, imalpha] = roiolmake(roimask=roimask_anysubroi, rgb=cmap, a=roialpha, dmroi=ndims(roimask_anysubroi));
+dmroi = [];
+if ndims(roimask_anysubroi)==3
+    dmroi = 3; %only allowed to pass this in if roimask is 3d
+end
+[imrgb, imalpha] = roiolmake(roimask=roimask_anysubroi, rgb=cmap, a=roialpha, dmroi=dmroi);
 subroirgba = cat(4, imrgb, imalpha); %add rgba, we use this elsewhere, so compute even if roi_on_mean_z
 
 if roi_on_mean_z

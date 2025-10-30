@@ -7,6 +7,9 @@ rgname = {'eb', 'gal', 'gar', 'no'}; %use 'none' to skip prompt to define substa
 
 o.dq.dvlensec = .49;
 
+o.sld.smlensec = 0.3;
+o.sld.smlenpx = [3,3,0];
+
 %%%% BMP %%%%
 
 o.bmp.domtype = 'm';

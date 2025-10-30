@@ -20,7 +20,7 @@ end
 
 if isempty(spec) %if you're running a2p without input arguments (ie if optional input 'spec' is empty), set specifiers here to find stack(s); any missing fields will get defaults in ofill; if spec is not empty, these specifiers are ignored
     spec.pthpat = {''}; %full path pattern, can have wildcards; if you use pth, you cannot use stackid, recdate, fly, trial, suffix, or substr (single wildcard * means 0 or more characters, but does not include file separators, or cross file separators; double wildcard ** means 0 or more folders, and must be between file separators);
-    spec.stackid = {'20251025_4_1_od'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
+    spec.stackid = {'20251025_3_1_or'}; %char, format recdate_fly_trial_suffix; can include wildcards; can truncate full stackid format with wildcard * and wildcard * gets copied to each subsequent underscore-delimited label (eg, 2025* is equivalent to 2025*_*_*_*); cannot use stackid if any of pth, recdate, fly, trial, or suffix are nonempty
     spec.recdate = {''}; %cell array of char (or char vector), can use wildcards; empty is equivalent to '*'
     spec.fly = {''}; %cell array of char (or char vector), can use wildcards; empty is equivalent to '*'
     spec.trial = {''}; %cell ara2ray of char (or char vector), can use wildcards; empty is equivalent to '*'
@@ -44,7 +44,7 @@ for k = 1:numel(idtmp)
     switch userdatfile('scopausername')
         case 'cw'
             if contains(idtmp(k).pthstack, {'ebgano'})
-                o(k) = oset_ebgano();
+                o(k) = oset_sophia();
             elseif contains(idtmp(k).pthstack, {'ganopb'})
                 o(k) = oset_ganopb();
             elseif contains(idtmp(k).pthstack, {'elno'})
@@ -63,18 +63,6 @@ for k = 1:numel(idtmp)
                 o(k) = oset_gluetest();
             elseif contains(idtmp(k).pthstack, {'f91g'})
                 o(k) = oset_t5();
-            end
-        case 'wz'
-            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_wenyi();
-            end
-        case 'jf'
-            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_jingxuan();
-            end
-        case 'yz'
-            if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
-                o(k) = oset_yunzhi();
             end
         case 'sr'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering

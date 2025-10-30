@@ -58,18 +58,19 @@ dozscore = opt.dozscore;
 stackrot = opt.stackrot;
 stackslice = opt.stackslice;
 
-
-ebmn = mean(stackcrop(s.stack, 'eb'), [1 2 3]);
-
-if ~isempty(mix)
-    s = stackmix(s=s, rgnames=mix, rot=stackrot);
-    stackrot = []; %set to empty so it doesn't happen below (make this better)
-end
-
-stack = s.stack;
 pthstack = s.pth;
 sper = s.md.sper;
 widyxz = s.md.widyxz;
+
+seb = stackcrop(s, 'eb');
+ebmn = mean(seb.stack, [1 2 3]);
+
+if isempty(mix)
+    stack = s.stack;
+else
+    stack = stackmix(s=s, rgnames=mix, rot=stackrot);
+    stackrot = []; %set to empty so it doesn't happen below (make this better)
+end
 
 if ndims(stack)~=4
     error("stack must be 4d")
@@ -91,36 +92,47 @@ if ~isempty(stackrot) && ( ~isequal(numel(stackrot),3) || ~isvector(stackrot) ||
     error("stackrot must be empty or ordinary length-3 vector")
 end
 
-inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
-inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
-igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'dorsal'}, lev=1);
-iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'ventral'}, lev=1);
-igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'dorsal'}, lev=1);
-igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'ventral'}, lev=1);
-ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'roiname', 'eb4545'}, lev=1);
-idaq = fieldmatch(dq, lev=1);
-ibmp = fieldmatch(bmp, lev=1);
+% inl = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'left'}, lev=1);
+% inr = fieldmatch(roi, {'rg.rgname', 'no'}, {'roiname', 'right'}, lev=1);
+% igld = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'dorsal'}, lev=1);
+% iglv = fieldmatch(roi, {'rg.rgname', 'gal'}, {'roiname', 'ventral'}, lev=1);
+% igrd = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'dorsal'}, lev=1);
+% igrv = fieldmatch(roi, {'rg.rgname', 'gar'}, {'roiname', 'ventral'}, lev=1);
+% ieb = fieldmatch(roi, {'rg.rgname', 'bmpi'}, {'roiname', 'eb4545'}, lev=1);
+% idaq = fieldmatch(dq, lev=1);
+% ibmp = fieldmatch(bmp, lev=1);
 
-nol = roi.(inl).dat(1).ts;
-nor = roi.(inr).dat(1).ts;
-gld = roi.(igld).dat(1).ts;
-glv = roi.(iglv).dat(1).ts;
-grd = roi.(igrd).dat(1).ts;
-grv = roi.(igrv).dat(1).ts;
-epochts = dq.(idaq).epochts;
-vish = dq.(idaq).vh;
-ballh = dq.(idaq).bh;
-ballvf = dq.(idaq).bvf;
-bmph = bmp.(ibmp).mu;
-bmpi = bmp.(ibmp).respcl;
-bmpdomain = bmp.(ibmp).domain;
+
+ieb = 1;
+igld = 2;
+iglv = 3;
+igrd = 4;
+igrv = 5;
+inl = 6;
+inr = 7;
+idaq = 1;
+ibmp = 1;
+
+nol = roi(inl).dat(1).ts;
+nor = roi(inr).dat(1).ts;
+gld = roi(igld).dat(1).ts;
+glv = roi(iglv).dat(1).ts;
+grd = roi(igrd).dat(1).ts;
+grv = roi(igrv).dat(1).ts;
+epochts = dq(idaq).epochts;
+vish = dq(idaq).vh;
+ballh = dq(idaq).bh;
+ballvf = dq(idaq).bvf;
+bmph = bmp(ibmp).mu;
+bmpi = bmp(ibmp).respcl;
+bmpdomain = bmp(ibmp).domain;
 
 dvlen = sper*3;
 dvord = 2;
-glddv = vecdv('normal', gld, dvlen, dvord, sper);
-glvdv = vecdv('normal', glv, dvlen, dvord, sper);
-grddv = vecdv('normal', grd, dvlen, dvord, sper);
-grvdv = vecdv('normal', grv, dvlen, dvord, sper);
+glddv = vecdv('n', gld, lensec=dvlen, ord=dvord, sper=sper);
+glvdv = vecdv('n', glv, lensec=dvlen, ord=dvord, sper=sper);
+grddv = vecdv('n', grd, lensec=dvlen, ord=dvord, sper=sper);
+grvdv = vecdv('n', grv, lensec=dvlen, ord=dvord, sper=sper);
 
 wsz = 6;
 [gld, wsz] = smoothdata(gld, 'sgolay', wsz);
@@ -206,13 +218,13 @@ cmap = cat(1, cmap, [0 0 0]); %add black
 
 
 noz = zscore(no);
-nodv = vecdv('radians', no, dvlensec, dvord, sper);
+nodv = vecdv('r', no, lensec=dvlensec, ord=dvord, sper=sper);
 
-bumpdv = vecdv('radians', bmph, dvlensec, dvord, sper);
+bumpdv = vecdv('r', bmph, lensec=dvlensec, ord=dvord, sper=sper);
 bumpdvrs = bumpdv*pi/max(abs(bumpdv));
 
 ballinv = -ballh;
-ballinvdv = vecdv('radians', ballinv, dvlensec, dvord, sper);
+ballinvdv = vecdv('r', ballinv, lensec=dvlensec, ord=dvord, sper=sper);
 ballinvdvrs = ballinvdv*pi/max(abs(ballinvdv));
 
 if yconst
@@ -228,7 +240,7 @@ dvord_eb = 2;
 eb2 = bmpi;
 for k = 1:size(eb2,1)
     % bmpi(k,:) = rescale(bmpi(k,:));
-    eb2(k,:) = vecdv('normal', eb2(k,:), dvlensec_eb, dvord_eb, sper);
+    eb2(k,:) = vecdv('n', eb2(k,:), lensec=dvlensec_eb, ord=dvord_eb, sper=sper);
     eb2(k,:) = zscore(eb2(k,:));
 end
 % eb2 = imgaussfilt(eb2, [0.1 0.1]);
@@ -257,10 +269,10 @@ dvord_alt = 2;
 
 dodv = 0;
 if dodv %all derivatives
-    ballplot = vecdv('radians', ballinv, dvlensec_alt, dvord_alt, sper);
-    cueplot = vecdv('radians', vish, dvlensec_alt, dvord_alt, sper);
-    bumpplot = vecdv('radians', bmph, dvlensec_alt, dvord_alt, sper);
-    bump2plot = vecdv('radians', bump2, dvlensec_alt, dvord_alt, sper);
+    ballplot = vecdv('r', ballinv, lensec=dvlensec_alt, ord=dvord_alt, sper=sper);
+    cueplot = vecdv('r', vish, lensec=dvlensec_alt, ord=dvord_alt, sper=sper);
+    bumpplot = vecdv('r', bmph, lensec=dvlensec_alt, ord=dvord_alt, sper=sper);
+    bump2plot = vecdv('r', bump2, lensec=dvlensec_alt, ord=dvord_alt, sper=sper);
 else
     ballplot = ballinvnan;
     cueplot = cuenan;

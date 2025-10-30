@@ -418,11 +418,10 @@ for w = 1:numel(varid)
         for m = 1:numel(pthtmpall)
             [~, fntmp, fnext] = fileparts(pthtmpall(m).name);
             % fnpat2 = regexprep(strcat(regexprep(strcat('^', recid), '*', '\\d*'), fnpat, '$'), '*', '.*');
-            fnpat2{1} = fnpat;
-            % if any(cellfun(@(x) isequal(x,1), regexp([fntmp, fnext], fnpat2))) %filter by recid
-            %     pthtmp{m} = pthtmpall(m).name;
-            % end
-            pthtmp{m} = pthtmpall(m).name;
+            fnpat2{1} = regexprep(strcat(regexprep(strcat('^', recid), '*', '\\d*'), fnpat, '$'), '*', '.*');
+            if any(cellfun(@(x) isequal(x,1), regexp([fntmp, fnext], fnpat2))) %filter by recid
+                pthtmp{m} = pthtmpall(m).name;
+            end
         end
         pthtmp = pthtmp(~cellfun(@isempty, pthtmp));
         if isempty(cell2mat(pthtmp))

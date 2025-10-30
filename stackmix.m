@@ -19,8 +19,9 @@ stackids = opt.stackids;
 pthpar = opt.pthpar;
 optsld = opt.optsld;
 
-mixstr = strjoin(mix, '');
-pthmix = [pthpre mixstr '_.mat'];
+mixstr = strjoin(rgnames, '');
+pthmix = [idmake(s.pth, 'pthpre') mixstr '_.mat'];
+
 
 try
 
@@ -160,8 +161,8 @@ catch
     stacknew = [];
     for k = 1:numpth
         for q = 1:numel(rgnames{k})
-            stacktmp = stackcrop(s{k}.stack, rgnames{k}{q}, pthstack=pthstacks{k});
-            stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
+            stmp = stackcrop(s{k}, rgnames{k}{q});
+            stacktmp = stackwarp(stmp.stack, rot=rot(k,:), doplt=0);
             stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);
             stacknew = cat(2, stacknew, stacktmp);
         end

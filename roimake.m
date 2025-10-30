@@ -7,8 +7,8 @@ arguments
     s struct = []; %struct output from function stackld (contains stack, md, pth, and other fields)
 
     opt.s struct = struct('vg', [])
-    opt.rgname {mustBeTextScalar, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
-    opt.roiname {mustBeTextScalar, mustBeNonempty} = 'none'; %text, name of roi set created by roimake on a single rg
+    opt.rgname {mustBeText, mustBeNonempty} = 'none'; %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
+    opt.roiname {mustBeText, mustBeNonempty} = 'none'; %text, name of roi set created by roimake on a single rg
     opt.dodraw (1,1) {mustBeBinary} = 0 %1 to draw rois in roidraw
     opt.ma struct = [] %roimauto options returned by roimauto('', och=1); empty to skip roimauto; roimauto applies automated morphological roi segmentation
     opt.cm struct = [] %roifauto options returned by roifauto('', och=1); empty to skip roifauto; roifauto calls python caiman roi extraction from matlab (functional and morphological roi segmentation)

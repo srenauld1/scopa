@@ -64,13 +64,14 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if ~isempty(o.roi)
         for m = 1:numel(o.roi)
             prs = struct2pairs(o.roi(m));
-            roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            s.roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
     %%%% BUMP %%%%
 
+    glb(recid=o.id.recid)
     if ~isempty(o.bmp)
         for m = 1:numel(o.bmp)
             prs = struct2pairs(o.bmp(m));
@@ -104,23 +105,25 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if dopltx
         pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
+%% 
 
 
     %%%% a_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
 
     if 0
 
-        epoch = 6;
-        bout = 13;
+        epoch = 1;
+        bout = 8;
 
-        idaq = fieldmatch(dq, lev=1);
-        [~, ~, ipe, ~, tpe] = trmake(dq.(idaq).epochts, padlent=3, t=glb('t'), eb=[epoch bout]);
+        % idaq = fieldmatch(dq, lev=1);
+        idaq = 1;
+        [~, ~, ipe, ~, tpe] = trmake(dq(idaq).epochts, padlent=3, t=dq(idaq).t, eb=[epoch bout]);
 
-        a_opto(roi, s, glb('t') )
+        % a_opto(roi, s, glb('t') )
 
 
-        a_ebgano(s, roi, dq, bmp, glb('t'), ...
-            mix={'gar', 'eb', 'gal'}, ...
+        a_ebgano(s, roi, dq, bmp, dq(idaq).t, ...
+            mix=[], ...{'gar', 'eb', 'gal'}, ...
             noside={'r'}, ...
             pltstr={'profile'}, ...
             facealpha=1, ...
@@ -138,7 +141,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
             dvord=3, ...
             vt=tpe, ...
             dozscore=1, ...
-            stackrot=[-90,0,0], ...
+            stackrot=[0,0,0], ...
             stackslice=[])
 
     end

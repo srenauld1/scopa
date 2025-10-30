@@ -74,15 +74,15 @@ TODO: add name-value argument 'renm' for renaming structs in file (modeled after
 %}
 
 arguments
-    pth % path to file containing structs
-    opt.s = [] % struct to write to file, or get from file
-    opt.nm = [] % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
-    opt.dupe = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
-    opt.update = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
-    opt.justld = 0 % read from file only, skip writing
+    pth (1,:) {mustBeTextScalar} % path to file containing structs
+    opt.s struct {mustBeScalarOrEmpty} = struct([]) % struct to write to file, or get from file
+    opt.nm {mustBeTextScalar} = '' % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
+    opt.dupe (1,1) {mustBeBinary} = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
+    opt.update (1,1) {mustBeBinary} = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
+    opt.justld (1,1) {mustBeBinary} = 0 % read from file only, skip writing
     opt.usegit {mustBeScalarOrEmpty, mustBeBinary(opt.usegit,'emptyok')} = [] % use git to sync file pth across filesystems (to prevent conflicting changes); default here in arguments block is empty because we use optorglb below
-    opt.dosort = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
-    opt.cellout = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
+    opt.dosort (1,1) {mustBeBinary} = 0 % 1 to sort struct alphabetically when writing to file (natural sort); note sorting does not affect equality here when looking for structs in file matching input struct s
+    opt.cellout (1,1) {mustBeBinary} = 0 %1 will force sout and nmout into cells, even when scalar (unless they are empty); 0 will only put them in cells when nonscalar
 end
 s = opt.s;
 nm = opt.nm;
@@ -104,9 +104,6 @@ wcpat = '*'; % wildcard character; when searching for structs in file matching s
 nmprefix_withgit = 'a'; % prefix used when assigning default name to struct if usegit=1
 nmprefix_withoutgit = 'z'; % prefix used when assigning default name to struct if usegit=0
 
-if isstruct(s) && isempty(fieldnames(s))
-    s = []; %make sure user didn't try to make s empty by passing s=struct, which will not be considered empty for isempty(s)
-end
 if isempty(s)
     fprintf("NOTE: setting usegit to false because s is empty (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     usegit = 0; %don't bother with automatic git sync if s is empty, since you will not be writing anything to file (just reading); if you do need to pull from remote in this circumstance, just do it manually
@@ -126,7 +123,7 @@ end
 if ~isempty(s) && ~isstruct(s)
     error("s must be struct if it is nonempty (for now)")
 end
-if isstruct(s) && ~isscalar(s) && ~isvector(s)
+if isstruct(s) && ~isempty(s) && ~isscalar(s) && ~isvector(s)
     error("s must be scalar or one-dimensional nonscalar struct for now")
 end
 if ~endsWith(pth, '.txt')
@@ -284,8 +281,13 @@ if isfile(pth)
     end
 
     if isempty(matchind) % if input struct does not match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
-        nmout = {nmout2};
-        sout = {sout2};
+        if isempty(nmout2)
+            nmout = {};
+            sout = {};
+        else
+            nmout = {nmout2};
+            sout = {sout2};
+        end
         sfilenew = sfilenew2;
     else %if input struct does match a struct in file . . . (separate from if isempty(matchind) above because of || doaddon
         nmout = cell(numel(matchind), 1);
