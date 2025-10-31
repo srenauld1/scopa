@@ -1,0 +1,18 @@
+{
+  "md": {
+    "autonm": 1,
+    "maketime": "2025103019241990",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "balldia": 9,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  }
+}

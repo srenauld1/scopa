@@ -20,8 +20,8 @@ close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
 %%%% GLOBALS %%%%
 
-userdatfile(scopausername='cw') %make sure scopausername is written to userdat.txt
-userdatfile(pthpar=pthparget()); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
+userdatfile(scopausername='sr') %make sure scopausername is written to userdat.txt
+userdatfile(pthpar='/Users/sophiarenauld/stacks'); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
 glb(usegit=usegit); %set usegit in globals function 'glb'
 glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
 glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)

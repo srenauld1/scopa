@@ -1,0 +1,21 @@
+{
+  "md": {
+    "autonm": 1,
+    "maketime": "2025103019242001",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "clip": [0,1],
+    "dtype": "uint16",
+    "fbrm": 1,
+    "ic": [],
+    "it": [],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian"
+  }
+}

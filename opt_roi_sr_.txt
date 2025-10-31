@@ -1,0 +1,26 @@
+{
+  "md": {
+    "autonm": 1,
+    "maketime": "2025103019241997",
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z"
+  },
+  "z1": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "dff005000",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "none",
+    "roiname": "ves041",
+    "s": {
+      "vg": []
+    }
+  }
+}
