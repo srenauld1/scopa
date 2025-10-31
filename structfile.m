@@ -75,7 +75,7 @@ TODO: add name-value argument 'renm' for renaming structs in file (modeled after
 
 arguments
     pth (1,:) {mustBeTextScalar} % path to file containing structs
-    opt.s struct {mustBeScalarOrEmpty} = struct([]) % struct to write to file, or get from file
+    opt.s (1,:) struct {mustBeVector} = struct([]) % struct to write to file, or get from file
     opt.nm {mustBeTextScalar} = '' % name of struct to write to file, or get from file; empty chooses name for writing struct automatically (or finds name if s already exists in file); if nonempty, nm is the name of the struct to be written to file or retrieved from file
     opt.dupe (1,1) {mustBeBinary} = 1 % 1 to write struct s to file even though it already exists in file with different name (whether name is automatically or manually set); 0 to not allow duplicate structs in file with different names
     opt.update (1,1) {mustBeBinary} = 0 % 1 to change struct in file named nm to match struct s (ie when nm matches but s does not)
@@ -120,10 +120,7 @@ end
 if startsWith(pth, '~')
     error("input pth starts with tilde, use the full path to home directory rather than tilde" + newline)
 end
-if ~isempty(s) && ~isstruct(s)
-    error("s must be struct if it is nonempty (for now)")
-end
-if isstruct(s) && ~isempty(s) && ~isscalar(s) && ~isvector(s)
+if ~isempty(s) && ~isscalar(s) && ~isvector(s)
     error("s must be scalar or one-dimensional nonscalar struct for now")
 end
 if ~endsWith(pth, '.txt')

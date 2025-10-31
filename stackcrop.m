@@ -46,7 +46,7 @@ pthrg = [pthscopaget() 'opt_rg_' userdatfile('scopausername') '_.txt'];
 rgid = [idmake(s.pth, 'recid') '_' rgname];
 
 rg = [];
-[~, ~, rgall] = structfile(pthrg, s=[], nm=[]);
+[~, ~, rgall] = structfile(pthrg);
 if ~isempty(rgall)
     fn = fieldmatch(rgall, {'id', rgid}, lev=1, multi=0);
     if ~isempty(fn)
@@ -132,7 +132,7 @@ if ~justld %if input s.stack is empty, user is just checking if rg exists using 
 
         end
 
-        rg = structfile(pthrg, s=rg, nm=[], usegit=usegit);
+        rg = structfile(pthrg, s=rg, usegit=usegit);
 
     end
 

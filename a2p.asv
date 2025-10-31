@@ -18,10 +18,9 @@ dopltx = opt.dopltx;
 
 close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
+
 %%%% GLOBALS %%%%
 
-userdatfile(scopausername='cw') %make sure scopausername is written to userdat.txt
-userdatfile(pthpar=pthparget()); %%make sure pthpar is written to userdat.txt; you can set pthpar manually, or let function 'pthparget' prompt you to find it with uigetdir
 glb(usegit=usegit); %set usegit in globals function 'glb'
 glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
 glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
@@ -49,7 +48,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     glb(1, pthsvdir=o.id.pthstackfld); %update global that refers to stack location, a default location for saving some less important files (like figures)
 
 
-    %%%% dq %%%%
+    %%%% DAQ %%%%
 
     if ~isempty(o.dq)
         for m = 1:numel(o.dq)
@@ -105,13 +104,19 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if dopltx
         pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
-%% 
-
+ 
 
     %%%% a_* FUNCTIONS (EXPERIMENT-SPECIFIC ANALYSIS) %%%%
 
-    if 1
+    if 0
 
+
+        if contains(idtmp(k).pthstack, {'ebgano'})
+                o(k) = oset_ebgano();
+            elseif contains(idtmp(k).pthstack, {'ganopb'})
+                o(k) = oset_ganopb();
+
+                
         epoch = 1;
         bout = 8;
 

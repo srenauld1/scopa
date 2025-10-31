@@ -8,7 +8,7 @@ clc
 dosave = 1;
 
 suffix = 'mm'; %'roi' or 'mm'
-[~, ~, fuk] = structfile('/Users/wienecke/scopa/opt_rg_cw_.txt', s=[], nm=[], usegit=0, dosort=0);
+[~, ~, fuk] = structfile('/Users/wienecke/scopa/opt_rg_cw_.txt', usegit=0);
 tmp = rdir(['/Users/wienecke/stacks/**/*' suffix '_.mat']);
 for k = 1:numel(tmp)
     pth = tmp(k).name;

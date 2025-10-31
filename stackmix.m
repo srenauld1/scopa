@@ -102,7 +102,7 @@ catch
     scopausername = userdatfile('scopausername');
 
     pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
-    [~, ~, tmprg] = structfile(pthrg, s=[], nm=[], usegit=0, dosort=0);
+    [~, ~, tmprg] = structfile(pthrg, usegit=0);
 
     numrg = 0;
     rg = {};

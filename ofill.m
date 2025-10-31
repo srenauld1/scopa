@@ -398,7 +398,7 @@ if ~isempty(mosfinal)
 
     optout.finished = 1; %create this field and set to true when options struct is finished (this will prevent further modification, and permit some other functions to run (like oid and vget)
 
-    % optout = oid(optout); %assign ids to options sets
+    optout = oid(optout); %assign ids to options sets
 
     for k = 1:numel(mostree_open_with_mosc) %do option validation (one final thing even though finished = 1 above)
         stind = structind(mostree_open_with_mosc{k});
