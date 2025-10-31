@@ -116,5 +116,23 @@
     "s": {
       "vg": []
     }
+  },
+  "z49": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "dff008000",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "none",
+    "roiname": "ves041",
+    "s": {
+      "vg": []
+    }
   }
 }

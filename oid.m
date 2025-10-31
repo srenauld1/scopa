@@ -31,9 +31,6 @@ try
     if vgetcall && ~justld
         error("vget should call oid with justld=1")
     end
-    if ~vgetcall && ( ~isfield(o, 'finished') || ~isequal(o.finished, 1) ) %input struct does not require true 'finished' field if oid is called from vget
-        error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
-    end
     if ~isscalar(o) || ~isstruct(o)
         error("o must be scalar struct")
     end
@@ -42,7 +39,6 @@ try
     end
    
     mos = fieldnames(o);
-    mos = mos(~strcmp(mos, 'finished'));
 
     for k = 1:numel(mos)
 

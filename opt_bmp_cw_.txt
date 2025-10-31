@@ -1895,5 +1895,71 @@
     "omitnan": 1,
     "scope": "all",
     "smlensec": 0
+  },
+  "z27": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z28": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
   }
 }
