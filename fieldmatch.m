@@ -42,7 +42,7 @@ multi = logical(multi);
 
 if ~isstruct(s)
     if isfile(s)
-        [~, ~, s] = structfile(s, s=[], nm=[], usegit=0, dosort=0);
+        [~, ~, s] = structfile(s, usegit=0);
     else
         error("s must be struct, or path to struct written to .txt file with 'structfile'")
     end

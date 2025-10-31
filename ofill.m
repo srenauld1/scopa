@@ -102,12 +102,13 @@ NOTE IF YOU ARE CALLING ofill OUTSIDE ITS PLACE IN a2p (FOR EXAMPLE, TESTING ofi
 
 arguments
     optin = [] % input options struct for overwriting defaults in default options struct d; if optin is empty, will set defaults for all mos (2nd positional argument)
-    mos = [] % char, or cell of char, or string, or empty; mos means "module options struct"; names of mos to fill options for; if optin is empty, empty mos gets set to all mos; if optin is nonempty, empty mos gets set to optin-mos (mos in optin) that ave not already been operated on; if mos is nonempty, ofill operates on listed mos, whether they exist in optin or not, and whether they have been operated on before or not
-    opt.mosc = [] % char, or cell of char, or string, or empty to skip; mos means "module options struct container"; subfield names into which mos are copied; the mos that are placed into mosc are derived as described above (for example, if mos is empty, and optin is nonempty, mos becomes optin-mos, and all these mos would be placed in any mosc listed; each mos gets placed into all mosc (so 3 mos and 4 mosc would create 12 mosc in the options struct)
-    opt.mosfinal = [] % % char, or cell of char, or string, or empty; set any optout-mos to empty if they aren't listed in mosfinal; if mosfinal is nonempty, mos and mosc must be empty; cannot be set to empty (that would result in empty optout); all mos listed in mosfinal must be top-level mos (removing nested fields is an unusual use case that doesn't justify the complexity right now); mosfinal is intended for the last time you call ofill for an options struct, to simplify your oset file (so you can set all mos you might want, then remove any you don't want at the end); after mosfinal, finished=1 appears as top level field in optout
-    opt.rec = []; % 0 or 1; default 0 (set below); whether to finish all default nestings listed in mostree (in odf.m); if mos is nonempty, will finish all nests in input mos only; if mos is empty will finish all nestings for entire options struct; rec=1 is not necessary for an mos that has no nested mos (so it will error in this case)
-    opt.unpack = []; % 0 or 1; default 0 (set below); if output has a single top-level srtuct, unpack it (you will lose the name of that top level struct in the output)
-    opt.wild = []; % 0 or 1; default 0 (set below); all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*'
+    mos {mustBeText} = '' % char, or cell of char, or string, or empty; mos means "module options struct"; names of mos to fill options for; if optin is empty, empty mos gets set to all mos; if optin is nonempty, empty mos gets set to optin-mos (mos in optin) that ave not already been operated on; if mos is nonempty, ofill operates on listed mos, whether they exist in optin or not, and whether they have been operated on before or not
+    opt.mosc {mustBeText} = '' % char, or cell of char, or string, or empty to skip; mosc means "module options struct container"; subfield names into which mos are copied; the mos that are placed into mosc are derived as described above (for example, if mos is empty, and optin is nonempty, mos becomes optin-mos, and all these mos would be placed in any mosc listed; each mos gets placed into all mosc (so 3 mos and 4 mosc would create 12 mosc in the options struct)
+    opt.mosfinal {mustBeText} = '' % % char, or cell of char, or string, or empty; set any optout-mos to empty if they aren't listed in mosfinal; if mosfinal is nonempty, mos and mosc must be empty; cannot be set to empty (that would result in empty optout); all mos listed in mosfinal must be top-level mos (removing nested fields is an unusual use case that doesn't justify the complexity right now); mosfinal is intended for the last time you call ofill for an options struct, to simplify your oset file (so you can set all mos you might want, then remove any you don't want at the end); after mosfinal, finished=1 appears as top level field in optout
+    opt.rec (1,1) {mustBeBinary} = 0; % 0 or 1; default 0; whether to finish all default nestings listed in mostree (in odf.m); if mos is nonempty, will finish all nests in input mos only; if mos is empty will finish all nestings for entire options struct; rec=1 is not necessary for an mos that has no nested mos (so it will error in this case)
+    opt.unpack (1,1) {mustBeBinary} = 0; % 0 or 1; default 0; if output has a single top-level srtuct, unpack it (you will lose the name of that top level struct in the output)
+    opt.wild (1,1) {mustBeBinary} = 0; % 0 or 1; default 0; all defaults become wildcard; if empty, all defaults remain unchanged; if nonempty, all defaults become '*'
+    opt.id (1,1) {mustBeBinary} = 0 % 0 or 1; default 0; 
 end
 mosc = opt.mosc;
 mosfinal = opt.mosfinal;
@@ -145,19 +146,9 @@ if ~isempty(mosc)
 end
 
 if ~isempty(mosfinal)
-    if ~isempty(mos) || ~isempty(mosc) || ~isempty(unpack) || ~isempty(wild)
+    if ~isempty(mos) || ~isempty(mosc) || unpack || wild
         error("if mosfinal is nonempty, you cannot set mos, mosc, unpack, or wild ")
     end
-end
-
-if isempty(rec)
-    rec = 0;
-end
-if isempty(unpack)
-    unpack = 0;
-end
-if isempty(wild)
-    wild = 0;
 end
 
 

@@ -2404,5 +2404,27 @@
       "pth": "/Users/wienecke/stacks/ebgano/20250920-1_d05_s8m_018_s8m/z0z40_roi_.mat",
       "vnm": "ts"
     }
+  ],
+  "z2": [
+    {
+      "group": "3",
+      "group2": [],
+      "ic": [],
+      "ii": 1,
+      "it": [],
+      "optid": "z1",
+      "pth": "/Users/wienecke/stacks/ebgano/20251025-3_d05_s8m_018_s8m/20251025_3_1_z1_dq_.mat",
+      "vnm": "bh"
+    },
+    {
+      "group": "1",
+      "group2": [],
+      "ic": [],
+      "ii": [],
+      "it": [],
+      "optid": "z40",
+      "pth": "/Users/wienecke/stacks/ebgano/20251025-3_d05_s8m_018_s8m/z0z40_roi_.mat",
+      "vnm": "ts"
+    }
   ]
 }

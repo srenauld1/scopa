@@ -1,4 +1,4 @@
-function s = stackld(pthstack, opt, opt2)
+function s = stackld(pthstack, opt, opt2, opt3)
 
 %{
 
@@ -24,12 +24,12 @@ arguments
 
     pthstack {mustBeTextScalar} = '' %path to stack; if empty, user prompted to choose file
     
-    opt.fbrm (1,1) {mustBeBinary} = 1; %crop flyback frames from each volume, if they exist, before saving to mat
-    opt.iy {mustBeVectorOrEmpty, mustBeAllInt(opt.iy,'emptyok'), mustBePositive} = []; %y indices to keep and save to mat
-    opt.ix {mustBeVectorOrEmpty, mustBeAllInt(opt.ix,'emptyok'), mustBePositive} = []; %x indices to keep and save to mat
-    opt.ic {mustBeVectorOrEmpty, mustBeAllInt(opt.ic,'emptyok'), mustBePositive} = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
-    opt.iz {mustBeVectorOrEmpty, mustBeAllInt(opt.iz,'emptyok'), mustBePositive} = []; %z indices to keep and save to mat
-    opt.it {mustBeVectorOrEmpty, mustBeAllInt(opt.it,'emptyok'), mustBePositive} = []; %t indices to keep and save to mat
+    opt.fbrm (1,1) {mustBeBinary(opt.fbrm,func2str(mustBeBinary))} = 1; %crop flyback frames from each volume, if they exist, before saving to mat
+    opt.iy (:,1) {mustBeAllInt(opt.iy,'emptyok'), mustBePositive} = []; %y indices to keep and save to mat
+    opt.ix (:,1) {mustBeAllInt(opt.ix,'emptyok'), mustBePositive} = []; %x indices to keep and save to mat
+    opt.ic (:,1) {mustBeAllInt(opt.ic,'emptyok'), mustBePositive} = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+    opt.iz (:,1) {mustBeAllInt(opt.iz,'emptyok'), mustBePositive} = []; %z indices to keep and save to mat
+    opt.it (:,1) {mustBeAllInt(opt.it,'emptyok'), mustBePositive} = []; %t indices to keep and save to mat
     opt.clip double {mustBeSize(opt.clip,1,2), mustBeInRange(opt.clip,0,1)} = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
     opt.dtype char {mustBeTextScalar} = 'uint16'; %output stack datatype; if uint*, stack is zeroed (min subtract) before being converted 
     opt.smlenpx double {mustBeSize(opt.smlenpx,1,3), mustBeNonnegative} = [0,0,0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
@@ -40,6 +40,8 @@ arguments
     opt2.savemem (1,1) {mustBeBinary} = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
     opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+
+    opt3.fbrm (1,1) {mustBeBinary} = 1; %crop flyback frames from each volume, if they exist, before saving to mat
 
 end
 

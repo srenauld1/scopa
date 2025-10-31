@@ -14,7 +14,7 @@ if isempty(opt.optid)
 else
     if ~strcmp(opt.optid, optiddf)
         pthopt = [pthscopaget() 'opt_' mos '_' userdatfile('scopausername') '_.txt'];
-        [opt_file, optid_file, ~] = structfile(pthopt, s=[], nm=opt.optid, justld=1, dosort=1);
+        [opt_file, optid_file, ~] = structfile(pthopt, nm=opt.optid, justld=1, dosort=1);
         opt_file.optid = optid_file;
         opt_file_fn = fieldnames(opt_file);
         opt_file_ne = rmfield(opt_file, opt_file_fn(structfun(@isempty, opt_file))); 

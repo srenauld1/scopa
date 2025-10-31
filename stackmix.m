@@ -19,8 +19,9 @@ stackids = opt.stackids;
 pthpar = opt.pthpar;
 optsld = opt.optsld;
 
-mixstr = strjoin(mix, '');
-pthmix = [pthpre mixstr '_.mat'];
+mixstr = strjoin(rgnames, '');
+pthmix = [idmake(s.pth, 'pthpre') mixstr '_.mat'];
+
 
 try
 
@@ -101,7 +102,7 @@ catch
     scopausername = userdatfile('scopausername');
 
     pthrg = [pthscopa 'opt_rg_' scopausername '_.txt'];
-    [~, ~, tmprg] = structfile(pthrg, s=[], nm=[], usegit=0, dosort=0);
+    [~, ~, tmprg] = structfile(pthrg, usegit=0);
 
     numrg = 0;
     rg = {};
@@ -160,8 +161,8 @@ catch
     stacknew = [];
     for k = 1:numpth
         for q = 1:numel(rgnames{k})
-            stacktmp = stackcrop(s{k}.stack, rgnames{k}{q}, pthstack=pthstacks{k});
-            stacktmp = stackwarp(stacktmp, rot=rot(k,:), doplt=0);
+            stmp = stackcrop(s{k}, rgnames{k}{q});
+            stacktmp = stackwarp(stmp.stack, rot=rot(k,:), doplt=0);
             stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);
             stacknew = cat(2, stacknew, stacktmp);
         end
