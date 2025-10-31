@@ -11,6 +11,8 @@ why all options at first
     
 so ofill is useful for 
     setting options before function call (like a set, especially varied)
+    seeing options
+    more generally, organizing struct trees
     
 
 campaign=set of "same" experiments 

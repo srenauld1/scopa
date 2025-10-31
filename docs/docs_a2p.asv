@@ -5,8 +5,14 @@
 why all options at first
     easy to set all in one place, easy to look at
     easy to handle opts for different campaigns 
-    oid needs to be wi
+    ofill gives easy any/each opt setting 
+    oid needs to be within (or at least after) ofill, because we need to id filled options (if we omit, we can't assume defaults are the same so we don't know what the options were)
     but can't do vget up front
+    
+so ofill is useful for 
+    setting options before function call (like a set, especially varied)
+    seeing options
+    more generally, organizing struct trees
     
 
 campaign=set of "same" experiments 

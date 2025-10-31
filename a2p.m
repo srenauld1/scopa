@@ -63,7 +63,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if ~isempty(o.roi)
         for m = 1:numel(o.roi)
             prs = struct2pairs(o.roi(m));
-            s.roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+            roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
