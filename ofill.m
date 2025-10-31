@@ -391,6 +391,7 @@ if ~isempty(mosfinal)
     optout = oid(optout); %assign ids to options sets
 
     for k = 1:numel(mostree_open_with_mosc) %do option validation
+        clear optmosh_tmp
         stind = structind(mostree_open_with_mosc{k});
         try
             optout_tmp = getfield(optout, stind{:});
@@ -408,22 +409,26 @@ if ~isempty(mosfinal)
                 else
                     error("you have either created a mosc directly below a mosc, or a mosc without a mos above (neither should not be possible, how did we get here)")
                 end
-                prs = struct2pairs(optout_tmp);
-                optmosh_tmp = mosh.(stindtmp)('', prs{:}, och=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
+                for m = 1:numel(optout_tmp)
+                    prs = struct2pairs(optout_tmp(m));
+                    optmosh_tmp(m) = mosh.(stindtmp)('', prs{:}, och=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
+                end
             catch ME
                 error("attempt to validate inputs for module " +  stindtmp_with_mosc_option + newline + "failed with this error message " + ME.message)
             end
-            optmosh_tmp_fn = fieldnames(optmosh_tmp);
-            optmosh_tmp_ne = rmfield(optmosh_tmp, optmosh_tmp_fn(structfun(@isempty, optmosh_tmp)));
-            optout_tmp_fn = fieldnames(optout_tmp);
-            optout_tmp_ne = rmfield(optout_tmp, optout_tmp_fn(structfun(@isempty, optout_tmp)));
-            if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
-                fprintf("user-supplied options changed (in a minor way, like vector orientation or class) in arguments block for module " + stindtmp_with_mosc_option + newline)
+            for m = 1:numel(optout_tmp)
+                optmosh_tmp_fn = fieldnames(optmosh_tmp(m));
+                optmosh_tmp_ne = rmfield(optmosh_tmp(m), optmosh_tmp_fn(structfun(@isempty, optmosh_tmp(m))));
+                optout_tmp_fn = fieldnames(optout_tmp(m));
+                optout_tmp_ne = rmfield(optout_tmp(m), optout_tmp_fn(structfun(@isempty, optout_tmp(m))));
+                if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
+                    fprintf("user-supplied options changed (in a minor way, like vector orientation or class) in arguments block for module " + stindtmp_with_mosc_option + newline)
+                end
             end
         end
     end
 
-    
+
 else
 
     optout.ometa.dall.d = d;

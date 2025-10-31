@@ -57,7 +57,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
         end
     end
 
-
+    
     %%%% ROIS %%%%
 
     if ~isempty(o.roi)
