@@ -68,8 +68,6 @@ for k = 1:numel(idtmp)
                 o(k) = oset_gluetest();
             elseif contains(idtmp(k).pthstack, {'f91g'})
                 o(k) = oset_t5();
-            elseif contains(idtmp(k).pthstack, {'sophia'})
-                o(k) = oset_sophia();
             end
         case 'sr'
             if contains(idtmp(k).pthstack, {''}) %empty char for no stack path filtering
