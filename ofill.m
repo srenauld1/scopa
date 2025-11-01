@@ -470,7 +470,7 @@ end
 function omixcheck(o, mosc, mostree_du) %make sure all mos contain options and submos only, or mosc only
 
 fn = fieldnames(o);
-fn = fn(~strcmp(fn, 'vg')); %remove vg
+fn = fn(~strcmp(fn, glbfile('fnvget'))); %remove vg
 for k = 1:numel(fn)
     if isstruct(o.(fn{k}))
         omixcheck(o.(fn{k}), mosc, mostree_du);

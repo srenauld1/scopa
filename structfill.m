@@ -46,8 +46,8 @@ else
         if isfield(sout, fin2)
             if isstruct(s.(fin2))
                 fntmp = fieldnames(s.(fin2));
-                if any(ismember(fntmp, 'vg')) %copy everything user set within struct vg (since default vg is always empty) 
-                    if all(ismember(fntmp, 'vg'))
+                if any(ismember(fntmp, glbfile('fnvget'))) %copy everything user set within struct vg (since default vg is always empty) 
+                    if all(ismember(fntmp, glbfile('fnvget')))
                         sout.(fin2) = s.(fin2);
                     else
                         error("struct vg must not have any sibling fields")

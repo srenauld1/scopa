@@ -168,7 +168,7 @@ end
 
 function [tsout, dat] = vget2(vg, dm, pthpar, scopausername, pthscopa, usegit)
 
-if isstruct(vg) && all(startsWith(fieldnames(vg), 'vg')) && isscalar(vg)
+if isstruct(vg) && all(startsWith(fieldnames(vg), glbfile('fnvget'))) && isscalar(vg)
     vg = vg.vg; %since the input to this function is also named vg
 else
     error("each input to vget must be scalar struct containing field vg, and nothing else")

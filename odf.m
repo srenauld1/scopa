@@ -87,7 +87,7 @@ du.dq.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
-du.roi.s = struct('vg', []);
+du.roi.s = struct(glbfile('fnvget'), []);
 du.roi.rgname = 'none'; %text, name of rg operated on by roimake; default rgname 'none' means full fov (no subset rg); user is not prompted to create rg when rgname='none'
 du.roi.roiname = 'none'; %text, name of roi set created by roimake on a single rg
 du.roi.dodraw = 0; %1 to draw rois in roidraw
@@ -204,8 +204,8 @@ du.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
 %% bmp (bmpmake: compute bump)
 
-du.bmp.indv = struct('vg', []);
-du.bmp.depv = struct('vg', []);
+du.bmp.indv = struct(glbfile('fnvget'), []);
+du.bmp.depv = struct(glbfile('fnvget'), []);
 du.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
 du.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
 du.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
@@ -222,8 +222,8 @@ du.bmp.mdl = struct([]);  %mdlmake options returned by mdlmake('', och=1); empty
 
 %% mdl (mdlmake: fit model, depv as function of indv)
  
-du.mdl.indv = struct('vg', []);
-du.mdl.depv = struct('vg', []);
+du.mdl.indv = struct(glbfile('fnvget'), []);
+du.mdl.depv = struct(glbfile('fnvget'), []);
 du.mdl.epochnum = 1;
 du.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 du.mdl.lensec = 0; %model length in seconds, 0 is one sample
@@ -308,10 +308,10 @@ if any(structfun(@iscell, du_flat))
 end
 
 du_flat_cell = struct2cell(du_flat);
-vg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'vg']));
+vg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat glbfile('fnvget')]));
 fn_vg = fn_du_flat(vg_inds); %fieldnames with vg
 tmp_vg = du_flat_cell(vg_inds); 
-fn_invalid_vg = fn_vg(~endsWith(fn_vg, [delimflat 'vg']));
+fn_invalid_vg = fn_vg(~endsWith(fn_vg, [delimflat glbfile('fnvget')]));
 if ~isempty(fn_invalid_vg)
     error("vg fields in du must be empty structs, but at least one is not")
 end
@@ -321,7 +321,7 @@ end
 
 depth = cell2mat(cellfun(@(x) numel(strsplit(x, delimflat)), fn_du_flat, UniformOutput=false));
 fn_invalid_depth = fn_du_flat(depth>2 | depth<2);
-fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'vg']));
+fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat glbfile('fnvget')]));
 if ~isempty(fn_invalid_depth)
     error("the following fields in du (unnested d) are invalid because they are not at depth of 3: " + newline + sprintf('%s\n', fn_invalid_depth{:}) + "within du (depth 1), there are mos (depth 2), and within each mos are options (depth 3); options in du cannot themselves be structs; mos can be within other mos in d (nested version of du) but only if their nesting is listed in mostree")
 end

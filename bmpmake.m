@@ -16,8 +16,8 @@ arguments
     indv = []
     pthstack = []
 
-    opt.indv = struct('vg', []);
-    opt.depv = struct('vg', []);
+    opt.indv = struct(glbfile('fnvget'), []);
+    opt.depv = struct(glbfile('fnvget'), []);
     opt.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
     opt.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
     opt.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
