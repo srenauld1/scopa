@@ -32,9 +32,8 @@ for k = 1:numel(fn)
     fnflat = fieldnames(mos_struct_flat);
 
     mos_struct_flat_cell = struct2cell(mos_struct_flat);
-    
     idx_dist = cellfun(@iscell, mos_struct_flat_cell) & cellfun(@(x) numel(x)>1, mos_struct_flat_cell); %find fields with nonscalar cells
-    if any(idx_dist) %if there are any fields to be distributed
+    if any(idx_dist)
         fndist = fnflat(idx_dist);
         mos_struct_flat_cell = mos_struct_flat_cell(idx_dist);
         for m = 1:numel(mos_struct_flat_cell)
@@ -54,12 +53,12 @@ for k = 1:numel(fn)
                 tmp.(mosc_new).(fndist{mm}) = combos{m,mm}{1};
             end
         end
-
-    else %if there are not any fields to be distributed
-
+    
+    else
+    
         mosc_new = [mosc_tmp '_' num2str(1)];
-        tmp.(mosc_new) = struct;
-
+    tmp = [];
+    tmp.(mosc_new) = struct;
     end
 
 

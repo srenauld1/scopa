@@ -13,8 +13,8 @@ function o = moscset(o, mos)
 %}
 
 arguments
-    o
-    mos
+    o (1,1) struct
+    mos {mustBeTextScalar}
 end
 
 moscdf = 'none'; %in case neither opt.moscdf nor glb('moscdf') were set

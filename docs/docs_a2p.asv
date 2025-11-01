@@ -14,6 +14,7 @@ so ofill is useful for
     seeing options
     more generally, organizing struct trees
     
+we don't distribute vg cells (until vget) because they may not map to any variable, so unique vg sets could be redundant, so we have to ignore vg in oid
 
 campaign=set of "same" experiments 
 fly=an individual fly (i should stop calling param changes new flies (like zoom in)
