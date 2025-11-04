@@ -59,6 +59,8 @@ for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, 
         o.roi(m).dodraw = 1;
     end
 
+    o = ofill(o);
+
 end
 
 o = ofill(o, mosfinal=do);

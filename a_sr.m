@@ -33,7 +33,7 @@ for m = 1:numel(pthtmp)
     glb(1, pthsvdir=idmake(s.pth, 'pthstackfld')) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 
     prs = struct2pairs(o.dq(m));
-    dq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0);
+    dq(m) = dqmake(o.id.pthdaq, prs{:}, doplt=0);
 
     prs = struct2pairs(o.roi(m));
     roi(m) = roimake(s, prs{:}, doplt=0);

@@ -53,11 +53,11 @@ for k = 1:numel(oa) % loop over recordings found in oset
     if ~isempty(o.dq)
         for m = 1:numel(o.dq)
             prs = struct2pairs(o.dq(m));
-            dq(m) = daqld(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
+            dq(m) = dqmake(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
         end
     end
 
-
+    
     %%%% ROIS %%%%
 
     if ~isempty(o.roi)

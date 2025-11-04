@@ -116,5 +116,96 @@
     "s": {
       "vg": []
     }
+  },
+  "z49": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "dff008000",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "none",
+    "roiname": "ves041",
+    "s": {
+      "vg": []
+    }
+  },
+  "z50": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": {
+      "celsz": 8,
+      "chan": 1,
+      "do3d": 1,
+      "edgesig": [3,3,3],
+      "edgethr": [0.1,0.7],
+      "maskmake": "nonzero",
+      "maskseg": "torus",
+      "numroi": 32,
+      "roirad": 1.5
+    },
+    "nrm": [],
+    "qc": [],
+    "rgname": "eb",
+    "roiname": "eb"
+  },
+  "z51": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "roiname": "dorsal"
+  },
+  "z52": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gal",
+    "roiname": "ventral"
+  },
+  "z53": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "roiname": "dorsal"
+  },
+  "z54": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "gar",
+    "roiname": "ventral"
+  },
+  "z55": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "no",
+    "roiname": "left"
+  },
+  "z56": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": [],
+    "qc": [],
+    "rgname": "no",
+    "roiname": "right"
   }
 }

@@ -1,4 +1,4 @@
-function pthopt = odf(pthopt)
+function [dall, pthopt] = odf(pthopt, dowrite)
  
 %{
 
@@ -7,11 +7,7 @@ default options for a2p modules and child modules
     for example, roidraw is child module becaause it is only ever called from module roimake
 running odf writes all options to txt file in scopa using jsonencode (written to file for stability)  
 each section contains options for a module called in a2p (section header is option field name, with function name in parentheses, and brief description of function)
-option values cannot be structs, except structs named vg 
-vg structs are used by vget to find inputs to modules that are main inputs to modules
-    for example, s is a variable containing the stack (neural image data), and it is the main input to roimake
-    but if name-value argument 's' is a nonempty struct vg, and s is empty, code will find s meeting criteria set in vg, and use that as the main input to roimake
-    this is a system for tracking inputs/outputs and how they change with analysis 
+
 du fieldnames (mos) are ordered below by order of appearance in a2p
 du2 mirrors du, but derives options from arguments block of each module; du2 is compared with du, any mismatch causes error; the purpose is to have all options visible below in du, while letting arguments block enforce argument validation
 we hard-code variable 'mostree' (rather than deriving it from du) because submodule options are empty within the supermodule arguments block (by default submodules are skipped); so du below lists top-level submodules as options (eg, du.bmp.mdl = [], but does not list submodules for module option, eg mdl.opg); so mostree shows all possible module nestings; deriving mostree from du would only go one level deep
@@ -27,19 +23,20 @@ NOTE: if you change a default argument here, you must also change it in the corr
 
 arguments
     pthopt {mustBeTextScalar, mustBeNonempty} = [pthscopaget() 'optdf.txt'] %path to file holding all module default options
+    dowrite {mustBeBinary} = 0 %write to file if 1
 end
 
 
 %% mosh struct holds function handles for all a2p modules;
 
 mosh.sld = @stackld;
-mosh.dq = @daqld;
+mosh.dq = @dqmake;
 mosh.roi = @roimake;
 mosh.cm = @roifauto;
 mosh.ma = @roimauto;
 mosh.qc = @roiqc;
 mosh.nrm = @roinorm;
-mosh.bmp = @bmpmake;
+mosh.bmp = @bmpmake_w;
 mosh.mdl = @mdlmake;
 mosh.opl = @oplmake;
 mosh.opg = @opgmake;
@@ -73,11 +70,11 @@ du.sld.smlensec = 0; %tenporal window length (in seconds) for smoothdata (defaul
 du.sld.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
 
 
-%% dq (daqld: load, process daq)
+%% dq (dqmake: load, process daq)
 
 du.dq.rskey = 0; % nonempty numeric vector (scalar or nonscalar), or negative scalar, or empty []; rskey denotes resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rskey*-1 (eg rskey=-60 resamples into 60 hz); nonnegative integer (in which case, can be scalar or nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rskey is recommended over empty rskey, because there is a little less aliasing and it is faster
 du.dq.dvlensec = []; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
-du.dq.dvord = 2; % order of polynomial used to fit local slope; should probably always be 2 or 3; vecdv and daqld set max to 5, because it seems reasonable, but this is not actually required
+du.dq.dvord = 2; % order of polynomial used to fit local slope; should probably always be 2 or 3; vecdv and dqmake set max to 5, because it seems reasonable, but this is not actually required
 du.dq.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rskey is not empty)
 du.dq.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rskey is not empty)
 du.dq.balldia = glbfile('balldia_berg1'); % ball diameter in mm, used to convert some fictrac variables into mm
@@ -87,7 +84,6 @@ du.dq.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle 
 
 %%  (roimake: draw and/or automatically segment morphological rois, extract and normalize their responses)
 
-du.roi.s = struct('vg', []);
 du.roi.rgname = 'none'; %text, name of rg operated on by roimake; default rgname 'none' means full fov (no subset rg); user is not prompted to create rg when rgname='none'
 du.roi.roiname = 'none'; %text, name of roi set created by roimake on a single rg
 du.roi.dodraw = 0; %1 to draw rois in roidraw
@@ -204,8 +200,6 @@ du.nrm.mincoh = 0.3; %work in progress; min coherence for channorm
 
 %% bmp (bmpmake: compute bump)
 
-du.bmp.indv = struct('vg', []);
-du.bmp.depv = struct('vg', []);
 du.bmp.domtype = 'm'; %'f' (functional) to define circular domain with fit to each roi, or 'm' (morphological) to define as circle across region mask
 du.bmp.numcirc = 1; %number of circles (eg 1 for eb, 2 for pb), if pb, always use 2 because you can subset with argument 'scope' below
 du.bmp.mthd = 'pva'; %'pva' for vector average, pvas for signed vector average, vm for fit von mises to activity across all roi at each sample
@@ -222,8 +216,6 @@ du.bmp.mdl = struct([]);  %mdlmake options returned by mdlmake('', och=1); empty
 
 %% mdl (mdlmake: fit model, depv as function of indv)
  
-du.mdl.indv = struct('vg', []);
-du.mdl.depv = struct('vg', []);
 du.mdl.epochnum = 1;
 du.mdl.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
 du.mdl.lensec = 0; %model length in seconds, 0 is one sample
@@ -299,7 +291,7 @@ du.fmf.feat2 = [];
 
 %% check for problems
 
-delimflat = '__';
+delimflat = glbfile('delimflat');
 du_flat = structflat(du, delim=delimflat);
 fn_du_flat = fieldnames(du_flat);
 
@@ -307,21 +299,8 @@ if any(structfun(@iscell, du_flat))
     error("at least one of the default values above is a cell; cells are not allowed to be default values because cells are used in oid.m to distribute options into unique sets")
 end
 
-du_flat_cell = struct2cell(du_flat);
-vg_inds = ~cellfun(@isempty, regexp(fn_du_flat, [delimflat 'vg']));
-fn_vg = fn_du_flat(vg_inds); %fieldnames with vg
-tmp_vg = du_flat_cell(vg_inds); 
-fn_invalid_vg = fn_vg(~endsWith(fn_vg, [delimflat 'vg']));
-if ~isempty(fn_invalid_vg)
-    error("vg fields in du must be empty structs, but at least one is not")
-end
-if any(~cellfun(@isempty, tmp_vg))
-    error("vg fields in du must be empty structs, but at least one is not")
-end
-
 depth = cell2mat(cellfun(@(x) numel(strsplit(x, delimflat)), fn_du_flat, UniformOutput=false));
 fn_invalid_depth = fn_du_flat(depth>2 | depth<2);
-fn_invalid_depth = fn_invalid_depth(~endsWith(fn_invalid_depth, [delimflat 'vg']));
 if ~isempty(fn_invalid_depth)
     error("the following fields in du (unnested d) are invalid because they are not at depth of 3: " + newline + sprintf('%s\n', fn_invalid_depth{:}) + "within du (depth 1), there are mos (depth 2), and within each mos are options (depth 3); options in du cannot themselves be structs; mos can be within other mos in d (nested version of du) but only if their nesting is listed in mostree")
 end
@@ -358,7 +337,7 @@ for k = 1:numel(mostree)
         mostree_open{cnt} = strjoin(spl(1:q), '.');
     end
 end
-mostree_open = sort(convertCharsToStrings(unique(mostree_open)))'; %sort so we ascend, shallowest to deepest, since d is recursive fill of all mos
+mostree_open = sort(convertCharsToStrings(unique(mostree_open))); %sort so we ascend, shallowest to deepest, since d is recursive fill of all mos
 
 d = struct;
 for k = 1:numel(mostree_open)
@@ -371,7 +350,7 @@ d_flat = structflat(d, delim=delimflat);
 fn_d_flat = fieldnames(d_flat);
 spl = cellfun(@(x) strsplit(x, delimflat), fn_d_flat, UniformOutput=false);
 if any(cell2mat(cellfun(@(x) ~isequal(numel(x), numel(unique(x))), spl, UniformOutput=false)))
-    error("there is a repeated fieldname in default options struct (could be an mos or an option, or an option with the same name as a mos; repeated names are currently not allowed")
+    error("there is a repeated fieldname in a single vertical path through default options struct (could be an mos or an option, or an option with the same name as a mos; repeated names in a vertical path are currently not allowed")
 end
 
 
@@ -389,15 +368,21 @@ end
 %% derive mostrees
 
 [mostree_d, mostree_open_d, mostree_top_d, options_d] = mostreeget(d, du); 
-if ~isequal(mostree, mostree_d)
+mostree_d_no_idx = regexprep(mostree_d, '\(\d+\)', '');
+if ~isequal(mostree, mostree_d_no_idx)
     error("mostree and mostree_d (derived mostree from mostreeget) do not match")
 end
-if ~isequal(mostree_open, mostree_open_d)
+mostree_open_d_no_idx = regexprep(mostree_open_d, '\(\d+\)', '');
+if ~isequal(mostree_open, mostree_open_d_no_idx)
     error("mostree_open and mostree_d (derived mostree from mostreeget) do not match")
 end
 options_invalid = options_d(ismember(options_d, fnd));
 if ~isempty(options_invalid)
     error("the following options have the same names as mos (not allowed): " + newline + sprintf('%s\n', options_invalid{:}))
+end
+options_invalid = options_d(strcmp(options_d, glbfile('fnvget')));
+if ~isempty(options_invalid)
+    error("in du there is an option named " + glbfile('fnvget') + ", this is not allowed because it is reserved as a struct name for function vget")
 end
 
 
@@ -414,9 +399,11 @@ for k = 1:numel(fnmh)
     dall.mosh.(fnmh{k}) = func2str(mosh.(fnmh{k})); %write char, later must use str2func to use it (eg in ofill)
 end
 
-fprintf("writing default options to: " + pthopt + newline)
+if dowrite
+    fprintf("writing default options to: " + pthopt + newline)
+    structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
+end
 
-structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
 
 
 

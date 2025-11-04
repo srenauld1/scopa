@@ -13,7 +13,9 @@ so oid just has these steps: distribute, reduce, sort, unique, ID
 arguments
     o % options struct 
     opt.justld = 0 % get ids only (cannot write to file or create new id)
+    opt.mos = '' %optionally pass in mos; if nonempty, o must be struct to be passed into module, rather than struct holding multiple mos structs
 end
+mos = opt.mos;
 
 try
 
@@ -31,9 +33,6 @@ try
     if vgetcall && ~justld
         error("vget should call oid with justld=1")
     end
-    if ~vgetcall && ( ~isfield(o, 'finished') || ~isequal(o.finished, 1) ) %input struct does not require true 'finished' field if oid is called from vget
-        error("options struct must be 'finished'; you may have removed final call to ofill in an oset_* file with nonempty mosfinal name-value argument")
-    end
     if ~isscalar(o) || ~isstruct(o)
         error("o must be scalar struct")
     end
@@ -41,8 +40,19 @@ try
         fprintf("NOTE: setting usegit to false because s is empty or justld is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     end
    
-    mos = fieldnames(o);
-    mos = mos(~strcmp(mos, 'finished'));
+    if isempty(mos)
+        mos = fieldnames(o);
+    else
+        if isfield(o, mos)
+            error("if mos is nonempty, mos cannot be field in o")
+        end
+        fntmp = fieldnames(o);
+        o.(mos) = o;
+        o = rmfield(o, fntmp);
+        if ~iscell(mos)
+            mos = {mos};
+        end
+    end
 
     for k = 1:numel(mos)
 

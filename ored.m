@@ -138,7 +138,7 @@ end
 
 function opt = ored_bmp(opt)
 
-if strcmp(opt.domtype, 'm') && ~isempty(opt.mdl) %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
+if strcmp(opt.domtype, 'm') && isfield(opt, 'mdl') && ~isempty(opt.mdl) %if domtype (domain type) is m (morphological), make empty the options used for domtype f (functional)
     opt.mdl = []; %rmfield(opt, 'mdl');
     opt.numangrs = [];
     opt.maxangrs = [];

@@ -6,7 +6,7 @@ function y = isemptyall(x)
 
 y = 1;
 if isstruct(x)
-    if ~isempty(fieldnames(structflat(x)))
+    if ~isempty(fieldnames(x)) %~isempty(fieldnames(structflat(x)))
         y = 0;
     end
 elseif iscell(x) || isstring(x)

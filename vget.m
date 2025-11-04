@@ -168,7 +168,7 @@ end
 
 function [tsout, dat] = vget2(vg, dm, pthpar, scopausername, pthscopa, usegit)
 
-if isstruct(vg) && all(startsWith(fieldnames(vg), 'vg')) && isscalar(vg)
+if isstruct(vg) && all(startsWith(fieldnames(vg), glbfile('fnvget'))) && isscalar(vg)
     vg = vg.vg; %since the input to this function is also named vg
 else
     error("each input to vget must be scalar struct containing field vg, and nothing else")
@@ -337,8 +337,7 @@ if strcmp(recid, 'curr')
     recid = {glb('recid', err=1)};
 end
 
-pthopt = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
-dall = structld(pthopt, nocells=1, dosort=0);
+dall = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
 mostree_top = dall.mostree_top;
 
 nonemptyinds = [];

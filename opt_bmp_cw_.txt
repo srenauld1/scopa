@@ -1895,5 +1895,621 @@
     "omitnan": 1,
     "scope": "all",
     "smlensec": 0
+  },
+  "z27": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z28": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z29": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z30": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z31": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z32": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 16
+  },
+  "z33": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "no",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z34": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "no",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 16
+  },
+  "z35": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z36": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z37": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z38": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "maxangrs": 8,
+    "mthd": "pva",
+    "numangrs": 16,
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
+  },
+  "z39": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 2
+  },
+  "z40": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 4
+  },
+  "z41": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 6
+  },
+  "z42": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 2
+  },
+  "z43": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 4
+  },
+  "z44": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "eb"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 6
+  },
+  "z45": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "no"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 2
+  },
+  "z46": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "no"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 4
+  },
+  "z47": {
+    "depv": {
+      "vg": {
+        "group": "1",
+        "roi": {
+          "ma": {
+            "maskseg": "torus"
+          },
+          "rgname": "eb",
+          "roiname": "no"
+        },
+        "vnm": "ts"
+      }
+    },
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "indv": {
+      "vg": {
+        "dq": "*",
+        "vnm": "bh"
+      }
+    },
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 6
   }
 }

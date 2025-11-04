@@ -27,11 +27,11 @@ if num_sin>1 %for nonscalar struct, operate on each index, and also find fields 
         error("sdf must match size of s")
     end
     yesstruct = cellfun(@isstruct, struct2cell(vec(s)));
-    notstable = ~all(isequal(yesstruct, yesstruct(:,1)), 2);
+    notstable = ~all(yesstruct==yesstruct(:,1), 2);
     for idx_sin = 1:num_sin
         for k = 1:numel(fn_sin)
             fin2 = fn_sin{k};
-            if isequal(yesstruct(k,idx_sin), 0) && isequal(notstable(k), 1)
+            if ~yesstruct(k,idx_sin) && notstable(k)
                 s(idx_sin).(fin2) = struct;
             end
         end
@@ -46,8 +46,8 @@ else
         if isfield(sout, fin2)
             if isstruct(s.(fin2))
                 fntmp = fieldnames(s.(fin2));
-                if any(ismember(fntmp, 'vg')) %copy everything user set within struct vg (since default vg is always empty) 
-                    if all(ismember(fntmp, 'vg'))
+                if any(ismember(fntmp, glbfile('fnvget'))) %copy everything user set within struct vg (since default vg is always empty) 
+                    if all(ismember(fntmp, glbfile('fnvget')))
                         sout.(fin2) = s.(fin2);
                     else
                         error("struct vg must not have any sibling fields")
@@ -56,7 +56,11 @@ else
                     if isstruct(sout.(fin2))
                         sout.(fin2) = structfill(s.(fin2), sout.(fin2));
                     else
-                        error(fin2 + " is not a substruct in default struct sdf (at least not where it appears in s)")
+                        if isempty(fieldnames(s.(fin2))) && isempty(sout.(fin2))
+                            sout.(fin2) = [];
+                        else
+                            error(fin2 + " is not a substruct in default struct sdf (at least not where it appears in s)")
+                        end
                     end
                 end
             else
