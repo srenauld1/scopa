@@ -1,26 +1,14 @@
 {
   "d": {
     "bmp": {
-      "depv": {
-        "vg": []
-      },
       "domtype": "m",
       "dorescale": 0,
       "dvlensec": 0.4,
       "dvord": 2,
-      "indv": {
-        "vg": []
-      },
       "maxangrs": 8,
       "mdl": {
-        "depv": {
-          "vg": []
-        },
         "epochmix": 0,
         "epochnum": 1,
-        "indv": {
-          "vg": []
-        },
         "lagsec": 0,
         "lensec": 0,
         "max_iter_global": 3,
@@ -101,14 +89,8 @@
       "stimtype": "drone"
     },
     "mdl": {
-      "depv": {
-        "vg": []
-      },
       "epochmix": 0,
       "epochnum": 1,
-      "indv": {
-        "vg": []
-      },
       "lagsec": 0,
       "lensec": 0,
       "max_iter_global": 3,
@@ -237,10 +219,7 @@
         "minroisz": 5
       },
       "rgname": "none",
-      "roiname": "none",
-      "s": {
-        "vg": []
-      }
+      "roiname": "none"
     },
     "sld": {
       "clip": [0,1],
@@ -258,16 +237,10 @@
   },
   "du": {
     "bmp": {
-      "depv": {
-        "vg": []
-      },
       "domtype": "m",
       "dorescale": 0,
       "dvlensec": 0.4,
       "dvord": 2,
-      "indv": {
-        "vg": []
-      },
       "maxangrs": 8,
       "mdl": [],
       "mthd": "pva",
@@ -353,14 +326,8 @@
       "roirad": []
     },
     "mdl": {
-      "depv": {
-        "vg": []
-      },
       "epochmix": 0,
       "epochnum": 1,
-      "indv": {
-        "vg": []
-      },
       "lagsec": 0,
       "lensec": 0,
       "max_iter_global": 3,
@@ -438,10 +405,7 @@
       "nrm": [],
       "qc": [],
       "rgname": "none",
-      "roiname": "none",
-      "s": {
-        "vg": []
-      }
+      "roiname": "none"
     },
     "sld": {
       "clip": [0,1],
@@ -458,9 +422,9 @@
     }
   },
   "mosh": {
-    "bmp": "bmpmake",
+    "bmp": "bmpmake_w",
     "cm": "roifauto",
-    "dq": "daqld",
+    "dq": "dqmake",
     "fmf": "flymaxfe",
     "ma": "roimauto",
     "mdl": "mdlmake",
@@ -472,41 +436,41 @@
     "sld": "stackld"
   },
   "mostree": [
-    "bmp.mdl.opg",
-    "bmp.mdl.opl",
-    "dq",
-    "fmf",
-    "mdl.opg",
-    "mdl.opl",
-    "roi.cm",
-    "roi.ma",
-    "roi.nrm",
-    "roi.qc",
-    "sld"
+    "bmp(1).mdl(1).opg(1)",
+    "bmp(1).mdl(1).opl(1)",
+    "dq(1)",
+    "fmf(1)",
+    "mdl(1).opg(1)",
+    "mdl(1).opl(1)",
+    "roi(1).cm(1)",
+    "roi(1).ma(1)",
+    "roi(1).nrm(1)",
+    "roi(1).qc(1)",
+    "sld(1)"
   ],
   "mostree_open": [
-    "bmp",
-    "bmp.mdl",
-    "bmp.mdl.opg",
-    "bmp.mdl.opl",
-    "dq",
-    "fmf",
-    "mdl",
-    "mdl.opg",
-    "mdl.opl",
-    "roi",
-    "roi.cm",
-    "roi.ma",
-    "roi.nrm",
-    "roi.qc",
-    "sld"
+    "bmp(1)",
+    "bmp(1).mdl(1)",
+    "bmp(1).mdl(1).opg(1)",
+    "bmp(1).mdl(1).opl(1)",
+    "dq(1)",
+    "fmf(1)",
+    "mdl(1)",
+    "mdl(1).opg(1)",
+    "mdl(1).opl(1)",
+    "roi(1)",
+    "roi(1).cm(1)",
+    "roi(1).ma(1)",
+    "roi(1).nrm(1)",
+    "roi(1).qc(1)",
+    "sld(1)"
   ],
   "mostree_top": [
-    "bmp",
-    "dq",
-    "fmf",
-    "mdl",
-    "roi",
-    "sld"
+    "bmp(1)",
+    "dq(1)",
+    "fmf(1)",
+    "mdl(1)",
+    "roi(1)",
+    "sld(1)"
   ]
 }

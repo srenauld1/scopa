@@ -28,7 +28,7 @@ lev = opt.lev;
 multi = opt.multi;
 noerror = opt.noerror;
 
-delimflat = '__'; % delimiter in flattened struct
+delimflat = glbfile('delimflat'); % delimiter in flattened struct
 
 if ~isempty(lev)
     if ~isequal(lev, sort(lev), min(lev):max(lev)) || any(mod(lev,1)) || any(lev<1)

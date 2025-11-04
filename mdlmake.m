@@ -25,8 +25,6 @@ arguments
     depv = [] %dependent variable(s) before processing; if indv and depv are cells, separate models are fit to all indv/depv pairs (loop over mdlmake_one), if mat, only one model is fit
     pthstack = [] %path to stack
 
-    opt.indv = struct(glbfile('fnvget'), []);
-    opt.depv = struct(glbfile('fnvget'), []);
     opt.epochnum = 1;
     opt.lagsec = 0; %0 is one sample, how many samples indv precedes depv for model fit . . . for now, must be nonnegative integers, range 0 to lenfit_samp-1
     opt.lensec = 0; %model length in seconds, 0 is one sample

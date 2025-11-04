@@ -69,7 +69,7 @@ for clarity, all arguments except file path (pth) are name-value arguments
 note: struct sorting does not affect test of equality
 note: empty structs are not preserved by structfile; that is, struct([]) becomes [] after read/write with jsonencode/jsondecode 
 
-TODO: add name-value argument 'renm' for renaming structs in file (modeled after renm argument in daqld)
+TODO: add name-value argument 'renm' for renaming structs in file (modeled after renm argument in dqmake)
 
 %}
 

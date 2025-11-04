@@ -18,7 +18,7 @@ arguments
     optin (1,1) struct %scalar struct to be "distributed"
 end
 
-delimflat = '__';
+delimflat = glbfile('delimflat');
 
 %%%% DISTRIBUTE NON-SINGLETON CELLS INTO NEW MOSC (SUBSTRUCTS) %%%%
 
@@ -35,9 +35,8 @@ for k = 1:numel(fn)
 
     mos_struct_flat_cell = struct2cell(mos_struct_flat);
     
-    idx_vg = ~cellfun(@isempty, regexp(fnflat, [delimflat glbfile('fnvget') '$' '|' delimflat glbfile('fnvget') delimflat]));
     idx_dist = cellfun(@iscell, mos_struct_flat_cell) & cellfun(@(x) numel(x)>1, mos_struct_flat_cell); %find fields with nonscalar cells
-    idx_dist = idx_dist & ~idx_vg; 
+    idx_dist = idx_dist; 
     if any(idx_dist) %if there are any fields to be distributed
         fndist = fnflat(idx_dist);
         mos_struct_flat_cell = mos_struct_flat_cell(idx_dist);
@@ -73,13 +72,13 @@ for k = 1:numel(fn)
         if ~idx_dist(m)
             mosc_new = fieldnames(tmp);
             for q = 1:numel(mosc_new)
-                if iscell(mos_struct_flat.(fnflat{m})) & ~idx_vg(m) %cell-valued fields that aren't in substruct glbfile('fnvget') must be scalar cells by this point, and get taken out of their cells
+                if iscell(mos_struct_flat.(fnflat{m})) %cell-valued fields must be scalar cells by this point, and get taken out of their cells
                     if isscalar(mos_struct_flat.(fnflat{m}))
                         tmp.(mosc_new{q}).(fnflat{m}) = mos_struct_flat.(fnflat{m}){1}; %since singleton, take it out of cell
                     else
                         error("after distribution all cells must be scalar")
                     end
-                else %if not cell or if in substruct glbfile('fnvget'), just copy over into output (do not modify)
+                else %if not cell, just copy over into output (do not modify)
                     tmp.(mosc_new{q}).(fnflat{m}) = mos_struct_flat.(fnflat{m});
                 end
             end

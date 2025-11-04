@@ -15,10 +15,9 @@ arguments
     mosc = [] % if o contains mosc, pass in list of those mosc (to prevent error identifying options vs mos)
 end
 
-delimflat = '__';
+delimflat = glbfile('delimflat');
 
 fn_du = fieldnames(du);
-mos_and_mosc = cat(1, fn_du(:), mosc(:));
 
 oflat = structflat(o, delim=delimflat);
 fn_oflat = fieldnames(oflat);
@@ -26,7 +25,7 @@ fn_oflat = fieldnames(oflat);
 options_o = fn_oflat; %options only, not mos
 while true
     options_tmp = options_o;
-    options_o = regexprep(options_o, strcat('^', mos_and_mosc, delimflat), ''); %remove contiguous sequence of mos and/or mosc at the beginning  
+    options_o = regexprep(options_o, strcat('^', fn_du, delimflat, '|^\d', delimflat), ''); %remove contiguous sequence of mos and/or mosc at the beginning  
     if isequal(options_o, options_tmp) %once all not-mos have been removed, break from the loop
         break
     end
@@ -56,16 +55,21 @@ for k = 1:numel(options_o) %use this in loop because we are removing mos_not for
 end
 fn_oflat_mos_only = unique(fn_oflat_mos_only);
 
-mostree_open = strrep(fn_oflat_mos_only, delimflat, '.');
+fn_oflat_mos_only = strrep(fn_oflat_mos_only, delimflat, '.');
+fn_oflat_mos_only = regexprep(fn_oflat_mos_only, '\.(\d+)', '($1)'); % .# becomes (#) (safe because these are all structs)
+fn_oflat_mos_only = regexprep(fn_oflat_mos_only, '\.(\d+)\.', '($1)'); % .#. becomes (#)
+fn_oflat_mos_only = regexprep(fn_oflat_mos_only, '(\w+)\.', '$1(1).'); % .#. becomes (#)
+fn_oflat_mos_only = regexprep(fn_oflat_mos_only, '([^\)])$', '$1(1)'); %add (1) to end if there is no struct index
+mostree_open = {};
 for k = 1:numel(fn_oflat_mos_only)
-    tmp = strsplit(fn_oflat_mos_only{k}, delimflat);
+    tmp = strsplit(fn_oflat_mos_only{k}, '.');
     for q = 1:numel(tmp)
         mostree_open = cat(2, mostree_open, {strjoin(tmp(1:q), '.')});
     end
 end
 mostree_open = unique(mostree_open);
 mostree_open = convertCharsToStrings(mostree_open);
-mostree_open = sort(vec(mostree_open));
+mostree_open = sort(mostree_open);
 
 mostree = string([]);
 q = 0;
@@ -76,4 +80,4 @@ for k = 1:numel(mostree_open)
     end
 end
 
-mostree_top = fieldnames(o);
+mostree_top = mostree_open(~contains(mostree_open, '.')); %this keeps indices if nonscalar, while fieldnames(o) doens't

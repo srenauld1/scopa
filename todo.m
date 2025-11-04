@@ -19,7 +19,7 @@ put any argument dependent option changing before odf=1 so arguments get changed
 
 vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like dvlensec and slopelensamp
 
-deal with nonscalar dq output within daqld (when rsidx are multiple) while multiple optid also make dq nonscalar (outside daqld)
+deal with nonscalar dq output within dqmake (when rsidx are multiple) while multiple optid also make dq nonscalar (outside dqmake)
 consider renaming roi child mos 
     rmm
     rma
@@ -29,9 +29,9 @@ consider renaming roi child mos
 (also their outputs??)
 
 put flymaxfe into stimftmake (stim feature make)
-consider putting stimftmake into daqld , as child module, and having derivatives/velocities handled by that child module 
+consider putting stimftmake into dqmake , as child module, and having derivatives/velocities handled by that child module 
 consider putting bmpmake into stackftmake (stack feature make) something like that
-so at the high level, daqld becomes load all stim stuff (ie not neural data)
+so at the high level, dqmake becomes load all stim stuff (ie not neural data)
 and bmpmake gets put into stack feature extrator, extracting all features from neural data (except rois, or rois also??)
 rename ts vec in many cases (like vecrs --> vecrs)
 consider renaming input 'opt' 'mos' in modules  
@@ -80,10 +80,10 @@ use dbstack to prevent some functions from running unless a2p is on stack (like 
 should empty optid be part of each struct in defaults? or only added after oid, as it does now?
 change names for vget group
 vget defaults are never filled in on purpose, but is that right?
-make daqld ftv have a dotfv, just like roimake
+make dqmake ftv have a dotfv, just like roimake
 consider making default nested opts rather than using otree; for example, d.roi.cm = [], etc
 optid for stackseries, since it affects the rois
-no roeason to make dq a table in daqld then convert to struct, just m,ake struct from start
+no roeason to make dq a table in dqmake then convert to struct, just m,ake struct from start
 in vget there are multiple files with matched optid and domain, you may have created them from different versions of the same stack (or, od, etc); need to make this fixible; for now just rename one
 do i need maketime protection for rg??
 in odf define timeseries fields available to bmp (like mu, rho, amp, etc), the way you did with dq, do this for all main modules 

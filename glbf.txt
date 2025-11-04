@@ -2,6 +2,7 @@
   "dmstackdf": "yxztc",
   "optiddf": "z0",
   "fnvget": "vg",
+  "delimflat": "__",
   "voltminhd_flyclock_berg1": 1,
   "voltminhd_flyclock_berg2": 6,
   "balldia_berg1": 9,

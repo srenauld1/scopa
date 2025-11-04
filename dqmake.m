@@ -1,4 +1,4 @@
-function dq = daqld(pthdaq, opt, opt2)
+function dq = dqmake(pthdaq, opt, opt2)
 
 %{
 
@@ -19,11 +19,11 @@ NAME-VALUE ARGUMENT 'rskey'
             each nonnegative rskey element denotes which slice and/or volume index to use for resampling, where 0 denotes volume indices, and 1+ denotes slice indices
             daq variables are resampled according to coincident slice and/or volume index, creating a different timeseries for each nonnegative rskey element (each "resampling register")
             example: rskey = [0,4] will create two "resampling registers", one with volume indices and one with slice 4 indices; dq fields will have size (2,v), where v is number imaging volumes
-            daqld allows multiple resampling registers for the following reasons:
+            dqmake allows multiple resampling registers for the following reasons:
                - we don't know the "true lag" between imaging and daq variables
                - often, our imaging volume rate is at least 2-4 times slower than stimulus and/or behavior rate, while imaging frame rate is at least 2-4 times faster, so multiple resampling registers can improve the resolution of temporal correlations between imaging and daq variables
                     - this is particularly useful when comparing rois from different slices of a stack acquired at low volume rate, or when volume flyback time is slow
-            daqld allows multiple resampling registers to be saved to the same output struct 'dq' (rather than requiring rskey always be scalar) to facilitate comparisons among resampling registers; 
+            dqmake allows multiple resampling registers to be saved to the same output struct 'dq' (rather than requiring rskey always be scalar) to facilitate comparisons among resampling registers; 
                 however, empty or negative rskey must be run separately from nonnegative rskey because they can output different resampled variable length (certainly this is true for negative rskey, but often is also true for rskey=[] because of resample imprecision, although typically empty and nonnegative rskey match in resampled output length)  
             warning: all nonnegative rskey should resample into the same length (matching number of imaging volumes, or frames if non-volumetric, which are also called "volumes" in scopa metadata anyway), 
                 however, sometimes the resampled length can be slightly shorter than expected; 
@@ -37,7 +37,7 @@ NAME-VALUE ARGUMENT 'rskey'
         if negative
             must be scalar
             the negative of the negative rskey represents the desired arbitrary resampling rate 
-            with negative rskey, daqld operates exactly the same as empty rskey, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rskey is exactly imaging volume rate (times -1)
+            with negative rskey, dqmake operates exactly the same as empty rskey, but resamples into a different rate, so output length in time will not match number imaging volumes, unless rskey is exactly imaging volume rate (times -1)
             this can be useful if you want daq variables resampled into behavior rate (often 60 hz, so for this, rskey = -60)
             warning: resampling with 'resample' (rskey=[] or negative scalar), has a little more aliasing than resampling with slice and/or volume indices (nonnegative rskey), but the differences in spectra are typically very small; 
 
@@ -50,7 +50,7 @@ NAME-VALUE ARGUMENT 'vpp'
         oldnames is comma separated list of unique names, all possible variable names in original daq file to be given newname in output struct 'dq';
             for each newname, any of the oldnames in original daq file are processed (will error if multiple oldname matches are found)
             if none of the oldnames exist, newname is assigned empty value [] in struct 'dq';
-            by default, if newname is already in original daq file, its name will not change (each newname gets added to correponding oldnames automatically in daqld) 
+            by default, if newname is already in original daq file, its name will not change (each newname gets added to correponding oldnames automatically in dqmake) 
         type is single char denoting variable type (determines how variables are processed)
             'r' means 'radians'; 'r' is processed as angular data with units radians (there is no option for unit degrees, so be sure angular data is in radians)
             'm' means millimeters; 'm' is processed the same as 'r', but with the additional final steps of unwrapping, zeroing, and rescaling, to convert from radians to mm
@@ -80,12 +80,12 @@ NAME-VALUE ARGUMENT 'vpp'
             2nd element (2nd row) means any variable in struct 'trialData' (from original daq file) named 'ftcam' is processed as a 'b' (binary) variable (converted to count, then treated by vecrs and vecdv as type 'c') and saved to fieldname 'ftcam' in output struct 'dq'; the derivative is not saved to output struct 'dq'
         
 RESAMPLING TO MATCH IMAGING RATE
-    daqld is specialized to downsample daq variables into imaging rate, rather than upsampling imaging data to match daq sampling
+    dqmake is specialized to downsample daq variables into imaging rate, rather than upsampling imaging data to match daq sampling
         - downsampling behavior into imaging regularizes subsequent model fitting (and speeds computation)
         - imaging rates and indicators are already smoothing neural activity, and the main optic flow detectors in the visual system have little power at 60 Hz behavior rate, 
 
 DIFFERENTIATION
-    daqld differentiates some daq variables to compute their velocities
+    dqmake differentiates some daq variables to compute their velocities
     differentiation occurs in function 'movingslope' (called from function 'vecdv') to allow flexible noise reduction; 
     to reduce noise, increase name-value argument 'dvlensec'; 
     name-value argument 'dvord' should probably remain 2 or 3
@@ -96,12 +96,12 @@ SMOOTHING
     but if you still want to smooth, function 'vecsm' handles angular and non-angular variables separately, just like 'vecrs' and 'vecdv' (note vecsm does not have an option for 'c' variables)
 
 RUNBG (START TIMES FOR DAQ, IMAGING, BEHAVIOR, ETC.)
-    if daq starts before all other processes start, and ends after all other processes end, daqld crops daq data so everything is aligned in time; 
+    if daq starts before all other processes start, and ends after all other processes end, dqmake crops daq data so everything is aligned in time; 
     in carl's branch of flyg this occurs when variable 'runbg' equals 1
     if this is not the case, daq variables are assumed to be aligned in time with imaging, but this may not be the case (there can be a variable lag in start time between them)
 
 FICTRAC VIDEO RESAMPLING
-    since the fictrac video is ideally resampled using frame-on samples written to the daq, daqld includes an optional resampling of the fictrac video (function 'ftvalign')  
+    since the fictrac video is ideally resampled using frame-on samples written to the daq, dqmake includes an optional resampling of the fictrac video (function 'ftvalign')  
     if video frame-on times were not written to daq, ftvalign attempts a hack alignment that is not very robust yet; for this reason, ftvalign is in a try statement, and if it fails, field ftv=[] in output struct 'dq'
 
 TIME DIMENSION

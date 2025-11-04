@@ -371,8 +371,7 @@ mostree_d_no_idx = regexprep(mostree_d, '\(\d+\)', '');
 if ~isequal(mostree, mostree_d_no_idx)
     error("mostree and mostree_d (derived mostree from mostreeget) do not match")
 end
-mostree_open_d_no_idx = regexprep(mostree_open_d, '\(\d+\)', '');
-if ~isequal(mostree_open, mostree_open_d_no_idx)
+if ~isequal(mostree_open, mostree_open_d)
     error("mostree_open and mostree_d (derived mostree from mostreeget) do not match")
 end
 options_invalid = options_d(ismember(options_d, fnd));

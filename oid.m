@@ -13,7 +13,9 @@ so oid just has these steps: distribute, reduce, sort, unique, ID
 arguments
     o % options struct 
     opt.justld = 0 % get ids only (cannot write to file or create new id)
+    opt.mos = '' %optionally pass in mos; if nonempty, o must be struct to be passed into module, rather than struct holding multiple mos structs
 end
+mos = opt.mos;
 
 try
 
@@ -38,7 +40,19 @@ try
         fprintf("NOTE: setting usegit to false because s is empty or justld is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
     end
    
-    mos = fieldnames(o);
+    if isempty(mos)
+        mos = fieldnames(o);
+    else
+        if isfield(o, mos)
+            error("if mos is nonempty, mos cannot be field in o")
+        end
+        fntmp = fieldnames(o);
+        o.(mos) = o;
+        o = rmfield(o, fntmp);
+        if ~iscell(mos)
+            mos = {mos};
+        end
+    end
 
     for k = 1:numel(mos)
 
