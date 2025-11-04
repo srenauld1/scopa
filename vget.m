@@ -337,8 +337,7 @@ if strcmp(recid, 'curr')
     recid = {glb('recid', err=1)};
 end
 
-pthopt = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
-dall = structld(pthopt, nocells=1, dosort=0);
+dall = odf(); %write defaults to file the first time ofill gets called when running a2p or oset (in particular, when persistent variables are empty)
 mostree_top = dall.mostree_top;
 
 nonemptyinds = [];

@@ -1,4 +1,4 @@
-function pthopt = odf(pthopt)
+function [dall, pthopt] = odf(pthopt, dowrite)
  
 %{
 
@@ -23,6 +23,7 @@ NOTE: if you change a default argument here, you must also change it in the corr
 
 arguments
     pthopt {mustBeTextScalar, mustBeNonempty} = [pthscopaget() 'optdf.txt'] %path to file holding all module default options
+    dowrite {mustBeBinary} = 0 %write to file if 1
 end
 
 
@@ -398,9 +399,11 @@ for k = 1:numel(fnmh)
     dall.mosh.(fnmh{k}) = func2str(mosh.(fnmh{k})); %write char, later must use str2func to use it (eg in ofill)
 end
 
-fprintf("writing default options to: " + pthopt + newline)
+if dowrite
+    fprintf("writing default options to: " + pthopt + newline)
+    structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
+end
 
-structsv(dall, pthopt, overwrite=1, readonly=1, dosort=1)
 
 
 
