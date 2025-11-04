@@ -152,3 +152,11 @@ for k = 1:numel(oa) % loop over recordings found in oset
 end
 
 
+pthraw = stackfind(stackid='20251029_4_1_o', err=1);
+sraw = stackld(pthraw);
+pthreg = stackfind(stackid='20251029_4_1_or', err=1);
+sreg = stackld(pthreg);
+glb(pthsvdir=idmake(sreg.pth, 'pthstackfld'))
+stackplt({sraw.stack, sreg.stack}, it=200:550)
+
+

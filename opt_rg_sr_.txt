@@ -1,0 +1,56 @@
+{
+  "z1": {
+    "id": "20251029_6_1_none",
+    "recdatenum": 2.0251029E+7,
+    "flynum": 6,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,512],
+    "x": [1,512],
+    "z": [1,3],
+    "t": [1,1576],
+    "c": [1,1]
+  },
+  "z2": {
+    "id": "20251029_7_1_none",
+    "recdatenum": 2.0251029E+7,
+    "flynum": 7,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,512],
+    "x": [1,512],
+    "z": [1,3],
+    "t": [1,1576],
+    "c": [1,1]
+  },
+  "z3": {
+    "id": "20251031_1_1_none",
+    "recdatenum": 2.0251031E+7,
+    "flynum": 1,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,128],
+    "x": [1,128],
+    "z": [1,3],
+    "t": [1,3302],
+    "c": [1,1]
+  },
+  "z4": {
+    "id": "20251031_2_1_none",
+    "recdatenum": 2.0251031E+7,
+    "flynum": 2,
+    "trialnum": 1,
+    "rgname": "none",
+    "y": [1,128],
+    "x": [1,128],
+    "z": [1,3],
+    "t": [1,3302],
+    "c": [1,1]
+  },
+  "md": {
+    "nmprefix_withgit": "a",
+    "nmprefix_withoutgit": "z",
+    "autonm": 1,
+    "maketime": "2025103113383703"
+  }
+}

@@ -6,7 +6,7 @@ arguments
 end
 doflyg = opt.doflyg;
 
-pthpy = userdatfile('pthpy', err=1); %path to python executable; only required to run caiman from matlab (if opt.cm is nonempty)
+
 
 id = idmake(pth); %this will for idmake fields needed here if pth is mdsi file, stack file, or daq file
 pthmd = [id.pthrec '_mdsi_.txt'];
@@ -30,7 +30,7 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsisv.p
         mdsisv(pthraw)
     
     catch
-
+        pthpy = userdatfile('pthpy', err=1); %path to python executable; only required to run caiman from matlab (if opt.cm is nonempty)
         pthscopa = pthscopaget();
 
         try %run python directly from matlab (ie not using system command to control a shell)
