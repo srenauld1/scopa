@@ -1,0 +1,82 @@
+function optout = odist(optin)
+
+%{
+
+for each substruct within struct optin . . . 
+for any cell-valued field (option) . . . 
+create new struct for each cell element ('distribute')
+    copy non-cell fields (options) to all new structs
+    give temporary names to the new structs and delete the original struct
+    if there are multiple cell-valued fields (options), create all combinations of their elements with the new structs
+odist.m is similar to odist.py; the main difference is:
+    odist.m has 'any'/'each' functionality: distribute options ('any') within each mosc ('each') 
+    odist.py just has 'any' functionality (not 'each')
+
+%}
+
+arguments
+    optin (1,1) struct %scalar struct to be "distributed"
+end
+
+delimflat = glbfile('delimflat');
+
+%%%% DISTRIBUTE NON-SINGLETON CELLS INTO NEW MOSC (SUBSTRUCTS) %%%%
+
+optin_flat = structflat(optin, delim=delimflat); % prefix=mosc_tmp);
+fn = fieldnames(optin_flat);
+optin_cell = struct2cell(optin_flat);
+
+idx_dist = cellfun(@iscell, optin_cell) & cellfun(@(x) numel(x)>1, optin_cell); %find fields with nonscalar cells
+
+optout = struct; %clear because we are not accumulating in tmp (we do that in optout)
+
+if any(idx_dist) %if there are any fields to be distributed
+    
+    fndist = fn(idx_dist);
+    optin_cell = optin_cell(idx_dist);
+    for m = 1:numel(optin_cell)
+        if ~isvector(optin_cell{m})
+            error("mos_struct_flat_cell{m} must be vector")
+        end
+        dmvec = find(size(optin_cell{m})==max(size(optin_cell{m}))); %find non-singleton vector dimension (column vec = 1, row vec = 2), required for function uniquearray
+        utmp = uniquearray(optin_cell{m}, dmvec); %this fex function works on cells with elements of any class
+        if ~isequal(numel(utmp), numel(optin_cell{m}))
+            error("all elements of cell-valued options must be unique")
+        end
+    end
+    
+    combos = combinations(optin_cell{:}); %make all combinations of the nonscalar cells
+    for m = 1:size(combos,1) %and put each in a new substruct
+        for mm = 1:numel(fndist)
+            optout(m).(fndist{mm}) = combos{m,mm}{1};
+        end
+    end
+
+end
+
+
+%%%% ADD ALL FIELDS THAT ARE NOT CELLS, OR SINGLETON CELLS (AND REMOVE SINGLETONS FROM CELL) %%%%
+
+for m = 1:numel(fn)
+    if ~idx_dist(m)
+        for q = 1:numel(optout)
+            if iscell(optin_flat.(fn{m})) %cell-valued fields must be scalar cells by this point, and get taken out of their cells
+                if isscalar(optin_flat.(fn{m}))
+                    optout(q).(fn{m}) = optin_flat.(fn{m}){1}; %since singleton, take it out of cell
+                else
+                    error("after distribution all cells must be scalar")
+                end
+            else %if not cell, just copy over into output (do not modify)
+                optout(q).(fn{m}) = optin_flat.(fn{m});
+            end
+        end
+    end
+end
+
+optout = structunflat(optout, delim=delimflat);
+
+optout = structsort(optout, vectype='row');
+
+
+end
+

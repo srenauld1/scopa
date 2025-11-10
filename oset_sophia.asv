@@ -1,6 +1,6 @@
 function o = oset_sophia()
 
-do = {'sld', 'dq', 'roi'};
+do = {'s', 'dq', 'roi'};
 
 o.dq.supprate = 60; %supplemental resampling rate (in addition to imaging rate); empty to skip supplemental resampling
 o.dq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord

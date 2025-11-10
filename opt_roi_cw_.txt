@@ -207,5 +207,50 @@
     "qc": [],
     "rgname": "no",
     "roiname": "right"
+  },
+  "z57": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "z",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "eb",
+    "roiname": "eb"
+  },
+  "z58": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "z",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "no",
+    "roiname": "left"
+  },
+  "z59": {
+    "cm": [],
+    "dodraw": 1,
+    "ma": [],
+    "nrm": {
+      "channorm": 0,
+      "degdtr": 0,
+      "mincoh": [],
+      "nrmstr": "z",
+      "wavp": []
+    },
+    "qc": [],
+    "rgname": "no",
+    "roiname": "right"
   }
 }

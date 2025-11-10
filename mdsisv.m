@@ -1,17 +1,17 @@
-function md = mdsisv(pthraw)
+function md = mdsisv(pthstackraw)
 
 %matlab form of mdsisv.py; does the same thing
 
 arguments
-    pthraw
+    pthstackraw {mustBeTextScalar} %path to raw scanimage file
 end
 
 md = [];
 
-id = idmake(pthraw); %just in case id info gets used below
+id = idmake(pthstackraw); %just in case id info gets used below
 pthmd = [id.pthstackfld id.recid '_mdsi_.txt'];
 
-[~, mdtif] = tifreadfast(pthraw, []);
+[~, mdtif] = tifreadfast(pthstackraw, []);
 
 trywrite = 1;
 try
@@ -21,43 +21,43 @@ try
         sistr = mdtif.tifinfo.ImageDescription;
     end
     if exist('sistr', 'var') %hack to not put a try catch block within the larer more important try catch (and not repeat several lines of code)
-        md.channel_save = sistrparse(sistr, 'channelSave');
-        md.channel_active = sistrparse(sistr, 'channelsActive');
-        md.numslice = sistrparse(sistr, 'actualNumSlices');
-        md.numslice_withflyback = sistrparse(sistr, 'numFramesPerVolumeWithFlyback');
+        md.channel_save = mdsistrparse(sistr, 'channelSave');
+        md.channel_active = mdsistrparse(sistr, 'channelsActive');
+        md.numslice = mdsistrparse(sistr, 'actualNumSlices');
+        md.numslice_withflyback = mdsistrparse(sistr, 'numFramesPerVolumeWithFlyback');
         md.flyback = md.numslice_withflyback - md.numslice;
 
-        if md.numslice==1 && md.numslice_withflyback==1 && strcmp(sistrparse(sistr, 'hStackManager.enable'), 'false')
+        if md.numslice==1 && md.numslice_withflyback==1 && strcmp(mdsistrparse(sistr, 'hStackManager.enable'), 'false')
             fprintf("treating stack as planar yxt because numslice=1, numslice_withflyback=1, and hStackManager.enable is false" + newline)
-            md.numvol = sistrparse(sistr, 'framesPerSlice');
+            md.numvol = mdsistrparse(sistr, 'framesPerSlice');
         else
             try
-                md.numvol = sistrparse(sistr, 'actualNumVolumes');
+                md.numvol = mdsistrparse(sistr, 'actualNumVolumes');
             catch
-                md.numvol = sistrparse(sistr, 'numVolumes');
+                md.numvol = mdsistrparse(sistr, 'numVolumes');
             end
         end
 
-        md.xpix = sistrparse(sistr, 'pixelsPerLine');
-        md.ypix = sistrparse(sistr, 'linesPerFrame');
+        md.xpix = mdsistrparse(sistr, 'pixelsPerLine');
+        md.ypix = mdsistrparse(sistr, 'linesPerFrame');
         md.dims = [md.numvol, md.numslice_withflyback - md.flyback, md.ypix, md.xpix];
-        fovtmp = sistrparse(sistr, 'imagingFovUm');
+        fovtmp = mdsistrparse(sistr, 'imagingFovUm');
         md.xfov = abs(fovtmp(1)) + abs(fovtmp(3));
         md.yfov = abs(fovtmp(2)) + abs(fovtmp(4));
-        if isempty(sistrparse(sistr, 'actualStackZStepSize'))
+        if isempty(mdsistrparse(sistr, 'actualStackZStepSize'))
             md.zwid = 0;
         else
-            md.zwid = sistrparse(sistr, 'actualStackZStepSize');
+            md.zwid = mdsistrparse(sistr, 'actualStackZStepSize');
         end
-        md.zstartpos = sistrparse(sistr, 'zsRelative');
+        md.zstartpos = mdsistrparse(sistr, 'zsRelative');
         if isscalar(md.zstartpos)
             md.zfov = md.zwid;
         else
             md.zfov = md.zstartpos(end) + md.zwid - md.zstartpos(1);
         end
-        md.framerate = sistrparse(sistr, 'scanFrameRate');
-        md.volrate = sistrparse(sistr, 'scanVolumeRate');
-        md.channel_offsets = sistrparse(sistr, 'channelOffsets');
+        md.framerate = mdsistrparse(sistr, 'scanFrameRate');
+        md.volrate = mdsistrparse(sistr, 'scanVolumeRate');
+        md.channel_offsets = mdsistrparse(sistr, 'channelOffsets');
     else
         error("cannot read metadata using tifreadfast and mdsisv.m" + newline)
     end

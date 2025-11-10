@@ -10,7 +10,7 @@ from ast import literal_eval
 from pthmake import pthscopaget
 
 
-def stackcrop(stack, rgname, pth_prefix, dims):
+def rgmake(stack, rgname, pth_prefix, dims):
     
     #using interactive plots, choose z slices (user input based on plot 1) and define/draw xy rectangle (user draw on plot 2) to create cuboid fov to keep for extraction 
     pth_scopa = pthscopaget()

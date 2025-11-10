@@ -1,9 +1,8 @@
 function s1 = structflat(s,varargin)
 
-% adapted by carl wienecke from flattenStruct by Uhlending, Markus
-% fnex (now commented out) has field for each index in first dimension of each field in fn (with .indN appended to end, where N is index); commented out because it is slow for large arrays 
+% original function is flattenStruct by Uhlending, Markus
+% adapted by carl wienecke for nonscalar structs
 
-% a struct with nothing but empty structs, even if they are nested within other structs, returns empty flat struct (similar to how {{{}}} is empty  
 
 % FLATTENSTRUCT Convert nested struct to flatten struct
 % The function also works with array of structs and deeply nested structs.
@@ -67,7 +66,6 @@ try
         varargin{end+1} = 'delim';
         varargin{end+1} = '__';
         delim = '__';
-        % fprintf("RUNNING STRUCTFLAT USING DEFAULT DELIM, DOUBLE UNDERSCORE, BECAUSE USER DIDN'T PASS NAME-VALUE ARGUMENT 'delim'; " + newline + "DOUBLE UNDERSCORE IS DEFAULT BECAUSE SINGLE UNDERSCORE IS COMMON IN VARIABLE NAMES, SO DOUBLE UNDERSCORE WILL DISTINGUISH NESTED STRUCTS FROM VARIABLES WITH SINGLE UNDERSCORE" + newline)
     end
     
     if numel(s)>1 && isempty(Prefix)
@@ -80,7 +78,7 @@ try
     [~,tab] = fieldnamesAll(s,varargin{:});
     
     
-    %% Create flatten struct
+    %% flatten struct
     
     if isempty(tab)
         s1 = struct();
@@ -116,7 +114,6 @@ else
         if ~endsWith(prefix,'.')
             prefix = [prefix,'.'];
         end
-        
         prefix = strtrim(prefix);
         prefix = replace(prefix,'.',delim);
         prefix = matlab.lang.makeValidName(prefix,'Prefix','x');
@@ -127,32 +124,15 @@ end
 %% Prepare data
 
 fn = tab.Field;
-% no longer use varnm
-% varnm = convertStringsToChars(regexprep(tab.Field, '^s.', prefix));
-% if ischar(varnm) %in case it's just one varnm, will be char; put in cell to prevent error below
-%     varnm = {varnm};
-% end
 varnmval = regexprep(tab.ValidVarName, ['^s' delim], prefix);
 
 %% Create struct
 
 nn = numel(fn);
-% fnex = {}; %was cell(nn,1), but no longer use this because don't need it and can be very slow;
 for k = 1:nn
     Value = eval(fn(k));
     VarName = varnmval(k);
     out.(VarName) = Value;
-
-    % commenting out computing fnex, no longer use this because don't need it and can be very slow;
-    % if size(Value,1)>1
-    %     for tmpi = 1:size(Value,1)
-    %         vntmp = {[varnm{k} '.ind' num2str(tmpi)]}; %append index if there are multiple (ie rois)
-    %         fnex{k} = cat(1, fnex{k}, vntmp);
-    %     end
-    % else
-    %     vntmp = {varnm{k}};
-    %     fnex{k} = cat(1, fnex{k}, vntmp);
-    % end
 end
 
 end

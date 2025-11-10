@@ -14,7 +14,7 @@ todo: generalize for nd
 %}
 
 arguments
-    vtype char {mustBeMember(vtype, {'n', 'r', 'd', 'c'})}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vtype char {mustBeTextScalar, mustBeMember(vtype, ["n", "r", "d", "c"])}  % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
     vecin {mustBeNonscalarVector} %vector to be resampled; if vtype is r or d, must be circular data in radians or degrees, respectively
     rskey (:,1) single {mustBeNonnegative, mustBeFinite, mustBeVector, mustBeNonempty} % rskey means resampling key; if scalar number, rskey is the new length of resampled timeseries, resampled with matlab 'resample' function (padded to avoid start/end transients); if numeric vector, rskey is indices for resampling, and rskey and vecin must be equal in length (see docs above for more detail)
 end

@@ -2,6 +2,19 @@
 
 %{
 
+something better for save flag than mnum
+remove justld from rgmake??
+remove cell approach in roinorm and roits, since roimask is no longer ever cell
+rename opt mos in all modules??
+
+make save matfile function taking in fields 
+
+how do we deal with multiple output structs in s but only wanting one for this or that?
+how do we deal with saving in wrapper functions, or rather, outside them, if looping over "each" option sets?
+
+need '*' analog for child mos like cm
+make varidcheck (like optidcvheck)
+make input mos permit nonscalar (bmp(2)) but still allow bmp also, which means all indices
 make one roi limmit when dorg in roidraw??
 commebnted out metadata check in vsget, fix that
 remove ii from stackind
@@ -14,7 +27,7 @@ voltlim, balldia, voltminhd, should all probably not be in opt
 get voltlim from metadata
 and maybe voltminhd
 
-consider putting more fields in s (things that get used repeatedly, especially when they can cost big time/ram, like stack min, stack max, and stackmnt), but then need to be sure to update these values in stackcrop if crop
+consider putting more fields in s (things that get used repeatedly, especially when they can cost big time/ram, like stack min, stack max, and stackmnt), but then need to be sure to update these values in rgmake if crop
 put any argument dependent option changing before odf=1 so arguments get changed before oid gets called in ofill 
 
 vecdv need to generalize vecdv for nd, and change to vecdv, and make time units optional (something like dvlensec and slopelensamp
@@ -28,7 +41,7 @@ consider renaming roi child mos
     rqc
 (also their outputs??)
 
-put flymaxfe into stimftmake (stim feature make)
+put fmfmake into stimftmake (stim feature make)
 consider putting stimftmake into dqmake , as child module, and having derivatives/velocities handled by that child module 
 consider putting bmpmake into stackftmake (stack feature make) something like that
 so at the high level, dqmake becomes load all stim stuff (ie not neural data)
@@ -66,7 +79,7 @@ make sure all options have unique names (should not require enclosing field to b
 flag_single_roi_per_stack does not force contiguity right? should we even have this?
 deal with stackplt looking dim
 deal with stackplt not working to show rois for non volumetric stack 
-eventually make rg and mm have check that stack input has not changed, with stack's optid from sld
+eventually make rg and mm have check that stack input has not changed, with stack's optid from s
 make all pthscopa calls glb?
 fix all eval calls, eg in structunflat
 fix order of module inputs, should opt be first, or just first name-value argument?

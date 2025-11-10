@@ -66,7 +66,7 @@ scopagit syncs local with remote, gets called from structfile
 if you get error "Unable to fetch from the remote "origin" at . . . ", try usegit=0
 
 module: high-level function called directly from a2p
-    stackld (sld)
+    smake (s)
     dqmake (daq)
     roimake (roi)
     bmpmake (bmp)
@@ -81,7 +81,7 @@ for each module
 for rotations using imwarp (called by stackwarp), rotation angle is defined to be positive for a rotation that is counterclockwise when viewed by an observer looking along the rotation axis towards the origin
 
 glb is required in only a couple places within function vget
-strucfile gets called by: oid, vget, stackcrop, and fset; can read and/or
+strucfile gets called by: oid, vget, rgmake, and fset; can read and/or
 write in all cases except fset (fset just reads); uses scopagit to ensure integration across filesystems 
 warning: when reading struct from file, jsencode (called from structld) will insert an 'x' at the beginning of any fieldname that doesn't begin with a letter (an invalid fieldname); if a file was written with structsv, it will not contain invalid fieldnames because structsv only writes valid structs) 
 

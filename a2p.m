@@ -22,78 +22,90 @@ close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 %%%% GLOBALS %%%%
 
 glb(usegit=usegit); %set usegit in globals function 'glb'
-glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use stackld to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
+glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use smake to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
 glbfile('optiddf'); % confirm this exists in locked globals file glb.txt; default option id; if user doesn't use oid to map options sets to optid, optiddf is used instead (in filenames, figures, and struct names)
 
 
-%%%% OPTIONS %%%%
+%%%% CREATE OPTIONS STRUCT otmp %%%%
 
-oa = oset(spec); % set options; oa stands for "o all" (ie options for all recordings)
-
-for k = 1:numel(oa) % loop over recordings found in oset
-
-    o = oa(k); %index into options for one recording
+otmp = oset(spec); % set options; oa stands for "o all" (ie options for all recordings)
 
 
-    %%%% STACK %%%%
+%%%% CREATE STACK STRUCT s, UPDATE otmp (AS o) %%%%
 
-    if ~isempty(o.sld)
-        for m = 1:numel(o.sld)
-            prs = struct2pairs(o.sld(m));
-            s(m) = stackld(o.id.pthstack, prs{:}, doplt=0); %load/process stack (metadata also gets loaded in stackld)
+o = [];
+for k = 1:numel(otmp) % loop over recordings in otmp.pthstack (found in oset)
+
+    if ~isempty(otmp(k).s) %if empty, found stack didn't enter oset_* file, so it will be skipped
+        for m = 1:numel(otmp(k).s)
+            prs = struct2pairs(otmp(k).s(m));
+            [~, sopt, ~, spth] = smakew(otmp(k).pthstack, prs{:}, idx=m, doplt=0); %load/process stack (metadata also gets loaded in smake)
+        end
+        clen = numel(o);
+        o = cat(2, o, repelem(otmp(k), numel(sopt)));
+        for m = 1:numel(sopt)
+            o(clen+m).pthstack = spth{m}; %update with .mat extension, in case pthstack was tif going in to smake
+            o(clen+m).s = sopt(m);
         end
     end
 
-    o.id.pthstack = s(m).pth; oa(k).id.pthstack = s(m).pth; %update with .mat extension, in case pthstack was tif going in to stackld
-    glb(1, pthsvdir=o.id.pthstackfld); %update global that refers to stack location, a default location for saving some less important files (like figures)
+end
+
+
+%%%% LOOP OVER STACKS %%%%
+
+for k = 1:numel(o) % loop over recordings found in oset
+
+    s = load(o(k).pthstack); %load s
+    glb(1, pthsvdir=s.id.pthstackfld); %update global that refers to stack folder, a default location for saving some less important files (like figures)
 
 
     %%%% DAQ %%%%
 
-    if ~isempty(o.dq)
-        for m = 1:numel(o.dq)
-            prs = struct2pairs(o.dq(m));
-            dq(m) = dqmake(o.id.pthdaq, prs{:}, doplt=0); %load/process dq (also fictrac video)
+    if ~isempty(o(k).dq)
+        for m = 1:numel(o(k).dq)
+            prs = struct2pairs(o(k).dq(m));
+            s = dqmakew(s, prs{:}, idx=m, mnum=numel(o(k).dq), doplt=0); %load/process dq (also fictrac video)
         end
     end
 
-    
+
     %%%% ROIS %%%%
 
-    if ~isempty(o.roi)
-        for m = 1:numel(o.roi)
-            prs = struct2pairs(o.roi(m));
-            roi(m) = roimake(s, prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    if ~isempty(o(k).roi)
+        for m = 1:numel(o(k).roi)
+            prs = struct2pairs(o(k).roi(m));
+            s = roimakew(s, prs{:}, idx=m, mnum=numel(o(k).roi), doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
     %%%% BUMP %%%%
 
-    if ~isempty(o.bmp)
-        for m = 1:numel(o.bmp)
-            prs = struct2pairs(o.bmp(m));
-            bmp(m,:) = bmpmake('', prs{:}, srate=s.md.volrate, epochts=dq.epochts, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    if ~isempty(o(k).bmp)
+        for m = 1:numel(o(k).bmp)
+            prs = struct2pairs(o(k).bmp(m));
+            s = bmpmakew(s, prs{:}, idx=m, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
     %%%% FLYMAX %%%%
 
-    if ~isempty(o.fmf)
-        for m = 1:numel(o.fmf)
-            prs = struct2pairs(o.fmf(m));
-            fmf(m) = flymaxfe('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    if ~isempty(o(k).fmf)
+        for m = 1:numel(o(k).fmf)
+            prs = struct2pairs(o(k).fmf(m));
+            fmf(m) = fmfmakew('', prs{:}, idx=m, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
 
     %%%% MODELS %%%%
 
-    if ~isempty(o.mdl)
-        for m = 1:numel(o.mdl)
-            prs = struct2pairs(o.mdl(m));
-            mdl(m) = mdlmake('', prs{:}, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
+    if ~isempty(o(k).mdl)
+        for m = 1:numel(o(k).mdl)
+            prs = struct2pairs(o(k).mdl(m));
+            s = mdlmakew(s, prs{:}, idx=m, doplt=0); %make (manual and/or automated and/or functional/caiman) rois in 2d or 3d, extract their responses, with normalization options
         end
     end
 
@@ -101,7 +113,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
     %%%% PLOTS %%%%
 
     if dopltx
-        pltx(o.pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
+        pltx(o(k).pltx, stack=stack, dq=dq, roi=roi, bmp=[], mdl=mdl, fmf=fmf, t=glb('t'), stimvid=fmfvid)
     end
 
 
@@ -116,7 +128,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
         idaq = 1;
         [~, ~, ipe, ~, tpe] = trmake(dq(idaq).epochts, padlent=3, t=dq(idaq).t, eb=[epoch bout]);
 
-        if contains(o.id.pthstack, {'ebgano'})
+        if contains(o(k).pthstack, {'ebgano'})
 
             a_ebgano(s, roi, dq, bmp, dq(idaq).t, ...
                 mix=[], ...{'gar', 'eb', 'gal'}, ...
@@ -141,7 +153,7 @@ for k = 1:numel(oa) % loop over recordings found in oset
                 stackslice=[])
 
         elseif contains(idtmp(k).pthstack, {'opto'})
-            
+
             a_opto(roi, s, glb('t') )
 
         end

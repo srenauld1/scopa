@@ -1,4 +1,4 @@
-function ftvrs = ftvalign(opt)
+function [ftvrs, pthvrs] = ftvalign(opt)
 
 %{
 

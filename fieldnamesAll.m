@@ -1,4 +1,8 @@
 function [Fields,tab] = fieldnamesAll(s,varargin)
+
+% original function is fieldnamesAll by Uhlending, Markus
+% adapted by carl wienecke to keep empty structs
+
 % FIELDNAMESALL returns all field names from a deeply nested array of "structs"
 % This function is an improved version of MATLAB built-in function fieldnames
 %
@@ -32,6 +36,7 @@ function [Fields,tab] = fieldnamesAll(s,varargin)
 %   Released under the BSD license.
 %
 % See also getfield, extractAfter, replace, eval, whos, class
+
 try
     %% Parse inputs
     try
@@ -67,7 +72,7 @@ try
     end
     
     %% Set defaults
-    root   = inputname(1);
+    root = inputname(1);
     
     %% Get all fields for each struct
     [Fields0,Level] = getNames(s);
@@ -229,11 +234,15 @@ for is = 1:ns                   % Loop over all structs
     for ii = 1:ni
         fn = fi(ii);            % Field Name
         fv = getfield(si,fn);   % Field Value
+        if isstruct(fv) && isempty(fv)
+            fv = [];
+        end
         fc = class(fv);        	% Field Class
-        
+
+
         if matches(fc,'struct')
             % Field is a struct => Call this function again (recursive loop)
-            
+
             % Get current field value
             fv  = getfield(si,fn);  % Field Value (sub-struct)
             

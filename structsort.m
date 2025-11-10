@@ -1,46 +1,44 @@
 function s = structsort(s, opt)
 
 arguments
-    s %struct to be ordered
+    s %struct to be sorted; can be nonscalar and nested
     opt.vectype = []; % empty, 'row', or 'column'; transpose any vector in s that is not vectype; skip if empty
-    opt.nocells = 0; % convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode)
-    opt.skipsort = 0; % 1 to omit the actual sorting (to use vectype and/order nocells without sorting); default is to sort since this function is called structsort
+    opt.nocell = 0; % convert char in cell to singleton char, convert char cell array to string array (to disambiguate cell and string arrays, which get mixed up in jsonencode and jsondecode)
+    opt.skipsort = 0; % 1 to omit the actual sorting (to use vectype and/or nocell without sorting); default is to sort since this function is called structsort
 end
 vectype = opt.vectype;
-nocells = opt.nocells;
+nocell = opt.nocell;
 skipsort = opt.skipsort;
 
 if numel(s)>1
     for k = numel(s): -1 : 1 %for each element in nonscalar struct, backward to preallocate
         [rind, cind] = ind2sub(size(s), k);
-        tmp(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocells=nocells, skipsort=skipsort);
+        tmp(rind, cind) = structsort(s(rind, cind), vectype=vectype, nocell=nocell, skipsort=skipsort);
     end
     s = tmp;
 else
     fn = fieldnames(s);
     for k = 1:numel(fn)
         if isstruct(s.(fn{k}))
-            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype, nocells=nocells, skipsort=skipsort);
+            s.(fn{k}) = structsort(s.(fn{k}), vectype=vectype, nocell=nocell, skipsort=skipsort);
         else
             if isscalar(s.(fn{k}))
-                if nocells && iscell(s.(fn{k}))
-                    s.(fn{k}) = s.(fn{k}){1}; %if nocells, remove from cell if scalar
+                if nocell && iscell(s.(fn{k}))
+                    s.(fn{k}) = s.(fn{k}){1}; %if nocell, remove from cell if scalar
                 end
             else
-                if nocells && iscell(s.(fn{k}))
+                if nocell && iscell(s.(fn{k}))
                     if all(cellfun(@ischar,s.(fn{k})))
-                        s.(fn{k}) = convertCharsToStrings(s.(fn{k})); %if nocells, make char cell array a string array
+                        s.(fn{k}) = convertCharsToStrings(s.(fn{k})); %if nocell, make char cell array a string array
                     elseif all(cellfun(@isstring,s.(fn{k})))
-                        s.(fn{k}) = string(s.(fn{k})); %if nocells, make string cell array a string array
+                        s.(fn{k}) = string(s.(fn{k})); %if nocell, make string cell array a string array
                     else
                         error("nocell option is true, so no cells are allowed in struct except string and char, which are converted to string arrays")
                     end
                 end
                 if strcmp(opt.vectype,'row') && iscolumn(s.(fn{k}))
-                    %fprintf("converting column vector " + fn{k} + " to row vector because vectype is row" + newline)
                     s.(fn{k}) = s.(fn{k}).';
                 elseif strcmp(opt.vectype,'column') && isrow(s.(fn{k}))
-                    %fprintf("converting row vector " + fn{k} + " to column vector because vectype is column" + newline)
                     s.(fn{k}) = s.(fn{k}).';
                 end
             end

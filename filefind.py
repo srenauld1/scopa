@@ -233,26 +233,12 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
 
             ######### READ & WRITE SCANIMAGE METADATA #########
 
-            pthmd_old = pth_prefix + '_metadatanew_.npy'
-            pthmd_matold = pthmd_old[:-4] + '.mat'  
             if not os.path.isfile(pthmd): #if scanimage metadata file (*mdsi_.txt) is not present, make it
                 if do_register or do_denoise and dnraw: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
                         mdsisv(pth_readfile, pthmd, mat_file_shape = mat_file_shape)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pthmd = []
-                    # elif do_copyfiles==2: #REMOVED THIS BECAUSE COPYFILES 2 CAN OPERATE ON RECORDINGS THAT DIDN'T GET REGISTERED, BUT MATCHED FILE SPECS (if recid doens't include them eg) #if copying out of O2 during do_register, metadata files should exist, raise exception if they don't 
-                    #     raise Exception("mdsi_.txt is not found; can only be created from scanimage metadata in raw tif, so make sure you haven't moved those metadata files, or run do_register to create them")
-                else:
-                    if os.path.isfile(pthmd_old):
-                        convert_md_file(pthmd, pthmd_old, pthmd_matold)
-                    else:
-                        raise Exception("mdsi_.txt is not found, and neither is old metadata file 'metadatanew.npy, and you're not running do_register; can only be created from scanimage metadata in raw tif (the tif file used in do_register), so make sure you haven't moved those metadata files, or run do_register to create them")
-            if os.path.isfile(pthmd_old): 
-                os.remove(pthmd_old)
-            if os.path.isfile(pthmd_matold): 
-                os.remove(pthmd_matold)
-                            
             
             ######### PUT IN LISTS (THESE MAY NOT BE ALL FOUND FILES SINCE jobid MAY HAVE BEEN APPLIED #########
 

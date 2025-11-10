@@ -45,10 +45,10 @@ pthgif_postfilt = [filename_prefix '_postfilt_' timestr '_.gif'];
 
 %% load
 
-o.sld.smlensec = smlensec; 
-o = ofill(o, 'sld');
+o.s.smlensec = smlensec; 
+o = ofill(o, 's');
 
-stack = stackld(o.sld, pthstack);
+stack = smake(o.s, pthstack);
 
 
 %% index into frameinds, if nonempty

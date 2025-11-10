@@ -1,0 +1,470 @@
+function [s, opt, pthstackmat] = smake(pthstack, opt, opt2)
+
+%{
+
+read stack that was written (with tifffile.imwrite) to tif as tzcyx (with possible singleton dimensions)
+stack is read into matlab, here, as 3d array yxczt (where czt is collapsed into 3rd dimension, possibly singleton)
+stack is permuted into order specified by dmstackmat (with possible singleton trailing dimensions) and placed in struct s (fieldname 'stack'), along with associated data/metadata, then saved to mat file 
+struct s is also output 
+
+scanimage and scopa write stacks to tif
+matlab file exchange functions tifreadfast (renamed from read_patterned_tifdata) and TIFFStack read these tifs as 3d with dim order yxczt (even if they were written as >3d, at least with imwrite from tifffile.tifffile)
+
+option to just read a subset of the stack to save memory (when savemem=1, and any of iy, ix, iz, it, or ic options are nonempty); nonempty i* options will only save memory if savemem=1 (savemem=1 uses tiffstack, which uses memmapping, rather than tiffreadfast)
+but tiffreadfast is default because it is faster, and works well on more platforms (it just makes assumption that stack shape does not change across time, which i think is a safe assumption for all our data) 
+
+for TIFFStack, stack cannot be reshaped until it has been assigned to a variable
+stack=stack does not read stack into memory, you must use indexing (smake creates these indices, even for reading in the entire stack, like if user uses default empty indices)
+
+TIFFStack seems to fail reading floats, so tifs to be read here are written as ints elsehwere
+
+%}
+
+arguments
+
+    pthstack {mustBeTextScalar} = '' % if nonempty, path to stack (to load if mat, or convert to mat if tif); if empty, user prompted to select file interactively; 
+    
+    opt.fbrm (1,1) {mustBeBinary} = 1; %crop flyback frames from each volume, if they exist, before saving to mat
+    opt.iy {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %y indices to keep and save to mat
+    opt.ix {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %x indices to keep and save to mat
+    opt.ic {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+    opt.iz {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %z indices to keep and save to mat
+    opt.it {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %t indices to keep and save to mat
+    opt.clip double {mustBeSize(opt.clip,1,2), mustBeInRange(opt.clip,0,1)} = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
+    opt.dtype char {mustBeTextScalar} = 'uint16'; %output stack datatype; if uint*, stack is zeroed (min subtract) before being converted 
+    opt.smlenpx double {mustBeSize(opt.smlenpx,1,3), mustBeNonnegative} = [0,0,0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+    opt.smlensec (1,1) double {mustBeNonnegative} = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
+    opt.smmthd {mustBeText} = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
+   
+    opt2.savemem (1,1) {mustBeBinary} = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
+    opt2.optid {mustBeTextScalar} = glbfile('optiddf') %automatically generated id for unique set of input options; if your input opt is not generated by oset, leave optid empty
+    opt2.varid {mustBeTextScalar} = glbfile('variddf') %automatically generated id for unique set of input variables; if your input variables are not generated by vget, leave varid empty
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
+
+end
+
+s = [];
+pthstackmat = [];
+
+if opt2.runtype
+    return
+end
+
+opt2.varid = glbfile('variddf'); % **** NOTE NOTE NOTE **** for now, we force using default varid for stacks because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
+
+fbrm = opt.fbrm;
+iy = opt.iy;
+ix = opt.ix;
+ic = opt.ic;
+iz = opt.iz;
+it = opt.it;
+clip = opt.clip;
+dtype = opt.dtype;
+smlenpx = opt.smlenpx;
+smlensec = opt.smlensec;
+smmthd = opt.smmthd;
+
+savemem = opt2.savemem;
+doplt = opt2.doplt;
+optid = opt2.optid;
+varid = opt2.varid;
+
+callstack = dbstack();
+if ( ~isequal(optid, glbfile('optiddf')) || ~isequal(varid, glbfile('variddf')) ) && ( numel(callstack)<2 || ~isequal(callstack(2).file, [mfilename 'w.m']) )
+    error("optid and varid can only be nonempty when calling " + mfilename + " from its wrapper function, " + [mfilename 'w.m'])
+end
+
+dmstacktif = 'tzcyx'; %dimension order of stack when written to tif in python with tifffile imwrite (for example, in registration or denoising); keep 'c', 'z', or 't' characters, even if that dimension is singleton
+dmstackmat = glbfile('dmstackdf');
+
+if isempty(pthstack)
+    try
+        loc = userdatfile('pthpar');
+    catch
+        loc = pthscopaget();
+    end
+    [fn, loc] = uigetfile([loc '*.mat;*.tif'], 'choose stack file to load');
+    if isequal(fn, 0)
+        error("you cancelled stack file selection; you must pass in argument pthstack, or select stack file")
+    end
+    pthstack = fullfile(loc, fn);
+end
+
+varidoptid_s_suffix = [varid optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
+
+try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
+
+mat_stack_exists_already = 0;
+if isfile(pthstack)
+    if endsWith(pthstack, '.mat')
+        mat_stack_exists_already = 1;
+    end
+else
+    error("pthstack input to smake does not exist")
+end
+
+[~, fn, ~] = fileparts(pthstack);
+if endsWith(fn, 'o_') || ( contains(fn, 'trial_') && contains(fn, '-') )  %scopa or flyg raw stack pattern
+    rawstack = 1;
+else
+    rawstack = 0;
+end
+
+if rawstack && ~isempty(iz) && ~isempty(fbrm)
+    error("stack is raw and iz is nonempty AND fbrm is true; use one or the other for raw stack (for other stacks, fbrm is ignored because they don't have flyback frames, since they were removed in first preprocessing step (registration)")
+end
+
+
+%%%% LOAD MAT VERSION OF STACK IF IT EXISTS, AND IF YOU ARE REQUESTING THE SAME SETTINGS USED WHEN IT WAS ORIGINALLY CREATED %%%%
+
+optin = opt; %give it a new name since opt used are named opt
+
+if endsWith(pthstack, '.mat')
+    try
+        m = matfile(pthstack);
+        m = whos(m);
+        if ~ismember('mm', {m.name})
+            error("mm does not exist in saved mat file; must be old mat file; recreating it now")
+        end
+        load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack); if pthtif is not in file, it's an old version of s
+        if opt_mismatch(pthstack, optin, opt, pth, sz, chan)
+            error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT (ie YOU HAVE A MAT FILE ALREADY SAVED THAT USE A DIFFERENT SET OF OPTIONS); DELETE OR RENAME THAT MAT FILE, OR LOAD THAT FILE BY USING THE SAME OPTIONS LISTED IN s.opt IN FILE: " + pthstack)
+        end
+        fprintf("loading mat file containing stack" + newline)
+        s = load(pthstack); % now you can load entire struct
+        pthstackmat = s.pth;
+        return
+    catch ME
+        fprintf("cannot load mat file stack and/or tif conversion metadata; error message is: " + ME.message + newline)
+        fprintf("trying to convert tif to mat now" + newline)
+    end
+end
+
+
+%%%% LOAD STACK FROM TIF IF MAT DOESN'T EXIST OR FAILED OR YOU REQUESTED NEW STACK SETTINGS  %%%%
+
+overflow = [];
+md = [];
+
+try
+    md = mdsild(pthstack);
+catch
+    fprintf("first attempt to read metadata failed" + newline)
+end
+
+opt = optin; %update opt in case optin doesn't match saved opt above (or in case there was no saved opt)
+
+pthstack = regexprep(pthstack, ['_' varidoptid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
+
+if ~isfile(pthstack)
+    if mat_stack_exists_already
+        error(pthstack + " does not exist, although its mat version does exist; something went wrong loading the mat file, and this tif version cannot be found (check the tif name)")
+    else
+        error(pthstack + " does not exist, and neither does the mat version")
+    end
+end
+
+%%%% SET THE STACK SIZE USING METADATA (IF METADATA EXISTS) %%%%
+
+if ~isempty(md)
+    [sz, chan] = stacksize(md, ic, rawstack, pthstack);
+end
+
+%%%% MAKE SURE savemem MAKES SENSE (if savemem=1) %%%%
+
+if savemem
+    if ~isempty(md)
+        if isequal(iy, 1:sz(1)) && isequal(ix, 1:sz(2)) && isequal(iz, 1:sz(3)) && isequal(ic, 1:sz(4)) && isequal(it, 1:sz(5))
+            fprintf("savemem is true but all inds_*_read_from are equal to their corresponding sz, so you are reading in the entire stack and will not save memory with memmap, so changing savemem to false and using faster tif reader" + newline)
+            savemem = 0;
+        end
+    else
+        fprintf("savemem=1 but md is empty; this means you don't have metadata file mdsi_.txt yet, so you must obtain it with tifreadfast, which is the alternative to savemem; using it will defeat the purpose of savemem, so setting savemem to 0 now")
+        savemem = 0;
+    end
+    if isempty(iy) && isempty(ix) && isempty(ic) && isempty(iz) && isempty(it)
+        fprintf("savemem is true but all inds_*_read_from are empty, so you are reading in the entire stack and will not save memory with memmap, so changing savemem to false and using faster tif reader" + newline)
+        savemem = 0;
+    end
+end
+
+
+%%%% READ THE STACK WITH TIFFStack (if savemem=1) %%%%
+
+tiffstack_already_failed = 0;
+if savemem %try with tiffstack
+    try_tifreadfast = 0;
+    try
+        fprintf("savemem is true, trying to read stack with TIFFStack first to save memory (since you are reading a subset of the stack)" + newline)
+        stack = TIFFStack(pthstack); %stack is memmapped tif stack, this doesn't read the stack into memory yet
+        [md, sz, chan, overflow] = stackcheck(md, sz, chan, stack, pthstack, ic, rawstack);
+    catch
+        tiffstack_already_failed = 1;
+        fprintf("savemem tiffstack failed, using tifreadfast" + newline)
+        try_tifreadfast = 1;
+    end
+else
+    try_tifreadfast = 1;
+end
+
+
+%%%% READ THE STACK WITH tifreadfast (if savemem=0 or if savemem was 1 but TIFFStack failed) %%%%
+
+if try_tifreadfast %try with tifreadfast; compared with tiffstack, tifreadfast is faster and more compatible across operating systems, versions, platforms (because it doens't use mex code); but, tifreadfast can fail for tiffs with varying size per frame, so tiffstack remains in the catch block below (i haven't done the work to make tiffstack work everywhere, which would requyire using different compiled code after system check)
+    try
+        fprintf("trying to read stack with tifreadfast" + newline)
+        stack = tifreadfast(pthstack); %here, stack is read into memory (is not memmapped)
+        % [~, mdtif] = tifreadfast(pthstack, []);
+        if isempty(md)
+            error("attempt to read metadata must have failed earlier; try to run mdsild on this stack and see wehat happens")
+        end
+        [md, sz, chan, overflow] = stackcheck(md, sz, chan, stack, pthstack, ic, rawstack);
+    catch
+        if tiffstack_already_failed
+            error("tifreadfast failed and tiffreadstack also failed previously; cannot read stack" + newline)
+        else
+            if try_tiffstack_backup
+                fprintf("tifreadfast failed, using tiffstack as backup; it is slower and only works on some platforms but does not read extra blank frames in tifs not written by scanimage" + newline)
+                stack = []; %clear a potentially large variable, in case stack got read by tifreadfast but something caused error afterwards
+                stack = TIFFStack(pthstack); %here, stack is memmapped tif stack, this doesn't read the stack into memory yet
+                [md, sz, chan, overflow] = stackcheck(md, sz, chan, stack, pthstack, ic, rawstack);
+            else
+                error("tifreadfast failed, and try_tiffstack_backup is set to 0; you could set it to 1 and try again" + newline)
+            end
+        end
+    end
+end
+
+
+%%%% CHECK ANY INDICES FOR PROBLEMS %%%%
+
+if ~isempty(md)
+    if isempty(iy)
+        iy = 1:sz(1);
+    end
+    if ~all(iy >= 1 & iy <= sz(1))
+        error("REQUESTED iy are not subset of available stack")
+    end
+    if isempty(ix)
+        ix = 1:sz(2);
+    end
+    if ~all(ix >= 1 & ix <= sz(2))
+        error("REQUESTED ix are not subset of available stack")
+    end
+    if isempty(ic)
+        ic_adjust = 1:sz(3);
+    else
+        ic_adjust = find(chan==ic); %ic_adjust adjusts input ic for any discarded channels
+    end
+    if ~all(ic_adjust >= 1 & ic_adjust <= sz(3))
+        error("REQUESTED ic are not subset of available stack")
+    end
+    if isempty(iz)
+        if rawstack && fbrm
+            iz = 1:md.numslice; %numslice is different from sz(4) for original; if you're removing flyback, use numslice; if you're not, use sz(4)
+        else
+            iz = 1:sz(4);
+        end
+    end
+    if ~all(iz >= 1 & iz <= sz(4))
+        error("REQUESTED iz are not subset of available stack")
+    end
+    if isempty(it)
+        it = 1:sz(5);
+    end
+    if ~all(it >= 1 & it <= sz(5))
+        error("REQUESTED it are not subset of available stack")
+    end
+else
+    if ~isempty(ic) || ~isempty(iz) || ~isempty(it)
+        error("you must know stack size to pass in nonempty iz or it or ic")
+    end
+end
+
+%%%% APPLY INDICES AND RESHAPE STACK %%%%
+
+if ~isempty(md)
+
+    if overflow
+
+        inds_t_read_from_all = repelem(1:sz(5),sz(3)*sz(4)); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+        inds_z_read_from_all = repmat(repelem(1:sz(4),sz(3)), [1 sz(5)]); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+        inds_c_read_from_all = repmat(1:sz(3), [1 sz(4)*sz(5)]); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+        inds_czt_read_from_all = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from_all, inds_z_read_from_all, inds_t_read_from_all); %max possible to find overflow frames, not necessarily the same as below, hence suffix _all
+
+        overflowinds = setdiff(1:size(stack,3), inds_czt_read_from_all); %overflowstack = stack(:, :, overflowinds);
+        overflow_meanframe = sum(stack(:,:,overflowinds),3)/numel(overflowinds);
+        overflow_firstframe = stack(:,:,overflowinds(1));
+        overflow_remainder = overflow_meanframe-double(overflow_firstframe);
+        if ~any(sum(overflow_remainder)==0)
+            % error("THERE ARE NO COLUMNS THAT ARE STATIC ACROSS ALL OVERFLOW FRAMES; ASSUMING THERE IS REAL SIGNAL IN THE OVERFLOW FRAMES AND THROWING AN ERROR; BUT IT'S ALSO POSSIBLE THE OVERFLOW FRAMES JUST DON'T ALWAYS FOLLOW THIS PATTERN; INSPECT THEM")
+        else
+            fprintf("overflow frames do not appear to have any data" + newline)
+        end
+    end
+    inds_t_read_from = repelem(it,numel(ic_adjust)*numel(iz));
+    inds_z_read_from = repmat(repelem(iz,numel(ic_adjust)), [1 numel(it)]);
+    inds_c_read_from = repmat(ic_adjust, [1 numel(iz)*numel(it)]);
+    inds_czt_read_from = sub2ind([sz(3), sz(4), sz(5)], inds_c_read_from, inds_z_read_from, inds_t_read_from); %define 1d inds_zt_read_from for z and t
+
+    stack = stack(iy, ix, inds_czt_read_from); %if using tiffstack, this reads into memory; stack = stack just copies the stack object so cant do that
+    stack = reshape(stack, numel(iy), numel(ix), numel(ic_adjust), numel(iz), numel(it) );
+
+    dmtif_read = [dmstacktif(end-1) dmstacktif(end) flip(dmstacktif(1:numel(dmstacktif)-2))]; %dmtif_read means the dimension order of the tif when read into matlab; not the same as dimension order when tif was written in python with tifffile imwrite; specifically, imwrite puts pages (czt) as first dimension, while when read here, pages are last dimension, and the pages dimensions are themselves reversed into tzc); so if dmstacktif='tzcyx', dmtif_read='yxczt';
+    stack = stackperm(stack, dmtif_read, dmstackmat);
+
+    sz_new = size(stack, 1:5);
+
+    if doplt
+        stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstack)
+    end
+    if any(clip) && ~isequal(clip, [0,1])
+        stack = stackclip(stack, clip=clip);
+    end
+    if ~isa(stack, dtype)
+        stack = stacktype(stack, dtype);
+    end
+    if any(smlenpx) || any(smlensec)
+        stack = stacksm(stack, method=smmthd, lenpx=smlenpx, lensec=smlensec, imrate=md.volrate);
+    end
+
+    pthstackmat = regexprep(pthstack, ['_.tif' '|' '.tif'], ['_' varidoptid_s_suffix '.mat']); %previously --> [erase(pthstack, {'_.tif', '.tif'}) '_.mat'];
+
+
+    s.stack = stack; %stack
+
+    s.sz = sz_new; %size of stack
+    s.minc = double(min(stack, [], [1 2 3 4], 'omitmissing')); % min for each channel
+    s.maxc = double(max(stack, [], [1 2 3 4], 'omitmissing')); % max for each channel
+    s.min = min(s.minc); % min for entire stack
+    s.max = max(s.maxc); % max for entire stack
+    s.mnt = stacktype(mean(stack, 4), class(stack)); %mean t stack
+    s.mnzt = stacktype(mean(s.mnt, 3), class(stack)); %mean zt stack
+    s.mnztc = stacktype(mean(s.mnzt, 5), class(stack)); %mean ztc stack
+
+    s.id = idmake(pthstackmat);
+    s.md = md; %scanimage metadata (also saved as txt file with suffix _mdsi_.txt)
+    s.dm = dmstackmat; %stack dimension order as character vector
+    s.chan = chan; %pmt channel(s) (we use this field because otherwise channel can be ambiguous, eg if pmt 2 is only channel in stack)
+    
+    s.pth = pthstackmat; %path to mat file containing this struct s
+    s.pthtif = pthstack; %path to stack tif that was converted into s and saved as mat file
+    s.pthdaq = s.id.pthdaq; %path to daq associated with stack, if any
+
+    s.rgname = glbfile('rgnamedf');
+    s.rg.rgname = s.rgname;  %initialize rg struct with full-fov rg, ie no rg; later, additional rg are created in rgmake
+    s.rg.id = [idmake(s.pth, 'stackid') '_' s.rg.rgname]; 
+    s.rg.y = [1, s.sz(1)];
+    s.rg.x = [1, s.sz(2)];
+    s.rg.z = [1, s.sz(3)];
+    s.rg.t = [1, s.sz(4)];
+    s.rg.c = [1, s.sz(5)];
+
+    s.dq = []; %output from dqmake; always empty in smake
+    s.mm = []; %output from roidraw; always empty in smake
+    s.roi = []; %output from roimake; always empty in smake
+    s.bmp = []; %output from bmpmake; always empty in smake
+    s.mdl = []; %output from mdlmake; always empty in smake
+    s.fmf = []; %output from fmfmake; always empty in smake
+    
+    s.opt = opt; %options (name-value argument struct opt) used to convert tif to mat in this function
+    s.maketime_optfile_s = glb('maketime_s'); %creation time for s optfile (tracking id-controlled options into smake)
+
+    s = structsort(s); %put in natural order before saving
+
+    fprintf("saving stack as mat file, after permuting, and optional indexing, clipping, typing, smoothing" + newline)
+    save(pthstackmat, '-struct', 's', '-v7.3', '-mat')
+    fprintf("stack saved as mat" + newline)
+
+    pthstackmat_old = regexprep(pthstackmat, varidoptid_s_suffix, '');
+    if isfile(pthstackmat_old)
+        delete(pthstackmat_old)
+        fprintf("deleted same stack but with old name that lacks new varidoptid_s_suffix" + newline)
+    end
+
+else
+
+    error("there was a problem parsing metadata; stack size could not be determined")
+
+end
+
+
+
+end
+
+
+function [sz, chan] = stacksize(md, ic, rawstack, pthstack)
+
+chan = stackchan(pthstack);
+
+if ~isempty(ic) && ~all(ismember(ic, chan))
+    error("ic is not a subset of channels in this stack (after accounting for possible chanrm)")
+end
+
+sz = [md.ypix, md.xpix, numel(chan), md.numslice, md.numvol]; %yxczt;
+if rawstack
+    sz(4) = md.numslice_withflyback;
+end
+
+end
+
+
+function [md, sz, chan, overflow] = stackcheck(md, sz, chan, stack, pthstack, ic, rawstack)
+
+errmsg = [];
+overflow = [];
+
+if ~isempty(md) %if you have metadata already
+    if ~isequal(prod(sz), numel(stack))
+        if rawstack
+            errmsg = "prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
+        else
+            if prod(sz)>numel(stack)
+                errmsg = "tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels";
+            else
+                overflow = 1;
+                fprintf("tifreadfast returned stack with more elements than your metadata reports" + newline + "this can occur with stacks not written by scanimage; will check that the extra frames do not have data" + newline)
+            end
+        end
+    end
+else %if you don't have metadata, get it here
+    md = mdsild(pthstack);
+    if ~isempty(md)
+        [sz, chan] = stacksize(md, ic, rawstack, pthstack);
+    else
+        errmsg = "did not pass in metadata into smake, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
+    end
+end
+
+if ~isempty(errmsg)
+    fprintf(errmsg + newline)
+    error("error")
+end
+
+end
+
+function mismatch = opt_mismatch(pthstack, optnew, optold, pth, sz, chan)
+
+% if mat already exists, error if current options do not match (and are not functionally equivalent to) options previously used to convert tif to mat; 
+% comparing options individually, rather than simply ~isequal(optnew, optold),  because some options can change after input, and also some don't matter functionally; also make sure path matches
+
+mismatch = 0;
+if ~isequal(pth, pthstack) ...
+        || ~isequal(optold.fbrm, optnew.fbrm) ...
+        || ~isequal(optold.dtype, optnew.dtype) ...
+        || ~isequal(optold.clip, optnew.clip) ...
+        || ~isequal(optold.smlenpx, optnew.smlenpx) ...
+        || ~isequal(optold.smlensec, optnew.smlensec) ...
+        || ~isequal(optold.smmthd, optnew.smmthd) ...
+        || ( ~isequal(optold.iy, optnew.iy) && ~isequal(1:sz(1), optnew.iy) ) ...
+        || ( ~isequal(optold.ix, optnew.ix) && ~isequal(1:sz(2), optnew.ix) ) ...
+        || ( ~isequal(optold.ic, optnew.ic) && ~isequal(chan, optnew.ic) ) ...
+        || ( ~isequal(optold.iz, optnew.iz) && ~isequal(1:sz(4), optnew.iz) ) ...
+        || ( ~isequal(optold.it, optnew.it) && ~isequal(1:sz(5), optnew.it) )
+
+    mismatch = 1;
+
+end
+
+end

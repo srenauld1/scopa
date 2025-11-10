@@ -221,7 +221,7 @@
       "rgname": "none",
       "roiname": "none"
     },
-    "sld": {
+    "s": {
       "clip": [0,1],
       "dtype": "uint16",
       "fbrm": 1,
@@ -407,7 +407,7 @@
       "rgname": "none",
       "roiname": "none"
     },
-    "sld": {
+    "s": {
       "clip": [0,1],
       "dtype": "uint16",
       "fbrm": 1,
@@ -422,10 +422,10 @@
     }
   },
   "mosh": {
-    "bmp": "bmpmake_w",
+    "bmp": "bmpmakew",
     "cm": "roifauto",
     "dq": "dqmake",
-    "fmf": "flymaxfe",
+    "fmf": "fmfmake",
     "ma": "roimauto",
     "mdl": "mdlmake",
     "nrm": "roinorm",
@@ -433,7 +433,7 @@
     "opl": "oplmake",
     "qc": "roiqc",
     "roi": "roimake",
-    "sld": "stackld"
+    "s": "smake"
   },
   "mostree": [
     "bmp(1).mdl(1).opg(1)",
@@ -446,7 +446,7 @@
     "roi(1).ma(1)",
     "roi(1).nrm(1)",
     "roi(1).qc(1)",
-    "sld(1)"
+    "s(1)"
   ],
   "mostree_open": [
     "bmp(1)",
@@ -463,7 +463,7 @@
     "roi(1).ma(1)",
     "roi(1).nrm(1)",
     "roi(1).qc(1)",
-    "sld(1)"
+    "s(1)"
   ],
   "mostree_top": [
     "bmp(1)",
@@ -471,6 +471,6 @@
     "fmf(1)",
     "mdl(1)",
     "roi(1)",
-    "sld(1)"
+    "s(1)"
   ]
 }

@@ -1,20 +1,21 @@
-function opt = optidcheck(mos, opt)
+function opt = optidcheck(mos, opt, optid)
 
 %make sure optid is correct 
 
 arguments
     mos % short name for calling function, also name of field holding options in options struct (eg 'roi', 'dq', etc)
     opt % options for calling function
+    optid
 end
 
 optiddf = glbfile('optiddf'); %get default optid from glb
 
-if isempty(opt.optid)
-    opt.optid = optiddf;
+if isempty(optid)
+    optid = optiddf;
 else
-    if ~strcmp(opt.optid, optiddf)
+    if ~strcmp(optid, optiddf)
         pthopt = [pthscopaget() 'opt_' mos '_' userdatfile('scopausername') '_.txt'];
-        [opt_file, optid_file, ~] = structfile(pthopt, nm=opt.optid, justld=1, dosort=1);
+        [opt_file, optid_file, ~] = structfile(pthopt, nm=optid, justld=1, dosort=1);
         opt_file.optid = optid_file;
         opt_file_fn = fieldnames(opt_file);
         opt_file_ne = rmfield(opt_file, opt_file_fn(structfun(@isempty, opt_file))); 

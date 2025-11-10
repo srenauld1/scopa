@@ -49,6 +49,7 @@ if isnumeric(inp) % if inp is numeric, it's the stack (rather than caiman roi ti
         inp = reshape(inp, [], size(inp, ndims(inp)-1), numchan); %reshape to (pixel,time)
     end
 elseif iscell(inp) %if it's a cell, it's caiman roi timeseries, rather than stack
+    error("change this condition in caiman output; no more cells, even for 2 channel")
     stack_input = 0;
     if ndims(inp)>3
         error("respcm input must be <=3d")
@@ -59,40 +60,12 @@ else
     error("inp must be numeric (stack) or cell (roi timeseries)")
 end
 
-if iscell(roimask)
-    chanuse = ~cellfun(@isempty, roimask);
-else
-    if isempty(roimask)
-        chanuse = 0;
-    else
-        chanuse = 1;
-    end
+if isempty(roimask)
+    roimask = ones(szspace, 'logical');
 end
 
-for k = 1:numchan
-    if ~chanuse(k)
-        roimask{k} = ones(szspace(k), 'logical');
-    end
-end
-
-
-cellout = 0;
-if iscell(roimask)
-    if ~isequal(chanuse,0) %don't output cell if roimask is single-channel and empty
-        cellout = 1;
-    end
-    if numel(roimask)>1 && numchan==1
-        error("roimask must be cell with numchan elements")
-    end
-else
-    if numchan>1
-        error("if numchan>1, roimask must be cell with numchan elements")
-    end
-    roimask = {roimask};
-end
 
 if singleton_z
-    error("need to make this clause handle cell roimasks")
     if ndims(roimask)==4 && size(roimask,3)>1
         error("if inp is stack with singleton z, roimask must also have singleton z")
     else
@@ -104,15 +77,11 @@ roiwt = [];
 wtsz = cell(numchan,1);
 for k = 1:numchan
     dmroi = 4;
-    roiwttmp = logical(reshape(permute(roimask{k}, [4 1 2 3]), size(roimask{k},dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
+    roiwttmp = logical(reshape(permute(roimask, [4 1 2 3]), size(roimask,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
     if k==1
         wtsz{k} = [1:size(roiwttmp,1)];
     elseif k==2
-        if chanuse(1)
-            wtsz{k} = [1:size(roiwttmp,1)] + numel(wtsz{k-1});
-        else
-            wtsz{k} = [1:size(roiwttmp,1)]; %if channel 1 is not used, don't add channel 1 rois
-        end
+        wtsz{k} = [1:size(roiwttmp,1)] + numel(wtsz{k-1});
     end
     roiwt = cat(1, roiwt, roiwttmp);
 end
@@ -167,10 +136,7 @@ for k = 1:numchan
 end
 
 
-if ~cellout
-    tsout = cell2mat(tsout);
-    roimask = cell2mat(roimask);
-end
+tsout = cell2mat(tsout');
 
 
 

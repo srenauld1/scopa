@@ -1,4 +1,4 @@
-function roimask = roiqc(roimask, opt, opt2)
+function [roimask, opt] = roiqc(roimask, opt, opt2)
 
 arguments
 
@@ -17,15 +17,12 @@ arguments
     opt2.roicen = []
     opt2.mask_allroi = []
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
-    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
 
 end
 
-if opt2.och
-    if isfield(opt, 'optid')
-        opt = rmfield(opt, 'optid');
-    end
-    roimask = opt;
+if opt2.runtype
+    roimask = [];
     return
 end
 

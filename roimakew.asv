@@ -1,0 +1,108 @@
+function [s, opt, vdat, roi] = roimakew(s, vg, opt, opt2, opt3)
+
+%{
+
+wrapper function for roimake; see roimake for docs; 
+name-value arguments in struct opt (not vg or opt2) have no validation functions because they can be cells here, which get distributed in oid, 
+each option set get output by oid is validated in roimake; any other name-value structs (eg, opt2) get validated here (and the same way in roimake)
+name-value argument vg contains a struct for finding input variables to roimake; if variables are found they are assigned a varid; 
+if vg.s is empty (default) roimake operates on input variable s
+
+%}
+
+arguments
+
+    s = '' % struct output from function smake (contains stack, md, pth, and other fields); pthsv (output roi file path) is derived from s.pth (path to stack); error if empty
+
+    vg.s = []; %struct containing criteria for vget to find input argument s (rather than using s) 
+
+    opt.rgname = glbfile('rgnamedf'); %default rgname 'none' automatically gets full fov rg; user is not prompted to create an rg in this case
+    opt.roiname = glbfile('roinamedf'); %text, name of roi set created by roimake on a single rg
+    opt.dodraw = 0 %1 to draw rois in roidraw
+    opt.ma = [] %roimauto options returned by roimauto('', runtype=1); empty to skip roimauto; roimauto applies automated morphological roi segmentation
+    opt.cm = [] %roifauto options returned by roifauto('', runtype=1); empty to skip roifauto; roifauto calls python caiman roi extraction from matlab (functional and morphological roi segmentation)
+    opt.qc = [] %roiqc options returned by roiqc('', runtype=1); empty to skip roiqc; roiqc applies quality control to rois (filtering by size, number, etc)
+    opt.nrm = [] %roinorm options returned by roinorm('', runtype=1); empty to skip roinorm; roinorm applies normalization to roi timeseries 
+    
+    opt2.t (1,:) double = [] %timestamp vector; only required nonempty if channorm~=0 in opt.nrm
+    opt2.roimask = [] %roimask to apply to stack; if nonempty, roidraw and roimauto are skipped
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to do plots
+    
+    opt3.idx (1,1) {mustBeInteger, mustBePositive} = 1 %index of input option sets; leave blank if not looping over this wrapper
+    opt3.mnum (1,1) {mustBeInteger, mustBePositive} = 1 %last index of input option sets; 
+    opt3.runtype (1,1) {mustBeMember(opt3.runtype,0:3)} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt are under id-control); 2 to do same as 1, then also run oid to derive optid and return opt (with newly derived optids); 3 to do same as 2, then also run vget to derive input variables' data struct and return as output
+
+end
+
+vdat = [];
+roi = [];
+
+if opt3.runtype==1
+    opt = oid(opt, 'roi', noid=1); %for opt3.runtype==1, in oid noid=1, so just distribute and reduce option sets before validating 
+    for k = 1:numel(opt)
+        prs = struct2pairs(opt(k));
+        [~, opt(k)] = roimake(prs{:}, runtype=1); %use arguments block in module to validate all name-value arguments in 'opt'
+    end
+    return
+end
+
+persistent roitmp
+persistent optouttmp
+persistent mmtmp
+if opt3.idx==1 %idx input is not used except as flag to start or continue persistent variable counter idxout
+    roitmp = [];
+    optouttmp = [];
+    mmtmp = [];
+end
+
+
+%%%% DERIVE optid (AND DISTRIBUTE ANY CELLS) %%%%
+
+opt = oid(opt, 'roi'); %assign ids to options sets
+if opt3.runtype==2
+    return
+end
+
+
+%%%% FIND s, IF REQUESTED %%%%
+
+clear vget %clear persistent variables within vget
+vdat = vget(vg.s, runtype=2);
+
+if opt3.runtype==3
+    return
+end
+
+prs2 = struct2pairs(opt2);
+
+for m = 1:numel(opt) %loop over options sets
+
+    prs = struct2pairs(opt(m));
+
+    for k = 1:numel(vdat) %loop over variable sets
+
+        if ~isempty(vdat.dat) %if s is defined in the vg options struct
+            [~, s] = vget(vdat=vdat(k), idx=k, err=1);
+            prs2(end+1:end+2) = {'varid', vdat(k).varid}; %add possible nondefault varid to name-value argument cell (prs and prs2 would work)
+        end
+
+        [roi, optout, mm] = roimake(s, prs{:}, prs2{:});
+        roitmp = cat(2, roitmp, roi);
+        optouttmp = cat(2, optouttmp, optout); %accumulate paths in case multiple s are created 
+        mmtmp = cat(2, mmtmp, mm); %accumulate paths in case multiple s are created 
+
+
+    end
+
+end
+
+roi = roitmp;
+opt = optouttmp;
+
+if opt3.last
+    s.roi = roi; %put the new data into s also, 
+    s.mm = mmtmp;
+    matsv(s.pth, 'roi', 'mm', s=s) %save new data to s file 
+end
+
+end

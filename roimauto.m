@@ -1,4 +1,4 @@
-function roimaskout = roimauto(stack, opt, opt2)
+function [roimaskout, opt] = roimauto(stack, opt, opt2)
 
 arguments
 
@@ -20,15 +20,12 @@ arguments
     opt2.pthstack = []
     opt2.rg = []
     opt2.roiname = []
-    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
 
 end
 
-if opt2.och
-    if isfield(opt, 'optid')
-        opt = rmfield(opt, 'optid');
-    end
-    roimaskout = opt;
+if opt2.runtype
+    roimaskout = [];
     return
 end
 
@@ -73,7 +70,7 @@ if isempty(roiname)
    roiname = 'none';
 end
 if isempty(rg)
-    [~, rg] = stackcrop(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
+    [~, rg] = rgmake(stack, pthstack=pthstack); %if rg is empty, it's default, which is no crop, so no need to output stack
 end
 rgname = rg.rgname;
 

@@ -7,7 +7,7 @@ arguments
     pth %path to txt file containing struct
     opt.dosort = 0; %alphabetically dosort struct (natural dosort)
     opt.vectype = 'row'; %empty, row, or column; transpose any vector in read struct that is not vectype; skip if empty; default is row to ensure consistency across read/write
-    opt.nocells = 0; %convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode)
+    opt.nocell = 0; %convert char in cell to singleton char, convert char cell array to string array (to dismbiguate cell (which designates options for expansion) and string arrays, which get mixed up in jsonencode and jsondecode)
     opt.flat = 0; %flatten struct 
 end
 
@@ -18,6 +18,6 @@ if opt.flat
     s = structflat(s);
 end
 
-s = structsort(s, vectype=opt.vectype, nocells=opt.nocells, skipsort= ~opt.dosort);
+s = structsort(s, vectype=opt.vectype, nocell=opt.nocell, skipsort= ~opt.dosort);
 
 end

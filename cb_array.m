@@ -277,7 +277,7 @@ if currkey_isvalid
                     exit_sequence = 1; %need this here since ~exit_sequence below
                 else
                     if ~isempty(veclen) && numel(outp)~=veclen(end)
-                        ttl_problem = ['IN VECTOR #' num2str(numvec_curr) ' VECTOR LENGTH (' num2str(numel(outp)) ') DOES NOT MATCH VECLEN (' num2str(veclen(end)) ')'];
+                        ttl_problem = ['IN VECTOR #' num2str(numvec_curr) ' VECTOR LENGTH (' num2str(numel(outp)) ') DOES NOT MATCH REQUESTED VECLEN (' num2str(veclen(end)) ')'];
                         exit_sequence = 1; %need this here since ~exit_sequence below
                     end
                     if ~exit_sequence % successful exit, if exit_sequence wasn't triggered with error,

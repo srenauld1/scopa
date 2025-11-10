@@ -1,4 +1,4 @@
-function o = oid(o, opt)
+function optout = oid(optin, mos, opt)
 
 %{
 
@@ -11,19 +11,18 @@ so oid just has these steps: distribute, reduce, sort, unique, ID
 %}
 
 arguments
-    o % options struct 
-    opt.justld = 0 % get ids only (cannot write to file or create new id)
-    opt.mos = '' %optionally pass in mos; if nonempty, o must be struct to be passed into module, rather than struct holding multiple mos structs
+    optin (1,1) struct % options struct
+    mos {mustBeTextScalar} = '' %optionally pass in mos; if nonempty, optin must be struct to be passed into module, rather than struct holding multiple mos structs
+    opt.justld (1,1) {mustBeBinary} = 0 % get ids only (cannot write to file or create new id)
+    opt.noid (1,1) {mustBeBinary} = 0; %skip getting optid and writing options to opt file; just distribute and reduce options
 end
-mos = opt.mos;
 
 try
 
     justld = opt.justld;
+    noid = opt.noid;
 
     usegit = glb('usegit', err=1);
-
-    scopausername = userdatfile('scopausername');
 
     callstack = dbstack();
     vgetcall = 0;
@@ -33,85 +32,61 @@ try
     if vgetcall && ~justld
         error("vget should call oid with justld=1")
     end
-    if ~isscalar(o) || ~isstruct(o)
-        error("o must be scalar struct")
-    end
-    if justld
-        fprintf("NOTE: setting usegit to false because s is empty or justld is true (meaning nothing will be written to file), so syncing filesystems with git is not necessary" + newline)
-    end
-   
-    if isempty(mos)
-        mos = fieldnames(o);
-    else
-        if isfield(o, mos)
-            error("if mos is nonempty, mos cannot be field in o")
-        end
-        fntmp = fieldnames(o);
-        o.(mos) = o;
-        o = rmfield(o, fntmp);
-        if ~iscell(mos)
-            mos = {mos};
-        end
-    end
 
-    for k = 1:numel(mos)
+    %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
 
-        if ~isempty(o.(mos{k}))
+    optdist = odist(optin); %optdist substructs (fields) are temporary names assigned during "distribution" of any cell-valued options
+
+    cnt = 0;
+    optout = [];
+    for q = 1:numel(optdist)
 
 
-            %%%%%%%% PLACE OPTIONS IN TEMPORARY mosc (IF NOT ALREADY PLACED IN ONE BY USER) %%%%%%%%
+        %%%%%%%% REDUCE OPTIONS %%%%%%%%
 
-            opttmp2 = moscset(o, mos{k});
-
-
-            %%%%%%%% DISTRIBUTE OPTIONS %%%%%%%%
-
-            optdist = odist(opttmp2); %optdist substructs (fields) are temporary names assigned during "distribution" of any cell-valued options
-            
-            cnt = 0;
-            optout = [];
-            mosctmp = fieldnames(optdist);
-            for q = 1:numel(mosctmp)
+        optred = ored(optdist(q), mos); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file below with structfile (if it wasn't already)
 
 
-                %%%%%%%% REDUCE OPTIONS %%%%%%%%
+        if noid
 
-                optred = ored(optdist.(mosctmp{q}), mos{k}); %input is single options set after distribution of cell arrays in odist; output is that same options set but without any redundancy, ored is written to file below with structfile (if it wasn't already)
-
-
-                %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
-
-                pthoptmos = [pthscopaget() 'opt_' mos{k} '_' scopausername '_.txt'];
-                [opttmp, optid, ~] = structfile(pthoptmos, s=optred, usegit=usegit, justld=justld, dupe=0, dosort=1, cellout=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
-
-                if ~vgetcall && ~isscalar(opttmp)
-                    error("opttmp must be scalar, except when vgetcall=1 (ie when calling oid from vget, where wildcard can find multiple matching structs)")
-                end
-
-                
-                %%%%%%%% ACCUMULATE NONSCALAR STRUCT WITH NEW OPTID FIELD  %%%%%%%%
-
-                for m = 1:numel(opttmp)
-                    if ~isempty(opttmp{m}) %why would this ever be empty??
-                        cnt = cnt+1;
-                        opttmp{m}.optid = optid{m};
-                        if cnt==1
-                            optout = opttmp{m};
-                        else
-                            optout(cnt) = opttmp{m};
-                        end
-                    end
-                end
-
+            if q==1
+                optout = optred;
+            else
+                optout(q) = optred;
             end
 
-            o.(mos{k}) = optout;
+        else
 
+            %%%%%%%% MATCH (TO FILE) OR DERIVE (NOT IN FILE) AND WRITE TO FILE REDUCED OPTIONS AND THEIR OPTIDS %%%%%%%%
+
+            pthoptmos = [pthscopaget() 'opt_' mos '_' userdatfile('scopausername') '_.txt'];
+            
+            [opttmp, optid, ~] = structfile(pthoptmos, s=optred, usegit=usegit, justld=justld, dupe=0, dosort=1, cellout=1); %don't usegit in strucfile because you use it outside its enclosing loop (more efficient)
+
+            if ~vgetcall && ~isscalar(opttmp)
+                error("opttmp must be scalar, except when vgetcall=1 (ie when calling oid from vget, where wildcard can find multiple matching structs)")
+            end
+
+
+            %%%%%%%% ACCUMULATE NONSCALAR STRUCT WITH NEW OPTID FIELD  %%%%%%%%
+
+            for m = 1:numel(opttmp)
+                if ~isempty(opttmp{m}) %why would this ever be empty??
+                    cnt = cnt+1;
+                    opttmp{m}.optid = optid{m};
+                    if cnt==1
+                        optout = opttmp{m};
+                    else
+                        optout(cnt) = opttmp{m};
+                    end
+                end
+            end
+        
         end
 
     end
 
-    o = structsort(o, vectype='row');
+    optout = structsort(optout, vectype='row');
 
 catch ME
 

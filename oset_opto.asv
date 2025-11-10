@@ -1,8 +1,8 @@
 function o = oset_opto()
 
-do = {'sld', 'dq', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
+do = {'s', 'dq', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
 
-o.sld.ic = [1 2];
+o.s.ic = [1 2];
 
 o.dq.dvlensec = .3;
 

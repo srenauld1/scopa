@@ -1,58 +1,63 @@
 function o = oset_opto()
 
-do = {'sld', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
+do = {'s', 'roi'}; %string of char or cell of char; list of mos to populate in options struct (ie list of a2p modules to enter)
 
-o.sld.ic = [1,2];
+% o.s.it = {1:100, 1:200};
+o.s.it = {1:100};
+% o.s(2).it = {1:300};
+% o.s(2).smlensec = {1,2};
 
-o.dq.dvlensec = {.3, 0.5};
+rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
+
+
+% o.s.smlensec = 0.3;
+% o.s.smlenpx = [3,3,0];
+ 
+o.dq.rskey = {0, -60};
 
 o.bmp.domtype = 'm';
+o.bmp.dvord = 3;
+o.bmp.smlensec = {2,4,6};
 
-bmpindv.vg.dq = ['*'];
-bmpindv.vg.vnm = 'vh';
-% bmpindv.vg.optid = 'a8';
+o.bmp.indv.vg.dq = ['*'];
+o.bmp.indv.vg.vnm = 'bh';
+% o.bmp.indv.vg.optid = 'a8';
 
-o.bmp.indv = bmpindv;
+o.bmp.depv.vg.roi.rgname = 'eb';
+o.bmp.depv.vg.roi.roiname = {'eb', 'no'};
+o.bmp.depv.vg.roi.ma.maskseg = 'torus';
+o.bmp.depv.vg.vnm = 'ts';
+% o.bmp.depv.vg.optid = 'a76';
+o.bmp.depv.vg.group = 1;
 
-bmpdepv.vg.roi.rgname = 'eb';
-bmpdepv.vg.roi.roiname = 'eb';
-% bmpdepv.vg.roi.ma.maskseg = 'torus';
-bmpdepv.vg.vnm = 'ts';
-% bmpdepv.vg.optid = 'a76';
-bmpdepv.vg.group = '1';
-
-o.bmp.depv = bmpdepv;
+o.bmp.depv.vg(2).dq.dvlensec = .49;
+o.bmp.depv.vg(2).vnm = 'bh';
+o.bmp.depv.vg(2).group = 1;
 
 o.bmp.mdl.mdlname = 'fnet_v';
 o.bmp.mdl.lensec = 0;
 o.bmp.mdl.epochnum = 1;
 
-rgname = {'eb', 'no'}; %use 'none' to skip prompt to define substack (will enter roi code with full fov), otherwise list any rgname you want to define for independent roi analysis, which will be associated with unique timeseries available for model fitting (mdlmake) or interactive plots (pltx); if rgname is not 'none', rgname can be, but do not have to be cuboid subregions of fov; rgname can but do not have to be unique regions of fov, although the user is prompted with that option;
-for k = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
+for m = 1:numel(rgname) %create different copybin within o.roi for each rgname, to analyze them differently
 
-    o.roi.rgname = rgname{k};
+    o.roi(m).rgname = rgname{m};
 
-    % o.roi.nrm.nrmstr = 'z';
-    % o.roi.nrm.degdtr = 3;
+    o.roi(m).nrm.nrmstr = {'z'};
+    % o.roi(m).nrm.degdtr = 3;
 
-    if strcmp(rgname{k}, 'eb')
-        o.roi.roiname = 'eb';
-        o.roi.dodraw = 1;
-        o.roi.ma.numroi = 32;
-        o.roi.ma.maskmake = 'nonzero';
-        o.roi.ma.maskseg = 'torus';
-        o.roi.ma.roirad = 1.5;
-    elseif any(strcmp(rgname{k}, {'gal', 'gar'}))
-        o.roi.roiname = {'dorsal', 'ventral'};
-        o.roi.dodraw = 1;
-    elseif any(strcmp(rgname{k}, 'no'))
-        o.roi.roiname = {'left', 'right'};
-        o.roi.dodraw = 1;
+    if strcmp(rgname{m}, 'eb')
+        o.roi(m).roiname = 'eb';
+        o.roi(m).dodraw = 1;
+        % o.roi(m).ma.numroi = 32;
+        % o.roi(m).ma.maskmake = 'nonzero';
+        % o.roi(m).ma.maskseg = 'torus';
+        % o.roi(m).ma.roirad = 1.5;
+    elseif any(strcmp(rgname{m}, 'no'))
+        o.roi(m).roiname = {'left', 'right'};
+        o.roi(m).dodraw = 1;
     end
-
-    o = ofill(o, mosc={'roi', rgname{k}});
 
 end
 
 
-o = ofill(o, mosfinal=do); % mosfinal final ofill call to strip o to only 'mos' listed in input 'do'
+o = ofill(o, mosfinal=do);

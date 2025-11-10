@@ -1,6 +1,7 @@
 function o = moscset(o, mos)
 
 %{
+
 --put a mos from the options struct into a mosc
 --if no mosc is passed as input, will use the default mosc (moscdf)
 --if input o is already a mos within a mosc, nothing happens
@@ -20,7 +21,7 @@ end
 moscdf = 'none'; %in case neither opt.moscdf nor glb('moscdf') were set
 
 pthoptdf = [pthscopaget() 'optdf.txt'];
-dall = structld(pthoptdf, nocells=1, dosort=0);
+dall = structld(pthoptdf, nocell=1, dosort=0);
 mostree = dall.mostree;
 du = dall.du;
 fndf = fieldnames(du.(mos));
