@@ -1,10 +1,11 @@
-function opt = oplmake(slvr, opt, opt2)
+function [slvr, opt] = oplmake(slvr, opt, opt2)
 
 %{
 
 this function just exists for symmetry with other a2p modules
 it just shows/outputs default options for a2p module 'opl', which are default local solver options output by optimoptions('fmincon')
-opt2.och is unecessary, but just included for symmetry with other a2p modules
+opt2.runtype is unecessary, but just included for symmetry with other a2p modules
+for symmetry with other modules, opt must be second output, so first is arbitrarily slvr
 
 %}
 
@@ -38,7 +39,7 @@ arguments
     opt.TypicalX = 'ones(numberOfVariables,1)';
     opt.UseParallel = 0;
 
-    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
 
 end
 
@@ -55,10 +56,6 @@ if ~isequal(opt, opttmp)
     error("defaults in arguments block do not match defaults output by optimoptions")
 end
 
-if opt2.och
-    if isfield(opt, 'optid')
-        opt = rmfield(opt, 'optid');
-    end
-    opt = opt;
+if opt2.runtype %for oplmake, runtype is pointless, since oplmake is just for validating/returning options
     return
 end

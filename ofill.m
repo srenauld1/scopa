@@ -12,9 +12,7 @@ user-supplied options struct 'optin' can be subset of d (ie field organization a
 option values can differ from those in d
 for any fields in d that are not in optin, ofill creates those fields and fills with default values from d 
 
-module: high-level function called directly from a2p
-options: inputs to module that are tracked by id (assigned to unique set of options)
-    options are tracked and given id for modules because they can have big effect on output variables; id also simplifies naming files, figures, etc.
+module options are tracked and given id (optid) because they can have big effect on output variables; id also simplifies naming files, figures, etc.
 
 a2p.m tracks options with the following files 
     odf.m: holds default options 
@@ -25,12 +23,12 @@ a2p.m tracks options with the following files
     oid.m: creates requested combinations of options (distributes any cells) and assigns each unique options set an optid (eg 'a1', 'a2', etc), writes them to their respective opt_*.txt file, and updates options struct with new optid substructs
     structfile.m: reads/writes options to file, using optid derived in oid
 
-
-module: function called directly from a2p, options tracked by id
+module: highest-level function in a2p, called directly from a2p, options tracked by id
 submodule: function called from module, options tracked by id 
 options: inputs to modules and submodules that are tracked by id
 modules and submodules create analytic variables (ie modules are not plotting functions, or utility functions)
 other a2p functions are not called modules because their inputs are not tracked by id
+
 
 above/below/beside: relations among fields in options struct
 
@@ -307,57 +305,52 @@ if ~isempty(mosfinal)
 
     for k = 1:numel(mostree_open)
         stind = structind(mostree_open{k});
+        mos_no_trailing_idx = regexprep(mostree_open{k}, '\(\d+\)$', '');
+        stind_all = structind(mos_no_trailing_idx);
         if ~ismember(mostree_open{k}, mostree_optout_open_keep)
             try
-                optout = setfield(optout, stind{:}, []); %set any missing mos to empty when mosfinal is nonempty
+                if isscalar(getfield(optout, stind{:})) %if scalar struct, don't specify index (1), otherwise it will create an empty struct, which causes error in structsort
+                    optout = setfield(optout, stind_all{:}, []); %set any missing mos to empty when mosfinal is nonempty
+                else
+                    optout = setfield(optout, stind{:}, []); %set any missing mos to empty when mosfinal is nonempty
+                end
             catch
-                mos_no_trailing_idx = regexprep(mostree_open{k}, '\(\d+\)$', '');
-                stind = structind(mos_no_trailing_idx);
-                optout = setfield(optout, stind{:}, []);
+                optout = setfield(optout, stind_all{:}, []);
             end
         end
     end
 
-    mostree_open_ascend = sort(mostree_open, 'descend'); %sort descending (which is actually ascending deepest to shallowest)
+    mostree_open_ascend = sort(mostree_open, 'descend'); %sort descending (which is actually ascending through struct, deepest to shallowest)
     for k = 1:numel(mostree_open_ascend)
         stind = structind(mostree_open_ascend{k});
+        mos_no_trailing_idx = regexprep(mostree_open_ascend{k}, '\(\d+\)$', '');
+        stind_all = structind(mos_no_trailing_idx);
         try
             if ~isempty(getfield(optout, stind{:})) && all(structfun(@isemptyall, getfield(optout, stind{:})))
-                mos_no_trailing_idx = regexprep(mostree_open_ascend{k}, '\(\d+\)$', '');
-                stind = structind(mos_no_trailing_idx);
-                optout = setfield(optout, stind{:}, []); %set to empty any mos containing nothing but other empty mos
+                optout = setfield(optout, stind_all{:}, []); %set to empty any mos containing nothing but other empty mos
             end
         catch
-            mos_no_trailing_idx = regexprep(mostree_open_ascend{k}, '\(\d+\)$', '');
-            stind = structind(mos_no_trailing_idx);
-            if ~isempty(getfield(optout, stind{:})) && all(structfun(@isemptyall, getfield(optout, stind{:})))
-                optout = setfield(optout, stind{:}, []); %set to empty any mos containing nothing but other empty mos
+            if ~isempty(getfield(optout, stind_all{:})) && all(structfun(@isemptyall, getfield(optout, stind_all{:})))
+                optout = setfield(optout, stind_all{:}, []); %set to empty any mos containing nothing but other empty mos
             end
         end
     end
 
-    for k = 1:numel(mostree_open) %do option validation
+    for k = 1:numel(mostree_open) %option validation
         stind = structind(mostree_open{k});
         try
             optout_tmp = getfield(optout, stind{:});
+            if ~isempty(optout_tmp)
+                try
+                    stindtmp = stind{end-1};
+                    prs = struct2pairs(optout_tmp);
+                    [~, optout_tmp_validated] = mosh.(stindtmp)('', prs{:}, runtype=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
+                catch ME
+                    error("attempt to validate inputs for module " +  stindtmp + " failed with this error message " + newline + ME.message)
+                end
+            end
         catch %skip trying to get submos when supermos is empty
-            optout_tmp = [];
-        end
-        if ~isempty(optout_tmp)
-            try
-                stindtmp = stind{end-1};
-                prs = struct2pairs(optout_tmp);
-                optmosh_tmp = mosh.(stindtmp)('', prs{:}, och=1); %for all mos in optout, apply argument validation from arguments block (using function handles in mosh, defined in odf)
-            catch ME
-                error("attempt to validate inputs for module " +  stindtmp + newline + "failed with this error message " + ME.message)
-            end
-            optmosh_tmp_fn = fieldnames(optmosh_tmp);
-            optmosh_tmp_ne = rmfield(optmosh_tmp, optmosh_tmp_fn(structfun(@isempty, optmosh_tmp)));
-            optout_tmp_fn = fieldnames(optout_tmp);
-            optout_tmp_ne = rmfield(optout_tmp, optout_tmp_fn(structfun(@isempty, optout_tmp)));
-            if ~isequal(optmosh_tmp_ne, optout_tmp_ne) %make sure they match, except for empties, which can be different after jsonencode/decode (empty struct becomes [])
-                fprintf("user-supplied options changed (in a minor way, like vector orientation or class) in arguments block for module " + stindtmp + newline)
-            end
+            optout_tmp_validated = [];
         end
     end
 

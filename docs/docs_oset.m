@@ -63,7 +63,7 @@ here is a complete list of obins and functions they hold options for (see also s
     spec, stackfind   (called from ofill)
     dq, dqmake   (called from a2p)
     spr, stackseries   (called from a2p)
-    sld, stackld   (called from stackseries)
+    s, smake   (called from stackseries)
     ftv, ftvalign   (called from a2p)
     roi, roimake   (called from a2p)
     ma, roimauto   (called from roimake)
@@ -105,7 +105,7 @@ these nested obins will be set in o, by user or by default
 for brevity, only the deepest nesting of each unique branch is shown
 
     o.spr.sp   (stackplt called from within stackseries called from a2p)
-    o.spr.sld   (stackld called from within stackseries called from a2p)
+    o.spr.s   (smake called from within stackseries called from a2p)
     o.bmp   (bmpmake called from within popcmp called from a2p)
     o.mdl.vg   (vget called from within mdlmake called from a2p)
     o.mdl.sp   (stackplt called from within mdlmake called from a2p)

@@ -1,10 +1,10 @@
 function o = oset_312(o)
 
-o.mn.do = ["sld", "dq", "roi"];
+o.mn.do = ["s", "dq", "roi"];
 
 rgname = {'none'}; 
 
-o.sld.ic = [];
+o.s.ic = [];
 
 for m = 1:numel(rgname) 
 

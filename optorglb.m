@@ -4,7 +4,7 @@ function opt = optorglb(opt, df)
 
 handle function inputs that are both name-value arguments and globals in function glb;
 a2p uses a few global variables (in glb) that get set early
-some functions (eg, structfile, vget, stackcrop) that are likely to be used outside a2p have these variables as name-value arguments also 
+some functions (eg, structfile, vget, rgmake) that are likely to be used outside a2p have these variables as name-value arguments also 
 when running a2p, the globals are used instead of their name-value counterparts (the name-value argument is omitted by a2p)
 but if the user wants to run these functions outside a2p, optorglb handles any conflicts, in case the user wants to set the name-value arguments, but still has the variables set in glb 
 if name-value argument is nonempty and its counterpart in glb is empty, use the name-value argument

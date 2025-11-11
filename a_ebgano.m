@@ -62,7 +62,7 @@ pthstack = s.pth;
 sper = s.md.sper;
 widyxz = s.md.widyxz;
 
-seb = stackcrop(s, 'eb');
+seb = rgmake(s, 'eb');
 ebmn = mean(seb.stack, [1 2 3]);
 
 if isempty(mix)
@@ -397,7 +397,7 @@ if ismember('profile', pltstr)
         end
     end
 
-    % stack = stackcrop(stack, 'eb');
+    % stack = rgmake(stack, 'eb');
 
     stack = stack(:,:,:,it);
     % stack = stackiso(stack, widyxz);

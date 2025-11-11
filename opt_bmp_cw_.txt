@@ -2511,5 +2511,61 @@
     "omitnan": 1,
     "scope": "all",
     "smlensec": 6
+  },
+  "z48": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 4,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 2
+  },
+  "z49": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 4,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 4
+  },
+  "z50": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 4,
+    "maxangrs": [],
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": [],
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 6
+  },
+  "z51": {
+    "domtype": "m",
+    "dorescale": 0,
+    "dvlensec": 0.4,
+    "dvord": 2,
+    "maxangrs": 8,
+    "mdl": [],
+    "mthd": "pva",
+    "numangrs": 16,
+    "numcirc": 1,
+    "omitnan": 1,
+    "scope": "all",
+    "smlensec": 0
   }
 }

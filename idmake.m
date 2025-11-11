@@ -4,14 +4,12 @@ function id = idmake(pthstacks, field)
 
 arguments
     pthstacks %full path to stacks will fill all fields; if you just input stack filename, path fields will be empty; if you just input recdate_fly_trial, only those fields will be derived
-    field {mustBeTextScalar} = '' %optional individual field of output struct id; if nonempty, output will only be this field; if single pthstacks input, output will be char vector, if multiple pthstacks input, output will be cell 
+    field {mustBeTextScalar} = '' %optional individual field of output struct id; if nonempty, output will only be this field; if single pthstacks input, output will be char vector, if multiple pthstacks input, output will be cell
 end
 
 if ~isempty(pthstacks) && ~iscell(pthstacks)
     pthstacks = {pthstacks};
 end
-
-optid_sld_suffix = 'z0_sld_'; %temporary hack, to make sure this is not considered part of suffix
 
 id = [];
 
@@ -54,15 +52,28 @@ for k = 1:numel(pthstacks)
     pthrec = [pthstackfld recid];
 
     if isempty(suffix)
+        varid = '';
+        optid = '';
         stackid = '';
         pthstack = ''; %since we don't know suffix, you must have passed in pthrec, so make pthstack empty
         pthpre = '';
     else
-        suffix = erase(suffix, optid_sld_suffix);
+        spl = strsplit(suffix, '_');
+        suffix = spl{1};
+        if numel(spl)>1 && ~isempty(spl{2})
+            mtch = regexp(spl{2}, '[A-Za-z]\d+', 'match');
+            varid = mtch{1};
+            optid = mtch{2};
+            varidoptid = ['_' varid optid];
+        else
+            varid = '';
+            optid = '';
+            varidoptid = '';
+        end
         if strcmp(suffix(end), '_')
             suffix = suffix(1:end-1);
         end
-        stackid = [recdate '_' fly '_' trial '_' suffix];
+        stackid = [recdate '_' fly '_' trial '_' suffix varidoptid];
         pthpre = [pthstackfld stackid '_'];
     end
 
@@ -87,6 +98,8 @@ for k = 1:numel(pthstacks)
     id(k).fly = fly;
     id(k).trial = trial;
     id(k).suffix = suffix;
+    id(k).varid = varid;
+    id(k).optid = optid;
     id(k).ext = ext;
 
     id(k).recdatenum = recdatenum;
@@ -108,6 +121,9 @@ end
 if ~isempty(field)
     idtmp = cell(1,numel(id));
     for k = 1:numel(id)
+        if isempty(id(k).(field))
+            error("requested id field is empty")
+        end
         idtmp{k} = id(k).(field);
     end
     id = idtmp;

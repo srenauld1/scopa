@@ -1,0 +1,100 @@
+function [s, opt, vdat, spth] = smakew(pthstack, vg, opt, opt2, opt3)
+
+%{
+
+wrapper function for smake; see smake for docs; 
+name-value arguments in struct opt (not vg or opt2) have no validation functions because they can be cells here, which get distributed in oid, 
+each option set get output by oid is validated in smake; any other name-value structs (eg, opt2) get validated here (and the same way in smake)
+name-value argument vg contains a struct for finding input variables to smake; if variables are found they are assigned a varid; 
+if vg.pthstack is empty (default) smake operates on input variable pthstack (or interactively chosen path if pthstack is empty)
+
+%}
+
+arguments
+
+    pthstack = '' % if nonempty, path to stack (to load if mat, or convert to mat if tif); if empty, user prompted to select file interactively; 
+
+    vg.pthstack = []; %struct containing criteria for vget to find input argument pthstack (rather than using pthstack) 
+    
+    opt.fbrm = 1; %crop flyback frames from each volume, if they exist, before saving to mat
+    opt.iy = []; %y indices to keep and save to mat
+    opt.ix = []; %x indices to keep and save to mat
+    opt.ic = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+    opt.iz = []; %z indices to keep and save to mat
+    opt.it = []; %t indices to keep and save to mat
+    opt.clip = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
+    opt.dtype = 'uint16'; %output stack datatype; if uint*, stack is zeroed (min subtract) before being converted 
+    opt.smlenpx = [0,0,0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
+    opt.smlensec = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
+    opt.smmthd = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
+   
+    opt2.savemem (1,1) {mustBeBinary} = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
+    
+    opt3.idx (1,1) {mustBeInteger, mustBePositive} = 1 %index of input option sets; leave blank if not looping over this wrapper
+    opt3.runtype (1,1) {mustBeMember(opt3.runtype,0:3)} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt are under id-control); 2 to do same as 1, then also run oid to derive optid and return opt (with newly derived optids); 3 to do same as 2, then also run vget to derive input variables' data struct and return as output
+
+end
+
+vdat = []; %set here in case runtype~=0 or 3
+spth = []; %set here in case runtype~=0
+
+if opt3.runtype==1
+    opt = oid(opt, 's', noid=1); %for opt3.runtype==1, in oid noid=1, so just distribute and reduce option sets before validating
+    for k = 1:numel(opt)
+        prs = struct2pairs(opt(k));
+        [~, opt(k)] = smake(prs{:}, runtype=1); %use arguments block in module to validate all name-value arguments in 'opt'
+    end
+    return
+end
+
+persistent spthtmp
+if isempty(spthtmp) || opt3.idx==1 %idx input is not used except as flag to start or continue persistent variable counter idxout
+    spthtmp = {};
+end
+
+%%%% DERIVE optid (AND DISTRIBUTE ANY CELLS) %%%%
+
+opt = oid(opt, 's'); %assign ids to options sets
+if opt3.runtype==2
+    return
+end
+
+
+%%%% FIND pthstack, IF REQUESTED %%%%
+
+clear vget %clear persistent variables within vget
+vdat = vget(vg.pthstack, runtype=2);
+
+if opt3.runtype==3
+    return
+end
+
+prs2 = struct2pairs(opt2);
+
+for m = 1:numel(opt) %loop over options sets
+
+    prs = struct2pairs(opt(m));
+
+    for k = 1:numel(vdat) %loop over variable sets
+
+        if ~isempty(vdat.dat) %if pthstack is defined in the options struct vg
+            [~, pthstack] = vget(vdat=vdat(k), idx=k, err=1);
+            prs2(end+1:end+2) = {'varid', vdat(k).varid}; %add possible nondefault varid to name-value argument cell (prs and prs2 would work)
+        end
+
+        [s, optout, pthstackmat] = smake(pthstack, prs{:}, prs2{:});
+            
+        spthtmp = cat(2, spthtmp, {pthstackmat}); %accumulate paths in case multiple s are created 
+        if numel(spthtmp)>1 %but if multiple s are created, we do not accumulate them (because they are large, and a2p doesn't need to operate on multiple at once (just accumulate their paths to loop over them in a2p)
+            s = [];
+        end
+        pthstack = s(end).pthtif; %in case pthstack is empty and vg is empty, and if looping, pthstack should be set to pthstack chosen within smake (the tif, not the new mat, since we are looping over options we must want to create new mat from tif on each loop)
+
+    end
+
+end
+
+spth = spthtmp; %assign persistent variable to output variable
+
+end

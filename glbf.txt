@@ -1,6 +1,9 @@
 {
   "dmstackdf": "yxztc",
   "optiddf": "z0",
+  "variddf": "z0",
+  "rgnamedf": "none",
+  "roinamedf": "none",
   "fnvget": "vg",
   "delimflat": "__",
   "voltminhd_flyclock_berg1": 1,

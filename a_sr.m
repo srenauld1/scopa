@@ -7,7 +7,7 @@ clc
 
 stackid = '20251029_4_1_or'; % stackid format is recdate_fly_trial_suffix, or end with * to make everything after the asterisk wildcard
 
-do = {'sld', 'dq', 'roi'}; %modules to run
+do = {'s', 'dq', 'roi'}; %modules to run
 
 o.dq.dvlensec = 0.4; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
 o.dq.dvord = 2; % order of polynomial used to fit local slope
@@ -27,8 +27,8 @@ end
 
 for m = 1:numel(pthtmp)
 
-    prs = struct2pairs(o.sld(m));
-    s(m) = stackld(pthtmp{m}, prs{:}, doplt=0);
+    prs = struct2pairs(o.s(m));
+    s(m) = smake(pthtmp{m}, prs{:}, doplt=0);
 
     glb(1, pthsvdir=idmake(s.pth, 'pthstackfld')) %set this global in glb because it gets used repeatedly in nested functions and we don't want to pass this around everywhere
 

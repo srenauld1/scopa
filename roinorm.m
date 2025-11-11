@@ -1,4 +1,4 @@
-function ts = roinorm(ts, opt, opt2)
+function [ts, opt] = roinorm(ts, opt, opt2)
 
 %{
 
@@ -33,15 +33,12 @@ arguments
     opt2.t = []
     opt2.memthr = 1e9 %memory threshold (bytes); input tsin greater than memthr will have roi timeseries extracted in groups, to save ram; this is slower but can avoid crashing session
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
-    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
 
 end
 
-if opt2.och
-    if isfield(opt, 'optid')
-        opt = rmfield(opt, 'optid');
-    end
-    ts = opt;
+if opt2.runtype
+    ts = [];
     return
 end
 
@@ -60,6 +57,9 @@ if isempty(t) && channorm~=0
     error("must pass in t if channorm is true (must have t to apply wavelet cohernece based 2-channel normalization)")
 end
 
+if ~iscell(ts) %hack, fix soon
+    ts = {ts};
+end
 numchan = numel(ts);
 
 for k = 1:numchan
@@ -80,7 +80,7 @@ for k = 1:numchan
 
 end
 
-
+ts = cell2mat(ts);
 
 
 if doplt

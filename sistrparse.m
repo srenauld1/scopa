@@ -26,4 +26,7 @@ else
     end
 end
 
+if isequal(val, '[]')
+    fuk=2
+end
 end

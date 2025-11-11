@@ -9,7 +9,7 @@ arguments
     opt.pthstacks = [] %cell array of paths to stacks to be mixed; must be empty if you pass in stacks or stackids
     opt.stackids = []%cell array of stackids of stacks to be mixed; stackid is recdate_fly_trial_suffix; must be empty if you pass in stacks or pthstacks
     opt.pthpar = [] %path to folder containing all stacks
-    opt.optsld = [] %options for stackld for loading all stacks found; if empty, default are used
+    opt.opts = [] %options for smake for loading all stacks found; if empty, default are used
 end
 rgnames = opt.rgnames;
 rot = opt.rot;
@@ -17,7 +17,7 @@ s = opt.s;
 pthstacks = opt.pthstacks;
 stackids = opt.stackids;
 pthpar = opt.pthpar;
-optsld = opt.optsld;
+opts = opt.opts;
 
 mixstr = strjoin(rgnames, '');
 pthmix = [idmake(s.pth, 'pthpre') mixstr '_.mat'];
@@ -108,10 +108,10 @@ catch
     rg = {};
     for k = 1:numpth
         if (k==1 && isempty(s{k})) || k>1
-            if isempty(optsld)
-                optsld = ofill('sld', unpack=1);
+            if isempty(opts)
+                opts = ofill('s', unpack=1);
             end
-            s{k} = stackld(optsld, pthstacks{k}); %output pthstacks{k} in case tif converted to mat
+            s{k} = smake(opts, pthstacks{k}); %output pthstacks{k} in case tif converted to mat
             pthstacks{k} = s{k}.pth;
         end
         if ndims(s{k}.stack)<2 || ndims(s{k}.stack)>6
@@ -135,7 +135,7 @@ catch
         %     if isempty(rgnames{k})
         %         error("rgnames is empty for this stack and no rg have been defined")
         %     end
-        %     stacktmp = stackcrop(s{k}.stack, rgnames{k}, pthstack=pthstacks{k});
+        %     stacktmp = rgmake(s{k}, rgnames{k});
         % end
     end
 
@@ -161,7 +161,7 @@ catch
     stacknew = [];
     for k = 1:numpth
         for q = 1:numel(rgnames{k})
-            stmp = stackcrop(s{k}, rgnames{k}{q});
+            stmp = rgmake(s{k}, rgnames{k}{q});
             stacktmp = stackwarp(stmp.stack, rot=rot(k,:), doplt=0);
             stacktmp = stackrs(stacktmp, [sdf.y, sdf.x, sdf.z]);
             stacknew = cat(2, stacknew, stacktmp);

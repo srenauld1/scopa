@@ -1,5 +1,6 @@
 function stack = stacktype(stack, dtype)
 
+
 if ~isa(stack, dtype)
     if startsWith(dtype, 'u')
         stackmin = min(stack, [], [1 2 3 4], 'omitmissing'); %compute min for each channel

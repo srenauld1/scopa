@@ -1,8 +1,8 @@
 function md = mdsild(pth, opt)
 
 arguments
-    pth = [] %path to metadata file ('*mdsi_.txt'), or path to stack, or path to daq file
-    opt.doflyg = 0 % 1 to also load flyg metadata and include in output md
+    pth {mustBeTextScalar} = [] %path to metadata file ('*mdsi_.txt'), or path to stack, or path to daq file
+    opt.doflyg {mustBeBinary} = 0 % 1 to also load flyg metadata and include in output md
 end
 doflyg = opt.doflyg;
 

@@ -1,6 +1,6 @@
 function o = oset_gluetest(o)
 
-do = {'sld', 'dq'};
+do = {'s', 'dq'};
 
 o = ofill(mosfinal=do);
 

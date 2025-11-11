@@ -1,60 +1,21 @@
-function roidat = roidatmake(stack, roimask, ts, rg, mm, pthstack)
+function roidat = roidatmake(stackmnt, roimask)
 
 arguments
-    stack %can also be stack mean t (see below, stack just gets averaged if 4th dim is greater than 1)
+    stackmnt %stack mean t 
     roimask
-    ts
-    rg = []
-    mm = []
-    pthstack = []
 end
 
-if iscell(roimask)
-    if isequal(sum(~cellfun(@isempty, roimask)), 0)
-        error("roimask cannot be empty")
-    end
-else
-    if isempty(roimask)
-        error("roimask cannot be empty");
-    end
-    roimask = {roimask};
-end
-if ~iscell(ts)
-    ts = {ts};
-end
-if size(stack,4)>1
-    stackmnt = stacktype(mean(stack,4), class(stack)); %this is faster and uses less ram than using 'native' option in mean
-else
-    stackmnt = stack;
-end
-if isempty(mm)
-    mm = {[], []};
-end
-
-
-numchan = size(stackmnt,5);
-for c = 1:numchan
-    roidat(c) = roidatmake_onechan(stackmnt(:,:,:,:,c), roimask{c}, ts{c}, rg, mm(c), pthstack, c); %this creates a temporary variable for one channel of stackmnt, but stackmnt should never be very large since t has been averaged, so keeping it this way for simplicity
-end
-
-
-end
-
-
-
-function roidat = roidatmake_onechan(stackmnt_onechan, roimask_onechan, ts_onechan, rg, mm, pthstack, chan)
-
-if isequal(mm, {[]}) %if mm is empty when entering roidatmake, set to awkward empty cell, fix that here 
-    mm = [];
+if isempty(roimask)
+    error("roimask cannot be empty");
 end
 
 dmroi = 4;
-roiwt = logical(reshape(permute(roimask_onechan, [4 1 2 3]), size(roimask_onechan,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
+roiwt = logical(reshape(permute(roimask, [4 1 2 3]), size(roimask,dmroi), [])); %logical matrix size (roi,voxels); this works for singleton z and singleton roi, but will cause problem with ambiguous 3d (see error above to prevent this)
 
 numroi = size(roiwt,1);
-roicen = find_roi_centroids(roimask_onechan);
+roicen = find_roi_centroids(roimask);
 
-mask_allroi = zeros(size(stackmnt_onechan, 1), size(stackmnt_onechan, 2), size(stackmnt_onechan, 3), 'logical');
+mask_allroi = zeros(size(stackmnt, 1), size(stackmnt, 2), size(stackmnt, 3), 'logical');
 
 roipx = cell(numroi, 1);
 pixinds_bnd_roi = cell(numroi, 1);
@@ -74,8 +35,6 @@ pixinds_allroi_tmp = unique(vertcat(roipx{:})); %this is not always the same as 
 
 mask_allroi(pixinds_allroi_tmp) = 1;
 
-[masky,maskx,maskz] = ind2sub(size(mask_allroi),find(mask_allroi)); %find the cartesian coordinates of points in the mask
-
 roicen_flat = cell2mat(roicen(:));
 flatten_key = cell2mat(arrayfun(@(idx) [repmat(idx,size(roicen{idx},1),1), (1:size(roicen{idx},1)).'], (1:numel(roicen)).', 'uniform', 0));
 
@@ -90,16 +49,11 @@ for ii = 1:numel(pixinds_allroi) %one pixel at a time
     pixinds_allroi{ii} = pixinds_allroi_tmp(ii); %put in cell array to match what happens with functional rois
 end
 
-
-roidat.rg = rg;
-roidat.mm = mm;
-roidat.pthstack = pthstack;
-roidat.chan = chan;
+roidat.numchan = size(stackmnt,5);
 roidat.numroi = numroi;
 roidat.roipx = roipx;  %pixel indices of each roi, one roi per cell
 roidat.roiwt = roiwt; %boolean mask vector of each roi
-roidat.mask = roimask_onechan; %boolean mask vector of each roi
-roidat.ts = ts_onechan; %boolean mask vector of each roi
+roidat.mask = roimask; %boolean mask vector of each roi
 roidat.roicen = roicen;
 roidat.mask_allroi = mask_allroi; %boolean mask of all rois
 roidat.idx_vox2roi = idx_vox2roi; %for each pixel in a roi, which roi it belongs to
@@ -109,8 +63,8 @@ roidat.roinumpix = [];
 roidat.roipixvals_binned = [];
 roidat.roipixvals_edges = [];
 roidat.pixinds_allroi = pixinds_allroi; %all pixels in all rois, one pixel for each cell (treating each pixel as a roi to match structure of roipx)
-roidat.stackmnt = stackmnt_onechan; %index after taking mean (if glb('stackmnt') isn't set, to save ram; %roi timeseries are single precision, so this can be too, it won't be very big
+roidat.mnt = stackmnt; %index after taking mean (if glb('stackmnt') isn't set, to save ram; %roi timeseries are single precision, so this can be too, it won't be very big
 
-roidat = orderfields(roidat);
+roidat = structsort(roidat);
 
 end

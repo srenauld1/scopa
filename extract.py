@@ -9,7 +9,7 @@ import caiman as cm
 import caiman.source_extraction.cnmf as cnmf
 from oex import oex
 from vis_cm import caiman_plots_all
-from stackcrop import stackcrop
+from rgmake import rgmake
 from stackchan import stackchan
 from helpers import stack_reshape_transpose_clip_zero_type
 import json
@@ -45,26 +45,26 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
         
         print("STARTINNG ROI EXTRACTION FROM FILE: \n" + pth_tif_read)
 
-        stackcrop_tmp, limits_str = stackcrop(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+        rgmake_tmp, limits_str = rgmake(stack, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
         chanstr_ex = chanstr_secondary
         if two_channel_ex:
-            stackcrop_tmp_secondary, limits_str = stackcrop(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
+            rgmake_tmp_secondary, limits_str = rgmake(stack_secondary, rgn, pth_prefix, md['dims']) #define cuboid or rectangular fov for extraction (much faster if you don't need the full fov), careful your rectangle doesn't go off edge (croplim will have 0 in it, which creates empty array - need to fix this) 
             chanstr_seed = chanstr_primary
 
-        print("REGION EXTRACTION (rgname) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(stackcrop_tmp.shape))
+        print("REGION EXTRACTION (rgname) IS NAMED: \n" + rgn + "\n AND HAS SHAPE: \n" + str(rgmake_tmp.shape))
 
         if not do_crop_only: #skip everything else if you're doing a cropping session
 
             pth_write_prefix = pth_tif_read[:-4] + rgn + '_' + limits_str + chanstr_ex + '_cmex'
             pth_tif_write_tmp = pth_write_prefix + '_tmp_.tif'
-            if two_channel_ex: #stackcrop_tmp_secondary becomes stackcrop_ex and stackcrop_tmp becomes stackcrop_seed
-                stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp_secondary, pth_tif_write_tmp, dview)
+            if two_channel_ex: #rgmake_tmp_secondary becomes rgmake_ex and rgmake_tmp becomes rgmake_seed
+                rgmake_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(rgmake_tmp_secondary, pth_tif_write_tmp, dview)
                 pth_tif_write_tmp_secondary = pth_tif_write_tmp.replace(chanstr_ex, chanstr_seed) #only used if two_channel_ex==1 (ie if there are two channels and chanrm=None)
-                stackcrop_seed, pth_mmap_seed, _, _ = stack2memmap(stackcrop_tmp, pth_tif_write_tmp_secondary, dview)
-                stackcrop_tmp_secondary = None
+                rgmake_seed, pth_mmap_seed, _, _ = stack2memmap(rgmake_tmp, pth_tif_write_tmp_secondary, dview)
+                rgmake_tmp_secondary = None
             else:
-                stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(stackcrop_tmp, pth_tif_write_tmp, dview)
-            stackcrop_tmp = None
+                rgmake_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex = stack2memmap(rgmake_tmp, pth_tif_write_tmp, dview)
+            rgmake_tmp = None
             
 
             if not optall:
@@ -77,10 +77,10 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
                 if 1: #try, since some param sets will error
 
                     if extract_in_2d: #adjust images and some params for 2D EXTRACTION 
-                        indz = np.arange(stackcrop_ex.shape[3])
+                        indz = np.arange(rgmake_ex.shape[3])
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1])
                     else:
-                        indz = [np.arange(stackcrop_ex.shape[3])] #all slices in one list (not 2D)
+                        indz = [np.arange(rgmake_ex.shape[3])] #all slices in one list (not 2D)
                         dims_roimask_spatial = (dims_spatial_ex[0], dims_spatial_ex[1], dims_spatial_ex[2])
 
                     cma_all = []
@@ -109,14 +109,14 @@ def extract(pth_prefix, pth_tif_read, pth_optdf, pth_optroi, md, pthmd, extract_
 
                         if extract_in_2d: #for 2D extraction take one z slice at a time
                             print("DOING 2D EXTRACTION FOR SLICE " + str(iz) + " OF RGNAME '" + rgn + "'" )
-                            img = stackcrop_ex[:,:,:,iz]
+                            img = rgmake_ex[:,:,:,iz]
                         else: # for 3d extraction keep all z slices (for now, until implement z ranges)
                             print("DOING 3D EXTRACTION FOR ALL SLICES IN RGNAME '" + rgn + "'" )
-                            img = stackcrop_ex #can't .copy() for some reason (but that's fine as long as you don't modify img)
+                            img = rgmake_ex #can't .copy() for some reason (but that's fine as long as you don't modify img)
 
                         if two_channel_ex: 
                             if morphinpy: 
-                                imseed = stackcrop_seed[:,:,:,iz].mean(0) #right now seed images are forced to be 2d so indexing by iz is fine; in future will need if 3d switch
+                                imseed = rgmake_seed[:,:,:,iz].mean(0) #right now seed images are forced to be 2d so indexing by iz is fine; in future will need if 3d switch
                                 Ain = cm.base.rois.extract_binary_masks_from_structural_channel(imseed, min_area_size=opt['morph_min_area_size'], min_hole_size=opt['morph_min_hole_size'], gSig=opt['morph_gSig'], expand_method=opt['morph_expand_method'])[0]
                                 # crd = plot_contours(Ain.astype('float32'), mR)
                             else:
@@ -294,15 +294,15 @@ def parse_methodex(methodex):
     return chanrm, chan_primary_when_two, morphinpy
 
 
-def stack2memmap(stackcrop_ex, pth_tif_write_tmp, dview):
-    imwrite(pth_tif_write_tmp, stackcrop_ex.squeeze(), bigtiff=True, photometric='minisblack') #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
+def stack2memmap(rgmake_ex, pth_tif_write_tmp, dview):
+    imwrite(pth_tif_write_tmp, rgmake_ex.squeeze(), bigtiff=True, photometric='minisblack') #squeeze in case 3d . . . also must imwrite it to memmap it, and must memmap it to use patches in extraction
     basename_memap = pth_tif_write_tmp.split('/')[-1][:-4]
     pth_mmap_ex = cm.save_memmap([pth_tif_write_tmp], base_name=basename_memap, order='C', dview=dview) # exclude borders
     os.remove(pth_tif_write_tmp)
-    stackcrop_ex, dims_spatial_ex, dim_time_ex = cm.load_memmap(pth_mmap_ex) #if 3d mmap should be 3d, but stackcrop_ex gets singleton 4th dim (z) added below so the code is more readable
-    stackcrop_ex = np.reshape(stackcrop_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
-    if stackcrop_ex.ndim==3: #if it's not volumetric
-        stackcrop_ex = stackcrop_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
-    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF stackcrop_ex IS NOT VOLUMETRIC), REGION EXTRACTION (rgname) HAS SHAPE: \n" + str(stackcrop_ex.shape))
-    return stackcrop_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex
+    rgmake_ex, dims_spatial_ex, dim_time_ex = cm.load_memmap(pth_mmap_ex) #if 3d mmap should be 3d, but rgmake_ex gets singleton 4th dim (z) added below so the code is more readable
+    rgmake_ex = np.reshape(rgmake_ex.T, [dim_time_ex] + list(dims_spatial_ex), order='F') 
+    if rgmake_ex.ndim==3: #if it's not volumetric
+        rgmake_ex = rgmake_ex[...,np.newaxis] #add singleton 4th dim (z) to simplify code below
+    print("AFTER MEMMAPPING (AND ADDITION OF SINGLETON 4TH DIM IF rgmake_ex IS NOT VOLUMETRIC), REGION EXTRACTION (rgname) HAS SHAPE: \n" + str(rgmake_ex.shape))
+    return rgmake_ex, pth_mmap_ex, dims_spatial_ex, dim_time_ex
 

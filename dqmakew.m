@@ -1,0 +1,118 @@
+function [s, opt, vdat, dq] = dqmakew(s, vg, opt, opt2, opt3)
+
+%{
+
+wrapper function for dqmake; see dqmake for docs; 
+name-value arguments in struct opt (not vg or opt2) have no validation functions because they can be cells here, which get distributed in oid, 
+each option set get output by oid is validated in dqmake; any other name-value structs (eg, opt2) get validated here (and the same way in dqmake)
+name-value argument vg contains a struct for finding input variables to dqmake; if variables are found they are assigned a varid; 
+if vg.s is empty (default) dqmake operates on input variable s.pthdq (if s is struct) or s (if char path), or interactively chosen path if s is empty
+
+%}
+
+arguments
+
+    s = '' % if char, s is path to original daq file; if empty, user prompted to select file interactively; if struct, s is the struct output from function smake (contains stack, md, pth, and other fields); if struct, pthdaq (input daq file path) and pthsv (output daq file path) are derived from s.pth (path to stack)
+
+    vg.s = []; %struct containing criteria for vget to find input argument s (rather than using s) 
+
+    opt.rskey = 0; % nonempty numeric vector (scalar or nonscalar), or negative scalar, or empty []; rskey denotes resampling method; empty [] means resample using matlab 'resample' function into imaging number volumes, with padding to avoid start/end transients; negative scalar means resample using matlab 'resample' function into rate rskey*-1 (eg rskey=-60 resamples into 60 hz); nonnegative integer (in which case, can be scalar or nonscalar) defines which slice indices (one-indexed) to use for resampling (interp over requested time bins, method depends on vtype, see docs), with 0 denoting resampling by volume index rather than slice index (eg [0 4] will resample with volume indices and slice 4 indices); nonegative integer rskey is recommended over empty rskey, because there is a little less aliasing and it is faster 
+    opt.dvlensec = 0.3; % window length in seconds used to fit slope to each daq variable (to compute their derivatives, ie velocities); make empty to have this derived automatically (in vecdv) to be as short as possible, given sample rate and dvord
+    opt.dvord = 2; % order of polynomial used to fit local slope; should probably always be 2 or 3; setting max to 5, because it seems reasonable, but this is not actually required 
+    opt.usefbl = 1; % whether to include flyback lines when resampling with frame indices (if rskey is not empty)
+    opt.usefbf = 1; % whether to include flyback frames when resampling with volume indices (if rskey is not empty)
+    opt.balldia = glbfile('balldia_berg1'); % ball diameter in mm, used to convert some fictrac variables into mm
+    opt.voltlim = glbfile('voltlim_berg1'); % daq voltage [min,max];
+    opt.voltminhd = glbfile('voltminhd_flyclock_berg1')/12 * 2*pi; %heading angle (radians) assigned to voltmin and voltmax (on bergI, it is fly's 1 o'clock, and target range is -pi to pi, hence 1/12 * 2*pi)
+
+    opt2.vpp (:,1) string = [  %string column vector; vpp means variable processing pattern each element is "newname = oldnames = type", where newname is one name, oldnames is comma separated list of names, type is scalar char; see docs above for more detail; don't change newnames shown here if running a2p
+        "t = Time, time, T = t = ";
+        "bf = ficTracIntForward = m = bvf";
+        "bs = ficTracIntSide = m = bvs";
+        "bh = ficTracYaw, ficTracHeading, ficTracHd = r = bvy";
+        "vh = g4panels, g4yaw, g4hd = r = vvy";
+        "vvynom = g4vel, g4velnom = c = ";
+        "epochts = epoch = c = ";
+        "ftcam = ftcam = b = "
+        "heat = heat = c = "
+        "iter = virmenIteration = c = "
+        ];
+    opt2.pthftv char {mustBeTextScalar} = '' %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py); if empty, pthftv it will be derived from pthdaq in ftvalign
+    opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
+
+    opt3.idx (1,1) {mustBeInteger, mustBePositive} = 1 %index of input option sets; leave blank if not looping over this wrapper
+    opt3.mnum (1,1) {mustBeInteger, mustBePositive} = 1 %last index of input option sets; when opt3.idx reaches mnum, smakew saves output to s
+    opt3.runtype (1,1) {mustBeMember(opt3.runtype,0:3)} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt are under id-control); 2 to do same as 1, then also run oid to derive optid and return opt (with newly derived optids); 3 to do same as 2, then also run vget to derive input variables' data struct and return as output
+
+end
+
+vdat = [];
+dq = [];
+
+if opt3.runtype==1
+    opt = oid(opt, 'dq', noid=1); %for opt3.runtype==1, in oid noid=1, so just distribute and reduce option sets before validating 
+    for k = 1:numel(opt)
+        prs = struct2pairs(opt(k));
+        [~, opt(k)] = dqmake(prs{:}, runtype=1); %use arguments block in module to validate all name-value arguments in 'opt'
+    end
+    return
+end
+
+persistent dqtmp
+persistent optouttmp
+if opt3.idx==1 %idx input is not used except as flag to start or continue persistent variable counter idxout
+    dqtmp = [];
+    optouttmp = [];
+end
+
+%%%% DERIVE optid (AND DISTRIBUTE ANY CELLS) %%%%
+
+opt = oid(opt, 'dq'); %assign ids to options sets
+if opt3.runtype==2
+    return
+end
+
+
+%%%% FIND s, IF REQUESTED %%%%
+
+clear vget %clear persistent variables within vget
+vdat = vget(vg.s, runtype=2);
+
+if opt3.runtype==3
+    return
+end
+
+prs2 = struct2pairs(opt2);
+
+for m = 1:numel(opt) %loop over options sets
+
+    prs = struct2pairs(opt(m));
+
+    for k = 1:numel(vdat) %loop over variable sets
+
+        if ~isempty(vdat.dat) %if s is defined in the options struct vg
+            [~, s] = vget(vdat=vdat(k), idx=k, err=1);
+            prs2(end+1:end+2) = {'varid', vdat(k).varid}; %add possible nondefault varid to name-value argument cell (prs and prs2 would work)
+        end
+
+        [dq, optout] = dqmake(s, prs{:}, prs2{:});
+        dqtmp = cat(2, dqtmp, dq);
+        optouttmp = cat(2, optouttmp, optout); %accumulate paths in case multiple s are created 
+
+        if ~isstruct(s)
+            s = dqtmp(end).pthdaq; %in case s is empty and vg is empty, if looping, s should be set to daq file chosen within dqmake
+        end
+        
+    end
+
+end
+
+dq = dqtmp;
+opt = optouttmp;
+
+if isstruct(s) && opt3.idx==opt3.mnum %save on the last outer loop
+    s.dq = dq; %put the new data into s also, 
+    matsv(s.pth, 'dq', s=s) %save new data to s file 
+end
+
+end

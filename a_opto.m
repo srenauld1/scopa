@@ -19,7 +19,7 @@ stim_or = squeeze(mean(s.stack(:,:,:,:,2), [1:3]))';
 
 recid = idmake(s.pth, 'recid');
 pthraw = stackfind(stackid=[recid '_o']);
-sraw = stackld(pthraw);
+sraw = smake(pthraw);
 
 clear ofill
 o.roi.rgname = 'eb';

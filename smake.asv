@@ -1,4 +1,4 @@
-function s = stackld(pthstack, opt, opt2)
+function [s, opt, pthstackmat] = smake(pthstack, opt, opt2)
 
 %{
 
@@ -14,7 +14,7 @@ option to just read a subset of the stack to save memory (when savemem=1, and an
 but tiffreadfast is default because it is faster, and works well on more platforms (it just makes assumption that stack shape does not change across time, which i think is a safe assumption for all our data) 
 
 for TIFFStack, stack cannot be reshaped until it has been assigned to a variable
-stack=stack does not read stack into memory, you must use indexing (stackld creates these indices, even for reading in the entire stack, like if user uses default empty indices)
+stack=stack does not read stack into memory, you must use indexing (smake creates these indices, even for reading in the entire stack, like if user uses default empty indices)
 
 TIFFStack seems to fail reading floats, so tifs to be read here are written as ints elsehwere
 
@@ -22,38 +22,35 @@ TIFFStack seems to fail reading floats, so tifs to be read here are written as i
 
 arguments
 
-    pthstack {mustBeTextScalar} = '' %path to stack; if empty, user prompted to choose file
+    pthstack {mustBeTextScalar} = '' % if nonempty, path to stack (to load if mat, or convert to mat if tif); if empty, user prompted to select file interactively; 
     
     opt.fbrm (1,1) {mustBeBinary} = 1; %crop flyback frames from each volume, if they exist, before saving to mat
-    opt.iy {mustBeVectorOrEmpty, mustBeAllInt(opt.iy,'emptyok'), mustBePositive} = []; %y indices to keep and save to mat
-    opt.ix {mustBeVectorOrEmpty, mustBeAllInt(opt.ix,'emptyok'), mustBePositive} = []; %x indices to keep and save to mat
-    opt.ic {mustBeVectorOrEmpty, mustBeAllInt(opt.ic,'emptyok'), mustBePositive} = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
-    opt.iz {mustBeVectorOrEmpty, mustBeAllInt(opt.iz,'emptyok'), mustBePositive} = []; %z indices to keep and save to mat
-    opt.it {mustBeVectorOrEmpty, mustBeAllInt(opt.it,'emptyok'), mustBePositive} = []; %t indices to keep and save to mat
+    opt.iy {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %y indices to keep and save to mat
+    opt.ix {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %x indices to keep and save to mat
+    opt.ic {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %c indices to keep and save to mat; ic is stack channel index (5th dimension) in the original scanimage stack; this is not pmt index; for example, 2 will error if pmt channel 2 was the only saved channel, because the channel index for that channel is 1, not 2; empty to keep all available channels; if a channel was removed in preprocessing (like in registration, or denoising, etc), ic must still refer to the channel index in the original scanimage stack (ie before removal); so if you saved 2 channels in original stack, then removed channel 1 for registration, requesting ic=1 for the registered stack will error, because that channel was discarded; in general, will error if you request a channel that doesn't exist
+    opt.iz {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %z indices to keep and save to mat
+    opt.it {mustBeVectorOrEmpty, mustBeInteger, mustBePositive} = []; %t indices to keep and save to mat
     opt.clip double {mustBeSize(opt.clip,1,2), mustBeInRange(opt.clip,0,1)} = [0,1];  %(1,2) vector, range 0-1, clip quantile for stack, [0,1] does no clipping; or scalar -1 to set all negatives to zero
     opt.dtype char {mustBeTextScalar} = 'uint16'; %output stack datatype; if uint*, stack is zeroed (min subtract) before being converted 
     opt.smlenpx double {mustBeSize(opt.smlenpx,1,3), mustBeNonnegative} = [0,0,0]; %spatial yxz window length (in pixels) for smoothdata (default gaussian method); for each dimension, yxz, gaussian sd is one-fifth corresponding entry in smlenpx; [0 0 0] or empty to skip; 0 will skip smoothing in corresponding dimension (eg [3 3 0] skips smoothing in z)
     opt.smlensec (1,1) double {mustBeNonnegative} = 0; %tenporal window length (in seconds) for smoothdata (default gaussian method); gaussian sd is one-fifth smlensec seconds; 0 to skip
     opt.smmthd {mustBeText} = 'gaussian'; %any single valid input for name-value argument 'method' to matlab builtin function 'smoothdata', or cell with sequence of them, to apply smoothing methods in sequence (e.g.,  {'gaussian', 'movmedian'})
-    opt.optid {mustBeTextScalar} = ''; %automatically generated id for each unique input opt set; if your input opt is not generated by oset, leave optid empty
    
     opt2.savemem (1,1) {mustBeBinary} = 0 %1 will use tiffstack (memmap stack, can save memory if you want to read subset of stack with inds_*_read_from, but usually slower, and also uses mex code that might break on some os/versions/platforms; 0 will use tifreadfast (usually faster, but doens't memmap, reads entire stack into memory initially (or at best a subset of "frames" which are collapsed czt dimensions, so not useful for saving memory if you don't have metadata already to correctly form those indices (maybe a todo)
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
-    opt2.och (1,1) {mustBeBinary} = 0 %och means "options check"; 1 to exit function and return nothing but arguments block struct opt (not opt2 or any other name-value arguments struct); 0 to skip och (run function normally), which is default
+    opt2.optid {mustBeTextScalar} = glbfile('optiddf') %automatically generated id for unique set of input options; if your input opt is not generated by oset, leave optid empty
+    opt2.varid {mustBeTextScalar} = glbfile('variddf') %automatically generated id for unique set of input variables; if your input variables are not generated by vget, leave varid empty
+    opt2.runtype (1,1) {mustBeBinary} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt is under id-control) 
 
 end
 
-if opt2.och
-    if isfield(opt, 'optid')
-        opt = rmfield(opt, 'optid');
-    end
-    s = opt;
+if opt2.runtype
+    s = [];
     return
 end
 
-opt.optid = []; % ***NOTE NOTE NOTE*** for now, we hack using default optid for stacks (by removing actual optid) because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
+opt2.optid = glbfile('optiddf'); % **** NOTE NOTE NOTE **** for now, we force using default optid for stacks because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
 
-opt = optidcheck('sld', opt); %make sure optid matches input, if nonempty (if empty, assign it default value)
 
 fbrm = opt.fbrm;
 iy = opt.iy;
@@ -66,10 +63,16 @@ dtype = opt.dtype;
 smlenpx = opt.smlenpx;
 smlensec = opt.smlensec;
 smmthd = opt.smmthd;
-optid = opt.optid;
 
 savemem = opt2.savemem;
 doplt = opt2.doplt;
+optid = opt2.optid;
+varid = opt2.varid;
+
+callstack = dbstack();
+if ( ~isequal(optid, glbfile('optiddf')) || ~isequal(varid, glbfile('variddf')) ) && ( numel(callstack)<2 || ~isequal(callstack(2).file, [mfilename 'w.m']) )
+    error("optid and varid can only be nonempty when calling " + mfilename + " from its wrapper function, " + [mfilename 'w.m'])
+end
 
 dmstacktif = 'tzcyx'; %dimension order of stack when written to tif in python with tifffile imwrite (for example, in registration or denoising); keep 'c', 'z', or 't' characters, even if that dimension is singleton
 dmstackmat = glbfile('dmstackdf');
@@ -87,7 +90,7 @@ if isempty(pthstack)
     pthstack = fullfile(loc, fn);
 end
 
-optid_sld_suffix = [optid '_sld_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
+optid_s_suffix = [optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
 
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
@@ -97,7 +100,7 @@ if isfile(pthstack)
         mat_stack_exists_already = 1;
     end
 else
-    error("pthstack input to stackld does not exist")
+    error("pthstack input to smake does not exist")
 end
 
 [~, fn, ~] = fileparts(pthstack);
@@ -118,7 +121,12 @@ optin = opt; %give it a new name since opt used are named opt
 
 if endsWith(pthstack, '.mat')
     try
-        load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack)
+        m = matfile(pthstack);
+        m = whos(m);
+        if ~ismember('rg', {m.name})
+            error("rg does not exist in saved mat file; must be old mat file; recreating it now")
+        end
+        load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack); if pthtif is not in file, it's an old version of s
         if opt_mismatch(pthstack, optin, opt, pth, sz, chan)
             error("YOU REQUESTED A DIFFERENT SET OF OPTIONS THAN THOSE YOU ORIGINALLY USED TO CONVERT STACK FROM TIF TO MAT (ie YOU HAVE A MAT FILE ALREADY SAVED THAT USE A DIFFERENT SET OF OPTIONS); DELETE OR RENAME THAT MAT FILE, OR LOAD THAT FILE BY USING THE SAME OPTIONS LISTED IN s.opt IN FILE: " + pthstack)
         end
@@ -145,7 +153,7 @@ end
 
 opt = optin; %update opt in case optin doesn't match saved opt above (or in case there was no saved opt)
 
-pthstack = regexprep(pthstack, ['_' optid_sld_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
+pthstack = regexprep(pthstack, ['_' optid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
 
 if ~isfile(pthstack)
     if mat_stack_exists_already
@@ -304,6 +312,7 @@ if ~isempty(md)
     dmtif_read = [dmstacktif(end-1) dmstacktif(end) flip(dmstacktif(1:numel(dmstacktif)-2))]; %dmtif_read means the dimension order of the tif when read into matlab; not the same as dimension order when tif was written in python with tifffile imwrite; specifically, imwrite puts pages (czt) as first dimension, while when read here, pages are last dimension, and the pages dimensions are themselves reversed into tzc); so if dmstacktif='tzcyx', dmtif_read='yxczt';
     stack = stackperm(stack, dmtif_read, dmstackmat);
 
+    sz_new = size(stack, 1:5);
 
     if doplt
         stackstats(stack, mask=[], iz=1:size(stack,3), it=round(linspace(1, size(stack,4), 100)), pthsv_prefix=pthstack)
@@ -318,36 +327,62 @@ if ~isempty(md)
         stack = stacksm(stack, method=smmthd, lenpx=smlenpx, lensec=smlensec, imrate=md.volrate);
     end
 
-    pthstackmat = regexprep(pthstack, ['_.tif' '|' '.tif'], ['_' optid_sld_suffix '.mat']); %previously --> [erase(pthstack, {'_.tif', '.tif'}) '_.mat'];
+    pthstackmat = regexprep(pthstack, ['_.tif' '|' '.tif'], ['_' optid_s_suffix '.mat']); %previously --> [erase(pthstack, {'_.tif', '.tif'}) '_.mat'];
 
-    s.pth = pthstackmat;
-    s.stack = stack;
-    s.md = md;
-    s.sz = sz;
-    s.dm = dmstackmat;
-    s.chan = chan;
-    s.minc = min(stack, [], [1 2 3 4], 'omitmissing'); % min for each channel
-    s.maxc = min(stack, [], [1 2 3 4], 'omitmissing'); % max for each channel
+    s_ids = idmake(pthstackmat);
+
+    try
+    catch
+        pthdaq = [];
+    end
+
+    s.stack = stack; %stack
+
+    s.sz = sz_new; %size of stack
+    s.minc = double(min(stack, [], [1 2 3 4], 'omitmissing')); % min for each channel
+    s.maxc = double(max(stack, [], [1 2 3 4], 'omitmissing')); % max for each channel
     s.min = min(s.minc); % min for entire stack
-    s.max = max(s.maxc); % max for entire stack find(ismember('yxztc', 'zt'))
-    s.mnt = stacktype(mean(stack, 4), class(stack));
-    s.mnzt = stacktype(mean(s.mnt, 3), class(stack));
-    s.mnztc = stacktype(mean(s.mnt, 5), class(stack));
-    s.dq = []; %always empty in stackld
-    s.rg = []; %always empty in stackld
-    s.roi = []; %always empty in stackld
-    s.bmp = []; %always empty in stackld
-    s.mdl = []; %always empty in stackld
-    s.opt = opt;
-    s.maketime_optfile_sld = glb('maketime_sld');
-    fprintf("saving stack as mat file, after permuting, and optional indexing" + newline)
+    s.max = max(s.maxc); % max for entire stack
+    s.mnt = stacktype(mean(stack, 4), class(stack)); %mean t stack
+    s.mnzt = stacktype(mean(s.mnt, 3), class(stack)); %mean zt stack
+    s.mnztc = stacktype(mean(s.mnzt, 5), class(stack)); %mean ztc stack
+
+    s.md = md; %scanimage metadata (also saved as txt file with suffix _mdsi_.txt)
+    s.dm = dmstackmat; %stack dimension order as character vector
+    s.chan = chan; %pmt channel(s) (we use this field because otherwise channel can be ambiguous, eg if pmt 2 is only channel in stack)
+    
+    s.pth = pthstackmat; %path to mat file containing this struct s
+    s.pthtif = pthstack; %path to stack tif that was converted into s and saved as mat file
+    s.pthdaq = pthdaq; %path to daq associated with stack, if any
+
+    s.rgname = glbfile('rgnamedf');
+    s.rg.rgname = s.rgname;  %initialize rg struct with full-fov rg, ie no rg; later, additional rg are created in rgmake
+    s.rg.id = [idmake(s.pth, 'stackid') '_' s.rg.rgname]; 
+    s.rg.y = [1, s.sz(1)];
+    s.rg.x = [1, s.sz(2)];
+    s.rg.z = [1, s.sz(3)];
+    s.rg.t = [1, s.sz(4)];
+    s.rg.c = [1, s.sz(5)];
+
+    s.dq = []; %output from dqmake; always empty in smake
+    s.roi = []; %output from roimake; always empty in smake
+    s.bmp = []; %output from bmpmake; always empty in smake
+    s.mdl = []; %output from mdlmake; always empty in smake
+    s.fmf = []; %output from fmfmake; always empty in smake
+    
+    s.opt = opt; %options (name-value argument struct opt) used to convert tif to mat in this function
+    s.maketime_optfile_s = glb('maketime_s'); %creation time for s optfile (tracking id-controlled options into smake)
+
+    s = structsort(s); %put in natural order before saving
+
+    fprintf("saving stack as mat file, after permuting, and optional indexing, clipping, typing, smoothing" + newline)
     save(pthstackmat, '-struct', 's', '-v7.3', '-mat')
     fprintf("stack saved as mat" + newline)
 
-    pthstackmat_old = regexprep(pthstackmat, optid_sld_suffix, '');
+    pthstackmat_old = regexprep(pthstackmat, optid_s_suffix, '');
     if isfile(pthstackmat_old)
         delete(pthstackmat_old)
-        fprintf("deleted same stack but with old name without optid_sld_suffix" + newline)
+        fprintf("deleted same stack but with old name that lacks new optid_s_suffix" + newline)
     end
 
 else
@@ -400,7 +435,7 @@ else %if you don't have metadata, get it here
     if ~isempty(md)
         [sz, chan] = stacksize(md, ic, rawstack, pthstack);
     else
-        errmsg = "did not pass in metadata into stackld, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
+        errmsg = "did not pass in metadata into smake, so tried to parse metadata from tif metadata (derived here, from 2nd output from tifreadfast), but stack size according to metadata does not match stack; using tiffStack to read tif instead, but cannot reshape czt or index into czt";
     end
 end
 

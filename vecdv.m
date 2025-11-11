@@ -12,7 +12,7 @@ todo: generalize for nd
 
 
 arguments
-    vtype char {mustBeMember(vtype, {'n', 'r', 'd', 'c'})} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
+    vtype char {mustBeTextScalar, mustBeMember(vtype, ["n", "r", "d", "c"])} % 'r' radians, 'd' degrees, 'c' categorical (not necessarily categorical, just means it uses nearest interp, so output contains only input values), 'n' everything else
     vecin {mustBeNonscalarVector} %vector to be differentiated; if vtype is r or d, must be circular data in radians or degrees, respectively
     opt.lensamp double {mustBeScalarOrEmpty, mustBePositive} = [];  % window length in samples used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
     opt.lensec double {mustBeScalarOrEmpty, mustBePositive} = []; % window length in seconds used to fit slope; make empty to have this derived automatically to be as short as possible, given sample rate and ord
