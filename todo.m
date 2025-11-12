@@ -2,6 +2,12 @@
 
 %{
 
+remove rskey allowed to be nonscalar in dq make now that dqwmakew diistribuytes 
+
+make global resampliung option so stack and daq can be arbitrarily resampled together (currently only can subset each, and arbitrarily sample daq)
+make trialData perisstent so we don't repeatedly reload
+consistently save in wrapper or not? rgmake saves to s, but nothing else does
+make a runtype that checks wrapper defaults match module defaults (increase all runtype by 1 and make this runtype 1, but only call from odf with no other inputs)
 something better for save flag than mnum
 remove justld from rgmake??
 remove cell approach in roinorm and roits, since roimask is no longer ever cell

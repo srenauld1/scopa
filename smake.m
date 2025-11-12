@@ -98,7 +98,12 @@ try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long
 mat_stack_exists_already = 0;
 if isfile(pthstack)
     if endsWith(pthstack, '.mat')
-        mat_stack_exists_already = 1;
+        idtmp = idmake(pthstack);
+        if isequal(idtmp.varid, varid) && isequal(idtmp.optid, optid)
+            mat_stack_exists_already = 1;
+        else
+            fprintf("input stack mat filename does not have requested optid and/or varid (was not created with current input options); " + newline + "creating stack mat file with current options (will be saved with new varid optid suffix)" + newline)
+        end
     end
 else
     error("pthstack input to smake does not exist")
@@ -124,8 +129,8 @@ if endsWith(pthstack, '.mat')
     try
         m = matfile(pthstack);
         m = whos(m);
-        if ~ismember('mm', {m.name})
-            error("mm does not exist in saved mat file; must be old mat file; recreating it now")
+        if ~ismember('t', {m.name})
+            error("t does not exist in saved mat file; must be old mat file; recreating it now")
         end
         load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack); if pthtif is not in file, it's an old version of s
         if opt_mismatch(pthstack, optin, opt, pth, sz, chan)
@@ -155,7 +160,7 @@ end
 
 opt = optin; %update opt in case optin doesn't match saved opt above (or in case there was no saved opt)
 
-pthstack = regexprep(pthstack, ['_' varidoptid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
+pthstack = regexprep(pthstack, '_[A-Za-z]\d+[A-Za-z]\d+_s_.mat$', '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
 
 if ~isfile(pthstack)
     if mat_stack_exists_already
@@ -342,6 +347,8 @@ if ~isempty(md)
     s.mnt = stacktype(mean(stack, 4), class(stack)); %mean t stack
     s.mnzt = stacktype(mean(s.mnt, 3), class(stack)); %mean zt stack
     s.mnztc = stacktype(mean(s.mnzt, 5), class(stack)); %mean ztc stack
+    ttmp = linspace(0,md.numvol/md.volrate-1/md.volrate,md.numvol); 
+    s.t = ttmp(it);
 
     s.id = idmake(pthstackmat);
     s.md = md; %scanimage metadata (also saved as txt file with suffix _mdsi_.txt)

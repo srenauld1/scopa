@@ -35,6 +35,7 @@ todo:
 
 arguments
     opt.rsidx = [] %resampling indices, if they were on the daq; if not, empty will invoke the hack alignment
+    opt.rskey = [] %rskey from dqmake, used to save aligned video with different suffix if aligning with different registers
     opt.numvol = [] %number of imaging volumes (which is new length for fictrac video)
     opt.imrate = [] %imaging rate in hz, volrate if volumetric, framerate if not (average,approximate can work too)
     opt.numpkthr = 10; %in laser oscillation timeseries, number of contiguous peaks with periodic distance to be considered the start of the imaging trial, and also the end when applied in the reverse direction; this could just be same as numvol, but in case there are missing peaks, making this number smaller . . . max would be  round(numvol*0.8)
@@ -52,6 +53,7 @@ arguments
     opt.doplt (1,1) {mustBeBinary} = 0; %0 skips plots, 1 plots and saves, 2 saves but does not display
 end
 rsidx = opt.rsidx;
+rskey = opt.rskey;
 numvol = opt.numvol;
 imrate = opt.imrate;
 numpkthr = opt.numpkthr;
@@ -124,7 +126,7 @@ end
 
 
 if isempty(pthvrs)
-    pthvrs = [pthv(1:end-4) 'RS_.mat'];
+    pthvrs = [pthv(1:end-4) 'rs' num2str(rskey) '_.mat'];
 end
 
 

@@ -2,34 +2,36 @@ function mm = roidraw(s, opt)
 
 %{
 
-CHANNELS
-    currently, roidraw shows only one channel at a time, but user can change displayed channel with c-switch; rois drawn are applied to all channels (and all t)
-
-dorg
-    if dorg=1, you are using roidraw to draw an rg (region)
-    by default, dorg=1 when roidraw is called from rgmake (the function that makes rg)
-    an rg must be rectangular or cuboidal, so default roishape when dorg=1 is 'rectangle' (but it can be changed with s-switch 
-    when dorg=1, you are limited to 1 roi (can have multiple subrois), 
-    rg will be the bounding volume of whatever roi you draw 
-
 OVERVIEW
     draw rois on interactive stack figure
     each roi can be composed of one or more subrois  
     stack background can be changed with name-value input arguments, or during roidraw with user keypresses (figure callbacks)
     figure title guides user through interactions 
 
+CHANNELS
+    currently, roidraw shows only one channel at a time, you cannot see both at the same time
+    but user can change displayed channel with c-switch (see below); 
+    drawn rois are applied to all channels (and all t)
+
+dorg
+    if dorg=1, you are using roidraw to draw an rg (region)
+    by default, dorg=1 when roidraw is called from rgmake (the function that makes rg)
+    an rg must be rectangular or cuboidal, so default roishape when dorg=1 is 'rectangle' (but it can be changed with s-switch)
+    when dorg=1, you are limited to 1 roi (can have multiple subrois), 
+    rg will be the bounding volume of whatever roi you draw 
+
 INPUT ARGUMENTS 
     see docs in arguments block
 
 OUTPUT ARGUMENTS 
-    roimask 
-        logical array representing spatial location of each roi
-        holds all rois, roimask aplies to all channels
-        same yxz size as input stack, 4th dimension represents roi index (2d input stack, yx, will have singleton 3rd dimension, z)
-        all ones if user quits roidraw without drawing anything
-    mm
-        struct holding roimask, and associated information (rg, roiname)  
-        mm is saved to mat file with suffix mm_.mat, by default in folder holding stack
+
+    mm (mm means morphological manual)
+        mm is a struct holding roimask (mm.mask), roiname, and rgname 
+            mm.mask (roimask)
+                logical array representing spatial location of each roi
+                holds all rois, aplies to all channels and all t
+                same yxz size as input stack (s.stack), 4th dimension represents roi index (2d input stack, yx, will have singleton 3rd dimension, z)
+                mm.mask is all ones if user quits roidraw without drawing anything (roi is all pixels in this case)
 
 DRAWING ROIS
     if there are multiple z planes, click an image once to zoom in, 
@@ -56,7 +58,7 @@ ROI INDEXING
 
 CALLBACKS 
     
-    simple callbacks (ie single input character has meaning)
+    simple callbacks (ie single input character)
 
         'escape': return to previous view, if applicable (if zoomed in to draw or edit roi)
         'uparrow' & 'downarrow': change stack contrast, 'uparrow' increases (downarrow decreases) by 10% of current intensity range (not original range)
@@ -65,7 +67,7 @@ CALLBACKS
         'r': advance to next roi index
         'q': quit roidraw
     
-    switches (ie sequence of input characters has meaning)
+    switches (ie sequence of input characters)
         
         NOTE: for all switches, the switch is turned off in one of three ways: 
             (1) a successful exit (pressing 'return' to finalize a valid output for that switch)
@@ -109,6 +111,12 @@ CALLBACKS
                     backspace-->2-->comma-->3-->semicolon-->3-->comma-->1-->0-->return (delete roi 2, subroi 3 and roi 3, subroi 10)
                     backspace-->2-->colon-->3-->semicolon-->3-->comma-->1-->0-->return (delete roi 2, subroi 3 and roi 3, subroi 10)
                     backspace-->return (delete all rois)
+            'c' change displayed c (channel)
+                example:
+                    c-->2-->return (show c 2)
+                    NOTE: c->return (show all c) is not valid
+                notes:
+                    a roi drawn on mean z will be placed at the z indices that went into the mean, and each z index will count as a separate subroi
             'd' copy ('d' for duplicate, since 'c' is for channel selection) most recent drawn subroi to specified z
                 format: 
                     ir,irsub (ir=roi index, irsub=subroi index)
@@ -139,7 +147,6 @@ CALLBACKS
                     t-->slash-->1-->comma-->3-->comma-->5-->return (show mean of t 1,3,5)
                 notes:
                     changes to t are just for display purposes (rois are not mapped to specific t indices in any way)
-    
             'z' change displayed z
                 example:
                     z-->2-->colon-->4-->return (show z 2:4)
@@ -258,7 +265,7 @@ end
 %%%% TRY TO LOAD EXISTING DRAWN MASK %%%%
 
 if ~isempty(s.mm) && ~dorg
-    mm = s.mm(strcmp(rgname, {s.mm.rgname}) & strcmp(roiname, {s.mm.roiname})); %see if requested rg exists in s.rg; if not, make it
+    mm = s.mm(cellfun(@(x) isequal(x,rgname), {s.mm.rgname}) & cellfun(@(x) isequal(x,roiname), {s.mm.roiname})); %see if requested mm exists in s.mm; if not, make it
 end
 
 if isempty(mm)

@@ -12,7 +12,7 @@ if exist('emptyflag', 'var')
 end
 
 if ~emptyok && isempty(x)
-    error("must be nonempty (emptyflag is not 'emptyok')")
+    error("must be nonempty (to allow empty, set emptyflag to 'emptyok')")
 end
 if any(x~=0 & x~=1, 'all')
     error("must only contain 0s and 1s")

@@ -36,7 +36,7 @@ end
 
 rgid = [idmake(s.pth, 'stackid') '_' rgname];
 
-rg = s.rg(strcmp(rgid, {s.rg.id})); %see if requested rg exists in s.rg; if not, make it
+rg = s.rg(cellfun(@(x) isequal(x,rgid), {s.rg.id})); %see if requested rg exists in s.rg; if not, make it
 
 if strcmp(rgname, rgnamedf) % IF rgname IS DEFAULT, JUST RETURN s
     fprintf("exiting rgmake without change because requested rgname (" + rgname + ") denotes full fov" + newline)
@@ -93,6 +93,10 @@ if ~justld %if justld, user is just checking if rg exists
     %%%% CREATE FIELDS FOR CURRENT rg IN NEW s %%%%
 
     s.rgname = rgname;
+
+    if ~isempty(s.mm)
+        s.mm = s.mm(cellfun(@(x) isequal(x,rgname), {s.mm.rgname})); %filter mm to only keep those drawn on this rgname
+    end
 
     if ~isequal(diff([rg.y', rg.x', rg.z', rg.t', rg.c'])+1, size(s.stack, 1:maxnumstackdim)) %these don't change if you made rg the full fov
 

@@ -1,4 +1,4 @@
-function [roi, opt] = roimake(s, opt, opt2)
+function [roi, opt, mm] = roimake(s, opt, opt2)
 
 % see docs_roimake.m
 
@@ -24,6 +24,7 @@ arguments
 end
 
 roi = [];
+mm = [];
 
 if opt2.runtype
     return
@@ -58,7 +59,6 @@ end
 
 numchan = size(s.stack,5);
 
-mm = [];
 tscm = [];
 if isempty(roimask)
     maskin = 0;
@@ -77,6 +77,9 @@ end
 if ~isempty(s.roi)
     roi = s.roi(strcmp(optid, {s.roi.optid}) & strcmp(varid, {s.roi.varid})); %see if requested rg exists in s.rg; if not, make it
 end
+if isstruct(s) && ~isempty(s.dq)
+    roi = s.roi(cellfun(@(x) isequal(x,optid), {s.roi.optid}) & cellfun(@(x) isequal(x,varid), {s.roi.varid})); %see if requested rg exists in s.rg; if not, make it
+end
 
 if isempty(roi)
 
@@ -86,13 +89,14 @@ if isempty(roi)
 
     %%%% OPTIONALLY CROP STACK TO rg CUBOID %%%%
 
-    [s, rg] = rgmake(s, rgname);
+    s = rgmake(s, rgname);
 
 
     %%%% DRAW ROIS %%%%
 
     if dodraw && ~maskin
-        [roimask, mm] = roidraw(s, roiname=roiname); %cellout=1 because in roimake roimask is cell (one for each channel)
+        mm = roidraw(s, roiname=roiname); %cellout=1 because in roimake roimask is cell (one for each channel)
+        roimask = mm.mask;
     end
 
 
@@ -139,17 +143,14 @@ if isempty(roi)
 
     %%%% ASSEMBLE ROI DATA INTO STRUCT %%%%
 
-    roi.dat = roidatmake(s.mnt, roimask, ts, rg, mm, s.pth);
-
-
-    %%%% SAVE %%%%
-
-    roi.opt = opt;
-    roi.optid = optid;
-    roi.varid = varid;
-    roi.maketime_optfile_roi = glb('maketime_roi');
-    save(pthroi, '-struct', 'roi', '-v7.3', '-mat')
-
+    roitmp = roidatmake(s.mnt, roimask);
+    roitmp.ts = ts;
+    roitmp.opt = opt;
+    roitmp.optid = optid;
+    roitmp.varid = varid;
+    roitmp.maketime_optfile_roi = glb('maketime_roi');
+    
+    roi = roitmp;
 
 end
 

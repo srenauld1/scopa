@@ -39,19 +39,15 @@ arguments
         ];
     opt2.pthftv char {mustBeTextScalar} = '' %can optionally pass in path to downsampled fictrac video (optionally downsampled in scopa/register.py); if empty, pthftv it will be derived from pthdaq in ftvalign
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to make plots
-    
+
     opt3.idx (1,1) {mustBeInteger, mustBePositive} = 1 %index of input option sets; leave blank if not looping over this wrapper
+    opt3.mnum (1,1) {mustBeInteger, mustBePositive} = 1 %last index of input option sets; when opt3.idx reaches mnum, smakew saves output to s
     opt3.runtype (1,1) {mustBeMember(opt3.runtype,0:3)} = 0 %runtype controls how much of this function to run; 0 to run entire function; 1 to do nothing but validate input arguments and return arguments block struct opt (not any other input arguments, since only opt are under id-control); 2 to do same as 1, then also run oid to derive optid and return opt (with newly derived optids); 3 to do same as 2, then also run vget to derive input variables' data struct and return as output
 
 end
 
 vdat = [];
 dq = [];
-
-persistent dqtmp
-if opt3.idx==1 %idx input is not used except as flag to start or continue persistent variable counter idxout
-    dqtmp = [];
-end
 
 if opt3.runtype==1
     opt = oid(opt, 'dq', noid=1); %for opt3.runtype==1, in oid noid=1, so just distribute and reduce option sets before validating 
@@ -65,7 +61,7 @@ end
 persistent dqtmp
 persistent optouttmp
 if opt3.idx==1 %idx input is not used except as flag to start or continue persistent variable counter idxout
-    dqtmp = {};
+    dqtmp = [];
     optouttmp = [];
 end
 
@@ -99,9 +95,8 @@ for m = 1:numel(opt) %loop over options sets
             prs2(end+1:end+2) = {'varid', vdat(k).varid}; %add possible nondefault varid to name-value argument cell (prs and prs2 would work)
         end
 
-        [dqtmp, optout] = dqmake(s, prs{:}, prs2{:});
-        dqtmp = cat(2, dqtmp, {pthstackmat}); %accumulate paths in case multiple s are created 
-        dqtmp = cat(2, dqtmp, dqmake(s, prs{:}, prs2{:}));
+        [dq, optout] = dqmake(s, prs{:}, prs2{:});
+        dqtmp = cat(2, dqtmp, dq);
         optouttmp = cat(2, optouttmp, optout); %accumulate paths in case multiple s are created 
 
         if ~isstruct(s)
@@ -113,10 +108,19 @@ for m = 1:numel(opt) %loop over options sets
 end
 
 dq = dqtmp;
+opt = optouttmp;
 
-if isstruct(s)
-    s.dq = dq; %put the new data into s also, 
-    matsv(s.pth, 'dq', s=s) %save new data to s file 
+if isstruct(s) && opt3.idx==opt3.mnum %save on the last outer loop
+    s.dq = dq; %put the new data into s also,
+    if ~any(cellfun(@(x) x>=0, {dq.rskey}))
+        error("you must have at least one dq resampling into imaging sampling (in future, stack can be arbitrarily resampled like daq, but currently, a2p operates primarily on original stack sampling))")
+    end
+    imsampling = cellfun(@(x) x>=0, {dq.rskey});
+    rskeys = [dq.rskey];
+    rskeys(~imsampling) = inf;
+    [~, dq_primary] = min(rskeys); %choose the primary resampling as the one with smallest nonnegative rskey (0 for volume resampling, or arbitrarily if that doesn't exist, the lowest number slice resampling index, in future permit user selection) 
+    s.t = dq(dq_primary).t; %update t (smake set s.t to an approximate t)
+    matsv(s.pth, 'dq', s=s) %save new data to s file
 end
 
 end

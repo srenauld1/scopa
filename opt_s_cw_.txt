@@ -82,5 +82,18 @@
     "smlenpx": [0,0,0],
     "smlensec": 2,
     "smmthd": "gaussian"
+  },
+  "z7": {
+    "clip": [0,1],
+    "dtype": "uint16",
+    "fbrm": 1,
+    "ic": [],
+    "it": [200,205,10000],
+    "ix": [],
+    "iy": [],
+    "iz": [],
+    "smlenpx": [0,0,0],
+    "smlensec": 0,
+    "smmthd": "gaussian"
   }
 }
