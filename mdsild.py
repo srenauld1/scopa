@@ -6,14 +6,14 @@ import numpy as np
 import json
 
 
-def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
+def mdsild(pth_readfile, pthmd, stack_shape_nonnative = None):
 
     mdt = {}
 
 
     print("READING METADATA") #use ScanImageTiffReader to read metadata (strange ping because scanimage tif headers are not saved as json)
         
-    if mat_file_shape is None: #mat_file_shape is None for scanimage data, is not None for Leica data (Carl's old project)
+    if stack_shape_nonnative is None: #stack_shape_nonnative is None for scanimage stacks, is not None for non-scanimage stacks (can't parse metadata)
 
         meta = ScanImageTiffReader(pth_readfile).metadata() #tiffile might be able to read metadata
         
@@ -56,7 +56,7 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
     
     else: #for raw imaging files that are not saved by scanimage (eg carl's old project with Leica data)
 
-        mdt['dims'] = [mat_file_shape[0], 1, mat_file_shape[1], mat_file_shape[2]] #z size (2nd dim) is hard coded as 1 because old project is not volumetric 
+        mdt['dims'] = [stack_shape_nonnative[0], 1, stack_shape_nonnative[1], stack_shape_nonnative[2]] #z size (2nd dim) is hard coded as 1 because old project is not volumetric 
         mdt['channel_save'] = 1
         mdt['channel_active'] = 1
         mdt['framerate'] = 20
@@ -67,7 +67,7 @@ def mdsisv(pth_readfile, pthmd, mat_file_shape = None):
         mdt['yfov'] = 37
         mdt['numslice'] = 1
         mdt['numslice_withflyback'] = 1
-        mdt['numvol'] = mat_file_shape[0]
+        mdt['numvol'] = stack_shape_nonnative[0]
         mdt['zfov'] = 0 
         mdt['flyback'] = 0
         mdt['zwid'] = 0

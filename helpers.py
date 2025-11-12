@@ -93,9 +93,9 @@ def mat2tif(pth_readfile, carls_old_project):
         stack = np.transpose(stack, (3, 2, 0, 1)).reshape(Yshape[3] * Yshape[2], Yshape[0], Yshape[1]) #from yxzt to tzyx 
     
     imwrite(pth_tif_write, stack, bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-    mat_file_shape = stack.shape
+    stack_shape_mat = stack.shape
     
-    return mat_file_shape
+    return stack_shape_mat
             
 
 def ordinal(n: int):

@@ -425,7 +425,7 @@ overflow = [];
 if ~isempty(md) %if you have metadata already
     if ~isequal(prod(sz), numel(stack))
         if rawstack
-            errmsg = "prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
+            errmsg = "prod(sz), which is likely derived from tif metadata using mdsild.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
         else
             if prod(sz)>numel(stack)
                 errmsg = "tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels";

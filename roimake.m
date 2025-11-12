@@ -72,8 +72,8 @@ if ~isempty(s.roi)
     roi = s.roi(cellfun(@(x) isequal(x,optid), {s.roi.optid}) & cellfun(@(x) isequal(x,varid), {s.roi.varid})); %see if requested roi exists in s.roi; if not, make it
 end
 
-if isempty(roi)
 
+if isempty(roi)
 
     fprintf("requested s.roi does not exist" + newline + "creating roi struct now" + newline)
 

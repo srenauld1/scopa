@@ -260,7 +260,7 @@ in folder post, mostly matlab, entrypoint is a2p.m, operates on original imaging
 --input to register (and, thus, whole pipeline) are the tif files output by ScanImage (precision is int16, not uint16), dimensions are tzyx
 --input filename must be the following format:
 
- metadata is read from these original tif files in mdsisv.py
+ metadata is read from these original tif files in mdsild.py
 https://github.com/flatironinstitute/CaImAn/blob/main
 
 
@@ -402,7 +402,7 @@ if you install your own, the packages installed with pip while the conda env is 
 /home/caw846/.conda/envs/caiman/lib/python3.10/site-packages
 
 
-create environment just for running mdsisv.py
+create environment just for running mdsild.py
         conda create -n si python=3.11 numpy
         conda activate si
         pip install scanimage-tiff-reader 

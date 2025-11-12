@@ -135,7 +135,7 @@ try %run python directly from matlab (ie not using system command to control a s
 catch ME %alternative that uses system command
     fprintf(ME.message + newline)
     fprintf("RUNNING PYTHON DIRECTLY FAILED, USING system TO RUN PYTHON INSTEAD")
-    pyfn = [pthscopa 'extractmat.py'];
+    pyfn = [pthscopa 'extract_mat.py'];
     syscmd = [pthpy ' ' pyfn ' ' pthraw ' ' pthmd];
     system(syscmd)
 end

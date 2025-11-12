@@ -95,6 +95,9 @@ for m = 1:numel(opt) %loop over options sets
             prs2(end+1:end+2) = {'varid', vdat(k).varid}; %add possible nondefault varid to name-value argument cell (prs and prs2 would work)
         end
 
+        prs2(end+1:end+2) = {'idx', opt3.idx+m+k-2}; %on first loop through (idx=1), reset persistent variable in module
+
+
         [dq, optout] = dqmake(s, prs{:}, prs2{:});
         dqtmp = cat(2, dqtmp, dq);
         optouttmp = cat(2, optouttmp, optout); %accumulate paths in case multiple s are created 
@@ -111,16 +114,18 @@ dq = dqtmp;
 opt = optouttmp;
 
 if isstruct(s) && opt3.idx==opt3.mnum %save on the last outer loop
-    s.dq = dq; %put the new data into s also,
     if ~any(cellfun(@(x) x>=0, {dq.rskey}))
         error("you must have at least one dq resampling into imaging sampling (in future, stack can be arbitrarily resampled like daq, but currently, a2p operates primarily on original stack sampling))")
     end
     imsampling = cellfun(@(x) x>=0, {dq.rskey});
     rskeys = [dq.rskey];
-    rskeys(~imsampling) = inf;
-    [~, dq_primary] = min(rskeys); %choose the primary resampling as the one with smallest nonnegative rskey (0 for volume resampling, or arbitrarily if that doesn't exist, the lowest number slice resampling index, in future permit user selection) 
-    s.t = dq(dq_primary).t; %update t (smake set s.t to an approximate t)
-    matsv(s.pth, 'dq', s=s) %save new data to s file
+    rskeys(~imsampling) = inf; %make negatives inf so they aren't chosen as primary (min rskey)
+    [~, dq_primary] = min(rskeys); %choose the primary resampling as the one with smallest nonnegative rskey (0 for volume resampling, or arbitrarily if that doesn't exist, the lowest number slice resampling index, in future permit user selection)
+    dqorder = [dq_primary setdiff(1:numel(dq), dq_primary)];
+    dq = dq(dqorder); %put primary first
+    s.dq = dq; %put the new data into s also,
+    s.t = dq(1).t; %update t to primary dq t (smake set s.t to an approximate t)
+    matsv(s.pth, 'dq', 't', s=s) %save new data to s file
 end
 
 end
