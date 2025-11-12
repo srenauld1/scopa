@@ -9,6 +9,6 @@ o.dq.rskey = {0, -60};
 
 o.roi.dodraw = 1;
 o.roi.roiname = 'ves041';
-o.roi.nrm.nrmstr = 'dff008000';
+o.roi.nrm.nrmstr = 'dff005000';
 
 o = ofill(o, mosfinal=do); % mosfinal final ofill call to strip o to only 'mos' listed in input 'do'
