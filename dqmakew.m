@@ -125,7 +125,7 @@ if isstruct(s) && opt3.idx==opt3.mnum %save on the last outer loop
     dq = dq(dqorder); %put primary first
     s.dq = dq; %put the new data into s also,
     s.t = dq(1).t; %update t to primary dq t (smake set s.t to an approximate t)
-    matsv(s.pth, 'dq', s=s) %save new data to s file
+    matsv(s.pth, 'dq', 't', s=s) %save new data to s file
 end
 
 end

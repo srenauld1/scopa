@@ -376,6 +376,12 @@ if ~isempty(md)
     s.fmf = []; %output from fmfmake; always empty in smake
     
     s.opt = opt; %options (name-value argument struct opt) used to convert tif to mat in this function
+    s.opt.iy = iy; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.ix = ix; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.iz = iz; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.it = it; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.ic = ic; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+
     s.maketime_optfile_s = glb('maketime_s'); %creation time for s optfile (tracking id-controlled options into smake)
 
     s = structsort(s); %put in natural order before saving
