@@ -24,7 +24,6 @@ arguments
     opt.qc = [] %roiqc options returned by roiqc('', runtype=1); empty to skip roiqc; roiqc applies quality control to rois (filtering by size, number, etc)
     opt.nrm = [] %roinorm options returned by roinorm('', runtype=1); empty to skip roinorm; roinorm applies normalization to roi timeseries 
     
-    opt2.t (1,:) double = [] %timestamp vector; only required nonempty if channorm~=0 in opt.nrm
     opt2.roimask = [] %roimask to apply to stack; if nonempty, roidraw and roimauto are skipped
     opt2.doplt (1,1) {mustBeBinary} = 0 % 1 to do plots
     

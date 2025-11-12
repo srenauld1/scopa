@@ -94,5 +94,55 @@
     "usefbl": 1,
     "voltlim": [0,10],
     "voltminhd": 0.52359877559829882
+  },
+  "z10": {
+    "balldia": 9,
+    "dvlensec": 0.3,
+    "dvord": 2,
+    "rskey": -20,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  },
+  "z11": {
+    "balldia": 9,
+    "dvlensec": 0.3,
+    "dvord": 2,
+    "rskey": -5,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  },
+  "z12": {
+    "balldia": 9,
+    "dvlensec": 1,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  },
+  "z13": {
+    "balldia": 9,
+    "dvlensec": 1,
+    "dvord": 2,
+    "rskey": -20,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
+  },
+  "z14": {
+    "balldia": 9,
+    "dvlensec": 1,
+    "dvord": 2,
+    "rskey": -5,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 0.52359877559829882
   }
 }

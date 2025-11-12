@@ -8,9 +8,10 @@ rgname = {'eb', 'gal', 'gar', 'no'}; %use 'none' to skip prompt to define substa
 
 % o.s.smlensec = 0.3;
 % o.s.smlenpx = [3,3,0];
+o.s.it = [200 205 10000];
  
-o.dq.rskey = {0, -17};
-
+o.dq.rskey = {0, -5};
+o.dq.dvlensec = 1;
 
 o.bmp.domtype = 'm';
 o.bmp.dvord = 3;

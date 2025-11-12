@@ -44,13 +44,14 @@ arguments
 
 end
 
+s = [];
+pthstackmat = [];
+
 if opt2.runtype
-    s = [];
     return
 end
 
-opt2.optid = glbfile('optiddf'); % **** NOTE NOTE NOTE **** for now, we force using default optid for stacks because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
-
+opt2.varid = glbfile('variddf'); % **** NOTE NOTE NOTE **** for now, we force using default varid for stacks because id-control is not yet implemented for the python stack preprocessing (registration, smoothing, background subtraction, denoising, scan noise removal)
 
 fbrm = opt.fbrm;
 iy = opt.iy;
@@ -90,14 +91,17 @@ if isempty(pthstack)
     pthstack = fullfile(loc, fn);
 end
 
-optid_s_suffix = [optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
-
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
 mat_stack_exists_already = 0;
 if isfile(pthstack)
     if endsWith(pthstack, '.mat')
-        mat_stack_exists_already = 1;
+        idtmp = idmake(pthstack);
+        if isequal(idtmp.varid, varid) && isequal(idtmp.optid, optid)
+            mat_stack_exists_already = 1;
+        else
+            fprintf("input stack mat filename does not have requested optid and/or varid (was not created with current input options); " + newline + "creating stack mat file with current options (will be saved with new varid optid suffix)" + newline)
+        end
     end
 else
     error("pthstack input to smake does not exist")
@@ -123,8 +127,8 @@ if endsWith(pthstack, '.mat')
     try
         m = matfile(pthstack);
         m = whos(m);
-        if ~ismember('rg', {m.name})
-            error("rg does not exist in saved mat file; must be old mat file; recreating it now")
+        if ~ismember('t', {m.name})
+            error("t does not exist in saved mat file; must be old mat file; recreating it now")
         end
         load(pthstack, 'opt', 'pth', 'sz', 'chan') %first just load a few fields of saved struct 's', to make sure we have the right file (since loading whole struct can be slow because it contains the stack); if pthtif is not in file, it's an old version of s
         if opt_mismatch(pthstack, optin, opt, pth, sz, chan)
@@ -132,6 +136,7 @@ if endsWith(pthstack, '.mat')
         end
         fprintf("loading mat file containing stack" + newline)
         s = load(pthstack); % now you can load entire struct
+        pthstackmat = s.pth;
         return
     catch ME
         fprintf("cannot load mat file stack and/or tif conversion metadata; error message is: " + ME.message + newline)
@@ -153,7 +158,9 @@ end
 
 opt = optin; %update opt in case optin doesn't match saved opt above (or in case there was no saved opt)
 
-pthstack = regexprep(pthstack, ['_' optid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
+varidoptid_s_suffix = [varid optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
+
+pthstack = regexprep(pthstack, ['_' varidoptid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
 
 if ~isfile(pthstack)
     if mat_stack_exists_already
@@ -327,14 +334,8 @@ if ~isempty(md)
         stack = stacksm(stack, method=smmthd, lenpx=smlenpx, lensec=smlensec, imrate=md.volrate);
     end
 
-    pthstackmat = regexprep(pthstack, ['_.tif' '|' '.tif'], ['_' optid_s_suffix '.mat']); %previously --> [erase(pthstack, {'_.tif', '.tif'}) '_.mat'];
+    pthstackmat = regexprep(pthstack, ['_.tif' '|' '.tif'], ['_' varidoptid_s_suffix '.mat']); %previously --> [erase(pthstack, {'_.tif', '.tif'}) '_.mat'];
 
-    s_ids = idmake(pthstackmat);
-
-    try
-    catch
-        pthdaq = [];
-    end
 
     s.stack = stack; %stack
 
@@ -346,14 +347,17 @@ if ~isempty(md)
     s.mnt = stacktype(mean(stack, 4), class(stack)); %mean t stack
     s.mnzt = stacktype(mean(s.mnt, 3), class(stack)); %mean zt stack
     s.mnztc = stacktype(mean(s.mnzt, 5), class(stack)); %mean ztc stack
+    ttmp = linspace(0,md.numvol/md.volrate-1/md.volrate,md.numvol); 
+    s.t = ttmp(it);
 
+    s.id = idmake(pthstackmat);
     s.md = md; %scanimage metadata (also saved as txt file with suffix _mdsi_.txt)
     s.dm = dmstackmat; %stack dimension order as character vector
     s.chan = chan; %pmt channel(s) (we use this field because otherwise channel can be ambiguous, eg if pmt 2 is only channel in stack)
     
     s.pth = pthstackmat; %path to mat file containing this struct s
     s.pthtif = pthstack; %path to stack tif that was converted into s and saved as mat file
-    s.pthdaq = pthdaq; %path to daq associated with stack, if any
+    s.pthdaq = s.id.pthdaq; %path to daq associated with stack, if any
 
     s.rgname = glbfile('rgnamedf');
     s.rg.rgname = s.rgname;  %initialize rg struct with full-fov rg, ie no rg; later, additional rg are created in rgmake
@@ -365,6 +369,7 @@ if ~isempty(md)
     s.rg.c = [1, s.sz(5)];
 
     s.dq = []; %output from dqmake; always empty in smake
+    s.mm = []; %output from roidraw; always empty in smake
     s.roi = []; %output from roimake; always empty in smake
     s.bmp = []; %output from bmpmake; always empty in smake
     s.mdl = []; %output from mdlmake; always empty in smake
@@ -379,10 +384,10 @@ if ~isempty(md)
     save(pthstackmat, '-struct', 's', '-v7.3', '-mat')
     fprintf("stack saved as mat" + newline)
 
-    pthstackmat_old = regexprep(pthstackmat, optid_s_suffix, '');
+    pthstackmat_old = regexprep(pthstackmat, varidoptid_s_suffix, '');
     if isfile(pthstackmat_old)
         delete(pthstackmat_old)
-        fprintf("deleted same stack but with old name that lacks new optid_s_suffix" + newline)
+        fprintf("deleted same stack but with old name that lacks new varidoptid_s_suffix" + newline)
     end
 
 else

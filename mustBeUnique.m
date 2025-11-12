@@ -1,5 +1,5 @@
 function mustBeUnique(x)
 
 if ~isequal(numel(x), numel(unique(x)))
-    error("all elements must be unique")
+    error("cannot have any repeated elements")
 end
