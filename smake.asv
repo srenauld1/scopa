@@ -91,6 +91,8 @@ if isempty(pthstack)
     pthstack = fullfile(loc, fn);
 end
 
+varidoptid_s_suffix = [varid optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
+
 try_tiffstack_backup = 1; %this will run tiffstack if tifreadfast fails, as long as you didn't already try tiffstack first (if savemem=1)
 
 mat_stack_exists_already = 0;
@@ -158,9 +160,7 @@ end
 
 opt = optin; %update opt in case optin doesn't match saved opt above (or in case there was no saved opt)
 
-varidoptid_s_suffix = [varid optid '_s_']; %for now, hard coding this because stacks are not under id-control, and this can be omitted for convenience for people using old naming
-
-pthstack = regexprep(pthstack, ['_' varidoptid_s_suffix '.mat$'], '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
+pthstack = regexprep(pthstack, '_[A-Za-z]\d+[A-Za-z]\d+_s_.mat$', '_.tif');  %in case mat existed but errored above, previously --> pthstack = regexprep(pthstack, '.mat', '.tif');
 
 if ~isfile(pthstack)
     if mat_stack_exists_already
@@ -376,6 +376,12 @@ if ~isempty(md)
     s.fmf = []; %output from fmfmake; always empty in smake
     
     s.opt = opt; %options (name-value argument struct opt) used to convert tif to mat in this function
+    s.opt.iy = iy;
+    s.opt.iy = ix;
+    s.opt.iy = iy;
+    s.opt.iy = iy;
+    s.opt.iy = iy;
+
     s.maketime_optfile_s = glb('maketime_s'); %creation time for s optfile (tracking id-controlled options into smake)
 
     s = structsort(s); %put in natural order before saving
@@ -425,7 +431,7 @@ overflow = [];
 if ~isempty(md) %if you have metadata already
     if ~isequal(prod(sz), numel(stack))
         if rawstack
-            errmsg = "prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
+            errmsg = "prod(sz), which is likely derived from tif metadata using mdsild.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
         else
             if prod(sz)>numel(stack)
                 errmsg = "tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels";

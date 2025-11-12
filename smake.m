@@ -376,6 +376,12 @@ if ~isempty(md)
     s.fmf = []; %output from fmfmake; always empty in smake
     
     s.opt = opt; %options (name-value argument struct opt) used to convert tif to mat in this function
+    s.opt.iy = iy; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.ix = ix; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.iz = iz; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.it = it; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+    s.opt.ic = ic; %in case was empty, set to used value (careful, optid will be different on s.opt than input opt, if opt was empty)
+
     s.maketime_optfile_s = glb('maketime_s'); %creation time for s optfile (tracking id-controlled options into smake)
 
     s = structsort(s); %put in natural order before saving
@@ -425,7 +431,7 @@ overflow = [];
 if ~isempty(md) %if you have metadata already
     if ~isequal(prod(sz), numel(stack))
         if rawstack
-            errmsg = "prod(sz), which is likely derived from tif metadata using mdsisv.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
+            errmsg = "prod(sz), which is likely derived from tif metadata using mdsild.py, does not match numel(stack) output from tifreadfast; using tiffStack to read tif instead; mismatch can occur if you're reading a tif written by tifffile imwrite, but there should be no mismatch when reading scanimage output files";
         else
             if prod(sz)>numel(stack)
                 errmsg = "tifreadfast returned stack that has fewer elements than your metadata reports, even after accounting for discarded channels";

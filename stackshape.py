@@ -4,7 +4,7 @@ import json
 
 def stackshape(stack, md, pthmd, force_match=0):
 
-    # use stack and dict 'md' (from mdsisv.py) to find stack shape (order tzcyx), accounting for number of channels and whether flyback frames are present
+    # use stack and dict 'md' (from mdsild.py) to find stack shape (order tzcyx), accounting for number of channels and whether flyback frames are present
     # hoped to compute numchan without reference to md['chan_save'], since it can be wrong, but 1-chan stack with flyback cannot be distinguished from 2-chan stack without flyback when flyback equals numslice, so just using channel_save to set numchan
     # force_match=1 will force metadata to match first dimension of stack shape if possible by changing numvol, and will rewrite metadata file; if force_match=0 (default), an exception will be raised if stack shape does not match metadata
 

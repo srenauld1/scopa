@@ -1,7 +1,7 @@
 import os
 import glob
 import numpy as np
-from mdsisv import mdsisv, convert_md_file
+from mdsild import mdsild, convert_md_file
 from helpers import rename_original_scanimage_files, mat2tif, ordinal
 from natsort import natsorted
 import re
@@ -17,6 +17,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
                  folder_with_all_recordings_on_storage_and_compute_filesystems):
 
     # chanopt = ['[_chn]*'] #return chn1 or chn2 or both, but not filenames where chn* string is absent
+
 
     ######### FORMAT FILE SPECIFIERS, BASED ON INPUT #########
 
@@ -44,6 +45,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
             filepatspec_all = []
             for line in f1:
                 filepatspec_all.append(ast.literal_eval(line))
+
 
     ######### FIND FILES (INPUT FILES FOR DIFFERENT PARTS OF PIPELINE) #########
 
@@ -180,6 +182,7 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
             flystr_found = fn_prefix.split('_')[1]
             trialstr_found = fn_prefix.split('_')[2]
 
+
             ######### FIND SOME ADDITIONAL OPTIONAL FILES #########
 
             pthmd = pth_prefix + '_mdsi_.txt'
@@ -215,20 +218,21 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
             if pth_ftdat:
                 pth_ftdat = pth_ftdat[0]
             
+
             ######### RENAME FLYG FILES IF YOU'RE CARL, AND LOAD CARL'S OLD MAT FILES AS TIF #########
 
             if re.search("wilsonlab/wienecke", pth_allrec) or re.search("Users/wienecke/Documents", pth_allrec): #  if in carl's wilsonlab storage server folder, rename if filename has string 'trial' or 'stackraw' (overwrite flyg and carlold filename patterns with scopa filename patterns) 
                 if re.search('trial', fname): #do this only on storage server so that it is the first thing to occur before moving, to avoid duplicate files with different names
                     [pth_readfile, fname] = rename_original_scanimage_files(pth_readfile, fname, fn_prefix, fldr, suffixchar_raw)
             
-            mat_file_shape = None
+            stack_shape_nonnative = None
             if int(datestr_found)>20230101:
                 carls_old_project = 0
             else:
                 carls_old_project = 1
             
             if fname[-3:]=='mat' and do_copyfiles==0 and not do_remove and not do_a2p:
-                mat_file_shape = mat2tif(pth_readfile, carls_old_project)
+                stack_shape_nonnative = mat2tif(pth_readfile, carls_old_project)
 
 
             ######### READ & WRITE SCANIMAGE METADATA #########
@@ -236,10 +240,11 @@ def filefind(first_noncopy_job, pth_allrec, recdate, fly, trial, substr, jobind,
             if not os.path.isfile(pthmd): #if scanimage metadata file (*mdsi_.txt) is not present, make it
                 if do_register or do_denoise and dnraw: #if doing registration, or if the either of the old metadata files are present, make mdsi_.txt:
                     if do_copyfiles==0: #if do_register and not copying files, create metadata files
-                        mdsisv(pth_readfile, pthmd, mat_file_shape = mat_file_shape)
+                        mdsild(pth_readfile, pthmd, stack_shape_nonnative = stack_shape_nonnative)
                     elif do_copyfiles==1: #if do_copyfiles==1, ie copying into O2, during do_register, they won't exist yet and that's fine
                         pthmd = []
             
+
             ######### PUT IN LISTS (THESE MAY NOT BE ALL FOUND FILES SINCE jobid MAY HAVE BEEN APPLIED #########
 
             pth_read_all.append(pth_readfile)

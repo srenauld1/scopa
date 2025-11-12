@@ -2,6 +2,7 @@
 
 %{
 
+carful about options that can be empty and get set in module then referencing their saved vaoue (empty) different if you call oid on them
 remove rskey allowed to be nonscalar in dq make now that dqwmakew diistribuytes 
 
 make global resampliung option so stack and daq can be arbitrarily resampled together (currently only can subset each, and arbitrarily sample daq)

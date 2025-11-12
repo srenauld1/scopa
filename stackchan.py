@@ -35,7 +35,7 @@ def stackchan(stack, md, pthmd, chanrm, chan_primary):
                     stack = stack[:, :, chan_primary-1, :, :].squeeze()
                     print("STACK HAS 2 CHANNELS, WITH chan_primary SET TO " + str(chan_primary) )
         
-            else: #if channelchannel_active has one channel, but cvhannel_save is 2, you may have saved two channels with only one active; in mdsisv, this was detected and corrected when writing md['channel_save'], and here the extra saved channel will be removed from the stack
+            else: #if channelchannel_active has one channel, but cvhannel_save is 2, you may have saved two channels with only one active; in mdsild, this was detected and corrected when writing md['channel_save'], and here the extra saved channel will be removed from the stack
                 
                 if not np.isin(md['channel_save'], md['channel_active']).any():
                     print("channel_save is not a subset of channel_active")
@@ -52,7 +52,7 @@ def stackchan(stack, md, pthmd, chanrm, chan_primary):
                 elif isinstance(md['channel_save'], int):
                     stack = stack[:, :, md['channel_save']-1, :, :].squeeze()
                 
-                print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN mdsisv.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
+                print("CHANNEL_SAVE HAS MORE CHANNELS THAN CHANNEL_ACTIVE; YOU MAY HAVE ACCIDENTALLY REDCORDED AN EMPTY CHANNEL; CHANNEL_SAVE WAS SET TO EQUAL TO CHANNEL_ACTIVE IN mdsild.py; NOW SELECTING ONLY THE ACTIVE CHANNEL FROM THE STACK")
 
     #output chan_primary (which is also an input) in case it gets updated if there are two channels and chanrm is not None
         
