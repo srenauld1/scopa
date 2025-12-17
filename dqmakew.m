@@ -31,6 +31,7 @@ arguments
         "bs = ficTracIntSide = m = bvs";
         "bh = ficTracYaw, ficTracHeading, ficTracHd = r = bvy";
         "vh = g4panels, g4yaw, g4hd = r = vvy";
+        "vho = g4panelsAO = r = vvyo";
         "vvynom = g4vel, g4velnom = c = ";
         "epochts = epoch = c = ";
         "ftcam = ftcam = b = "

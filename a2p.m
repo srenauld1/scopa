@@ -1,5 +1,4 @@
 
-
 %{
 
 see docs_a2p
@@ -19,7 +18,7 @@ dopltx = opt.dopltx;
 close all; clc; clear glb vget; clearvars -except spec usegit dopltx;
 
 
-%%%% GLOBALS %%%%
+%%%% GLOBALS %%%% 
 
 glb(usegit=usegit); %set usegit in globals function 'glb'
 glbfile('dmstackdf'); %confirm this exists in locked globals file glb.txt; default stack dimension order; if you use smake to load the stack from tif (and save as mat), the stack is put into this order; c is stack collection channel (eg stack collected with 2 pmts makes 2 channels), k is truecolor stack's rgb channel (in general, stack is grayscale, not truecolor, so this is typically singleton), ...
@@ -65,7 +64,7 @@ for k = 1:numel(o) % loop over recordings found in oset
     if ~isempty(o(k).dq)
         for m = 1:numel(o(k).dq)
             prs = struct2pairs(o(k).dq(m));
-            s = dqmakew(s, prs{:}, idx=m, mnum=numel(o(k).dq), doplt=0); %load/process dq (also fictrac video)
+            ts = dqmakew(s, prs{:}, idx=m, mnum=numel(o(k).dq), doplt=0); %load/process dq (also fictrac video)
         end
     end
 
@@ -126,7 +125,7 @@ for k = 1:numel(o) % loop over recordings found in oset
 
         % idaq = fieldmatch(dq, lev=1);
         idaq = 1;
-        [~, ~, ipe, ~, tpe] = trmake(dq(idaq).epochts, padlent=3, t=dq(idaq).t, eb=[epoch bout]);
+        [~, ~, ipe, ~, tpe] = trmake(dq(idaq).epochts, padlent=3, t=dq(idaq).t, eb=[epoch bout]);older22
 
         if contains(o(k).pthstack, {'ebgano'})
 
