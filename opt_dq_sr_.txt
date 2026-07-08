@@ -24,5 +24,105 @@
     "usefbl": 1,
     "voltlim": [0,10],
     "voltminhd": 3.1415926535897931
+  },
+  "z3": {
+    "balldia": 9,
+    "dvlensec": 0.9,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z4": {
+    "balldia": 9,
+    "dvlensec": 0.9,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z5": {
+    "balldia": 9,
+    "dvlensec": 0.3,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z6": {
+    "balldia": 9,
+    "dvlensec": 0.3,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z7": {
+    "balldia": 9,
+    "dvlensec": 0.2,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z8": {
+    "balldia": 9,
+    "dvlensec": 0.2,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z9": {
+    "balldia": 9,
+    "dvlensec": 0.5,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z10": {
+    "balldia": 9,
+    "dvlensec": 0.5,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z11": {
+    "balldia": 9,
+    "dvlensec": 3,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z12": {
+    "balldia": 9,
+    "dvlensec": 3,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
   }
 }

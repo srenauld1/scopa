@@ -84,8 +84,8 @@ if [ "$do_autoallocate" == 0 ]; then
     time_autoallocate=00:10:00
 
     cpu_per_task_register=3
-    mem_per_cpu_register=25G
-    time_register=0:50:00
+    mem_per_cpu_register=35G
+    time_register=1:50:00
 
     cpu_per_task_stitch=1
     mem_per_cpu_stitch=20G

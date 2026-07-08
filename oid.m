@@ -90,9 +90,9 @@ try
 
 catch ME
 
-    if usegit
-        scopagit('discard', files={'^opt_.*_.txt$'})
-    end
+    % if usegit
+    %     scopagit('discard', files={'^opt_.*_.txt$'})
+    % end
     error("oid failed with the following error: " + ME.message)
 
 end
