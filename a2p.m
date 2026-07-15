@@ -62,9 +62,16 @@ for k = 1:numel(o) % loop over recordings found in oset
     %%%% DAQ %%%%
 
     if ~isempty(o(k).dq)
+        heat = 1;
         for m = 1:numel(o(k).dq)
-            prs = struct2pairs(o(k).dq(m));
-            ts = dqmakew(s, prs{:}, idx=m, mnum=numel(o(k).dq), doplt=0); %load/process dq (also fictrac video)
+
+            if heat
+                [dq, s] = dqmake_olheat(s, doplt =1, dosave=1);
+            else
+                prs = struct2pairs(o(k).dq(m));
+                ts = dqmakew(s, prs{:}, idx=m, mnum=numel(o(k).dq), doplt=0); %load/process dq (also fictrac video)
+        
+            end
         end
     end
 

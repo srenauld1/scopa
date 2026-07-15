@@ -22,6 +22,10 @@ def mdsild(pth_readfile, pthmd, stack_shape_nonnative = None):
 
         mdt['numslice'] = int(re.findall( 'actualNumSlices = (.*)', meta)[0])
         mdt['numslice_withflyback'] = int(re.findall( 'numFramesPerVolumeWithFlyback = (.*)', meta)[0])
+        if mdt['numslice'] < 1: #actualNumSlices can be 0 in some scanimage acquisitions (eg aborted, or certain fastZ configs); fall back to the configured hStackManager.numSlices so numslice/flyback/dims are not left at 0
+            numslice_cfg = int(re.findall( 'hStackManager.numSlices = (.*)', meta)[0])
+            print("actualNumSlices is " + str(mdt['numslice']) + " (invalid); falling back to hStackManager.numSlices = " + str(numslice_cfg))
+            mdt['numslice'] = numslice_cfg
         mdt['flyback'] = mdt['numslice_withflyback'] - mdt['numslice']
 
         if mdt['numslice']==1 and mdt['numslice_withflyback']==1 and re.findall( 'hStackManager.enable = (.*)', meta)[0]=='false': #if it's a single slice

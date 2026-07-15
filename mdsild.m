@@ -51,6 +51,11 @@ if ~isfile(pthmd) %if metadata file doesn't exist, create it by calling mdsild.p
                 md.channel_active = strparse(sistr, 'channelsActive');
                 md.numslice = strparse(sistr, 'actualNumSlices');
                 md.numslice_withflyback = strparse(sistr, 'numFramesPerVolumeWithFlyback');
+                if md.numslice < 1 %actualNumSlices can be 0 in some scanimage acquisitions (eg aborted, or certain fastZ configs); fall back to the configured hStackManager.numSlices so numslice/flyback/dims are not left at 0
+                    numslice_cfg = strparse(sistr, 'hStackManager.numSlices');
+                    fprintf("actualNumSlices is %d (invalid); falling back to hStackManager.numSlices = %d" + newline, md.numslice, numslice_cfg)
+                    md.numslice = numslice_cfg;
+                end
                 md.flyback = md.numslice_withflyback - md.numslice;
 
                 if md.numslice==1 && md.numslice_withflyback==1 && strcmp(strparse(sistr, 'hStackManager.enable'), 'false')
