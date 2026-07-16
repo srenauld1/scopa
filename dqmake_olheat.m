@@ -63,7 +63,7 @@ arguments
     s = '' % smake stack struct, OR char path to: the recording folder, the daqData .mat, or the stack .mat; if empty, user is prompted to pick the daq file
 
     opt.rskey (1,1) double {mustBeInteger, mustBeNonnegative} = 0 % 0 = resample to imaging VOLUME rate (only mode supported in this first version); slice-index resampling can be added later like dqmake
-    opt.dvlensec (1,1) double {mustBePositive} = 0.3 % window length (s) for the sliding-slope derivative (velocity); larger = smoother
+    opt.dvlensec (1,1) double {mustBePositive} = 0.5 % window length (s) for the sliding-slope derivative (velocity); larger = smoother
     opt.dvord (1,1) double {mustBeMember(opt.dvord,1:5)} = 2 % polynomial order for the sliding-slope derivative
     opt.usefbl (1,1) {mustBeMember(opt.usefbl,[0 1])} = 1 % include flyback lines when computing slice indices
     opt.usefbf (1,1) {mustBeMember(opt.usefbf,[0 1])} = 1 % include flyback frames when computing volume indices
@@ -155,7 +155,7 @@ log_s2 = hl.sync2(:);
 
 %%%% ALIGN heat_log ROWS TO daq VIA sync1 EDGES + sync2 FINGERPRINT %%%%
 
-b1  = sync1 > (min(sync1)+max(sync1))/2;         % threshold sync1 to binary
+b1  = sync1 > 0.5;         % threshold sync1 to binary (accounting for error in the voltage signal
 edg = find(diff(b1) ~= 0) + 1;                    % daq sample index of each sync1 transition (= one heat_log row each)
 if numel(edg) < 10
     error("found too few sync1 edges on the daq (" + numel(edg) + "); cannot align")
