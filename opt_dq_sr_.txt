@@ -144,5 +144,25 @@
     "usefbl": 1,
     "voltlim": [0,10],
     "voltminhd": 3.1415926535897931
+  },
+  "z15": {
+    "balldia": 9,
+    "dvlensec": 0.8,
+    "dvord": 2,
+    "rskey": 0,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
+  },
+  "z16": {
+    "balldia": 9,
+    "dvlensec": 0.8,
+    "dvord": 2,
+    "rskey": -60,
+    "usefbf": 1,
+    "usefbl": 1,
+    "voltlim": [0,10],
+    "voltminhd": 3.1415926535897931
   }
 }

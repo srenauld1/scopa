@@ -62,7 +62,7 @@ for k = 1:numel(o) % loop over recordings found in oset
     %%%% DAQ %%%%
 
     if ~isempty(o(k).dq)
-        heat = 0;
+        heat = 1;
         for m = 1:numel(o(k).dq)
 
             if heat

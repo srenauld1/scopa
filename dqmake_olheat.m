@@ -353,7 +353,7 @@ if isempty(d)
 end
 pthdaq = fullfile(d(1).folder, d(1).name);
 
-h = dir(fullfile(recfld, 'heat_log_*.csv'));
+h = dir(fullfile(recfld, 'heat_*.csv'));
 if isempty(h)
     error("no heat_log_*.csv file found in " + string(recfld));
 end

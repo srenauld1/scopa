@@ -552,27 +552,31 @@ end
 
 %%%%%%%% VOLUME INDICES %%%%%%%%
 
-if numslice_withflyback==1 %in this case, idxvol is the same as idxframe (but not idxslice, since that will be all ones (with zeros, if usefbl=0)
-    idxvol = idxframe;
+% volume index by integer division of the frame index. this is equivalent to the previous
+% binary2count approach for flyback>0, but also works when flyback==0 (every frame is a kept
+% slice, so there are no flyback-frame gaps to delimit volumes). the previous approach delimited
+% volumes by the gaps that flyback frames leave, so a flyback==0 stack collapsed into a single
+% volume and then errored at the vtmp(end)~=numvol check below.
+nz = idxframe~=0; %true for samples assigned to a real frame; idxframe==0 only occurs for flyback-line samples when usefbl==0
+idxvol = zeros(size(idxframe));
+idxvol(nz) = floor((idxframe(nz)-1)/numslice_withflyback)+1; %1..numvol (owning volume of each frame)
+
+isrealslice = idxslice>=1 & idxslice<=numslice; %real (non-flyback) slices; excludes flyback frames (slice>numslice) and flyback lines (idxslice==0)
+
+if usefbf
+    if any(~isrealslice) %assign flyback-frame (and any excluded flyback-line) samples the nearest volume by time, matching the previous behavior; only real-slice samples anchor the interp; for flyback==0 there are no such samples so idxvol is left as the floor-division result
+        idxvol(~isrealslice) = interp1(t(isrealslice), idxvol(isrealslice), t(~isrealslice), 'nearest', 'extrap');
+    end
 else
-    idxvol = idxslice; %since we might use idxslice let's make a copy and not modify idxslice
-    idxvol(idxvol==0) = nan; %replace zeros (if they exist) with nan, then . . .
-    idxvol = fillmissing(idxvol, 'nearest'); %fill in zeros (which are between slices in idxslice if usefbl=0, and absent otherwise) to help define volume; for this, precision is not important, since it just fills in flyback lines (not frames, where precision is more important)
-    idxvol(idxvol>numslice) = 0;
-    idxvol = binary2count(logical(idxvol));
-    if usefbf
-        kp = idxvol==0;
-        idxvol(kp) = interp1(t(~kp), idxvol(~kp), t(kp), 'nearest', 'extrap'); %assign each zero the nonzero value nearest in time; extrap for the final samples; here, this assigns flyback frames the nearest volume index (ie recenters volumes)
-    else
-        idxframe(idxslice>numslice) = 0; %remove frame flyback in idxframe if usefbf=0
-        idxslice(idxslice>numslice) = 0; %remove frame flyback in idxslice if usefbf=0
-    end
+    isfb = idxslice>numslice; %flyback frames have slice index beyond numslice
+    idxframe(isfb) = 0; %remove frame flyback in idxframe if usefbf=0
+    idxslice(isfb) = 0; %remove frame flyback in idxslice if usefbf=0
+    idxvol(isfb) = 0; %remove frame flyback in idxvol if usefbf=0
+end
 
-    vtmp = idxvol(idxvol~=0);
-    if vtmp(end)~=numvol
-        error("number stack volumes in metadata does not match number recorded in daq")
-    end
-
+vtmp = idxvol(idxvol~=0);
+if vtmp(end)~=numvol
+    error("number stack volumes in metadata does not match number recorded in daq")
 end
 if any(isnan([idxframe; idxslice; idxvol]))
     error("there should be no nans in any idx")
