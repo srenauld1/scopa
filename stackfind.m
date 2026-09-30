@@ -56,8 +56,8 @@ valid_flygrawtif_fn_regexppat = '^\d*-\d*_.*_trial_.*_\d{5}.tif$'; %id suffix do
 valid_flygrawmat_fn_regexppat = '^\d*-\d*_.*_trial_.*_\d{5}_[A-Za-z]\d+[A-Za-z]\d+_s_.mat$';  %id suffix, which is [varid optid _s_.mat], does exist for mat files, including flyg pattern 
 
 if ~isemptyall(pthpat)
-    if ~isemptyall(stackid) || ~isemptyall(recdate) || ~isemptyall(fly) || ~isemptyall(trial) || ~isemptyall(suffix) || ~isemptyall(optid) || ~isemptyall(varid) || ~isemptyall(ext) || ~isemptyall(substr)
-        error("cannot use stackid, recdate, fly, trial, suffix, optid, varid, ext, or substr inputs with nonempty pthpat input")
+    if ~isemptyall(stackid) || ~isemptyall(recdate) || ~isemptyall(fly) || ~isemptyall(trial) || ~isemptyall(suffix) || ~isemptyall(optid) || ~isemptyall(varid) || ~isemptyall(substr)
+        error("cannot use stackid, recdate, fly, trial, suffix, optid, varid, or substr inputs with nonempty pthpat input")
     end
     if ~iscell(pthpat)
         pthpat = {pthpat};
@@ -343,5 +343,3 @@ pth_all = pth_all(~cellfun(@isempty, regexp(pth_all, regexptranslate('wildcard',
 pth_all = pth_all(:); %make it column vector
 
 end
-
-

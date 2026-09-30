@@ -20,6 +20,7 @@ if '--pth_parsfile' in sys.argv: #in noninteractive mode, all options come from 
   cluster_backend = 'multiprocessing' #irrelevant if use_cluster=0; use 'multiprocessing' on O2 to speed up caiman code
   makeplots = 0 #should be 0 if running job from pl on O2, so not a command line argument because it errors unless running in an interactive mode, like in vscode, in register calls plot_gif, in extract calls caiman_plots_all, which shows extracted components' spatial masks and timeseries,  
   do_crop_only = 0 #should be 0 if running job from pl on O2, since this is interactive drawing/cropping of FOV
+  pth_compute_prefix = '' #use the existing inferred compute location in batch mode
   print("pth_parsfile passed as input to pl.py (in batch mode), using options from pth_parsfile (options from pl.sh)")
 else: #in interactive mode, read options set in oset, and also set a few options that user will not need to modify in interactive mode, here, to keep separate from oset.py, where user sets options; 2 options, do_copyfiles and jobind, are unlikely to be changed by user in interactive mode, but it's at least possible, so they are in oset
   print("pth_parsfile not passed as input (in interactive mode), using options from oset.py")
@@ -50,7 +51,7 @@ if len(sys.argv)>1: #if in noninteractive mode (running pl), read in arguments f
                       do_a2p, first_noncopy_job] = parse_command_line()
 
 
-[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir)
+[pth_scopa, pth_allrec, pth_fldr_copydest_prefix, pth_denoising, pth_fldr_fnind, pth_optdf, pth_optroi] = pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir, pth_compute_prefix)
 
 
 if do_register + do_denoise + do_stitch + do_remove + do_extract + do_crop_only + do_a2p > 1:

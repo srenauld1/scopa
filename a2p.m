@@ -62,7 +62,7 @@ for k = 1:numel(o) % loop over recordings found in oset
     %%%% DAQ %%%%
 
     if ~isempty(o(k).dq)
-        heat = 1;
+        heat = ~isempty(rdir(fullfile(s.id.pthstackfld, 'heat_log_*.csv')));
         for m = 1:numel(o(k).dq)
 
             if heat
@@ -168,7 +168,6 @@ for k = 1:numel(o) % loop over recordings found in oset
     end
 
 end
-
 
 
 

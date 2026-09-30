@@ -14,7 +14,10 @@ import json
 
 
 
-def stitchrg(pth_tif_reg, dims):
+def stitchrg(pth_tif_reg, dims, immn=None, immx=None):
+
+    # immn and immx are the per-volume min and max of the stack as it was handed to caiman
+    # (see clipinterp in register.py); pass None to skip the clipping
 
     print("\n\n\nstitching together separately registered z slices, and writing as one tif")
 
@@ -40,6 +43,21 @@ def stitchrg(pth_tif_reg, dims):
         os.remove(f)
         
     stack = np.transpose(stack, (0,3,2,1)) #transpose to txyz, to match caiman output
+
+    if immn is not None: #clipinterp; caiman applies subpixel shifts by fourier interpolation,
+        # which rings (gibbs) and pushes values outside the range that was actually present in each volume;
+        # clip that overshoot back into range, the same way normcorre_batch.m does with its per frame minY/maxY.
+        # THIS MUST HAPPEN BEFORE THE GLOBAL MIN SUBTRACTION BELOW, otherwise the ringing undershoot sets mnmv
+        # and gets baked in as a pedestal on the whole recording (and by then the clip can no longer remove it)
+        if immx is None:
+            raise ValueError("immx must be provided when immn is provided")
+        if len(immn) != stack.shape[0] or len(immx) != stack.shape[0]:
+            raise ValueError("interpolation clipping bounds must match the number of registered volumes")
+        print("CLIPPING INTERPOLATION OVER/UNDERSHOOT BACK INTO EACH VOLUME'S ORIGINAL RANGE")
+        for t, (newmin, newmax) in enumerate(zip(immn, immx)):
+            vol = stack[t]
+            vol[vol<newmin] = newmin
+            vol[vol>newmax] = newmax
 
     mnmv = np.min(stack).astype('float32')
     stack -= mnmv #make nonnegative before converting to uint16

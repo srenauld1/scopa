@@ -80,7 +80,6 @@ if isempty(pthdaq)
 else
     id = idmake(pthdaq);
 end
-id = idmake(pthstack);
 
 
 %%%% GET PATHS, IN CASE THEY WEREN'T PASSED IN %%%%

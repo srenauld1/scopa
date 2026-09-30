@@ -115,12 +115,13 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
         if two_channel_reg:
             stack_secondary = subtract_background(stack_secondary, bglenpx, pth_prefix, makeplots, indzall)
 
+    immn = immx = immn2 = immx2 = None #None means skip clipping in stitchrg
+    # if clipinterp: capture the range present in each volume before registration; stitchrg clips
+    # the registered stack back into this range (see stitchrg)
     if clipinterp:
         limax = tuple(np.arange(1,np.ndim(stack)))
         immn = np.min(stack, axis=limax)
         immx = np.max(stack, axis=limax)
-        immn2 = []
-        immx2 = []
         if two_channel_reg:
             immn2 = np.min(stack_secondary, axis=limax)
             immx2 = np.max(stack_secondary, axis=limax)
@@ -220,35 +221,17 @@ def register(pth_tif_read, pthmd, pth_prefix, pth_allrec, md, scopatmplt, clip, 
             stack = None
             if two_channel_reg: #OVERWRITE STACK TO SAVE MEMORY SINCE WE'RE AT THE END, AND ONLY PLOTTING IS LEFT
                 stack_allchan = np.zeros((stack_shape[0], stack_shape[1], stack_shape[2], stack_shape[3], 2), dtype=stack_dtype)
-                stack_allchan[:,:,:,:,chan_primary-1] = stitchrg(pth_tif_write, md['dims']) #output is all slices, txyz
-                stack_allchan[:,:,:,:,chan_secondary-1] = stitchrg(pth_tif_write_secondary, md['dims']) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_primary-1] = stitchrg(pth_tif_write, md['dims'], immn, immx) #output is all slices, txyz
+                stack_allchan[:,:,:,:,chan_secondary-1] = stitchrg(pth_tif_write_secondary, md['dims'], immn2, immx2) #output is all slices, txyz
                 if makeplots:
                     plot_gif(stack_allchan[:,:,:,:,chan_primary-1].squeeze(), pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
                     plot_gif(stack_allchan[:,:,:,:,chan_secondary-1].squeeze(), pth_tif_write_secondary[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
             else:
-                stack_allchan = stitchrg(pth_tif_write_allchan, md['dims']) #here stack_allchan is one chan output is all slices, txyz
+                stack_allchan = stitchrg(pth_tif_write_allchan, md['dims'], immn, immx) #here stack_allchan is one chan output is all slices, txyz
                 if makeplots:
                     plot_gif(stack_allchan, pth_tif_write[:-4] + '.gif', indsz = slice(3, 4, 1), indst = slice(0, 100, 1))  #view gif to check registration, can pass in xyzt indices, otherwise will do all indices for each 
                     #plot_gif(smooth_movie(stack_allchan, sigma=(1.2,1.2), axes=(1,2)), '/Users/wienecke/stacks/test.gif', indsz=slice(3,4,1), indst=slice(0,100,1))
             
-            if clipinterp:
-                stack_shape_final = stack_allchan.shape
-                if two_channel_reg:
-                    stack_allchan = stack_allchan.reshape(len(immn), -1, 2)
-                else:
-                    stack_allchan = stack_allchan.reshape(len(immn), -1, 1)
-                for chn in np.arange(stack_allchan.shape[-1]):
-                    for cnt, (frame,newmin,newmx,newmin2,newmx2) in enumerate(zip(stack_allchan[:,:,chn],immn,immx,immn2,immx2)):
-                        if chn==0: #chn==0 is channel 1
-                            frame[frame<newmin] = newmin
-                            frame[frame>newmx] = newmx
-                        elif chn==1: #chn==1 is channel 2
-                            frame[frame<newmin2] = newmin2
-                            frame[frame>newmx2] = newmx2
-                        stack_allchan[cnt,:,chn] = frame
-
-                stack_allchan = np.reshape(stack_allchan, stack_shape_final)
-
             write_registered_stack(stack_allchan, pth_tif_write_allchan)
 
         countz = countz + 1
@@ -351,4 +334,3 @@ def memmap2stackwrite(iz, input_for_save_memmap, pth_tif_write, register_in_2d, 
             for si2 in np.arange(stack.shape[3]): #write 3d registered, each slice, bc reading them back makes caiman output stack mutable, without doubling ram by simply copying stack (takes more storage but less ram, on O2 this is preferable), also writing one big float32 4d array takes forever on local, each slice does better 
                 pth_write_single = pth_tif_write[:-4] + str(si2) + '_z_.tif'
                 imwrite(pth_write_single, np.transpose(stack[:,:,:,si2], (0, 2, 1)).reshape(dim_time_rg, dims_spatial_rg[1], dims_spatial_rg[0]), bigtiff=True, photometric='minisblack') #write the registered movie as tif (uint16) for use in matlab, and caiman extraction below
-

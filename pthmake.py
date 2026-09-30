@@ -6,7 +6,7 @@ from pathlib import Path
 import inspect
 
 
-def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir):
+def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage_and_compute_filesystems, pth_storage_prefix, scopatmpdir, pth_compute_prefix=''):
 
     print("\n\n\nsys.executable returns: \n" + sys.executable)
 
@@ -29,11 +29,14 @@ def pthmake(do_copyfiles, do_autoallocate, folder_with_all_recordings_on_storage
     if in_colab:
         raise Exception("in colab run the ipynb pipeline instead")
     else:
-        hn = os.popen('hostname').read()
-        if re.search('compute.*harvard', hn): #if you're on O2, make compute folder that matches scratch path pattern
-            pth_compute_prefix = '/n/scratch/users/' + pth_scopatmpdir.split('/')[-2][0] + '/' + pth_scopatmpdir.split('/')[-2] + '/'
-        else: #else assume you're not on a cluster with specific compute folders (like scratch)
-            pth_compute_prefix = ('/').join(pth_scopatmpdir.split('/')[:-1]) + '/' 
+        if pth_compute_prefix:
+            pth_compute_prefix = os.path.abspath(os.path.expanduser(pth_compute_prefix)) + '/'
+        else:
+            hn = os.popen('hostname').read()
+            if re.search('compute.*harvard', hn): #if you're on O2, make compute folder that matches scratch path pattern
+                pth_compute_prefix = '/n/scratch/users/' + pth_scopatmpdir.split('/')[-2][0] + '/' + pth_scopatmpdir.split('/')[-2] + '/'
+            else: #else assume you're not on a cluster with specific compute folders (like scratch)
+                pth_compute_prefix = ('/').join(pth_scopatmpdir.split('/')[:-1]) + '/'
 
 
     if folder_with_all_recordings_on_storage_and_compute_filesystems[-1] != '/': 
@@ -104,4 +107,3 @@ def pthscopaget():
     # pth_scopa = os.path.join(*pp[:pp_splitind]) + '/'
 
     return pth_scopa
-    
